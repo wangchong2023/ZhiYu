@@ -68,7 +68,8 @@ X-Device-Platform: <设备平台，如 "iOS">
 | **账号与资料** | 上传用户头像 | 上传二进制头像图片并返回存储 OSS 访问地址 | `POST /api/v1/auth/user/profile/avatar` | 智宇 App 客户端 | 智宇后端 API / OSS | 需 `Bearer Token`；`multipart/form-data`，图片限制 5MB 内 |
 | **账号与资料** | 账号登录与注册 | 支持密码登录或手机短信验证码一键注册登录 | `POST /api/v1/auth/login` | 智宇 App 客户端 | 智宇后端 API 服务 | 响应返回 AccessToken 与 RefreshToken，自动存入 Keychain |
 | **账号与资料** | 发送短信验证码 | 向目标手机号下发登录/重置密码所需的验证码 | `POST /api/v1/auth/sms/send` | 智宇 App 客户端 | 智宇后端 API / 短信网关 | 限制单 IP 及手机号高频触发，防止恶意短信接口刷量 |
-| **账号与资料** | 第三方 OAuth 登录 | 整合 Apple/微信/Google/GitHub/运营商免密登录 | `POST /api/v1/auth/oauth/{provider}` | 智宇 App 客户端 | 智宇后端 API 服务 | 需要提交第三方平台签发的 Authorization Code / ID Token |
+| **账号与资料** | 第三方 OAuth 登录 | 整合 Apple/微信/Google/GitHub 登录 | `POST /api/v1/auth/oauth/{provider}` | 智宇 App 客户端 | 智宇后端 API 服务 | 需要提交第三方平台签发的 Authorization Code / ID Token |
+| **账号与资料** | 运营商免密登录 | 运营商一键登录（取号认证） | `POST /api/v1/auth/carrier` | 智宇 App 客户端 | 智宇后端 API / 运营商网关 | 需要运营商侧授权后的 `carrierToken` |
 | **账号与资料** | 刷新 Access Token | 当访问 Token 过期时利用 RefreshToken 换取新凭证 | `POST /api/v1/auth/refresh` | 智宇 App 客户端 | 智宇后端 API 服务 | 客户端 HTTP 网络拦截器检测到 `401` 时自动无感触发 |
 | **账号与资料** | 退出登录 | 注销并吊销服务端的 RefreshToken 凭证 | `POST /api/v1/auth/logout` | 智宇 App 客户端 | 智宇后端 API 服务 | 需 `Bearer Token`；同步清空 Keychain 中的本地密钥存储 |
 | **订阅与套餐** | 查询订阅套餐列表 | 获取 Free / Pro 各级别套餐定价与权益配额 | `GET /api/v1/subscriptions/plans` | 智宇 App 客户端 | 智宇后端 API 服务 | 公开接口；用于收银台/付费墙/升级引导界面的展示 |
@@ -80,7 +81,7 @@ X-Device-Platform: <设备平台，如 "iOS">
 | **AI 对话评测** | 发送 RAG 质量评估 | 上报 LLM-as-a-Judge 的 7 维 Benchmark 测评指标 | `POST /api/v1/ai/rag/evaluation` | 智宇 App 客户端 | 智宇后端 API 服务 | 需 `Bearer Token`；包含忠实度、幻觉率、引用准确度等 7 维分值 |
 | **大模型管理** | 查询推荐模型目录 | 拉取云端端侧 GGUF 模型推荐清单及白名单 | `GET /api/v1/models/catalog` | 智宇 App 客户端 | 智宇后端 API / Model Hub | 包含模型架构、GGUF 量化版本、物理大小及 SHA256 签名 |
 | **大模型管理** | 模型权重拉取/续传 | 后台静默下载 GGUF 模型权重物理文件 | `GET /gguf/{model_id}/{quant_file}.gguf` | 智宇 App 客户端 | CDN 存储节点 / 模型分发站 | 必须支持 HTTP `Range` 头 (`206 Partial Content`)，包含指纹校验 |
-| **插件市场** | 拉取社区插件清单 | 获取云端已审核通过的 Obsidian 风格社区插件元数据 | `GET /api/v1/plugins/community-plugins.json` | 智宇 App 客户端 | 智宇 / GitHub CDN | 支持 `/community-plugins_zh-Hans.json` 本地化元数据分发 |
+| **插件市场** | 拉取社区插件清单 | 获取云端已审核通过的 Obsidian 风格社区插件元数据 | `GET https://raw.githubusercontent.com/wangchong2023/zhiyu-releases/master/community-plugins.json` | 智宇 App 客户端 | GitHub raw CDN | 支持 `community-plugins_zh-Hans.json` 本地化元数据分发 |
 | **插件市场** | 下载插件 bundle 包 | 拉取并下载独立插件的 JavaScript 运行时包 | `GET /api/v1/plugins/{plugin_id}/bundle.zip` | 智宇 App 客户端 | 智宇 / GitHub CDN | `application/zip`；下载后在本地 JS 沙盒中安全解压解构 |
 | **远程技能中心**| 获取云端技能列表 | 动态下发 Agent 技能 Prompt 模板及推理超参 | `GET /api/ai/skills/list` | 智宇 App 客户端 | 智宇后端 API 服务 | 故障/离线无网时自动优雅降级至本地内置 Agent 技能预设 |
 
@@ -197,7 +198,8 @@ X-Device-Platform: <设备平台，如 "iOS">
 {
   "grantType": "sms_code",
   "phone": "13800008888",
-  "code": "888888"
+  "smsCode": "888888",
+  "privacyConsent": true
 }
 ```
 
@@ -247,7 +249,8 @@ X-Device-Platform: <设备平台，如 "iOS">
 ### 2.6 第三方 OAuth / 免密登录
 - **HTTP 方法**：`POST`
 - **请求路径**：`/api/v1/auth/oauth/{provider}`
-  - 可选 `{provider}`：`apple` / `wechat` / `google` / `github` / `carrier`
+  - 可选 `{provider}`：`apple` / `wechat` / `google` / `github`
+  - **运营商免密登录**使用独立路径：`POST /api/v1/auth/carrier`（不经过 `/oauth/{provider}`）
 
 #### 请求 Body 示例 (Apple 登录)
 ```json
@@ -648,7 +651,7 @@ Content-Type: application/octet-stream
 
 ### 6.1 拉取社区插件元数据列表
 - **HTTP 方法**：`GET`
-- **请求路径**：`/api/v1/plugins/community-plugins.json` (或多语言分支 `/community-plugins_zh-Hans.json`)
+- **请求路径**：`https://raw.githubusercontent.com/wangchong2023/zhiyu-releases/master/community-plugins.json` (或多语言分支 `community-plugins_zh-Hans.json`)
 - **需要鉴权**：否
 
 #### 响应示例 (`200 OK`)

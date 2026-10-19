@@ -73,28 +73,52 @@
 
 ```json
 {
-  "demo.filename.pkmMethodology": {
+  "demo.filename.methodology": {
     "localizations": {
       "zh-Hans": { "value": "个人知识图谱指南.md" },
       "en": { "value": "personal_knowledge_graph_guide.md" }
     }
   },
-  "demo.filename.pkmWorkflow": {
+  "demo.filename.workflow": {
     "localizations": {
       "zh-Hans": { "value": "图谱工作流分析.pdf" },
       "en": { "value": "pkm_workflow_analysis.pdf" }
     }
   },
-  "demo.filename.luckinReport": {
+  "demo.filename.luckin": {
     "localizations": {
       "zh-Hans": { "value": "瑞幸与星巴克商业对比报告.pdf" },
       "en": { "value": "luckin_market_report.pdf" }
     }
   },
-  "demo.filename.storeOperation": {
+  "demo.filename.survey": {
     "localizations": {
       "zh-Hans": { "value": "咖啡门店运营手册.md" },
       "en": { "value": "store_operation_handbook.md" }
+    }
+  },
+  "demo.filename.ocrFolderScan": {
+    "localizations": {
+      "zh-Hans": { "value": "ocr_文件夹扫描.png" },
+      "en": { "value": "ocr_folder_scan.png" }
+    }
+  },
+  "demo.filename.voiceNoteForget": {
+    "localizations": {
+      "zh-Hans": { "value": "语音_遗忘曲线_速记.mp3" },
+      "en": { "value": "voice_note_forgetting_curve.mp3" }
+    }
+  },
+  "demo.filename.ocrStoreManual": {
+    "localizations": {
+      "zh-Hans": { "value": "ocr_门店运营手册.png" },
+      "en": { "value": "ocr_store_manual.png" }
+    }
+  },
+  "demo.filename.voiceNoteProcure": {
+    "localizations": {
+      "zh-Hans": { "value": "语音_设备采购清单.mp3" },
+      "en": { "value": "voice_note_procurement.mp3" }
     }
   }
 }

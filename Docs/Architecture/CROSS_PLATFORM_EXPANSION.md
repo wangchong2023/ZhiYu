@@ -50,7 +50,7 @@ flowchart TB
 
 ### 1.1 背景
 
-ZhiYu 当前是纯 Apple 原生 Swift 生态，已建立成熟的 Apple 内跨平台架构（iOS / macOS Catalyst / watchOS），通过 PlatformRegistrar 协议 + DI 容器 + PlatformModifiers + 运行时 Trait 四件套，将业务层 `#if os()` 从 46 处压缩到 10 处（-78%），并有 CI 门禁防止回退。
+ZhiYu 当前是纯 Apple 原生 Swift 生态，已建立成熟的 Apple 内跨平台架构（iOS / macOS Catalyst / watchOS），通过 PlatformRegistrar 协议 + DI 容器 + PlatformModifiers + 运行时 Trait 四件套，将业务层 `#if os()` 从 46 处清零（-100%），并有 CI 门禁防止回退。
 
 现需扩展到 **macOS 原生 / Windows / Android / 鸿蒙** 四个新平台，使 ZhiYu 的 AI 原生知识管理能力覆盖全平台。
 

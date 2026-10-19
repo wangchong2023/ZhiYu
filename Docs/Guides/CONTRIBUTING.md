@@ -20,7 +20,7 @@ xcodegen generate
 open ZhiYu.xcodeproj
 ```
 
-**系统要求**：Xcode 16+，Swift 6 (开启严格并发检查)，macOS 14+。
+**系统要求**：Xcode 27+，Swift 6.4 (开启严格并发检查)，macOS 27+。
 
 ---
 

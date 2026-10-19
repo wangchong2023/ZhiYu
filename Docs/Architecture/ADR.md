@@ -114,10 +114,10 @@
 ## ADR-012: SecurityManager 密钥存储失败降级
 
 **日期**: 2026-08-04
-**状态**: 已实施
+**状态**: 已废弃
 **背景**: 生产环境下 Keychain 存储失败原 fatalError 导致白屏崩溃。
 **决策**: 改为 assertionFailure（DEBUG 崩溃、Release 记录）+ 返回内存中的临时密钥（重启后丢失，但不崩溃）。
-**影响**: SecurityManager.swift:90。
+**影响**: 原 `SecurityManager.swift:90` 已随 Security 模块重构移除，降级逻辑演进为 `SecureEnclaveCryptoService`（物理降级到 AES-GCM 软件方案）。
 **后果**: 生产环境不再因 Keychain 故障白屏；临时密钥不持久化，重启后重新生成。
 
 ## ADR-013: UFPStorage 下沉采用引擎层 + 业务装配层拆分

@@ -11,21 +11,24 @@
 *   **`Chat.xcstrings`**：对话交互、流式响应提示。
 *   **`Ingest.xcstrings`**：内容摄入、OCR 识别、格式转换文案。
 *   **`Graph.xcstrings`**：2D/3D 图谱、聚类分析、节点详情。
-*   **`Lint.xcstrings`**：健康检查、坏链检测、修复指引。
-*   **`Dashboard.xcstrings`**：统计指标、增长趋势、洞察报告。
+*   **`Knowledge.xcstrings`**：知识库、页面、标签、关系相关文案。
+*   **`Insight.xcstrings`**：统计指标、增长趋势、洞察报告。
+*   **`Transfer.xcstrings`**：导入导出、数据传输、备份恢复。
+*   **`Plugin.xcstrings`**：插件市场、插件安装与管理。
+*   **`Widget.xcstrings`**：桌面/锁屏小组件。
 
 ### 1.2 领域服务层 (L1 Domain Services)
 对应底层原子能力：
-*   **`Auth.xcstrings`**：登录注册、生物识别鉴权。
-*   **`Vault.xcstrings`**：金库切换、存储路径、安全锁定。
-*   **`Sync.xcstrings`**：iCloud 同步、冲突解决、备份恢复。
-*   **`Collaboration.xcstrings`**：对等网络连接、多端共享。
+*   **`AI.xcstrings`**：AI 智脑、合成、问答相关文案。
+*   **`ModelManager.xcstrings`**：模型下载、切换、离线管理。
+*   **`Network.xcstrings`**：网络请求、同步、连接状态错误。
+*   **`System.xcstrings`**：系统设置、订阅计费、鉴权相关词条。
 
 ### 1.3 基础设施层 (L0/Shared)
 对应全站通用组件：
 *   **`Common.xcstrings`**：通用按钮、空状态 (EmptyState)、错误/成功占位语。
-*   **`Actions.xcstrings`**：菜单指令（编辑、重命名、分享等）。
-*   **`Accessibility.xcstrings`**：VoiceOver 无障碍增强描述。
+*   **`Coachmark.xcstrings`**：新手引导、功能提示浮层。
+*   **`Platform.xcstrings`**：跨平台通用（iOS/macOS/watchOS）文案。
 *   **`InfoPlist.xcstrings`**：系统权限申请描述。
 
 ---
@@ -49,7 +52,7 @@
 
 ## 3. 动态扩展与语言支持
 *   **默认源语言**：简体中文 (zh-Hans)。
-*   **目标语言**：目前支持英文 (en)。
+*   **目标语言**：目前支持 9 种：英文 (en)、简体中文 (zh-Hans)、繁体中文 (zh-Hant)、日语 (ja)、韩语 (ko)、西班牙语 (es)、法语 (fr)、阿拉伯语 (ar)、俄语 (ru)。
 *   **Locale 绑定**：`Localized.swift` 会根据当前的语言设置同步切换日期格式、度量单位以及搜索分词算法（如 CJK 增强）。
 
 ---

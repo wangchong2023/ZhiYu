@@ -12,13 +12,13 @@
 |------|------|------|
 | `SQLiteStore` | `Sources/Infrastructure/Storage/Engine/SQLiteStore.swift` | 核心 Actor，实现 `AnyPageStoreCapabilities`，管理知识库 CRUD |
 | `DatabaseManager` | `Sources/Infrastructure/Storage/Persistence/DatabaseManager.swift` | 数据库生命周期管理（初始化、热切换、连接池） |
-| `DatabaseSchemaMigrator` | `Sources/Infrastructure/Storage/Persistence/DatabaseSchemaMigrator.swift` | Schema 版本迁移（v1→v9+） |
+| `DatabaseSchemaMigrator` | `Sources/Infrastructure/Storage/Persistence/DatabaseSchemaMigrator.swift` | Schema 版本迁移（专属库 v1→v13，全局库 v1→v2） |
 | `TransactionGatekeeper` | `Sources/Infrastructure/Storage/Persistence/TransactionGatekeeper.swift` | ACID 事务安全守卫 |
 | `StorageConstants` | `Sources/Infrastructure/Storage/StorageConstants.swift` | 存储常量（WAL 模式、页面大小等） |
 
 - **模式**：WAL (Write-Ahead Logging)，支持并发读写
 - **全文搜索**：FTS5 虚拟表，支持 CJK 分词增强
-- **迁移历史**：v1→v9+，含 PageLink、PluginRecord、RAGModels、FTS 等扩展
+- **迁移历史**：专属库 `v1_initial_schema`→`v13_feedback_status`（v1→v13），全局库 `v1_global_schema`→`v2_global_page_count`
 
 ### 1.2 仓储层 (Repository)
 

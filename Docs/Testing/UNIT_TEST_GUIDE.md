@@ -178,7 +178,7 @@ Tests/
 
 | 层级 | 路径 | 覆盖率要求 | 说明 |
 | :--- | :--- | :--- | :--- |
-| **领域层 (L1.5)** | `Sources/Domain/` | **≥ 85%**（红线熔断） | 由 `Tools/ci/assert-test-coverage.py` CI 阶段强制校验 |
+| **领域层 (L1.5)** | `Sources/Domain/` | **≥ 95%（行）/ 90%（分支）**（红线熔断） | 由 `Tools/CI/assert-test-coverage.py` CI 阶段强制校验 |
 | **基础设施层 (L1)** | `Sources/Infrastructure/` | ≥ 70%（目标） | 含 SQLite、LLM 适配、向量引擎 |
 | **基础层 (L0)** | `Sources/Core/Base/` | ≥ 60%（目标） | DI 容器、协议定义 |
 | **UI 层 (L2)** | `Sources/Features/` | 不强制指标 | 由 UI 自动化测试覆盖 |

@@ -30,7 +30,7 @@
 | **E** (Elevation of Privilege 越权) | T-E-01 | AI Prompt 注入 | 文档中暗含恶意攻击性 Prompt，在 RAG 管道召回后，误导大模型输出或执行敏感越权指令。 | 1. `LLMContextBuilder` 采用安全沙箱包装，隔离“上下文”与“系统指令”；<br>2. `PromptSanitizer` 过滤潜在的系统提示词越狱关键字。 | `RAGPipelineTests` 中的指令注入抵抗用例。 |
 | **I** (Info Disclosure 泄露) | T-I-03 | 本地会话凭证存储 | 攻击者越狱设备，试图读取沙盒本地保存的 Access/Refresh Token 以窃取会话。 | Token 并不落盘于普通数据库或 UserDefaults，而是严格托管于系统级硬件安全容器 Keychain 中，只允许当前签名证书访问。 | 单元测试验证 UserDefaults 内无法解析到会话 Token。 |
 | **S** (Spoofing 欺骗) | T-S-02 | 刷新 Token 传输与重放 | 攻击者拦截已过期的 Access Token 刷新包，并尝试重放旧的 Refresh Token 换取新令牌。 | 1. 强制全网 TLS 1.3/HTTPS 加密传输；<br>2. 后端对 /api/v1/auth/refresh 实施 Token Rotation（一次性轮转，刷新即作废旧 Refresh Token）。 | 验证旧 Refresh Token 两次调用 refresh 接口会抛出 40103 异常。 |
-| **S** (Spoofing 欺骗) | T-S-03 | 长期记住登录会话劫持 | 会话已在后端被注销，但由于客户端持有长效 Token，在无网或未校验状态下仍能进入工作区。 | 客户端冷启动时在 SplashView 阶段发起 GET /api/v1/user/profile 静默校验。一旦发现过期或不可用，立即触发 .userAuthExpired 广播强退。 | 验证在 Token 失效状态下冷启动 App 无法跳过登录面板。 |
+| **S** (Spoofing 欺骗) | T-S-03 | 长期记住登录会话劫持 | 会话已在后端被注销，但由于客户端持有长效 Token，在无网或未校验状态下仍能进入工作区。 | 客户端冷启动时在 SplashView 阶段发起 GET /api/v1/auth/user/profile 静默校验。一旦发现过期或不可用，立即触发 .userAuthExpired 广播强退。 | 验证在 Token 失效状态下冷启动 App 无法跳过登录面板。 |
 
 ---
 
@@ -75,7 +75,7 @@
     ```json
     {
       "name": "Concept AutoLinker",
-      "permissions": ["readPage", "createLink"],
+      "permissions": ["readContent", "network"],
       "networks": false
     }
     ```

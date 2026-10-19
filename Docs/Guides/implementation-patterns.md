@@ -118,11 +118,11 @@ AI 输出 JSON（匹配 `QuizModel` 结构，`answer` 为 0 起始索引，0=A/1
 ```
 输入截断                         API 调用                         输出控制
 ────────                        ────────                         ────────
-Chat 用户输入                    max_tokens = 1000               API 硬限制
-  .prefix(1000)         ──→      (ChatRunner.generate)    ──→    绝对不超
+Chat 用户输入                        max_tokens = defaultMaxOutputTokens   API 硬限制
+  .prefix(maxUserInputLength)      (ChatRunner.generate)           绝对不超
 
-合成功能 content                 Prompt 注入                      Prompt 软引导
-  .truncated(500)       ──→      "控制在1000字以内"        ──→    提升质量
+合成功能 content                     Prompt 注入                      Prompt 软引导
+  .truncated(maxSynthesisInputLength)  "按输出上限引导"             提升质量
 
 所有 generate() 调用             PromptConstants.TokenLimits     客户端兜底
   自动携带 maxTokens 默认值       统一配置入口                     .prefix()

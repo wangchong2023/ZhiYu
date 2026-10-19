@@ -67,7 +67,7 @@ graph TD
     end
 
     subgraph "L0 协议定义层 (Core/Base/Protocols/)"
-        DEV["DeviceInfoProtocol<br/>systemVersion / deviceModel / screenHeight"]
+        DEV["DeviceInfoProtocol<br/>systemVersion / deviceModel / deviceName / deviceId / screenHeight"]
         URL["URLOpenerProtocol<br/>open(URL) async"]
         SHARE["ShareSheetProtocol<br/>presentShareSheet(items:)"]
         PASTE["PasteboardProtocol<br/>copy/paste string"]
@@ -93,7 +93,7 @@ graph TD
         SC["ServiceContainer<br/>register / resolve"]
     end
 
-    FEAT -->|"@Inject var device: any DeviceInfoProtocol"| DEV
+    FEAT -->|"@Dependency(\\.deviceInfo)"| DEV
     SHARED -->|"PlatformModifiers<br/>adaptiveListStyle()"| SC
     DEV -.->|"register"| SC
     URL -.->|"register"| SC
@@ -119,7 +119,7 @@ graph TD
 
 | 协议 | 路径 | 能力 | 平台实现（各 3 个） |
 |------|------|------|------------------|
-| `DeviceInfoProtocol` | `Core/Base/Protocols/` | `systemVersion`、`deviceModel`、`screenHeight` | `iOSDeviceInfoService` / `MacDeviceInfoService` / `WatchDeviceInfoService` |
+| `DeviceInfoProtocol` | `Core/Base/Protocols/` | `systemVersion`、`deviceModel`、`deviceName`、`deviceId`、`screenHeight` | `iOSDeviceInfoService` / `MacDeviceInfoService` / `WatchDeviceInfoService` |
 | `URLOpenerProtocol` | `Core/Base/Protocols/` | `@MainActor func open(_ url: URL) async` | `iOSURLOpenerService` / `MacURLOpenerService` / `WatchURLOpenerService` |
 | `ShareSheetProtocol` | `Core/Base/Protocols/` | `@MainActor func presentShareSheet(items: [Any]) async` | `iOSShareSheetService` / `MacShareSheetService` / `WatchShareSheetService` |
 | `PasteboardProtocol` | `Core/Base/Protocols/` | 剪贴板读写（`AnyObject` 继承支持 mutation） | 各平台实现 |
@@ -338,7 +338,7 @@ TextField("输入", text: $text)
 @MainActor
 struct SettingsView: View {
     // 协议注入：无需 import 任何平台框架
-    @Inject private var deviceInfo: any DeviceInfoProtocol
+    @Dependency(\.deviceInfo) private var deviceInfo: any DeviceInfoProtocol
     @Inject private var urlOpener: any URLOpenerProtocol
     @Inject private var shareSheet: any ShareSheetProtocol
 

@@ -24,7 +24,7 @@
 
 ### 3.1 核心技术栈
 - **UI 框架**: SwiftUI (100% Native)
-- **并发模型**: Swift Actor / Structured Concurrency (Swift 6 Ready)
+- **并发模型**: Swift Actor / Structured Concurrency (Swift 6.4 Ready)
 - **存储引擎**: SQLite 3.35.0+ (含 FTS5 插件)
 - **向量引擎**: Accelerate.framework / Metal (vDSP)
 
@@ -53,12 +53,12 @@
 | :--- | :--- | :--- |
 | `id` | `UUID` | 页面唯一标识，跨端同步主键 |
 | `title` | `String` | 页面标题，FTS5 全文索引键 |
-| `type` | `PageType` | 页面类型：`.concept` / `.fact` / `.question` / `.reference` |
+| `type` | `PageType` | 页面类型：`.concept` / `.entity` / `.source` / `.comparison` / `.raw` |
 | `content` | `String` | Markdown 正文，经插件 preProcess 后入库 |
 | `aliases` | `[String]` | 别名列表，用于搜索联想与 `[[链接]]` 解析 |
 | `tags` | `[String]` | 标签数组，支持插件自动标注 |
-| `status` | `PageStatus` | `.active` / `.stub` / `.archived` / `.deprecated` |
-| `confidence` | `Confidence` | 可信度：`.high` / `.medium` / `.low` / `.unverified` |
+| `status` | `PageStatus` | `.active` / `.stub` / `.needsUpdate` / `.deprecated` |
+| `confidence` | `Confidence` | 可信度：`.high` / `.medium` / `.low` |
 | `sources` | `[String]` | 引用来源 ID 列表 |
 | `relatedPageIDs` | `[UUID]` | 双向链接关联页面 |
 | `contentHash` | `String?` | 内容 SHA256 哈希，用于增量同步与去重 |

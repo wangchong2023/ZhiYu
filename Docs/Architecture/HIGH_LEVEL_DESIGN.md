@@ -178,12 +178,19 @@ sequenceDiagram
 
 ### 4.1 核心存储契约: `AnyPageStoreCapabilities`
 ```swift
-/// @Sources/Domain/Protocols/AnyPageStoreCapabilities.swift
-public protocol AnyPageStoreCapabilities: Sendable {
-    func fetchPages() async throws -> [KnowledgePage]
-    func insertPage(_ page: KnowledgePage) async throws
-    func updatePage(_ page: KnowledgePage) async throws
-    func deletePage(id: UUID) async throws
+/// @Sources/Domain/Protocols/StoreCapabilities.swift
+/// AnyPageStoreCapabilities 是类型别名，而非独立协议
+public typealias AnyPageStoreCapabilities = AnyPageStore & VectorIndexableStore
+
+/// 实际核心契约由 AnyPageStore 协议定义，关键能力包括：
+public protocol AnyPageStore: Sendable {
+    var pages: [KnowledgePage] { get async }
+    func fetchAllPages() async throws -> [KnowledgePage]
+    func reloadFromDisk() async
+    func replaceAllPages(_ newPages: [KnowledgePage]) async
+    func resetDatabase() async throws
+    func performBatchWrite(_ block: @escaping @Sendable (Database) throws -> Void) async throws
+    // 其余写操作（createPage / updatePage / deletePage 等）签名见 StoreCapabilities.swift
 }
 ```
 
@@ -212,19 +219,19 @@ public protocol LLMServiceProtocol: Sendable {
 | 🟡 P1 | `Sources/Core/Base/Protocols/LLMProtocols.swift:29` | L0 协议引用 Domain 类型 |
 | 🟡 P1 | `Sources/Infrastructure/Storage/Sync/iCloudSyncCoordinator.swift:21-22` | L1 同步协调器引用 L3 AppStore |
 
-### 5.2 模块健康度矩阵（2026-08-04 更新）
+### 5.2 模块健康度矩阵（2026-10-20 更新）
 
 | 模块 | 文件数 | 主要改进方向 |
 |------|--------|-------------|
-| `Core/` | 76 | 并发安全 (@unchecked Sendable → actor) |
-| `Infrastructure/` | 99 | PluginRegistry SRP 拆分完成（706→159） |
-| `Domain/` | 53 | GRDB import 已清零 ✅, `#if os()` 宏已清零 ✅ |
-| `Features/` | 208 | `#if os()` 宏 46→0 彻底清零 ✅, 9 文件 SRP 重构完成 ✅ |
-| `Shared/` | 103 | PlatformModifiers 协议化 (20+ modifier), PlatformTraits 运行时 Trait (4 个), SRP 拆分（3 文件） |
-| `Platforms/` | 62 | 新增 12 个协议实现类 + 3 个 Registrar |
-| `App/` | 18 | AuthView/AuthService/SynthesisView 拆分 |
+| `Core/` | 81 | 并发安全 (@unchecked Sendable → actor) |
+| `Infrastructure/` | 141 | PluginRegistry SRP 拆分完成（706→159） |
+| `Domain/` | 78 | GRDB import 已清零 ✅, `#if os()` 宏已清零 ✅ |
+| `Features/` | 262 | `#if os()` 宏 46→0 彻底清零 ✅, 9 文件 SRP 重构完成 ✅ |
+| `Shared/` | 78 | PlatformModifiers 协议化 (20+ modifier), PlatformTraits 运行时 Trait (4 个), SRP 拆分（3 文件） |
+| `Platforms/` | 74 | 新增 12 个协议实现类 + 3 个 Registrar |
+| `App/` | 24 | AuthView/AuthService/SynthesisView 拆分 |
 | `Localization/` | 41 | — |
-| **合计** | **660** | P0/P1 全部清零 ✅, 平台宏彻底清零 ✅ |
+| **合计** | **779** | P0/P1 全部清零 ✅, 平台宏彻底清零 ✅ |
 
 ### 5.3 已完成的代码质量修复
 
