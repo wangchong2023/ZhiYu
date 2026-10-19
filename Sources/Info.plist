@@ -5,7 +5,7 @@
 	<key>BUILD_FLAVOR</key>
 	<string>dev</string>
 	<key>BUILD_TIMESTAMP</key>
-	<string>2026-10-19T04:57:09Z</string>
+	<string>2026-08-01T03:02:45Z</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
@@ -47,11 +47,11 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>1510</string>
+	<string>921</string>
 	<key>GIDClientID</key>
 	<string>867200253941-58jgrffss6auja38efeur36d6e96s4lv.apps.googleusercontent.com</string>
 	<key>GIT_SHORT_HASH</key>
-	<string>9883f4ee</string>
+	<string>6ad301d4</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSApplicationQueriesSchemes</key>
