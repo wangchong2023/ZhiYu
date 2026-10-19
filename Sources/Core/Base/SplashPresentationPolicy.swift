@@ -31,28 +31,21 @@ public struct SplashPresentationPolicy: Sendable {
     }
 
     /// 检查持久化存储中是否已有看过闪屏的记录
-    /// - Parameter keyStore: 可选的 KeyStoreProtocol 实例，若为 nil 则降级使用 UserDefaults
+    /// - Parameter keyStore: KeyStoreProtocol 实例，nil 时视为未看过（不降级 UserDefaults，避免绕过 DI 存储层）
     /// - Returns: true 表示非首次冷启动（曾经展示过）
-    public static func hasSeenSplashBefore(keyStore: (any KeyStoreProtocol)? = nil) -> Bool {
-        if let keyStore = keyStore {
-            return keyStore.bool(forKey: AppConstants.Keys.Storage.hasSeenSplashBefore)
-        }
-        return UserDefaults.standard.bool(forKey: AppConstants.Keys.Storage.hasSeenSplashBefore)
+    public static func hasSeenSplashBefore(keyStore: (any KeyStoreProtocol)?) -> Bool {
+        keyStore?.bool(forKey: AppConstants.Keys.Storage.hasSeenSplashBefore) ?? false
     }
 
     /// 标记已看过闪屏，并固化持久化记录
-    /// - Parameter keyStore: 可选的 KeyStoreProtocol 实例
-    public static func markSplashSeen(keyStore: (any KeyStoreProtocol)? = nil) {
-        let key = AppConstants.Keys.Storage.hasSeenSplashBefore
-        keyStore?.set(true, forKey: key)
-        UserDefaults.standard.set(true, forKey: key)
+    /// - Parameter keyStore: KeyStoreProtocol 实例，nil 时忽略
+    public static func markSplashSeen(keyStore: (any KeyStoreProtocol)?) {
+        keyStore?.set(true, forKey: AppConstants.Keys.Storage.hasSeenSplashBefore)
     }
 
     /// 重置看过闪屏的标记（主要用于开发者设置或测试隔离）
-    /// - Parameter keyStore: 可选的 KeyStoreProtocol 实例
-    public static func resetSplashState(keyStore: (any KeyStoreProtocol)? = nil) {
-        let key = AppConstants.Keys.Storage.hasSeenSplashBefore
-        keyStore?.removeObject(forKey: key)
-        UserDefaults.standard.removeObject(forKey: key)
+    /// - Parameter keyStore: KeyStoreProtocol 实例，nil 时忽略
+    public static func resetSplashState(keyStore: (any KeyStoreProtocol)?) {
+        keyStore?.removeObject(forKey: AppConstants.Keys.Storage.hasSeenSplashBefore)
     }
 }

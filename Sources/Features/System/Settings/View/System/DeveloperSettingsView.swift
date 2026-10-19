@@ -15,6 +15,7 @@ import UFPDesignSystem
 
 struct DeveloperSettingsView: View {
     @Dependency(\.toastService) private var toastManager
+    @Dependency(\.keyStore) private var keyStore: (any KeyStoreProtocol)?
     @Environment(AppStore.self) var store
     @Environment(KnowledgeStore.self) var knowledgeStore
     @Environment(SettingsStore.self) var settingsStore
@@ -120,7 +121,7 @@ struct DeveloperSettingsView: View {
             Section {
                 Button {
                     onboardingService.hasCompletedOnboarding = false
-                    SplashPresentationPolicy.resetSplashState()
+                    SplashPresentationPolicy.resetSplashState(keyStore: keyStore)
                     toastManager.show(type: .success, message: L10n.Settings.developer.resetOnboardingDone)
                 } label: {
                     Label(L10n.Settings.developer.showWelcomeBanner, systemImage: DesignTokens.Icons.sparkles)
@@ -131,7 +132,7 @@ struct DeveloperSettingsView: View {
                     Task {
                         try? await Task.sleep(nanoseconds: 400_000_000)
                         onboardingService.reset()
-                        SplashPresentationPolicy.resetSplashState()
+                        SplashPresentationPolicy.resetSplashState(keyStore: keyStore)
                     }
                 } label: {
                     Label(L10n.Settings.developer.showGuidePage, systemImage: DesignTokens.Icons.questionCircle)
