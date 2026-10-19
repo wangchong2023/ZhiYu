@@ -217,6 +217,7 @@ final class AppEnvironment {
     /// 注意：AppStore/SearchStore/AIWorkflowStore/AIInsightStore/TagStore/KnowledgeStore
     ///       已在 AppStore.init 内自注册，此处仅注册 IngestStore/SynthesisStore
     private func registerStoresToContainer() {
+        // inject_exempt: AppEnvironment 是 DI 编排层，负责 Store 注册
         let container = ServiceContainer.shared
         container.register(self.ingestStore, for: IngestStore.self)
         container.register(self.synthesisStore, for: SynthesisStore.self)

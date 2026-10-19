@@ -19,6 +19,7 @@ class KeychainService: @unchecked Sendable {
     private static let _defaultShared = KeychainService()
     /// 全局单例入口：优先从 DI 容器解析已注册实例，否则使用默认单例
     static var shared: KeychainService {
+        // inject_exempt: 静态单例优先从 DI 解析已注册实例，否则 fallback 默认单例（冷启动降级）
         ServiceContainer.shared.resolveOptional(KeychainService.self) ?? _defaultShared
     }
     /// Keychain 服务标识符
@@ -26,7 +27,7 @@ class KeychainService: @unchecked Sendable {
 
     /// 键值存储抽象，用于 Keychain entitlements 缺失时的 DEBUG 降级回退。
     /// 使用 resolveOptional 优雅降级：DI 容器未就绪时返回 nil，避免启动/测试崩溃。
-    @Inject private var keyStore: (any KeyStoreProtocol)?
+    @Inject private var keyStore: (any KeyStoreProtocol)? // inject_exempt: @Inject 存量（Keychain 降级回退）
 
     init() {}
 
