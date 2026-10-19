@@ -227,6 +227,7 @@ targets:
       - path: Sources/Core/Base/Constants
       - path: Sources/Core/Base/Stubs
       - path: Sources/Core/Base/Protocols
+      - path: Sources/Core/Base/Services/UserDefaultsKeyStore.swift
       # L0 系统服务：Logger、Haptic、Routing、AudioSplitter、SecurityReinforcement、Notifications
       - path: Sources/Core/System/Logger/Logger.swift
       - path: Sources/Core/System/Haptic/WatchHapticService.swift

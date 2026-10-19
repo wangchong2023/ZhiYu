@@ -24,6 +24,7 @@ struct WatchPlatformRegistrar {
         // 2. 存储与文档
         container.register(WatchPDFService(), for: (any PDFServiceProtocol).self)
         container.register(WatchSecurityScopedStorage(), for: SecurityScopedStorageProtocol.self)
+        container.register(UserDefaultsKeyStore(), for: (any KeyStoreProtocol).self)
 
         // 3. AI 与生物识别
         container.register(WatchModelCompiler(), for: MLModelCompilerProtocol.self)

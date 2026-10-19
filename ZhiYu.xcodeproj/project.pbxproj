@@ -989,6 +989,7 @@
 		58B60BCE1B71B30D97A384F1 /* L10n+Common.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65983F53F7CB3063E77E4516 /* L10n+Common.swift */; };
 		58F845B07A2702A07F946771 /* ModelDownloadSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88B66009A9418045C05278BB /* ModelDownloadSection.swift */; };
 		59072A4084A14F9EACF4555B /* LWWSyncConflictResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39D3502C67D665524C7A3E6A /* LWWSyncConflictResolver.swift */; };
+		59119E5FDB536B25BB5957D8 /* UserDefaultsKeyStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 785605E33D78C58784B2EB5F /* UserDefaultsKeyStore.swift */; };
 		5916ADB9DF857D7324DD75E4 /* DatabaseManagerLifecycleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F4196DAF7DE42A61957F8A9 /* DatabaseManagerLifecycleTests.swift */; };
 		591ED03AA07014D515298B28 /* CreatePageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3D5652E41AB77CC3C72FB60 /* CreatePageView.swift */; };
 		5972947C17C3A92071F9C7EB /* RemoteConfigCapabilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45E03DB6100E4D859848969D /* RemoteConfigCapabilities.swift */; };
@@ -12594,6 +12595,7 @@
 				B6DA49CAD17A29A38F751483 /* UnsupportedFileArchiver.swift in Sources */,
 				7656A5EAFC1E92A51FDDC0A3 /* UnsupportedReminderService.swift in Sources */,
 				D00E1487BB3A13BE9FCD4546 /* UnsupportedSearchIndexer.swift in Sources */,
+				59119E5FDB536B25BB5957D8 /* UserDefaultsKeyStore.swift in Sources */,
 				6EBED2081BBFCC0D7B915ABC /* WatchAccessibilityService.swift in Sources */,
 				039B33599B7353590646EE7E /* WatchAppEnvironment.swift in Sources */,
 				AFCDB944EBEE5B23A0ED6BB9 /* WatchBriefingView.swift in Sources */,
