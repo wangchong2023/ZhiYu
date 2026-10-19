@@ -26,7 +26,7 @@ X-Device-Platform: <设备平台，如 "iOS">
 ```
 - `X-Device-Id`：推荐使用 `identifierForVendor`（IDFV）或首次启动生成并持久化到 Keychain 的 UUID，保证同一设备跨会话稳定。
 - 同一 `X-Device-Id` 重复登录时后端 upsert 设备记录并覆盖在线会话（旧 token 自然失效），客户端无需特殊处理。
-- 被设备级踢出或强制下线后，接口返回 `401`（含 `TOKEN_REUSE_DETECTED` 等语义），客户端应清除本地 Token 并跳转登录页。
+- 被设备级踢出或强制下线后，接口返回 `401`（token 已失效或被复用等语义），客户端应清除本地 Token 并跳转登录页。
 
 ### 1.4 内容类型 (Content-Type)
 - 普通请求/响应格式：`application/json; charset=utf-8`
