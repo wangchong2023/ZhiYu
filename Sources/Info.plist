@@ -27,6 +27,8 @@
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
 	<string>1.0.0</string>
+	<key>GIDClientID</key>
+	<string>867200253941-58jgrffss6auja38efeur36d6e96s4lv.apps.googleusercontent.com</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>

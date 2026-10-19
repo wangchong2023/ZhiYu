@@ -205,12 +205,12 @@ final class NetworkSupplementTests: XCTestCase {
     /// sha256BufferSize 应为 1MB
     func testModelDownloadManager_sha256BufferSize_isOneMB() {
         let oneMB = Int(SystemConstants.bytesPerKB) * Int(SystemConstants.bytesPerKB)
-        XCTAssertEqual(ModelDownloadManager.sha256BufferSize, oneMB)
+        XCTAssertEqual(ModelDownloadManager.sha256BufferSizeForTesting, oneMB)
     }
 
     /// sandboxAllocationFailedPrefix 应非空
     func testModelDownloadManager_sandboxAllocationFailedPrefix_nonEmpty() {
-        XCTAssertFalse(ModelDownloadManager.sandboxAllocationFailedPrefix.isEmpty)
+        XCTAssertFalse(ModelDownloadManager.sandboxAllocationFailedPrefixForTesting.isEmpty)
     }
 
     // MARK: - RemoteConfigService 边界

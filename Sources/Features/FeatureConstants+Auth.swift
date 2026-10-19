@@ -118,6 +118,18 @@ extension FeatureConstants {
         static let weChatSDKNotConfigured = "WeChat SDK Not Configured"
     }
 
+    // MARK: - Mock 凭证 (Mock Credential)
+    /// Mock 认证凭证字面量
+    enum MockCredential {
+        static let mockJwtToken = "mock_jwt_token"
+    }
+
+    // MARK: - Mock 凭证 JSON Key (Mock Credential JSON Key)
+    /// OAuth mock userInfo 字典 key
+    enum MockCredentialKey {
+        static let nickname = "nickname"
+    }
+
     // MARK: - 认证翻转动效 (Auth Flip Animation)
     /// 认证区域 3D 翻转动效角度
     enum AuthFlip {

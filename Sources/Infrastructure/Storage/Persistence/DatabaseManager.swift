@@ -186,10 +186,10 @@ final class DatabaseManager: TestStateResettable, @unchecked Sendable {
     
     // MARK: - 初始化方法组
     
-    /// 为数据库中枢注入自定义连接池（如内存数据库或外部 DatabaseWriter）。
-    /// - Parameter writer: 自定义 DatabaseWriter。
+    /// 为单元测试管道强制重连与注入内存/临时物理数据库连接池。
+    /// - Parameter writer: 由单元测试套件临时开辟的 DatabaseWriter。
     /// - Throws: SQLite Schema 架构自动化迁移异常。
-    func setup(with writer: any DatabaseWriter) throws {
+    func setupForTesting(with writer: any DatabaseWriter) throws {
         configureEngineIfNeeded()
         try engine.setupForTesting(with: writer)
     }
@@ -237,8 +237,8 @@ final class DatabaseManager: TestStateResettable, @unchecked Sendable {
     
     // MARK: - 测试辅助方法
 
-    /// 设置排空状态（配合事务网关使用）。
-    func setDraining(_ value: Bool) async {
+    /// 设置排空状态（仅测试使用）。
+    func setDrainingForTesting(_ value: Bool) async {
         await transactionGatekeeper.setDrainingForTesting(value)
     }
 

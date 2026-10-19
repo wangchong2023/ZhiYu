@@ -34,6 +34,6 @@ public struct EphemeralDatabaseBootstrapStrategy: DatabaseBootstrapStrategy {
     public init() {}
     public func setup(at defaultURL: URL) throws {
         let memoryQueue = try DatabaseQueue()
-        try DatabaseManager.shared.setup(with: memoryQueue)
+        try DatabaseManager.shared.setupForTesting(with: memoryQueue)
     }
 }

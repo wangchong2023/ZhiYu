@@ -91,8 +91,7 @@
 		0777BB97B9F4EB93D6CC4DFF /* iOSURLOpenerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B0EC918C039E857B37E7C4D /* iOSURLOpenerService.swift */; };
 		077CB3586F4CABC3AB9C43AE /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = DDB12E0501C0083FE73E085B /* SnapshotTesting */; };
 		07858CA46ADCAE6D93512106 /* CoreConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 526A6BD8E59AD3939C841264 /* CoreConstants.swift */; };
-		079CC553F3806F02866516C4 /* DatabaseManager+Testing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A25A45DBEE89BE292BE12C8 /* DatabaseManager+Testing.swift */; };
-		079D3F008B0EF5482410257E /* FileArchiverProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00EA2420EB77613B5AE3641F /* FileArchiverProtocol.swift */; };
+				079D3F008B0EF5482410257E /* FileArchiverProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00EA2420EB77613B5AE3641F /* FileArchiverProtocol.swift */; };
 		07A31E796326F6C7710F3431 /* UserProfileAndMarkdownRendererTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AF68A6CC1CBE5DF3F209C33 /* UserProfileAndMarkdownRendererTests.swift */; };
 		07C754855A73285795BE4AB1 /* ModuleRegistrar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27225A732EA9DEE5493E0E41 /* ModuleRegistrar.swift */; };
 		0804C0ABC060D68145A33EAB /* CollaborationModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4E7C238B00D09E936040D6F /* CollaborationModels.swift */; };
@@ -3945,8 +3944,7 @@
 		7A014094DF33792FFA9774AC /* FileTextPreviewAndIngestDeepTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileTextPreviewAndIngestDeepTests.swift; sourceTree = "<group>"; };
 		7A05CB5B06DD8B07786FA454 /* RAGGovernanceRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RAGGovernanceRepositoryTests.swift; sourceTree = "<group>"; };
 		7A20AF3F1CB335CEE3FC2B74 /* DatabaseSchemaMigratorEdgeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseSchemaMigratorEdgeTests.swift; sourceTree = "<group>"; };
-		7A25A45DBEE89BE292BE12C8 /* DatabaseManager+Testing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DatabaseManager+Testing.swift"; sourceTree = "<group>"; };
-		7A32D98039F27CDE8961BEC7 /* L10nModelManagerTableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = L10nModelManagerTableTests.swift; sourceTree = "<group>"; };
+				7A32D98039F27CDE8961BEC7 /* L10nModelManagerTableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = L10nModelManagerTableTests.swift; sourceTree = "<group>"; };
 		7A5F3C4D166A6C7D43BCBC3F /* testAppAILoadingSkeletonGeneral.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testAppAILoadingSkeletonGeneral.1.png; sourceTree = "<group>"; };
 		7A7AE15D65980830C2669A9A /* PluginWatchdogTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginWatchdogTests.swift; sourceTree = "<group>"; };
 		7A8FC3C71598370667300CAC /* SidebarNavigationAndAdaptiveDeepTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarNavigationAndAdaptiveDeepTests.swift; sourceTree = "<group>"; };
@@ -6589,8 +6587,7 @@
 		60E33ABBEABA0327BD6C0D30 /* Mocks */ = {
 			isa = PBXGroup;
 			children = (
-				7A25A45DBEE89BE292BE12C8 /* DatabaseManager+Testing.swift */,
-				0ADBBED4B62C77F41D72D288 /* DependencyContainer+Mock.swift */,
+								0ADBBED4B62C77F41D72D288 /* DependencyContainer+Mock.swift */,
 				7F6C8B80758B785842B52370 /* GlobalModelManager+Testing.swift */,
 				559D4CA8BE76617CF4371959 /* LLMMockResponder.swift */,
 				AFC315F7A9758CFEDBA72602 /* Localized+Testing.swift */,
@@ -10267,8 +10264,7 @@
 				163EC68D72F09BC18367D7CA /* DashboardCoordinatorTests.swift in Sources */,
 				E712C8F5F9C9AEA16B057BF5 /* DashboardDeepTests.swift in Sources */,
 				9ABF71CF72A9F2BF23E0AF5B /* DashboardViewSnapshots.swift in Sources */,
-				079CC553F3806F02866516C4 /* DatabaseManager+Testing.swift in Sources */,
-				5916ADB9DF857D7324DD75E4 /* DatabaseManagerLifecycleTests.swift in Sources */,
+								5916ADB9DF857D7324DD75E4 /* DatabaseManagerLifecycleTests.swift in Sources */,
 				0BC3BBE0270CC7998DF9C57D /* DatabaseSchemaMigratorEdgeTests.swift in Sources */,
 				F4C535732E103E770F8434EC /* DatabaseSchemaMigratorTests.swift in Sources */,
 				C3560F3476AEF77522698CD7 /* DatabaseWriterProviderTests.swift in Sources */,
