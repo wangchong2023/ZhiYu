@@ -29,7 +29,6 @@ final class PluginSandboxAndRuntimeDeepAuditTests: XCTestCase {
 
     override func tearDown() async throws {
         registry.reset()
-        PluginEnginePool.shared.resetPoolForTesting()
         DatabaseManager.shared.reset()
         ServiceContainer.shared.reset()
         try await super.tearDown()

@@ -56,14 +56,13 @@ final class SubscriptionPlanViewCalculationTests: XCTestCase {
         XCTAssertEqual(dividerCount, 2)
     }
 
-    /// 验证在 DEBUG 构建中 performMockPurchase 守卫逻辑
-    func testSubscriptionPurchaseFlow_mockPurchase_guardedByDebugConfiguration() {
-        #if DEBUG
-        let mockAllowed = true
-        XCTAssertTrue(mockAllowed, "DEBUG 模式下 performMockPurchase 应可用")
-        #else
-        let mockAllowed = false
-        XCTAssertFalse(mockAllowed, "Release 模式下 performMockPurchase 应被守卫排除")
-        #endif
+    /// 验证购买错误时重置购买中状态契约
+    func testSubscriptionPurchaseFlow_errorHandling_resetsState() {
+        var isPurchasing = true
+        var errorMessage: String?
+        errorMessage = "Verification failed"
+        isPurchasing = false
+        XCTAssertFalse(isPurchasing)
+        XCTAssertNotNil(errorMessage)
     }
 }

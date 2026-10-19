@@ -55,21 +55,15 @@ final class AuthRefreshDeepTests: XCTestCase {
         // 确保干净状态
         AuthSession.shared.logout()
         try? KeychainService.shared.delete(key: jwtTokenKey)
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
     }
 
     override func tearDown() async throws {
         AuthSession.shared.logout()
-        await awaitAllLogoutTasks()
+        await AuthService.shared.performLogout()
         await NetworkClient.shared.awaitRefreshTask()
         await NetworkClient.shared.setTestSession(nil)
         TestMockURLProtocol.requestHandler = nil
         KeychainService.testOverride = nil
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         try await super.tearDown()
     }
 
@@ -77,10 +71,7 @@ final class AuthRefreshDeepTests: XCTestCase {
 
     /// 等待所有 logout 后台任务完成
     private func awaitAllLogoutTasks() async {
-        for task in AuthService.shared.testLogoutTasks {
-            await task.value
-        }
-        AuthService.shared.testLogoutTasks.removeAll()
+        await AuthService.shared.performLogout()
     }
 
     /// 构造测试用户
@@ -111,9 +102,6 @@ final class AuthRefreshDeepTests: XCTestCase {
 
     /// 验证 refreshUserProfile 后端返回空 avatar 时保留本地 avatar
     func testRefreshUserProfileEmptyAvatarKeepsLocalAvatar() async throws {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         try KeychainService.shared.store(key: jwtTokenKey, value: testJWTToken)
         var user = makeTestUser()
         user.avatarURL = URL(string: testAvatarURL)
@@ -152,9 +140,6 @@ final class AuthRefreshDeepTests: XCTestCase {
 
     /// 验证 refreshUserProfile 后端返回非空 avatar 时更新本地 avatar
     func testRefreshUserProfileNonEmptyAvatarUpdatesLocalAvatar() async throws {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         try KeychainService.shared.store(key: jwtTokenKey, value: testJWTToken)
         AuthSession.shared.update(user: makeTestUser())
 
@@ -191,9 +176,6 @@ final class AuthRefreshDeepTests: XCTestCase {
 
     /// 验证 refreshUserProfile 后端返回 Pro 套餐时更新配额
     func testRefreshUserProfileProPlanUpdatesQuota() async throws {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         try KeychainService.shared.store(key: jwtTokenKey, value: testJWTToken)
         AuthSession.shared.update(user: makeTestUser(planKey: PlanKey.free))
 
@@ -249,9 +231,6 @@ final class AuthRefreshDeepTests: XCTestCase {
 
     /// 验证 refreshUserProfile 无当前用户时不崩溃
     func testRefreshUserProfileNoCurrentUserNoCrash() async throws {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         try KeychainService.shared.store(key: jwtTokenKey, value: testJWTToken)
         AuthSession.shared.logout()
 

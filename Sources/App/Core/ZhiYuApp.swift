@@ -34,8 +34,8 @@ struct ZhiYuApp: App {
     @State private var dependencies = DependencyContainer()
     
     /// 状态持有：闪屏页可见性
-    /// UI 测试时直接设为 true 跳过闪屏，避免遮挡 AuthView 导致 agreementCheckbox 等元素超时
-    @State private var hasSeenSplash = CommandLine.arguments.contains("--uitesting")
+    /// UI 测试、已登录或非首次冷启动（hasSeenSplashBefore 为 true）时直接跳过闪屏
+    @State private var hasSeenSplash: Bool
     
     /// 引导状态持有
     @StateObject private var onboardingService = OnboardingService()
@@ -56,6 +56,23 @@ struct ZhiYuApp: App {
                 route.apply(to: router)
             }
         }
+
+        // UI 测试环境配置：统一收敛在应用启动入口，解耦业务模型
+        if CommandLine.arguments.contains("--uitesting") &&
+           !CommandLine.arguments.contains("--reset-auth-state") {
+            AuthSession.shared.isGuest = true
+        }
+
+        // 启动闪屏展示策略：首次打开且未登录时展示，非首次冷启动（已在持久化中记录）或已登录时直接跳过
+        let isUITesting = CommandLine.arguments.contains("--uitesting")
+        let hasSeenSplashBefore = SplashPresentationPolicy.hasSeenSplashBefore(keyStore: keyStore)
+        let isUserLoggedIn = AuthSession.shared.isLoggedIn
+        let shouldSkip = SplashPresentationPolicy.shouldSkipSplash(
+            isUITesting: isUITesting,
+            hasSeenSplashBefore: hasSeenSplashBefore,
+            isLoggedIn: isUserLoggedIn
+        )
+        self._hasSeenSplash = State(initialValue: shouldSkip)
     }
     
     var body: some Scene {
@@ -90,7 +107,9 @@ struct ZhiYuApp: App {
                 if !hasSeenSplash {
                     SplashView(onDismiss: {
                         guard !hasSeenSplash else { return }
-                        Logger.shared.info(" [Splash] ...")
+                        Logger.shared.info("[Splash] Dismissing splash and persisting hasSeenSplashBefore.")
+                        let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) // inject_exempt: App 入口 DI 初始化
+                        SplashPresentationPolicy.markSplashSeen(keyStore: keyStore)
                         withAnimation(.easeInOut(duration: DesignTokens.Animation.slowDuration)) {
                             hasSeenSplash = true
                             NotificationCenter.default.post(name: .splashDismissed, object: nil)
@@ -98,6 +117,18 @@ struct ZhiYuApp: App {
                     })
                     .transition(.opacity)
                     .zIndex(1)
+                }
+            }
+            .onChange(of: AuthSession.shared.isLoggedIn) { _, isLoggedIn in
+                // 用户首次登录完成（或已成功恢复会话）时，若仍在闪屏则立即跳过并固化持久化
+                if isLoggedIn && !hasSeenSplash {
+                    Logger.shared.info("[Splash] User logged in during splash, dismissing immediately.")
+                    let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) // inject_exempt: App 入口 DI 初始化
+                    SplashPresentationPolicy.markSplashSeen(keyStore: keyStore)
+                    withAnimation(.easeInOut(duration: DesignTokens.Animation.slowDuration)) {
+                        hasSeenSplash = true
+                        NotificationCenter.default.post(name: .splashDismissed, object: nil)
+                    }
                 }
             }
             .preferredColorScheme(themeManager.colorSchemeMode.preferredColorScheme)
@@ -148,6 +179,9 @@ struct AppLauncher {
             // 正常应用运行环境下：启动完整的业务 App，拉起核心 AppEnvironment 环境
             
             #if DEBUG
+            if CommandLine.arguments.contains("-UITest_MockData") {
+                ServiceContainer.shared.register(EphemeralDatabaseBootstrapStrategy() as any DatabaseBootstrapStrategy, for: (any DatabaseBootstrapStrategy).self)
+            }
             if CommandLine.arguments.contains("--uitesting") || CommandLine.arguments.contains("-UITesting") {
                 #if canImport(UIKit)
                 UIView.setAnimationsEnabled(false)

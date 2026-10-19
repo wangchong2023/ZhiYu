@@ -262,6 +262,8 @@ public struct AppConstants {
             public static let lastUsedModel = "app_last_used_model"
             public static let themePreference = "app_theme_preference"
             public static let hasSeenSplash = "app_has_seen_splash"
+            /// 是否曾看过启动闪屏（用于非首次冷启动直接跳过）
+            public static let hasSeenSplashBefore = hasSeenSplash
             public static let colorSchemeMode = "app_color_scheme_mode"
             public static let accentColor = "app_accent_color"
             public static let userName = "app_username"
@@ -442,9 +444,9 @@ extension AppConstants {
         /// 引用 SystemConstants.Version.defaultSemVer 作为默认值
         public static let semVer: String = SystemConstants.Version.defaultSemVer
         /// Git 短提交哈希（构建时自动注入）
-        public static let gitShortHash = "6ad301d4"
+        public static let gitShortHash = "9883f4ee"
         /// 构建时间戳 ISO 8601（构建时自动注入）
-        public static let buildTimestamp = "2026-08-01T03:02:45Z"
+        public static let buildTimestamp = "2026-10-19T04:57:09Z"
     }
 
     /// 通用格式化常量

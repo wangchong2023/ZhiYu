@@ -16,13 +16,12 @@ import os
 
 /// 安全管理器：负责数据签名、加密与完整性校验。
 class SecurityManager: @unchecked Sendable {
-    /// 真实单例（内部持有）
-    private static let _shared = SecurityManager()
-    /// 测试覆盖：设置非 nil 值后 shared 返回 Mock 实例；在 tearDown 中置 nil 恢复
-    /// 仅在测试套件中写入，生产代码只读；测试串行执行，无并发冲突。
-    nonisolated(unsafe) static var testOverride: SecurityManager?
-    /// 全局单例入口：测试模式下可被替换
-    static var shared: SecurityManager { testOverride ?? _shared }
+    /// 默认单例
+    private static let _defaultShared = SecurityManager()
+    /// 全局单例入口：优先从 DI 容器解析已注册实例，否则使用默认单例
+    static var shared: SecurityManager {
+        ServiceContainer.shared.resolveOptional(SecurityManager.self) ?? _defaultShared
+    }
 
     // MARK: - 依赖注入
     

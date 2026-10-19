@@ -73,11 +73,6 @@ final class ChatRunner: LLMChatServiceProtocol {
     
     /// 通用单次一问一答文本推理生成接口
     func generate(prompt: String, systemPrompt: String, maxTokens: Int = PromptConstants.TokenLimits.defaultMaxOutputTokens) async throws -> String {
-        // UI 自动化测试模式下的自愈：在测试环境下拦截并返回本地 Mock 生成数据以保证 100% 绿通，规避真实 API 可达性限制
-        if LLMMockResponder.isUITesting {
-            return try await LLMMockResponder.mockNonStreamReply()
-        }
-
         guard configManager.isEnabled, !configManager.apiKey.isEmpty else { throw LLMError.notConfigured }
         let client = LLMClient(baseURL: configManager.baseURL, apiKey: configManager.apiKey)
         let sanitizedPrompt = PromptSanitizer.shared.sanitize(prompt)
@@ -108,11 +103,6 @@ final class ChatRunner: LLMChatServiceProtocol {
     
     /// 执行核心 RAG (检索增强生成) 问答
     func chat(query: String, history: [ChatMessageDTO], pages: [any KnowledgePageRepresentable]) async throws -> ChatMessageDTO {
-        // UI 自动化测试模式下的自愈：拦截真实 RAG 调用并返回本地 Mock 数据以保证 100% 绿通，规避真实 API 密钥缺失与网关问题
-        if LLMMockResponder.isUITesting {
-            return try await LLMMockResponder.mockRAGReply(pages: pages)
-        }
-
         guard configManager.isEnabled, let chatService = self.chatService else { throw LLMError.notConfigured }
         let sanitizedQuery = PromptSanitizer.shared.sanitize(query)
 
@@ -153,11 +143,6 @@ final class ChatRunner: LLMChatServiceProtocol {
     ///   - pages: 候选知识库页面
     /// - Returns: 异步打字机字符串流
     func chatStream(query: String, history: [ChatMessageDTO], pages: [any KnowledgePageRepresentable]) -> AsyncThrowingStream<String, Error> {
-        // UI 自动化测试模式下的自愈：模拟流式打字机延迟吐字，验证骨架屏 (Skeleton) 与流中止 (Stop-flow) 机制，规避 API 预检不通导致的测试失败
-        if LLMMockResponder.isUITesting {
-            return LLMMockResponder.mockStream()
-        }
-        
         return AsyncThrowingStream { continuation in
             Task { @MainActor in
                 guard configManager.isEnabled, let chatService = self.chatService else {

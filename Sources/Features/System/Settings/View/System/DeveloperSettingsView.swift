@@ -120,6 +120,7 @@ struct DeveloperSettingsView: View {
             Section {
                 Button {
                     onboardingService.hasCompletedOnboarding = false
+                    SplashPresentationPolicy.resetSplashState()
                     toastManager.show(type: .success, message: L10n.Settings.developer.resetOnboardingDone)
                 } label: {
                     Label(L10n.Settings.developer.showWelcomeBanner, systemImage: DesignTokens.Icons.sparkles)
@@ -130,6 +131,7 @@ struct DeveloperSettingsView: View {
                     Task {
                         try? await Task.sleep(nanoseconds: 400_000_000)
                         onboardingService.reset()
+                        SplashPresentationPolicy.resetSplashState()
                     }
                 } label: {
                     Label(L10n.Settings.developer.showGuidePage, systemImage: DesignTokens.Icons.questionCircle)

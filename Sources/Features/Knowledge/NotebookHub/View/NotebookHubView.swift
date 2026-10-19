@@ -177,19 +177,6 @@ public struct NotebookHubView: View {
                         NotebookCard(notebook: notebook) {
                             viewModel.selectNotebook(notebook)
                         }
-                        // UI 测试专用进入按钮：NotebookCard 的 accessibilityElement(children: .contain)
-                        // 在某些 iOS 版本下 tap() 不触发 action。添加透明覆盖按钮确保 XCUITest 可靠点击。
-                        .overlay {
-                            if TestModeDetector.isUITesting {
-                                Button {
-                                    viewModel.selectNotebook(notebook)
-                                } label: {
-                                    Color.clear
-                                        .contentShape(Rectangle())
-                                }
-                                .accessibilityIdentifier("UITest_EnterVault_\(notebook.id.uuidString.prefix(8))")
-                            }
-                        }
                     }
                 }
             } else {

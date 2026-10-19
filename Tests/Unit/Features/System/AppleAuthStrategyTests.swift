@@ -30,13 +30,29 @@ final class AppleAuthStrategyTests: XCTestCase {
         XCTAssertEqual(strategy.identityType, "apple")
     }
 
-    func testAcquireCredentialsInitiatesAuthorization() async {
+    /// 验证测试替身 MockAppleAuthStrategy 的凭证获取与错误模拟契约
+    func testMockAppleAuthStrategyContract() async throws {
+        let mock = MockAppleAuthStrategy(
+            idToken: "custom_apple_token_123",
+            identifier: "apple_user_test",
+            email: "apple@example.com",
+            nickname: "Tester"
+        )
+        XCTAssertEqual(mock.identityType, "apple")
+
+        let cred = try await mock.acquireCredentials()
+        XCTAssertEqual(cred.identityType, "apple")
+        XCTAssertEqual(cred.identifier, "apple_user_test")
+        XCTAssertEqual(cred.extraInfo?["idToken"], "custom_apple_token_123")
+        XCTAssertEqual(cred.extraInfo?["email"], "apple@example.com")
+        XCTAssertEqual(cred.extraInfo?["nickname"], "Tester")
+
+        mock.shouldThrowError = NSError(domain: "AppleAuth", code: -1, userInfo: nil)
         do {
-            let credential = try await strategy.acquireCredentials()
-            XCTAssertEqual(credential.identityType, "apple")
-            XCTAssertEqual(credential.identifier, "mock_apple_user_id")
-        } catch {
-            XCTFail("单元测试环境下应直接返回 Mock 凭证，不应抛出错误")
+            _ = try await mock.acquireCredentials()
+            XCTFail("设置 shouldThrowError 应抛错")
+        } catch let error as NSError {
+            XCTAssertEqual(error.code, -1)
         }
     }
 }

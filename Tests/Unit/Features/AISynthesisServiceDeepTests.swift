@@ -87,13 +87,11 @@ final class AISynthesisServiceDeepTests: XCTestCase {
         setupFullMockEnvironment()
         resetPersistentTestState()
 
-        // 创建可控 Mock 并同时注入 actor 内部 llm 引用 + 覆盖 ServiceContainer 注册，
-        // 因为 currentLLM computed property 优先从 ServiceContainer 解析，
-        // 仅 updateLLMForTesting 无法覆盖 currentLLM 的解析路径。
+        // 创建可控 Mock 并注入 ServiceContainer，
+        // currentLLM 动态优先从 ServiceContainer 解析
         let llm = ControllableLLMService()
         self.mockLLM = llm
         ServiceContainer.shared.register(llm as any LLMServiceProtocol, for: (any LLMServiceProtocol).self)
-        await AISynthesisService.shared.updateLLMForTesting(llm)
     }
 
     override func tearDown() async throws {

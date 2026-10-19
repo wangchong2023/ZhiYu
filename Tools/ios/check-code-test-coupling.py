@@ -48,8 +48,9 @@ EXEMPT_PATHS = {
     "Sources/App/Core/ZhiYuApp.swift",    # @main 入口，解析 launch argument
     "Sources/App/Core/AppEnvironment.swift",  # 环境初始化
     "Sources/Platforms",                   # 平台适配层
-    "Sources/Core/System",                 # 系统服务（Logger 等）
 }
+
+
 
 # ── 测试耦合反模式正则 ──
 PATTERNS = [
@@ -92,6 +93,26 @@ PATTERNS = [
         "reset_userdefaults_arg",
         re.compile(r'CommandLine\.arguments\.contains\s*\(\s*"-ResetUserDefaults"\s*\)'),
         "`-ResetUserDefaults` launch argument 检查 — 应在 @main 入口集中处理",
+    ),
+    (
+        "test_mode_detector_in_business",
+        re.compile(r'\bTestModeDetector\.(isUITesting|isUnitTesting|isMockDataMode|isAnyTesting)\b'),
+        "CR-01: 业务层直接探查测试模式 `TestModeDetector` — 严禁业务分支，仅允许 @main 入口持有",
+    ),
+    (
+        "mock_backend_branch",
+        re.compile(r'\b(isMockBackend|isMockMode)\b'),
+        "CR-02: 业务层内嵌 Mock 后端分支 — 网络请求应由 MockURLProtocol 底层拦截",
+    ),
+    (
+        "mock_credential_literals",
+        re.compile(r'"mock_(carrier|google|jwt|apple|wechat|github)_[^"]+"'),
+        "CR-03: 生产代码中硬编码伪造凭证字面量 — 测试凭证必须移入 Tests/Shared/Mocks/",
+    ),
+    (
+        "test_backdoor_api",
+        re.compile(r'\b(func|var)\s+\w+ForTesting\b|\bvar\s+test\w*Task\b|\bstatic\s+var\s+forceMock\w+\b'),
+        "CR-04: 生产类暴露测试专用后门 API — 破坏封装与并发安全，应使用协议构造注入",
     ),
 ]
 
@@ -147,10 +168,11 @@ def scan_file(filepath: Path) -> List[Finding]:
         stripped = raw_line.strip()
         if stripped.startswith("//"):
             continue
-        # 豁免标注：// test_coupling_exempt 表示该行已确认必要
-        if "// test_coupling_exempt" in raw_line:
-            continue
         for kind, pattern, detail in PATTERNS:
+
+            # 合法豁免：遵循 UFPCore.TestStateResettable 统一契约的标准单例重置方法
+            if kind == "test_backdoor_api" and "resetStateForTesting" in raw_line:
+                continue
             if pattern.search(raw_line):
                 findings.append(Finding(
                     file=rel_path,

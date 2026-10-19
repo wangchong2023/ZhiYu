@@ -64,7 +64,7 @@ public final class TagStore {
         for tag in tags {
             await store.deleteTag(tag)
         }
-        logger.addLog(action: .delete, target: FeatureConstants.MockData.multipleTags, details: "Deleted \(tags.count) tags", module: FeatureConstants.ModuleName.tagStore)
+        logger.addLog(action: .delete, target: FeatureConstants.DefaultValue.multipleTags, details: "Deleted \(tags.count) tags", module: FeatureConstants.ModuleName.tagStore)
     }
 
     /// 注册新标签 (用于预设)

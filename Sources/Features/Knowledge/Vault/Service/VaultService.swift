@@ -38,6 +38,17 @@ public final class VaultService: VaultServiceProtocol {
     /// 键值存储抽象，替代 UserDefaults.standard 访问。Factory 风格：标注可选由 @Dependency 自动降级。
     @ObservationIgnored @Dependency(\.keyStore) var keyStore: (any KeyStoreProtocol)?
 
+    private var customSelectionPolicy: (any VaultSelectionPolicyProtocol)?
+
+    /// 笔记本自动选择默认策略注入
+    @ObservationIgnored @Dependency(\.vaultSelectionPolicy) private var defaultSelectionPolicy: any VaultSelectionPolicyProtocol
+
+    /// 当前生效的笔记本选择策略
+    var selectionPolicy: any VaultSelectionPolicyProtocol {
+        get { customSelectionPolicy ?? defaultSelectionPolicy }
+        set { customSelectionPolicy = newValue }
+    }
+
     // MARK: - 状态发布属性
 
     /// 当前已注册挂载的全部笔记本列表。
@@ -56,11 +67,9 @@ public final class VaultService: VaultServiceProtocol {
     /// 全局唯一的线程安全单例实例。
     public static let shared = VaultService()
 
-    /// 私有化单例构造方法，防止外部直接实例化。
-    private init() {
-        // 加载条件：非单元测试环境或 UI 测试环境
-        // 单元测试时跳过加载，由测试用例自行注入数据
-        if !TestModeDetector.isUnitTesting || TestModeDetector.isUITesting {
+    /// 构造方法，支持策略注入（默认采用生产配置自动加载笔记本）
+    init(configuration: any VaultConfigurationProtocol = DefaultVaultConfiguration()) {
+        if configuration.shouldAutoLoadOnStartup {
             loadVaults()
         }
     }

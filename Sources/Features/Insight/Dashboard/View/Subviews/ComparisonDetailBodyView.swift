@@ -29,7 +29,7 @@ struct ComparisonDetailBodyView: View {
     private static let starFontSize: CGFloat = 7
     private static let rangeTextSize: CGFloat = 8
     private static let progressLineHeight: CGFloat = 3
-    private static let mockProgressScale: CGFloat = 0.7
+    private static let defaultProgressScale: CGFloat = 0.7
     private static let rangeBoxWidth: CGFloat = 50
     private static let badgeFontSize: CGFloat = 7
     private static let badgeHorizontalPadding: CGFloat = 4
@@ -216,7 +216,7 @@ struct ComparisonDetailBodyView: View {
                     .foregroundStyle(.appAccent)
 
                 InsightProgressBar(
-                    progress: Self.mockProgressScale,
+                    progress: Self.defaultProgressScale,
                     lineHeight: Self.progressLineHeight
                 )
             }

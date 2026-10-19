@@ -106,6 +106,8 @@ audit:
 	"$$VENV_PY" Tools/ios/check-code-absolute-paths.py && \
 	"$$VENV_PY" Tools/ios/check-code-snapshot-environment.py --strict && \
 	"$$VENV_PY" Tools/ios/audit-dependency-key-test-value.py && \
+	"$$VENV_PY" Tools/ios/check-code-test-coupling.py --strict && \
+	"$$VENV_PY" Tools/ios/audit-debug-in-sources.py --strict && \
 	("$$VENV_PY" Tools/ios/audit-test-naming-chinese.py || (echo "❌ 测试函数存在中文命名，请运行 '$$VENV_PY Tools/ios/audit-test-naming-chinese.py' 查看详情并重命名为英文" && exit 1)) && \
 	echo "📊 运行测试结构度量..." && \
 	("$$VENV_PY" Tools/CI/audit-test-structure.py --verbose || (echo "❌ 测试结构度量不达标，请运行 '$$VENV_PY Tools/CI/audit-test-structure.py --json' 查看详情" && exit 1))

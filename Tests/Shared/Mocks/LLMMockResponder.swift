@@ -5,11 +5,12 @@
 //  Created by CodeFree on 2026/09/14.
 //  Copyright © 2026 WangChong. All rights reserved.
 //
-//  系统层级：[L1] 基础设施层
-//  核心职责：UI 自动化测试模式下的 Mock 响应统一生成器，消除 ChatRunner/ChatLLMService 间的 Mock 分支重复。
+//  系统层级：[Shared] 测试层
+//  核心职责：UI 自动化测试模式下的 Mock 响应统一生成器。
 //
 
 import Foundation
+@testable import ZhiYu
 
 /// UI 自动化测试 Mock 响应生成器
 /// 集中管理 `--uitesting` 自愈分支的非流式、RAG 与流式 Mock 响应构造。

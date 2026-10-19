@@ -38,13 +38,10 @@ final class SynthesisStorePersistenceDeepTests: XCTestCase {
         setupFullMockEnvironment()
         resetPersistentTestState()
 
-        // 创建可控 LLM Mock 并双重注入：
-        // 1) ServiceContainer 注册（AISynthesisService.currentLLM 优先从 DI 解析）
-        // 2) AISynthesisService.shared.updateLLMForTesting（覆盖 actor 内部 llm 后备引用）
+        // 创建可控 LLM Mock 并注入 ServiceContainer（AISynthesisService.currentLLM 动态优先从 DI 解析）
         let llm = SynthesisStoreControllableLLM()
         self.mockLLM = llm
         ServiceContainer.shared.register(llm as any LLMServiceProtocol, for: (any LLMServiceProtocol).self)
-        await AISynthesisService.shared.updateLLMForTesting(llm)
 
         // 创建独立的 TaskCenter 实例，通过 withDependencies 注入到 SynthesisStore
         self.taskCenter = TaskCenter(activityService: nil)

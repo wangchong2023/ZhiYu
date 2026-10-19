@@ -15,11 +15,18 @@ fi
 
 # ── 1. SemVer：从 Swift 源码常量读取（防抵赖，tag 做一致性校验）──
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-VERSION_SWIFT="$(cd "$SCRIPT_DIR/../../.." && pwd)/Sources/Core/Base/Constants/AppConstants.swift"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+VERSION_SWIFT="$REPO_ROOT/Sources/Core/Base/Constants/AppConstants.swift"
+SYSTEM_CONSTANTS_SWIFT="$REPO_ROOT/Packages/UFPCore/Sources/UFPCore/Base/SystemConstants.swift"
+
 if [ -f "$VERSION_SWIFT" ]; then
-    VERSION=$(grep 'static let semVer' "$VERSION_SWIFT" | grep -o '"[0-9.]*"' | tr -d '"' | head -1)
+    VERSION=$(grep 'static let semVer' "$VERSION_SWIFT" | grep -o '"[0-9.]*"' | tr -d '"' | head -1 || true)
 fi
-VERSION="${VERSION:-0.0.0}"
+if [ -z "${VERSION:-}" ] && [ -f "$SYSTEM_CONSTANTS_SWIFT" ]; then
+    VERSION=$(grep 'defaultSemVer' "$SYSTEM_CONSTANTS_SWIFT" | grep -o '"[0-9.]*"' | tr -d '"' | head -1 || true)
+fi
+VERSION="${VERSION:-1.0.0}"
+
 # CI 环境下校验 Swift 源码版本号与 git tag 一致性
 TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
 if [ -n "$TAG" ] && [ "${TAG#v}" != "$VERSION" ]; then

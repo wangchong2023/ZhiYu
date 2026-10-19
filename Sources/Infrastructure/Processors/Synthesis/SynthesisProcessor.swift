@@ -469,13 +469,20 @@ enum SynthesisProcessor {
     static func generateFallbackQuiz(from _: String, title: String) -> String {
         let rootName = resolveFallbackTitle(title, fallback: L10n.AI.Prompt.Quiz.defaultTitle)
 
+        let fallbackOptions = [
+            "\(ProcessorConstants.Synthesis.quizLetterOptions[0]). \(L10n.AI.Synthesis.Fallback.coreConcept)",
+            "\(ProcessorConstants.Synthesis.quizLetterOptions[1]). \(L10n.AI.Synthesis.Fallback.expansionBackground)",
+            "\(ProcessorConstants.Synthesis.quizLetterOptions[2]). \(L10n.AI.Synthesis.Fallback.reportKeyPoints)",
+            "\(ProcessorConstants.Synthesis.quizLetterOptions[3]). \(L10n.AI.Synthesis.Fallback.quizInsufficientQuestion)"
+        ]
+
         let placeholderDict: [String: Any] = [
             ProcessorConstants.Synthesis.quizTitleKey: L10n.AI.Synthesis.Fallback.quizInsufficientTitle(rootName),
             ProcessorConstants.Synthesis.quizQuestionsKey: [
                 [
                     ProcessorConstants.Synthesis.quizIdKey: ProcessorConstants.Synthesis.quizFirstId,
                     ProcessorConstants.Synthesis.quizQuestionKey: L10n.AI.Synthesis.Fallback.quizInsufficientQuestion,
-                    ProcessorConstants.Synthesis.quizOptionsKey: [L10n.AI.Synthesis.Fallback.quizInsufficientQuestion],
+                    ProcessorConstants.Synthesis.quizOptionsKey: fallbackOptions,
                     ProcessorConstants.Synthesis.quizAnswerIndexKey: ProcessorConstants.Synthesis.quizFirstId,
                     ProcessorConstants.Synthesis.quizExplanationKey: L10n.AI.Synthesis.Fallback.quizInsufficientExplanation
                 ]

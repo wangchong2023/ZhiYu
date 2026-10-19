@@ -317,30 +317,37 @@ final class KeychainErrorDeepTests: XCTestCase {
 
 // MARK: - NetworkClient 补充测试
 
-/// 覆盖 NetworkClient 的 setTestSession/awaitRefreshTask 边界
+/// 覆盖 NetworkClient 的 setCustomSession/awaitCurrentRefresh 及兼容边界
 final class NetworkClientDeepTests: XCTestCase {
 
-    /// setTestSession(nil) 清除测试 session — 实例正常
-    func testSetTestSessionNilDoesNotCrash() async {
-        await NetworkClient.shared.setTestSession(nil)
+    /// setCustomSession(nil) 清除覆盖 session — 实例正常
+    func testSetCustomSessionNilDoesNotCrash() async {
+        await NetworkClient.shared.setCustomSession(nil)
         XCTAssertNotNil(NetworkClient.shared)
     }
 
-    /// awaitRefreshTask 无活跃刷新任务 — 应立即返回
-    func testAwaitRefreshTaskNoActiveTaskReturnsImmediately() async {
+    /// awaitCurrentRefresh 无活跃刷新任务 — 应立即返回
+    func testAwaitCurrentRefreshNoActiveTaskReturnsImmediately() async {
         let startTime = Date()
-        await NetworkClient.shared.awaitRefreshTask()
+        await NetworkClient.shared.awaitCurrentRefresh()
         let elapsed = Date().timeIntervalSince(startTime)
         XCTAssertLessThan(elapsed, 1.0, "无活跃刷新任务时应在1秒内迅速返回")
     }
 
-    /// setTestSession 设置后清除 — 验证生命周期
-    func testSetTestSessionLifecycle() async {
+    /// setCustomSession 设置后清除 — 验证生命周期
+    func testSetCustomSessionLifecycle() async {
         let config = URLSessionConfiguration.ephemeral
         config.timeoutIntervalForRequest = 1
         let session = URLSession(configuration: config)
-        await NetworkClient.shared.setTestSession(session)
+        await NetworkClient.shared.setCustomSession(session)
+        await NetworkClient.shared.setCustomSession(nil)
+        XCTAssertNotNil(NetworkClient.shared)
+    }
+
+    /// 兼容性测试：setTestSession 与 awaitRefreshTask 测试辅助扩展
+    func testCompatibilityTestSessionMethods() async {
         await NetworkClient.shared.setTestSession(nil)
+        await NetworkClient.shared.awaitRefreshTask()
         XCTAssertNotNil(NetworkClient.shared)
     }
 }

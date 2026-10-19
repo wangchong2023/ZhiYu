@@ -22,6 +22,14 @@ final class RAGOrchestratorTests: XCTestCase {
         setupFullMockEnvironment()
         taskCenter.reset()
     }
+
+    override func tearDown() async throws {
+        // 清除 generateHandler：RAGOrchestrator.chat 的 recordRAGMetrics 是 fire-and-forget 后台任务，
+        // 其内部 RAGEvaluationService 会延迟调用 generate。若不在此清空 handler，该后台任务会跨用例存活，
+        // 在下一个测试用例运行时触发本用例设置的断言，导致顺序依赖失败（flaky）。
+        (ServiceContainer.shared.resolveOptional((any LLMServiceProtocol).self) as? MockLLMService)?.generateHandler = nil
+        try await super.tearDown()
+    }
     
     // MARK: - RAG Chat 同步编排测试
     

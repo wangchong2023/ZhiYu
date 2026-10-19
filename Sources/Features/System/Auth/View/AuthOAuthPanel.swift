@@ -13,9 +13,6 @@ import UFPDesignSystem
 
 /// 第三方 OAuth 登录面板
 struct AuthOAuthPanel: View {
-    #if !DEBUG
-    @Dependency(\.toastService) private var toastManager
-    #endif
     @Environment(AuthService.self) var authService
     @Binding var isLoading: Bool
     @Binding var isAgreementChecked: Bool
@@ -36,36 +33,14 @@ struct AuthOAuthPanel: View {
             }
 
             HStack(spacing: DesignTokens.Spacing.large) {
-                #if DEBUG
-                let forceShowAll = true
-                #else
-                let forceShowAll = authService.isMockMode
-                #endif
-
                 ThirdPartyIconButton(id: FeatureConstants.OAuthProviderId.apple, icon: DesignTokens.Icons.appleLogo, isSystem: true, color: .primary) {
                     handleThirdPartyLogin(AppleAuthStrategy())
                 }
                 ThirdPartyIconButton(id: FeatureConstants.OAuthProviderId.google, icon: DesignTokens.Icons.googleLogo, isSystem: false, color: Color.theme.blue) {
-                    #if DEBUG
                     handleThirdPartyLogin(GoogleAuthStrategy())
-                    #else
-                    if authService.isMockMode {
-                        handleThirdPartyLogin(GoogleAuthStrategy())
-                    } else {
-                        toastManager.show(type: .info, message: L10n.Auth.googleDeveloping)
-                    }
-                    #endif
                 }
                 ThirdPartyIconButton(id: FeatureConstants.OAuthProviderId.github, icon: DesignTokens.Icons.githubLogo, isSystem: false, color: .primary) {
-                    #if DEBUG
                     handleThirdPartyLogin(GitHubAuthStrategy())
-                    #else
-                    if authService.isMockMode {
-                        handleThirdPartyLogin(GitHubAuthStrategy())
-                    } else {
-                        toastManager.show(type: .info, message: L10n.Auth.githubDeveloping)
-                    }
-                    #endif
                 }
             }
 

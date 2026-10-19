@@ -77,12 +77,4 @@ public final class DependencyContainer {
     // MARK: - 初始化
 
     public init() {}
-
-    // MARK: - Mock 工厂
-
-    /// 测试用的全 mock 依赖工厂。
-    /// P1 阶段返回空容器，P2-P6 阶段逐步填充 mock 服务实例。
-    public static func mock() -> DependencyContainer {
-        DependencyContainer()
-    }
 }

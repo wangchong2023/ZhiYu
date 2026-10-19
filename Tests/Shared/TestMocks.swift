@@ -116,6 +116,13 @@ final class MockLLMService: LLMService, @unchecked Sendable {
               }
             ]
             """
+        } else if systemPrompt.contains("见解") || prompt.contains("见解") || prompt.contains("召回") {
+            return """
+            {
+              "insight": "系统架构分层设计遵循严格单向依赖。",
+              "suggestedConnection": "建议关联至开发指南"
+            }
+            """
         }
         return "智宇是一款优秀的基于 RAG 的知识管理应用，具备双向链接功能。"
     }

@@ -33,7 +33,7 @@ struct ModelCardView: View {
     var body: some View {
         let isSelected = modelManager.activeModelId == manifest.modelId
         let eligibility = modelManager.evaluateEligibility(for: manifest)
-        let downloadState = modelManager.downloadStates[manifest.modelId] ?? .failed(error: FeatureConstants.MockData.notDownloaded)
+        let downloadState = modelManager.downloadStates[manifest.modelId] ?? .failed(error: FeatureConstants.DefaultValue.notDownloaded)
         let isLocalReady = modelManager.isModelLocalReady(for: manifest.modelId)
 
         let cardBackground = Color.appCard.opacity(eligibility == .restricted ? 0.4 : 0.8)

@@ -44,15 +44,8 @@ final class AppEnvironment {
 
         Logger.shared.info("[AppEnvironment] Starting initialization...")
 
-        // 🧪 检测是否运行于 XCTest (Unit Test) 环境 — 避免污染测试 DI 状态
-        let isRunningInUnitTests = NSClassFromString("XCTestCase") != nil && !CommandLine.arguments.contains("-UITest_MockData")
-        #if DEBUG
-        if CommandLine.arguments.contains("-UITest_MockData") {
-            Logger.shared.info("[AppEnvironment] Detected UI Test environment, using ephemeral setup")
-        } else if isRunningInUnitTests {
-            Logger.shared.info("[AppEnvironment] Detected XCTest unit test environment, using lightweight test setup")
-        }
-        #endif
+        // 检测是否运行于 XCTest 单元测试环境
+        let isRunningInUnitTests = NSClassFromString("XCTestCase") != nil
 
         // 1. 准备底层物理存储 (@P0: 确保护航数据库在注册前就绪)
         prepareDatabase()
@@ -192,14 +185,9 @@ final class AppEnvironment {
                 }
             }
             
-            if CommandLine.arguments.contains("-UITest_MockData") {
-                let memoryQueue = try DatabaseQueue()
-                try DatabaseManager.shared.setupForTesting(with: memoryQueue)
-                Logger.shared.info("[AppEnvironment] Core database ready (In-Memory Mock)")
-            } else {
-                try DatabaseManager.shared.setup(at: dbURL)
-                Logger.shared.info("[AppEnvironment] Core database ready (App Group): \(dbURL.lastPathComponent)")
-            }
+            let strategy = ServiceContainer.shared.resolveOptional((any DatabaseBootstrapStrategy).self) ?? PersistentDatabaseBootstrapStrategy()
+            try strategy.setup(at: dbURL)
+            Logger.shared.info("[AppEnvironment] Core database ready: \(dbURL.lastPathComponent)")
         } catch {
             Logger.shared.error("[AppEnvironment] Critical: Database initialization failed", error: error)
         }

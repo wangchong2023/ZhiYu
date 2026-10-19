@@ -35,8 +35,7 @@ final class AuthServiceTests: XCTestCase {
     }
 
     override func tearDown() async throws {
-        AuthSession.shared.logout()
-        await awaitAllLogoutTasks()
+        await AuthService.shared.performLogout()
         await NetworkClient.shared.awaitRefreshTask()
         await NetworkClient.shared.setTestSession(nil)
         TestMockURLProtocol.requestHandler = nil
@@ -44,11 +43,52 @@ final class AuthServiceTests: XCTestCase {
         try await super.tearDown()
     }
 
-    private func awaitAllLogoutTasks() async {
-        for task in AuthService.shared.testLogoutTasks {
-            await task.value
+    private func setupMockLoginSuccessResponse() {
+        let loginJson = """
+        {
+            "code": 0,
+            "message": "success",
+            "requestId": "req_mock_login",
+            "timestamp": 1700000000000,
+            "data": {
+                "accessToken": "mock_jwt_access_123",
+                "refreshToken": "mock_jwt_refresh_123",
+                "expiresIn": 3600,
+                "tokenType": "Bearer",
+                "isNewUser": false,
+                "totpRequired": false
+            }
         }
-        AuthService.shared.testLogoutTasks.removeAll()
+        """
+        let profileJson = """
+        {
+            "code": 0,
+            "message": "success",
+            "requestId": "req_mock_profile",
+            "timestamp": 1700000000000,
+            "data": {
+                "userId": 10001,
+                "username": "testuser",
+                "nick": "Test User",
+                "avatar": null,
+                "email": "test@example.com",
+                "mobile": "13800000000",
+                "gender": 1,
+                "birthday": null
+            }
+        }
+        """
+        TestMockURLProtocol.requestHandler = { request in
+            guard let url = request.url else { throw URLError(.badURL) }
+            guard let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: ["Content-Type": "application/json"]) else {
+                throw URLError(.badServerResponse)
+            }
+            if url.path.contains("profile") || url.path.contains("me") {
+                return (response, profileJson.data(using: .utf8))
+            } else {
+                return (response, loginJson.data(using: .utf8))
+            }
+        }
     }
 
     // MARK: - 登出测试
@@ -57,8 +97,7 @@ final class AuthServiceTests: XCTestCase {
         AuthSession.shared.update(user: User(id: UUID(), name: "Test User", email: "test@example.com"))
         XCTAssertTrue(AuthService.shared.isAuthenticated)
 
-        AuthService.shared.logout()
-        await awaitAllLogoutTasks()
+        await AuthService.shared.performLogout()
 
         XCTAssertFalse(AuthService.shared.isAuthenticated)
         XCTAssertNil(AuthService.shared.currentUser)
@@ -66,16 +105,14 @@ final class AuthServiceTests: XCTestCase {
 
     func testLogoutClearsGuestFlag() async {
         // 确保从干净状态开始，避免前序测试任务残留导致 CI 偶发失败
-        AuthSession.shared.logout()
-        await awaitAllLogoutTasks()
+        await AuthService.shared.performLogout()
         
         AuthSession.shared.isGuest = false
         XCTAssertFalse(AuthSession.shared.isGuest, "初始 isGuest 应为 false")
         AuthSession.shared.isGuest = true
         XCTAssertTrue(AuthService.shared.isGuest)
 
-        AuthService.shared.logout()
-        await awaitAllLogoutTasks()
+        await AuthService.shared.performLogout()
 
         XCTAssertFalse(AuthService.shared.isGuest)
     }
@@ -96,39 +133,28 @@ final class AuthServiceTests: XCTestCase {
 
     // MARK: - 统一第三方登录测试 (DEBUG Mock)
 
-    func testLoginWithCarrierStrategyInDebug() async {
-        #if DEBUG
-        AuthService.forceMockBackend = true
-        defer { AuthService.forceMockBackend = false }
-        let success = await AuthService.shared.login(using: CarrierAuthStrategy())
-        XCTAssertTrue(success, "DEBUG 模式下 Carrier Mock 登录应成功")
-        #endif
+    func testLoginWithCarrierStrategy() async {
+        setupMockLoginSuccessResponse()
+        let success = await AuthService.shared.login(using: MockCarrierAuthStrategy())
+        XCTAssertTrue(success, "Carrier 登录经由网络拦截模拟响应应成功")
     }
 
-    func testLoginWithGitHubStrategyInDebug() async {
-        #if DEBUG
-        AuthService.forceMockBackend = true
-        defer { AuthService.forceMockBackend = false }
-        let success = await AuthService.shared.login(using: GitHubAuthStrategy())
-        XCTAssertTrue(success, "DEBUG 模式下 GitHub Mock 登录应成功")
-        #endif
+    func testLoginWithGitHubStrategy() async {
+        setupMockLoginSuccessResponse()
+        let success = await AuthService.shared.login(using: MockGitHubAuthStrategy())
+        XCTAssertTrue(success, "GitHub 登录经由网络拦截模拟响应应成功")
     }
 
-    func testLoginWithWeChatStrategyInDebug() async {
-        #if DEBUG
-        AuthService.forceMockBackend = true
-        defer { AuthService.forceMockBackend = false }
-        let success = await AuthService.shared.login(using: WeChatAuthStrategy())
-        XCTAssertTrue(success, "DEBUG 模式下 WeChat Mock 登录应成功")
-        #endif
+    func testLoginWithWeChatStrategy() async {
+        setupMockLoginSuccessResponse()
+        let success = await AuthService.shared.login(using: MockWeChatAuthStrategy())
+        XCTAssertTrue(success, "WeChat 登录经由网络拦截模拟响应应成功")
     }
 
     // MARK: - 密码/验证码登录网络失败测试
 
     func testPasswordLoginFailsWithoutNetwork() async {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
+        TestMockURLProtocol.requestHandler = nil
         let success = await AuthService.shared.login(identity: "testuser", password: "testpass")
         XCTAssertFalse(success, "无后端服务时密码登录应返回 false")
     }
@@ -150,33 +176,13 @@ final class AuthServiceTests: XCTestCase {
         // 确保 Keychain 中没有任何 Token
         try? KeychainService.shared.delete(key: AppConstants.Network.jwtTokenKey)
 
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
-
         let success = await AuthService.shared.tryAutoLogin()
         XCTAssertFalse(success, "无 Token 缓存时，自动登录应失败")
         XCTAssertFalse(AuthService.shared.isAuthenticated)
     }
 
-    /// 测试：当处于 Mock 模式时，tryAutoLogin 应该无视物理网络直接注入 Mock 用户并返回 true
-    func testTryAutoLoginMockBackend() async {
-        #if DEBUG
-        AuthService.forceMockBackend = true
-        defer { AuthService.forceMockBackend = false }
-
-        let success = await AuthService.shared.tryAutoLogin()
-        XCTAssertTrue(success, "Mock 后端模式下自动静默登录应成功")
-        XCTAssertTrue(AuthService.shared.isAuthenticated)
-        XCTAssertEqual(AuthService.shared.currentUser?.name, "Mock Autologin User")
-        #endif
-    }
-
     /// 测试：当 Keychain 中存在有效 Token，且拉取 Profile 成功时，tryAutoLogin 应返回 true 并更新状态树
     func testTryAutoLoginSucceedsWithValidToken() async throws {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
 
         // 1. 注入 Token（Mock Keychain 已由 setUp 注入，模拟器环境安全）
         try KeychainService.shared.store(key: AppConstants.Network.jwtTokenKey, value: "valid_jwt_token")
@@ -223,10 +229,6 @@ final class AuthServiceTests: XCTestCase {
 
     /// 测试：当 Keychain 中有 Token 但拉取 Profile 接口报错（如 401），tryAutoLogin 应该返回 false 并保持未登录状态
     func testTryAutoLoginFailsWithInvalidToken() async throws {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
-
         // 1. 注入 Token（Mock Keychain 已由 setUp 注入，模拟器环境安全）
         try KeychainService.shared.store(key: AppConstants.Network.jwtTokenKey, value: "expired_jwt_token")
 
@@ -279,10 +281,10 @@ final class AuthServiceTests: XCTestCase {
         // 3. 发送广播
         NotificationCenter.default.post(name: .userAuthExpired, object: nil)
 
-        // 4. 等待
+        // 4. 等待广播消费完成并执行完整异步登出
         await fulfillment(of: [expectation], timeout: 2.0)
         NotificationCenter.default.removeObserver(observer)
-        await awaitAllLogoutTasks()
+        await AuthService.shared.performLogout()
 
         // 5. 验证退登
         XCTAssertFalse(AuthService.shared.isAuthenticated)
@@ -332,11 +334,10 @@ final class AuthServiceTests: XCTestCase {
 
         // 4. 触发退出
         print("[TEST] Triggering first logout()")
-        AuthService.shared.logout()
+        await AuthService.shared.performLogout()
 
         // 5. 等待
         await fulfillment(of: [expectation], timeout: 5.0)
-        await awaitAllLogoutTasks()
         NotificationCenter.default.removeObserver(observer)
 
         // 6. 验证
@@ -364,16 +365,12 @@ final class AuthServiceTests: XCTestCase {
             return (response, nil)
         }
 
-        // 3. 执行退出
-        print("[TEST] Calling AuthService.shared.logout()")
-        AuthService.shared.logout()
+        // 3. 执行结构化并发异步退出
+        print("[TEST] Calling AuthService.shared.performLogout()")
+        await AuthService.shared.performLogout()
+        print("[TEST] performLogout finished")
 
-        // 4. 等待后台注销任务完成以检查物理擦除
-        print("[TEST] Waiting for testLogoutTask...")
-        await awaitAllLogoutTasks()
-        print("[TEST] testLogoutTask finished waiting")
-
-        // 5. 最终验证
+        // 4. 最终验证
         XCTAssertFalse(AuthService.shared.isAuthenticated)
         XCTAssertNil(AuthService.shared.currentUser)
         
@@ -412,11 +409,10 @@ final class AuthServiceTests: XCTestCase {
             return (response, nil)
         }
 
-        // 3. 触发退出
-        AuthService.shared.logout()
+        // 3. 触发退出（结构化异步）
+        await AuthService.shared.performLogout()
 
-        // 4. 等待后台请求发送并被拦截断言
-        await awaitAllLogoutTasks()
+        // 4. 等待拦截断言
         await fulfillment(of: [expectation], timeout: 2.0)
     }
 
@@ -425,10 +421,6 @@ final class AuthServiceTests: XCTestCase {
     /// 验证修复 #93：后端返回空字符串 email 时，不应覆盖本地非空 email
     /// 修复前 `email: profile.email ?? user.email`，空字符串覆盖本地非空 email
     func testRefreshUserProfileEmptyEmailDoesNotOverrideLocal() async throws {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
-
         // 1. 注入 Token 并设置本地用户（含非空 email 和 phone）
         try KeychainService.shared.store(key: AppConstants.Network.jwtTokenKey, value: "valid_jwt_token")
         AuthSession.shared.update(user: User(
@@ -496,10 +488,6 @@ final class AuthServiceTests: XCTestCase {
 
     /// 验证修复 #92：后端返回非空 mobile 时，应正常更新本地 phone
     func testRefreshUserProfileNonEmptyMobileUpdatesLocal() async throws {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
-
         try KeychainService.shared.store(key: AppConstants.Network.jwtTokenKey, value: "valid_jwt_token")
         AuthSession.shared.update(user: User(
             id: UUID(),

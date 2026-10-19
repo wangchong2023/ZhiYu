@@ -30,22 +30,6 @@ extension AuthService {
     /// 自动静默登录验证，利用 Keychain 本地缓存的 token 进行登录态恢复
     /// - Returns: 是否登录恢复成功
     public func tryAutoLogin() async -> Bool {
-        #if DEBUG
-        if isMockBackend {
-            // Mock 模式：检测到 Mock 环境则直接构造并注入假登录用户态
-            let mockUser = User(
-                id: UUID(),
-                name: FeatureConstants.MockData.mockAutologinUser,
-                email: FeatureConstants.MockData.mockAutologinEmail,
-                phone: FeatureConstants.MockData.mockAutologinPhone,
-                avatarURL: nil
-            )
-            AuthSession.shared.update(user: mockUser)
-            saveState()
-            return true
-        }
-        #endif
-
         // 1. 尝试从安全区 Keychain 提取现存的 Token
         guard (try? KeychainService.shared.retrieve(key: AppConstants.Network.jwtTokenKey)) != nil else {
             return false
@@ -65,7 +49,7 @@ extension AuthService {
     /// 登录成功后统一处理：存储 Token → 拉取用户资料 → 更新本地状态
     /// - Parameters:
     ///   - response: 后端返回的登录响应（含 JWT）
-    ///   - identity: 用户标识（用于 Mock 模式构造 User）
+    ///   - identity: 用户标识
     /// - Returns: 是否处理成功
     @MainActor
     internal func handleSuccessfulLogin(response: LoginResponse, identity: String) async -> Bool {
@@ -77,31 +61,8 @@ extension AuthService {
             }
         } catch {
             Logger.shared.error("[AuthService] Token storage failed", error: error)
-            #if DEBUG
-            if isMockBackend {
-                Logger.shared.warning("[AuthService] Mock Keychain write skipped")
-            } else {
-                return false
-            }
-            #else
             return false
-            #endif
         }
-
-        #if DEBUG
-        if isMockBackend {
-            let mockUser = User(
-                id: UUID(),
-                name: identity,
-                email: "",
-                phone: nil,
-                avatarURL: nil
-            )
-            AuthSession.shared.update(user: mockUser)
-            saveState()
-            return true
-        }
-        #endif
 
         do {
             return try await fetchAndUpdateUserProfile(errorTag: FeatureConstants.AuthErrorTag.userProfileFetchFailed)
@@ -202,8 +163,10 @@ extension AuthService {
                 planKey: currentPlanKey,
                 maxVaults: quotasToUse.maxVaultsCount,
                 maxPages: quotasToUse.maxKnowledgePages,
-                maxPlugins: 999,
-                features: parsedFeatures
+                maxPlugins: PlanTier.from(planKey: currentPlanKey).defaultQuotas.maxPlugins,
+                features: parsedFeatures,
+                gender: user.gender,
+                birthday: user.birthday
             )
             AuthSession.shared.update(user: updated)
         }

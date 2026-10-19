@@ -100,7 +100,7 @@ struct SubscriptionPlanCard: View {
 
                     Spacer()
 
-                    Text(FeatureConstants.MockData.freePlanName)
+                    Text(FeatureConstants.DefaultValue.freePlanName)
                         .font(.system(size: DesignTokens.SystemFontSize.nano, weight: .bold)) // Dynamic Type
                         .foregroundStyle(.appSecondary)
                         .padding(.horizontal, DesignTokens.SystemSpacing.small)

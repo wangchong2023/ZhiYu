@@ -109,65 +109,35 @@ public final class GoogleAuthStrategy: AuthStrategy {
     /// - Throws: SDK 未配置错误、未在前台活跃场景或用户取消登录错误
     public func acquireCredentials() async throws -> AuthCredential {
         #if canImport(GoogleSignIn)
-        
+
         // 1. 防御性配置探针：检测是否配置了有效的 clientID
         let clientID = currentClientID()
         if clientID == nil {
-            if let mock = testModeMockCredential(identityType: identityType) {
-                return mock
-            }
             throw AppError.auth(domain: FeatureConstants.ModuleName.googleAuthStrategy, code: -99, description: L10n.Auth.googleSdkNotConfigured)
         }
-        
+
         guard let rootVC = activeRootViewController() else {
             throw AppError.auth(domain: FeatureConstants.ModuleName.googleAuthStrategy, code: -1, description: L10n.Auth.googleWindowError)
         }
-        
+
         let data = try await signInProvider.signIn(presenting: rootVC)
         guard !data.idToken.isEmpty else {
             throw AppError.auth(domain: FeatureConstants.ModuleName.googleAuthStrategy, code: -2, description: L10n.Auth.googleTokenError)
         }
-        
+
         return AuthCredential(
             identityType: identityType,
             identifier: data.userID ?? "",
-            credential: FeatureConstants.MockData.mockGoogleCode, // Google 使用 idToken 发往后端，传非空以绕过 @NotBlank 校验
+            credential: FeatureConstants.GoogleConfig.oidcCredentialPlaceholder, // Google 使用 idToken 发往后端，传非空以绕过 @NotBlank 校验
             extraInfo: [
                 "idToken": data.idToken,
                 "email": data.email ?? "",
-                "nickname": data.name ?? ""
+                "nickname": data.name ?? "",
+                "state": UUID().uuidString // C 端原生 App（RFC 8252）本地生成 state，后端 lenient 仅要求非空
             ]
         )
         #else
-        if let mock = testModeMockCredential(identityType: identityType) {
-            return mock
-        }
         throw AppError.auth(domain: FeatureConstants.ModuleName.googleAuthStrategy, code: -99, description: "Google SDK not compiled in watchOS or simulator without framework")
         #endif
-    }
-
-    /// 测试模式下的 Mock Google 凭证，消除 #if DEBUG 块内的重复
-    private func mockGoogleCredential(identityType: String) -> AuthCredential {
-        let mockIDToken = "mock_google_id_token_\(UUID().uuidString)"
-        return AuthCredential(
-            identityType: identityType,
-            identifier: "mock_google_user_id",
-            credential: FeatureConstants.MockData.mockGoogleCode,
-            extraInfo: [
-                "idToken": mockIDToken,
-                "email": "mock_google_user@gmail.com",
-                "nickname": FeatureConstants.MockData.googleMockUser
-            ]
-        )
-    }
-
-    /// 测试模式下降级返回 Mock 凭证，消除 #if DEBUG 块的重复
-    private func testModeMockCredential(identityType: String) -> AuthCredential? {
-        #if DEBUG
-        if TestModeDetector.isAnyTesting {
-            return mockGoogleCredential(identityType: identityType)
-        }
-        #endif
-        return nil
     }
 }

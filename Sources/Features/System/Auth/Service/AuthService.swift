@@ -50,29 +50,6 @@ public final class AuthService: AuthServiceProtocol {
     /// 键值存储抽象（DI 注入，替代 UserDefaults.standard 直接访问）
     @ObservationIgnored @Dependency(\.keyStore) private var keyStore: (any KeyStoreProtocol)?
 
-    // MARK: - 测试辅助
-
-    #if DEBUG
-    /// 单元测试用：强制启用 mock backend 模式，无需设置 ProcessInfo 启动参数
-    public static var forceMockBackend = false
-    #endif
-
-    var isMockBackend: Bool {
-        #if DEBUG
-        // 优先检查强制 mock 标志（供单元测试使用）
-        if Self.forceMockBackend { return true }
-        // 其次检查 UI 测试启动参数（与 AppEnvironment 内存数据库 mock 保持一致）
-        return TestModeDetector.isMockDataMode
-        #else
-        return false
-        #endif
-    }
-
-    /// 是否处于 Mock 模式下（供视图层与其它服务判定）
-    public var isMockMode: Bool {
-        isMockBackend
-    }
-
     // MARK: - 核心操作
     
     /// 以游客身份进入系统
@@ -82,51 +59,43 @@ public final class AuthService: AuthServiceProtocol {
         saveState()
     }
     
-    /// 用于测试的后台注销任务追踪
-    public var testLogoutTask: Task<Void, Never>?
-    
-    /// 用于测试的后台注销任务追踪列表，防止早期被 XCTest 释放导致崩溃
-    public var testLogoutTasks: [Task<Void, Never>] = []
-    
-    /// 退出登录
+    /// 退出登录（发起异步登出，非阻塞）
     @MainActor
     public func logout() {
-        Logger.shared.debug("[AuthService] logout() called")
+        Task { [weak self] in
+            await self?.performLogout()
+        }
+    }
+
+    /// 退出登录（结构化并发异步版本：等待服务端吊销与本地令牌清理彻底完成）
+    @MainActor
+    public func performLogout() async {
+        Logger.shared.debug("[AuthService] performLogout() called")
         AuthSession.shared.logout()
         VaultService.shared.exitVault()
         saveState()
         
-        if testLogoutTask != nil {
-            Logger.shared.debug("[AuthService] Cancelling existing testLogoutTask")
-            testLogoutTask?.cancel()
+        Logger.shared.debug("[AuthService] Logout process started")
+        // 尝试通知后端登出并吊销 RefreshToken
+        if let refreshToken = try? KeychainService.shared.retrieve(key: AppConstants.Network.refreshTokenKey) {
+            Logger.shared.debug("[AuthService] Revoking token on backend...")
+            let req = RefreshRequest(refreshToken: refreshToken)
+            let result: EmptyData? = try? await NetworkClient.shared.request(
+                path: APIPaths.logoutPath,
+                method: SystemConstants.HTTPMethod.post,
+                body: req,
+                requiresAuth: true
+            )
+            Logger.shared.debug("[AuthService] Backend revoke result: \(result != nil ? "success" : "failed/nil")")
+        } else {
+            Logger.shared.debug("[AuthService] No refresh token found to revoke")
         }
         
-        let task = Task {
-            Logger.shared.debug("[AuthService] Logout Task started")
-            // 尝试通知后端登出并吊销 RefreshToken
-            if let refreshToken = try? KeychainService.shared.retrieve(key: AppConstants.Network.refreshTokenKey) {
-                Logger.shared.debug("[AuthService] Revoking token on backend...")
-                let req = RefreshRequest(refreshToken: refreshToken)
-                let result: EmptyData? = try? await NetworkClient.shared.request(
-                    path: APIPaths.logoutPath,
-                    method: SystemConstants.HTTPMethod.post,
-                    body: req,
-                    requiresAuth: true
-                )
-                Logger.shared.debug("[AuthService] Backend revoke result: \(result != nil ? "success" : "failed/nil")")
-            } else {
-                Logger.shared.debug("[AuthService] No refresh token found to revoke")
-            }
-            
-            // 清理本地状态
-            Logger.shared.debug("[AuthService] Deleting tokens from Keychain...")
-            try? KeychainService.shared.delete(key: AppConstants.Network.jwtTokenKey)
-            try? KeychainService.shared.delete(key: AppConstants.Network.refreshTokenKey)
-            Logger.shared.debug("[AuthService] Logout Task completed")
-        }
-        
-        testLogoutTask = task
-        testLogoutTasks.append(task)
+        // 清理本地状态
+        Logger.shared.debug("[AuthService] Deleting tokens from Keychain...")
+        try? KeychainService.shared.delete(key: AppConstants.Network.jwtTokenKey)
+        try? KeychainService.shared.delete(key: AppConstants.Network.refreshTokenKey)
+        Logger.shared.debug("[AuthService] Logout process completed")
     }
     
     // MARK: - 个人信息修改与支付校验
@@ -139,26 +108,6 @@ public final class AuthService: AuthServiceProtocol {
     ///   - birthday: 生日
     /// - Returns: 是否更新成功
     public func updateUserProfile(nickname: String, avatar: String?, gender: Int? = nil, birthday: String? = nil) async -> Bool {
-        #if DEBUG
-        if isMockBackend {
-            // Mock 模式：直接更新本地缓存，不调用网络
-            if let user = AuthSession.shared.currentUser {
-                let updated = updatedUser(
-                    from: user,
-                    name: nickname,
-                    email: user.email,
-                    phone: user.phone,
-                    avatarURL: avatar.flatMap { URL(string: $0) },
-                    gender: gender,
-                    birthday: birthday
-                )
-                AuthSession.shared.update(user: updated)
-                return true
-            }
-            return false
-        }
-        #endif
-        
         // 实际请求后端 PUT /api/v1/auth/user/profile 更新昵称和头像
         struct ProfileUpdateRequest: Codable {
             let nick: String
@@ -201,13 +150,6 @@ public final class AuthService: AuthServiceProtocol {
     /// - Parameter imageData: 图片的二进制数据（PNG/JPEG）
     /// - Returns: 上传成功后返回的头像 URL 字符串，失败返回 nil
     public func uploadAvatar(imageData: Data) async -> String? {
-        #if DEBUG
-        if isMockBackend {
-            // Mock 模式：返回随机头像 URL
-            return "\(APIPaths.multiAvatarAPI)/\(UUID().uuidString).png"
-        }
-        #endif
-        
         do {
             // 调用 NetworkClient 的 multipart 上传接口
             _ = try await NetworkClient.shared.uploadFile(
@@ -247,27 +189,6 @@ public final class AuthService: AuthServiceProtocol {
     ///   - orderNo: 发起购买前系统生成的订单号（可选）
     /// - Returns: 验证并激活成功返回 true
     public func verifyApplePurchase(productId: String, receiptData: String, orderNo: String?) async -> Bool {
-        #if DEBUG
-        if isMockBackend {
-            // Mock 模式：直接本地激活 Pro
-            if let user = AuthSession.shared.currentUser {
-                let updated = User(
-                    id: user.id,
-                    name: user.name,
-                    email: user.email,
-                    avatarURL: user.avatarURL,
-                    planKey: PlanKey.pro,
-                    maxVaults: User.DefaultQuotas.proMaxVaults,
-                    maxPages: User.DefaultQuotas.proMaxPages,
-                    maxPlugins: User.DefaultQuotas.proMaxPlugins
-                )
-                AuthSession.shared.update(user: updated)
-                return true
-            }
-            return false
-        }
-        #endif
-        
         struct VerifyRequest: Codable {
             let productId: String
             let receiptData: String

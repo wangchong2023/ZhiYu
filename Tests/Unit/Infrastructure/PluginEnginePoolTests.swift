@@ -18,9 +18,7 @@ final class PluginEnginePoolTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        pool = PluginEnginePool.shared
-        // 重置池状态，避免被前序测试（如 JSPluginPostProcessSizeTests）污染的 context 影响本测试类
-        pool.resetPoolForTesting()
+        pool = PluginEnginePool()
     }
 
     override func tearDown() {

@@ -12,8 +12,8 @@
 //  AISynthesisService 是单例 actor，其 llm 在首次 init() 时从 ServiceContainer 捕获。
 //  LLMServiceProtocol 是 @MainActor 协议，Mock 的 init() 也被主线程隔离，
 //  只能在 setUp 中使用 MainActor 创建。
-//  关键修复：每次 setUp 通过 AISynthesisService.shared.updateLLMForTesting()
-//  直接替换 actor 内部 llm 引用，保证测试设置 the generateResult 被服务实际使用。
+//  关键修复：每次 setUp 通过 ServiceContainer.shared 注入 LLM Mock，
+//  AISynthesisService.currentLLM 动态优先从 DI 解析，保证测试设置的 generateResult 被服务实际使用。
 //  同时移除了测试类及方法的 @MainActor 修饰，使用 MainActor.run 包裹状态写入以符合 Swift 6 并发安全。
 //
 
@@ -27,7 +27,7 @@ final class AISynthesisServicePureLogicTests: XCTestCase {
 
     // MARK: - 实例 Mock
 
-    /// LLM Mock：每次测试独立创建，通过 updateLLMForTesting 注入到 actor 内部
+    /// LLM Mock：每次测试独立创建，通过 ServiceContainer 注入供 currentLLM 动态解析
     private var mockLLM: MockFullLLMService!
     /// Logger Mock：注册到 ServiceContainer，供 @Inject logger 懒加载使用
     private var mockLogger: MockLoggerProtocol!
@@ -39,15 +39,12 @@ final class AISynthesisServicePureLogicTests: XCTestCase {
         let llm = MockFullLLMService()
         let logger = MockLoggerProtocol()
 
-        // 注册到 ServiceContainer 供 @Inject logger 解析
+        // 注册到 ServiceContainer 供 currentLLM 动态解析
         ServiceContainer.shared.reset()
         ServiceContainer.shared.register(llm as any LLMServiceProtocol, for: (any LLMServiceProtocol).self)
         ServiceContainer.shared.register(logger as any LoggerProtocol, for: (any LoggerProtocol).self)
         self.mockLLM = llm
         self.mockLogger = logger
-
-        // 直接替换 actor 内部 llm 引用
-        await AISynthesisService.shared.updateLLMForTesting(llm)
     }
 
     override func tearDown() async throws {

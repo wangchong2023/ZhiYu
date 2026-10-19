@@ -15,13 +15,12 @@ import UFPCore
 /// 硬件安全芯片加解密服务 (SecureEnclaveCryptoService)
 /// 专为第三方敏感令牌提供 Secure Enclave 物理层级锁死，杜绝文件级破解与异地克隆。
 class SecureEnclaveCryptoService: @unchecked Sendable {
-    /// 真实单例（内部持有）
-    private static let _shared = SecureEnclaveCryptoService()
-    /// 测试覆盖：设置非 nil 值后 shared 返回 Mock 实例；在 tearDown 中置 nil 恢复
-    /// 仅在测试套件中写入，生产代码只读；测试串行执行，无并发冲突。
-    nonisolated(unsafe) static var testOverride: SecureEnclaveCryptoService?
-    /// 全局唯一的线程安全单例入口：测试模式下可被替换
-    static var shared: SecureEnclaveCryptoService { testOverride ?? _shared }
+    /// 默认单例
+    private static let _defaultShared = SecureEnclaveCryptoService()
+    /// 全局唯一的线程安全单例入口：优先从 DI 容器解析已注册实例，否则使用默认单例
+    static var shared: SecureEnclaveCryptoService {
+        ServiceContainer.shared.resolveOptional(SecureEnclaveCryptoService.self) ?? _defaultShared
+    }
     
     /// 用于在 UserDefaults / Keychain 中保存硬件私钥 Token 的 Key
     private let hardwareKeyTokenPath = "com.zhiyu.secure_enclave.token"

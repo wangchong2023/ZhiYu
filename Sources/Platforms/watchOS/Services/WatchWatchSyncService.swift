@@ -21,25 +21,19 @@ final class WatchWatchSyncService: NSObject, WatchSyncProtocol, WCSessionDelegat
     @Published var latestBriefing: String?
     @Published var isBriefingLoading: Bool = false
     
-    #if DEBUG
-    /// 仅限单元测试模拟使用的激活状态插桩，绕过模拟器测试时 session 激活受限的问题
-    var mockActivationState: WCSessionActivationState?
-    #endif
-    
+    /// 激活状态提供者闭包，支持构造注入解耦测试
+    private let activationStateProvider: () -> WCSessionActivationState
+
     /// Factory 风格：可选依赖，DI 未就绪时为 nil
     @Dependency(\.keyStore) private var keyStore: (any KeyStoreProtocol)?
     
-    /// 统一封装 `#if DEBUG / mockActivationState ?? session.activationState` 模式，
-    /// 消除 sendContent / triggerPendingTransfers / requestDailyBriefing 三处重复的激活状态检查。
+    /// 获取当前会话激活状态
     private var currentActivationState: WCSessionActivationState {
-        #if DEBUG
-        return mockActivationState ?? WCSession.default.activationState
-        #else
-        return WCSession.default.activationState
-        #endif
+        activationStateProvider()
     }
     
-    override init() {
+    init(activationStateProvider: @escaping () -> WCSessionActivationState = { WCSession.default.activationState }) {
+        self.activationStateProvider = activationStateProvider
         super.init()
         if WCSession.isSupported() {
             WCSession.default.delegate = self

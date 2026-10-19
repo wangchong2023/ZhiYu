@@ -22,14 +22,6 @@ extension AuthService {
     @MainActor
     public func login(using strategy: any AuthStrategy) async -> Bool {
         do {
-            #if DEBUG
-            if isMockBackend {
-                // 在 Mock 模式下，直接构造测试凭证，跳过底层 SDK (如 FaceID) 唤起，防止 UI 测试阻塞
-                let mockCred = AuthCredential(identityType: strategy.identityType, identifier: FeatureConstants.MockData.mockSub123, credential: FeatureConstants.MockCredential.mockJwtToken, extraInfo: [FeatureConstants.MockCredentialKey.nickname: FeatureConstants.MockData.mockAutologinUser])
-                return try await sendAuthRequestToBackend(mockCred)
-            }
-            #endif
-
             // 1. 驱动客户端 SDK 获取凭证
             let credential = try await strategy.acquireCredentials()
 
@@ -45,32 +37,11 @@ extension AuthService {
     /// - Parameter cred: 客户端获取的身份凭证
     /// - Returns: 是否登录成功
     internal func sendAuthRequestToBackend(_ cred: AuthCredential) async throws -> Bool {
-        #if DEBUG
-        if let result = await tryMockAuthRequest(cred) { return result }
-        #endif
-
         let info = resolveAuthRequestInfo(cred)
         let response = try await sendOAuthRequest(path: info.path, reqBody: info.body)
         let name = cred.extraInfo?["nickname"] ?? "ZhiYu User"
         return await handleSuccessfulLogin(response: response, identity: name)
     }
-
-    #if DEBUG
-    /// Mock 模式下构造假登录响应
-    private func tryMockAuthRequest(_ cred: AuthCredential) async -> Bool? {
-        guard isMockBackend else { return nil }
-        let name = cred.extraInfo?["nickname"] ?? "ZhiYu User"
-        let response = LoginResponse(
-            accessToken: "\(FeatureConstants.MockData.mockJwtAccess)_\(UUID().uuidString)",
-            refreshToken: "\(FeatureConstants.MockData.mockJwtRefresh)_\(UUID().uuidString)",
-            expiresIn: FeatureConstants.MockData.mockExpiresInSeconds,
-            tokenType: FeatureConstants.MockData.bearer,
-            isNewUser: false,
-            totpRequired: false
-        )
-        return await handleSuccessfulLogin(response: response, identity: name)
-    }
-    #endif
 
     // MARK: - 私有路由解析
 
@@ -89,7 +60,7 @@ extension AuthService {
         // 微信登录
         case FeatureConstants.OAuthProvider.wechat: return AuthRequestInfo(path: APIPaths.oauthWeChatPath, body: OAuthWeChatRequest(code: cred.credential, state: cred.extraInfo?["state"]))
         // 谷歌登录
-        case FeatureConstants.OAuthProvider.google: return AuthRequestInfo(path: APIPaths.oauthGooglePath, body: OAuthGoogleRequest(code: cred.credential, idToken: cred.extraInfo?["idToken"] ?? ""))
+        case FeatureConstants.OAuthProvider.google: return AuthRequestInfo(path: APIPaths.oauthGooglePath, body: OAuthGoogleRequest(code: cred.credential, state: cred.extraInfo?["state"], idToken: cred.extraInfo?["idToken"] ?? ""))
         // GitHub 登录
         case FeatureConstants.OAuthProvider.github: return AuthRequestInfo(path: APIPaths.oauthGitHubPath, body: OAuthGitHubRequest(code: cred.credential, state: cred.extraInfo?["state"]))
         // 运营商一键免密登录

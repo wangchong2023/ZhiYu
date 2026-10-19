@@ -59,16 +59,38 @@ public final class GlobalModelManager: TestStateResettable {
     /// 单元测试专用：允许手动模拟国内/国外环境
     internal var isChinaRegionOverride: Bool?
 
-    /// 判断当前是否处于中国大陆地区，用于决定大模型下载源路由
-    private var isChinaRegion: Bool {
+    /// 判断当前是否处于中国大陆地区，用于决定大模型下载源路由（多维特征综合判定：地区代码 / 语言代码 / 首选语言 / 时区）
+    internal var isChinaRegion: Bool {
         if let override = isChinaRegionOverride {
             return override
         }
+        // 1. 地区标识检测 (iOS 16+ region code)
         if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-            return Locale.current.region?.identifier == FeatureConstants.LocaleIdentifier.cn
-        } else {
-            return Locale.current.identifier.contains(FeatureConstants.LocaleIdentifier.zhHans) || Locale.current.identifier.contains(FeatureConstants.LocaleIdentifier.zhHansCN)
+            if Locale.current.region?.identifier == FeatureConstants.LocaleIdentifier.cn {
+                return true
+            }
         }
+        
+        // 2. 语言与区域代码检测 (zh-Hans / zh_CN / zh-Hans-CN)
+        let localeId = Locale.current.identifier
+        if localeId.contains(FeatureConstants.LocaleIdentifier.cn) ||
+           localeId.contains(FeatureConstants.LocaleIdentifier.zhHans) ||
+           localeId.contains(FeatureConstants.LocaleIdentifier.zhHansCN) {
+            return true
+        }
+
+        // 3. 用户首选语言列表检测 (zh / zh-Hans / zh-Hant)
+        if let preferred = Locale.preferredLanguages.first, preferred.hasPrefix(FeatureConstants.LocaleIdentifier.zh) {
+            return true
+        }
+
+        // 4. 时区特征检测 (中国标准时区 Asia/Shanghai, Asia/Chongqing 等)
+        let timeZoneId = TimeZone.current.identifier
+        if FeatureConstants.LocaleIdentifier.chinaTimeZones.contains(timeZoneId) {
+            return true
+        }
+
+        return false
     }
     
     // MARK: - 持久化设置属性
@@ -258,7 +280,7 @@ public final class GlobalModelManager: TestStateResettable {
         }
 
         if !isDownloadingOrActive {
-            downloadStates[modelId] = .failed(error: FeatureConstants.MockData.notDownloaded)
+            downloadStates[modelId] = .failed(error: FeatureConstants.DefaultValue.notDownloaded)
         }
     }
     
@@ -267,21 +289,26 @@ public final class GlobalModelManager: TestStateResettable {
     /// 发起大模型权重文件后台静默下载
     /// - Parameter manifest: 期望下载的白名单大模型规格元数据
     public func startDownload(for manifest: LLMManifest) {
-        let downloadURLString: String
-        if isChinaRegion {
-            downloadURLString = manifest.modelscopeURLString ?? manifest.remoteURLString
-            Logger.shared.info("[GlobalModelManager] China region detected, routing download to ModelScope: \(downloadURLString)")
+        let isChina = isChinaRegion
+        let primaryURLString: String
+        let fallbackURLString: String?
+
+        if isChina {
+            primaryURLString = manifest.modelscopeURLString ?? manifest.remoteURLString
+            fallbackURLString = manifest.huggingfaceURLString
+            Logger.shared.info("[GlobalModelManager] China region detected, routing download to ModelScope: \(primaryURLString)")
         } else {
-            downloadURLString = manifest.huggingfaceURLString ?? manifest.remoteURLString
-            Logger.shared.info("[GlobalModelManager] Non-China region detected, routing download to HuggingFace: \(downloadURLString)")
+            primaryURLString = manifest.huggingfaceURLString ?? manifest.remoteURLString
+            fallbackURLString = manifest.modelscopeURLString
+            Logger.shared.info("[GlobalModelManager] Non-China region detected, routing download to HuggingFace: \(primaryURLString)")
         }
         
-        guard let url = URL(string: downloadURLString) else { return }
+        guard let url = URL(string: primaryURLString) else { return }
         let modelId = manifest.modelId
         
         // 1. 如果该模型不支持该硬件物理内存 (restricted)，强力拦截，杜绝 OOM 爆内存
         if evaluateEligibility(for: manifest) == .restricted {
-            Logger.shared.warning(" [GlobalModelManager]  \(modelId) ")
+            Logger.shared.warning("[GlobalModelManager] Model \(modelId) exceeds hardware capacity, restricted.")
             return
         }
         
@@ -296,6 +323,17 @@ public final class GlobalModelManager: TestStateResettable {
                 // 3. 实时观察进度流
                 observeDownloadState(for: modelId)
             } catch {
+                // 若首选源下载失败且存在备用镜像源（如 HuggingFace 失败自动切换 ModelScope），执行自动容灾重试
+                if let fallback = fallbackURLString, let fallbackURL = URL(string: fallback), fallback != primaryURLString {
+                    Logger.shared.warning("[GlobalModelManager] Primary download failed for \(modelId), automatically falling back to mirror: \(fallback)")
+                    do {
+                        try await downloadManager.startDownload(modelId: modelId, remoteURL: fallbackURL)
+                        observeDownloadState(for: modelId)
+                        return
+                    } catch let fallbackError {
+                        Logger.shared.error("[GlobalModelManager] Fallback download also failed: \(fallbackError.localizedDescription)")
+                    }
+                }
                 downloadStates[modelId] = .failed(error: error.localizedDescription)
             }
         }
@@ -378,9 +416,9 @@ public final class GlobalModelManager: TestStateResettable {
     
     // MARK: - 兼容度与就绪状态查询
     
-    /// 重置响应式状态用于单元测试隔离（仅 @testable 可见）
-    /// - Note: 清空远程清单、下载状态、存储占用与调用计数，避免跨测试单例状态泄漏导致快照漂移
-    func resetForTesting() {
+    /// 重置响应式内部状态
+    /// - Note: 清空远程清单、下载状态、存储占用与调用计数
+    func reset() {
         remoteManifests = []
         downloadStates = [:]
         modelStorageUsage = [:]
@@ -394,7 +432,7 @@ public final class GlobalModelManager: TestStateResettable {
     /// 重置单例状态用于测试隔离
     nonisolated public func resetStateForTesting() {
         runOnMainSync {
-            resetForTesting()
+            reset()
         }
     }
     

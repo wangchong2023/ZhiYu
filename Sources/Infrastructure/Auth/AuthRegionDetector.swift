@@ -46,15 +46,14 @@ public final class AuthRegionDetector: @unchecked Sendable {
     /// 缓存的区域能力 JSON 配置数据
     private var cachedCapabilities: RegionCapabilities?
     
-    #if DEBUG
-    /// 单元测试专用：手动注入区域能力配置以供环境感知测试
-    public func injectCapabilities(_ capabilities: RegionCapabilities) {
-        self.cachedCapabilities = capabilities
-    }
-    #endif
-    
-    private init() {
-        loadCapabilities()
+    /// 初始化区域探测服务
+    /// - Parameter capabilities: 预设的区域能力配置，为 nil 时自动从资源包载入
+    public init(capabilities: RegionCapabilities? = nil) {
+        if let capabilities {
+            self.cachedCapabilities = capabilities
+        } else {
+            loadCapabilities()
+        }
     }
     
     /// 载入本地打包的 region_capabilities.json 映射规则

@@ -43,8 +43,6 @@ final class AIWorkflowStateDeepTests: XCTestCase {
         self.mockLLM = llm
         ServiceContainer.shared.register(llm as any LLMServiceProtocol, for: (any LLMServiceProtocol).self)
         ServiceContainer.shared.register(llm as LLMService, for: LLMService.self)
-        // 同步更新 AISynthesisService actor 内部 llm 引用，确保 runPageAI*/performPageSynthesis/fetchFixSuggestion 解析到可控 Mock
-        await AISynthesisService.shared.updateLLMForTesting(llm)
 
         // 创建内存版 KnowledgeRepository Mock，替换 setupFullMockEnvironment 的真实仓储
         let knowledgeRepo = AIWorkflowMockKnowledgeRepository()

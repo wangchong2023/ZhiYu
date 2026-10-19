@@ -45,56 +45,84 @@ final class AuthLoginOAuthDeepTests: XCTestCase {
         // 确保干净状态
         AuthSession.shared.logout()
         try? KeychainService.shared.delete(key: jwtTokenKey)
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
     }
 
     override func tearDown() async throws {
         AuthSession.shared.logout()
-        await awaitAllLogoutTasks()
+        await AuthService.shared.performLogout()
         await NetworkClient.shared.awaitRefreshTask()
         await NetworkClient.shared.setTestSession(nil)
         TestMockURLProtocol.requestHandler = nil
         KeychainService.testOverride = nil
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         try await super.tearDown()
     }
 
     // MARK: - 辅助方法
 
-    /// 等待所有 logout 后台任务完成
-    private func awaitAllLogoutTasks() async {
-        for task in AuthService.shared.testLogoutTasks {
-            await task.value
+    /// 设置 Mock 登录成功响应
+    private func setupMockLoginSuccessResponse(username: String = "testuser") {
+        let loginJson = """
+        {
+            "code": 0,
+            "message": "success",
+            "requestId": "mock_req",
+            "timestamp": 1700000000000,
+            "data": {
+                "accessToken": "mock_jwt_token_12345",
+                "refreshToken": "mock_refresh_token_12345",
+                "expiresIn": 7200,
+                "tokenType": "Bearer",
+                "isNewUser": false,
+                "totpRequired": false
+            }
         }
-        AuthService.shared.testLogoutTasks.removeAll()
+        """
+        let profileJson = """
+        {
+            "code": 0,
+            "message": "success",
+            "requestId": "mock_profile_req",
+            "timestamp": 1700000000000,
+            "data": {
+                "userId": 12345,
+                "username": "\(username)",
+                "nick": "Test User",
+                "email": "test@example.com",
+                "mobile": "13800000000"
+            }
+        }
+        """
+        TestMockURLProtocol.requestHandler = { request in
+            guard let url = request.url else { throw URLError(.badURL) }
+            guard let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: ["Content-Type": "application/json"]) else {
+                throw URLError(.badServerResponse)
+            }
+            if url.path.contains(APIPaths.userProfilePath) {
+                return (response, profileJson.data(using: .utf8))
+            } else {
+                return (response, loginJson.data(using: .utf8))
+            }
+        }
     }
 
-    // MARK: - login Mock 模式
+    // MARK: - login 模拟网络响应模式
 
-    /// 验证 Mock 模式下密码登录成功
+    /// 验证网络拦截模拟下密码登录成功
+
     func testLoginMockModePasswordLoginSuccess() async {
-        #if DEBUG
-        AuthService.forceMockBackend = true
-        defer { AuthService.forceMockBackend = false }
+        setupMockLoginSuccessResponse(username: "testuser")
         AuthSession.shared.logout()
 
         let success = await AuthService.shared.login(identity: "testuser", password: "testpass")
 
-        XCTAssertTrue(success, "Mock 模式下密码登录应成功")
+        XCTAssertTrue(success, "模拟网络拦截下密码登录应成功")
         XCTAssertTrue(AuthService.shared.isAuthenticated, "应已登录")
-        XCTAssertEqual(AuthService.shared.currentUser?.name, "testuser", "用户名应为 identity")
-        #endif
+        XCTAssertEqual(AuthService.shared.currentUser?.name, "Test User")
     }
 
-    /// 验证 Mock 模式下密码登录写入 Keychain Token
+    /// 验证网络拦截模拟下密码登录写入 Keychain Token
     func testLoginMockModePasswordLoginWritesKeychainToken() async throws {
-        #if DEBUG
-        AuthService.forceMockBackend = true
-        defer { AuthService.forceMockBackend = false }
+        setupMockLoginSuccessResponse(username: "testuser")
         AuthSession.shared.logout()
         try? KeychainService.shared.delete(key: jwtTokenKey)
 
@@ -103,16 +131,12 @@ final class AuthLoginOAuthDeepTests: XCTestCase {
         XCTAssertTrue(success, "登录应成功")
         let jwt = try? KeychainService.shared.retrieve(key: jwtTokenKey)
         XCTAssertNotNil(jwt, "登录后 Keychain 应有 JWT Token")
-        #endif
     }
 
     // MARK: - login 非 Mock 模式
 
-    /// 验证非 Mock 模式下密码登录网络失败返回 false
+    /// 验证网络失败时密码登录返回 false
     func testLoginNonMockModeNetworkFailureReturnsFalse() async {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         AuthSession.shared.logout()
 
         TestMockURLProtocol.requestHandler = { request in
@@ -178,47 +202,38 @@ final class AuthLoginOAuthDeepTests: XCTestCase {
         XCTAssertFalse(success, "网络失败应返回 false")
     }
 
-    // MARK: - OAuth login Mock 模式
+    // MARK: - OAuth login 模拟网络响应模式
 
-    /// 验证 Mock 模式下 Carrier 登录成功
+    /// 验证模拟网络响应下 Carrier 登录成功
     func testLoginMockModeCarrierLoginSuccess() async {
-        #if DEBUG
-        AuthService.forceMockBackend = true
-        defer { AuthService.forceMockBackend = false }
+        setupMockLoginSuccessResponse()
         AuthSession.shared.logout()
 
-        let success = await AuthService.shared.login(using: CarrierAuthStrategy())
+        let success = await AuthService.shared.login(using: MockCarrierAuthStrategy())
 
-        XCTAssertTrue(success, "Mock 模式下 Carrier 登录应成功")
+        XCTAssertTrue(success, "Carrier 登录应成功")
         XCTAssertTrue(AuthService.shared.isAuthenticated, "应已登录")
-        #endif
     }
 
-    /// 验证 Mock 模式下 GitHub 登录成功
+    /// 验证模拟网络响应下 GitHub 登录成功
     func testLoginMockModeGitHubLoginSuccess() async {
-        #if DEBUG
-        AuthService.forceMockBackend = true
-        defer { AuthService.forceMockBackend = false }
+        setupMockLoginSuccessResponse()
         AuthSession.shared.logout()
 
-        let success = await AuthService.shared.login(using: GitHubAuthStrategy())
+        let success = await AuthService.shared.login(using: MockGitHubAuthStrategy())
 
-        XCTAssertTrue(success, "Mock 模式下 GitHub 登录应成功")
+        XCTAssertTrue(success, "GitHub 登录应成功")
         XCTAssertTrue(AuthService.shared.isAuthenticated, "应已登录")
-        #endif
     }
 
-    /// 验证 Mock 模式下 WeChat 登录成功
+    /// 验证模拟网络响应下 WeChat 登录成功
     func testLoginMockModeWeChatLoginSuccess() async {
-        #if DEBUG
-        AuthService.forceMockBackend = true
-        defer { AuthService.forceMockBackend = false }
+        setupMockLoginSuccessResponse()
         AuthSession.shared.logout()
 
-        let success = await AuthService.shared.login(using: WeChatAuthStrategy())
+        let success = await AuthService.shared.login(using: MockWeChatAuthStrategy())
 
-        XCTAssertTrue(success, "Mock 模式下 WeChat 登录应成功")
+        XCTAssertTrue(success, "WeChat 登录应成功")
         XCTAssertTrue(AuthService.shared.isAuthenticated, "应已登录")
-        #endif
     }
 }

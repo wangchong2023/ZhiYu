@@ -48,6 +48,7 @@ final class AppleAuthStrategyDeepTests: XCTestCase {
     // MARK: - 被测对象
 
     private var strategy: AppleAuthStrategy!
+    private var mockStrategy: MockAppleAuthStrategy!
 
     // MARK: - 生命周期
 
@@ -56,10 +57,12 @@ final class AppleAuthStrategyDeepTests: XCTestCase {
         resetPersistentTestState()
         setupFullMockEnvironment()
         strategy = AppleAuthStrategy()
+        mockStrategy = MockAppleAuthStrategy()
     }
 
     override func tearDown() async throws {
         strategy = nil
+        mockStrategy = nil
         try await super.tearDown()
     }
 
@@ -80,9 +83,9 @@ final class AppleAuthStrategyDeepTests: XCTestCase {
 
     /// 验证 identityType 与 AuthCredential.identityType 一致（Mock 路径）
     func testIdentityTypeConsistentWithCredential() async throws {
-        let credential = try await strategy.acquireCredentials()
-        XCTAssertEqual(credential.identityType, strategy.identityType,
-                       "AuthCredential.identityType 应与 strategy.identityType 一致")
+        let credential = try await mockStrategy.acquireCredentials()
+        XCTAssertEqual(credential.identityType, mockStrategy.identityType,
+                       "AuthCredential.identityType 应与 mockStrategy.identityType 一致")
     }
 
     // MARK: - acquireCredentials Mock 路径
@@ -91,7 +94,7 @@ final class AppleAuthStrategyDeepTests: XCTestCase {
     ///             验证 Mock 凭证的所有字段（identityType/identifier/credential/extraInfo）。
     ///             注意：Mock 路径仅在 DEBUG + targetEnvironment(simulator) 下生效。
     func testAcquireCredentialsMockPathAllFieldsVerified() async throws {
-        let credential = try await strategy.acquireCredentials()
+        let credential = try await mockStrategy.acquireCredentials()
 
         XCTAssertEqual(credential.identityType, expectedIdentityType, "identityType 应为 apple")
         XCTAssertEqual(credential.identifier, mockIdentifier, "identifier 应为 mock_apple_user_id")
@@ -109,8 +112,8 @@ final class AppleAuthStrategyDeepTests: XCTestCase {
 
     /// 验证 Mock 路径每次调用生成不同 idToken（UUID 随机性）
     func testAcquireCredentialsMockPathIdTokenDifferentEachCall() async throws {
-        let first = try await strategy.acquireCredentials()
-        let second = try await strategy.acquireCredentials()
+        let first = try await mockStrategy.acquireCredentials()
+        let second = try await mockStrategy.acquireCredentials()
 
         let firstToken = first.extraInfo?[extraInfoIdTokenKey]
         let secondToken = second.extraInfo?[extraInfoIdTokenKey]
@@ -123,14 +126,14 @@ final class AppleAuthStrategyDeepTests: XCTestCase {
     /// 验证 acquireCredentials 多次调用不崩溃（continuation 不残留）
     func testAcquireCredentialsMultipleCallsNoCrash() async throws {
         for _ in 0..<3 {
-            _ = try await strategy.acquireCredentials()
+            _ = try await mockStrategy.acquireCredentials()
         }
         XCTAssertTrue(true, "多次调用 acquireCredentials 不应崩溃")
     }
 
     /// 验证 acquireCredentials 返回的 AuthCredential 是值类型（Sendable struct）
     func testAcquireCredentialsReturnsValueTypeSendable() async throws {
-        let credential = try await strategy.acquireCredentials()
+        let credential = try await mockStrategy.acquireCredentials()
         // AuthCredential 是 struct，赋值应产生独立副本
         var copy = credential
         copy = AuthCredential(identityType: "other", identifier: "other_id", credential: "other_cred")
@@ -207,10 +210,8 @@ final class AppleAuthStrategyDeepTests: XCTestCase {
         let anchor = strategy.presentationAnchor(for: controller)
         XCTAssertNotNil(anchor, "presentationAnchor 不应返回 nil")
     }
-    #endif
 
     /// 验证 presentationAnchor 多次调用返回有效锚点
-    #if canImport(UIKit)
     func testPresentationAnchorMultipleCallsStable() {
         let controller = makeValidController()
         let first = strategy.presentationAnchor(for: controller)
@@ -219,7 +220,6 @@ final class AppleAuthStrategyDeepTests: XCTestCase {
         XCTAssertNotNil(second, "二次调用应返回有效锚点")
     }
     #endif
-
     // MARK: - AuthStrategy 协议契约
 
     /// 验证 AppleAuthStrategy 遵守 AuthStrategy 协议
@@ -232,7 +232,7 @@ final class AppleAuthStrategyDeepTests: XCTestCase {
     /// 验证 AuthStrategy 协议的 acquireCredentials 可通过协议调用
     func testProtocolProtocolCallAcquireCredentials() async throws {
         let asStrategy: any AuthStrategy = strategy
-        let credential = try await asStrategy.acquireCredentials()
+        let credential = try await mockStrategy.acquireCredentials()
         XCTAssertEqual(credential.identityType, expectedIdentityType, "协议调用返回的 identityType 应为 apple")
     }
 }

@@ -19,29 +19,44 @@ final class GitHubAuthStrategyTests: XCTestCase {
         XCTAssertEqual(strategy.identityType, "github")
     }
     
-    func testGitHubAuthReturnsMockOrThrowsError() async {
-        let strategy = GitHubAuthStrategy()
-        #if DEBUG
-        do {
-            let credential = try await strategy.acquireCredentials()
-            XCTAssertEqual(credential.identityType, "github")
-            XCTAssertEqual(credential.identifier, "mock_github_user_id")
-            XCTAssertEqual(credential.extraInfo?["nickname"], "GitHub Mock User")
-            XCTAssertFalse(credential.credential.isEmpty)
-        } catch {
-            XCTFail("Debug 模式下 GitHub 未配置 ClientID 应当安全降级为 Mock 登录，不应抛出错误: \(error)")
-        }
-        #else
+    /// 验证 clientId 未配置时抛出预期错误
+    func testGitHubAuthUnconfiguredThrowsError() async {
+        // 注入空 clientId 模拟未配置场景，避免依赖 AppConfig.json 的全局配置值
+        let strategy = GitHubAuthStrategy(clientIdForTesting: "")
         do {
             _ = try await strategy.acquireCredentials()
-            XCTFail("GitHub 未配置时在 Release 模式下应该抛出错误")
+            XCTFail("GitHub 未配置 clientId 时应该抛出错误")
         } catch let error as NSError {
             XCTAssertEqual(error.domain, "GitHubAuthStrategy")
             XCTAssertEqual(error.code, -99)
         } catch {
             XCTFail("抛出的不是预期的 NSError: \(error)")
         }
-        #endif
+    }
+
+    /// 验证测试替身 MockGitHubAuthStrategy 契约
+    func testMockGitHubAuthStrategyContract() async throws {
+        let mock = MockGitHubAuthStrategy(
+            code: "custom_code_123",
+            identifier: "custom_id",
+            nickname: "Tester",
+            regenerateEachCall: false
+        )
+        XCTAssertEqual(mock.identityType, "github")
+
+        let cred = try await mock.acquireCredentials()
+        XCTAssertEqual(cred.identityType, "github")
+        XCTAssertEqual(cred.identifier, "custom_id")
+        XCTAssertEqual(cred.credential, "custom_code_123")
+        XCTAssertEqual(cred.extraInfo?[FeatureConstants.OAuthField.nickname], "Tester")
+
+        mock.shouldThrowError = NSError(domain: "GitHubAuth", code: -1, userInfo: nil)
+        do {
+            _ = try await mock.acquireCredentials()
+            XCTFail("设置 shouldThrowError 应抛错")
+        } catch let error as NSError {
+            XCTAssertEqual(error.code, -1)
+        }
     }
 
     /// 验证修复 #68：clientId 应从 AppConfig.json 读取，而非硬编码空字符串

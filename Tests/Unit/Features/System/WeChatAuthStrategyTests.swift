@@ -37,31 +37,41 @@ final class WeChatAuthStrategyTests: XCTestCase {
         XCTAssertEqual(strategy.identityType, "wechat", "微信认证策略的 identityType 应当固定为 wechat")
     }
 
-    // MARK: - Mock 凭证完整性校验
+    // MARK: - 凭证获取契约校验
 
-    /// 验证 Debug 模式下 mock 凭证返回值的完整性和正确性    /// 验证 Mock 凭证中 extraInfo 字段的键值完备性
-    func testMockCredentialExtraInfoCompleteness() async {
-        #if DEBUG
+    /// 验证未接入 SDK 时调用抛出未配置错误
+    func testWeChatAuthUnconfiguredThrows() async {
         do {
-            let credential = try await strategy.acquireCredentials()
-            // 微信登录 extraInfo 必须包含 openid 或 nickname 以供后端识别
-            XCTAssertNotNil(credential.extraInfo, "extraInfo 不应为 nil")
-            XCTAssertNotNil(credential.extraInfo?["nickname"], "extraInfo 应包含 nickname 字段")
+            _ = try await strategy.acquireCredentials()
+            XCTFail("未配置微信 SDK 时应该抛出错误")
+        } catch let error as NSError {
+            XCTAssertEqual(error.code, -99)
         } catch {
-            XCTFail("Debug Mock 模式不应抛出错误: \(error)")
+            XCTFail("抛出的不是预期的 NSError: \(error)")
         }
-        #endif
     }
 
-    /// 验证 Mock 凭证的 credential（授权 code）非空
-    func testMockCredentialCodeNonEmpty() async {
-        #if DEBUG
+    /// 验证测试替身 MockWeChatAuthStrategy 契约完整性
+    func testMockWeChatAuthStrategyContract() async throws {
+        let mock = MockWeChatAuthStrategy(
+            code: "custom_wechat_code",
+            openId: "custom_openid",
+            nickname: "WeChat Tester"
+        )
+        XCTAssertEqual(mock.identityType, "wechat")
+
+        let credential = try await mock.acquireCredentials()
+        XCTAssertEqual(credential.identityType, "wechat")
+        XCTAssertEqual(credential.identifier, "custom_openid")
+        XCTAssertEqual(credential.credential, "custom_wechat_code")
+        XCTAssertEqual(credential.extraInfo?[FeatureConstants.OAuthField.nickname], "WeChat Tester")
+
+        mock.shouldThrowError = NSError(domain: "WeChatAuth", code: -1, userInfo: nil)
         do {
-            let credential = try await strategy.acquireCredentials()
-            XCTAssertFalse(credential.credential.isEmpty, "Mock 凭证的 credential(code) 应当非空")
-        } catch {
-            XCTFail("Debug Mock 模式不应抛出错误: \(error)")
+            _ = try await mock.acquireCredentials()
+            XCTFail("设置 shouldThrowError 应抛错")
+        } catch let error as NSError {
+            XCTAssertEqual(error.code, -1)
         }
-        #endif
     }
 }

@@ -36,6 +36,8 @@ struct ContentView: View {
     @Inject internal var deepLinkService: DeepLinkService // inject_exempt: ObservableObject 不适合 @Dependency
     @Dependency(\.appEnvironment) internal var appEnv: any AppEnvironmentProtocol
     @Dependency(\.databaseManager) internal var databaseManager
+    @Dependency(\.navigationLayoutPolicy) internal var navigationLayoutPolicy: any NavigationLayoutPolicyProtocol
+    @Dependency(\.autoLoginPolicy) internal var autoLoginPolicy: any AutoLoginPolicyProtocol
 
     @State internal var showSidebar = false
     // Bug #71 修复：AuthSession 是 @Observable，@State 包装单例语义错误且不保证
@@ -156,12 +158,9 @@ struct ContentView: View {
             authService.logout()
         }
         .onAppear {
-            // 🎬 正常应用启动时，若处于未登录状态且非游客模式且非 UI 测试环境，自动尝试恢复本地 KeyChain Token 并登录
-            let isTesting = TestModeDetector.isUITesting
-            // 真实后端联调：UI 测试经 launchEnvironment 注入 accessToken 时允许自动恢复会话（非 mock）。
-            let injectedRealToken = !(ProcessInfo.processInfo.environment["UITest_InjectAccessToken"] ?? "").isEmpty
+            // 🎬 正常应用启动时，若处于未登录状态且非游客模式，根据策略尝试恢复本地 KeyChain Token 并登录
             // Bug #72 修复：用标志位防重入，避免 onAppear 多次触发时重复登录。
-            if !authSession.isLoggedIn && !authSession.isGuest && (!isTesting || injectedRealToken) && !hasAttemptedAutoLogin {
+            if !authSession.isLoggedIn && !authSession.isGuest && autoLoginPolicy.shouldAttemptAutoLogin && !hasAttemptedAutoLogin {
                 hasAttemptedAutoLogin = true
                 Task {
                     _ = await authService.tryAutoLogin()

@@ -12,24 +12,6 @@
 import Foundation
 import UFPCore
 
-#if DEBUG
-/// 仅用于开发环境的自签名证书信任代理
-final class TrustAllSessionDelegate: NSObject, URLSessionDelegate, @unchecked Sendable {
-    func urlSession(
-        _ session: URLSession,
-        didReceive challenge: URLAuthenticationChallenge,
-        completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
-    ) {
-        // 开发环境下无条件信任所有证书（包括自签名）
-        if let serverTrust = challenge.protectionSpace.serverTrust {
-            completionHandler(.useCredential, URLCredential(trust: serverTrust))
-        } else {
-            completionHandler(.performDefaultHandling, nil)
-        }
-    }
-}
-#endif
-
 public actor NetworkClient {
     public static let shared = NetworkClient()
     
@@ -37,31 +19,25 @@ public actor NetworkClient {
     private let decoder: JSONDecoder
     private let encoder: JSONEncoder
     
-    #if DEBUG
-    /// 单元测试专用：测试专用的 URLSession，允许拦截和 Mock HTTP 请求
-    private var testSession: URLSession?
+    /// 自定义 URLSession 覆盖（用于自定义代理、中间件或会话拦截）
+    private var customSession: URLSession?
     
-    /// 单元测试专用：设置测试专用的 URLSession
-    /// - Parameter session: 测试专用的 URLSession 实例
-    public func setTestSession(_ session: URLSession?) {
-        self.testSession = session
+    /// 设置自定义 URLSession 覆盖（传入 nil 则恢复默认会话）
+    /// - Parameter session: 自定义的 URLSession 实例
+    public func setCustomSession(_ session: URLSession?) {
+        self.customSession = session
     }
     
-    /// 单元测试专用：等待当前的 refreshTask 彻底完成
-    public func awaitRefreshTask() async {
+    /// 等待当前的 refreshTask 完成
+    public func awaitCurrentRefresh() async {
         if let task = refreshTask {
             _ = await task.value
         }
     }
-    #endif
     
     /// 当前活跃的 URLSession 实例
     private var activeSession: URLSession {
-        #if DEBUG
-        return testSession ?? session
-        #else
-        return session
-        #endif
+        customSession ?? session
     }
     
     // 无感刷新防并发控制
@@ -73,13 +49,9 @@ public actor NetworkClient {
         config.timeoutIntervalForRequest = AppConstants.Network.requestTimeout
         config.timeoutIntervalForResource = AppConstants.Network.resourceTimeout
         
-        #if DEBUG
-        // DEBUG 模式下允许自签名 HTTPS 证书
-        let delegate = TrustAllSessionDelegate()
+        let delegateProvider = ServiceContainer.shared.resolveOptional((any URLSessionDelegateProvider).self)
+        let delegate = delegateProvider?.makeSessionDelegate()
         self.session = URLSession(configuration: config, delegate: delegate, delegateQueue: nil)
-        #else
-        self.session = URLSession(configuration: config)
-        #endif
         
         self.decoder = JSONDecoder()
         self.encoder = JSONEncoder()

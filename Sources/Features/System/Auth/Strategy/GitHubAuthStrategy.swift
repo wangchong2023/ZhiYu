@@ -33,10 +33,18 @@ public final class GitHubAuthStrategy: NSObject, AuthStrategy {
     
     // MARK: - 配置
     // 从 AppConfig.json 读取 GitHub OAuth Client ID
-    private let clientId = AppConfig.gitHubOAuthClientId
+    private let clientId: String
     private let callbackScheme = AppConstants.Network.oauthCallbackScheme // 需与 URL Types 保持一致
-    
-    public override init() {}
+
+    public override init() {
+        clientId = AppConfig.gitHubOAuthClientId
+    }
+
+    /// 测试注入初始化：允许指定 clientId，便于验证未配置时的抛错分支
+    /// - Note: internal 可见性，仅供测试通过 @testable 注入；生产路径走默认 init。
+    init(clientIdForTesting: String) {
+        clientId = clientIdForTesting
+    }
     
     /// acquireCredentials
     /// - Returns: 返回值
@@ -44,21 +52,8 @@ public final class GitHubAuthStrategy: NSObject, AuthStrategy {
         return try await withCheckedThrowingContinuation { continuation in
             let state = UUID().uuidString
             
-            // 1. 防御性检查：验证 clientId 是否被正确配置，若在 UI 自动化测试且 DEBUG 下，降级返回 Mock 凭证，避免弹出错误网页
+            // 1. 防御性检查：验证 clientId 是否被正确配置
             if clientId.isEmpty {
-                #if DEBUG
-                if TestModeDetector.isAnyTesting {
-                    let mockCode = "mock_github_code_\(UUID().uuidString)"
-                    let cred = AuthCredential(
-                        identityType: identityType,
-                        identifier: "mock_github_user_id",
-                        credential: mockCode,
-                        extraInfo: [FeatureConstants.OAuthField.state: state, FeatureConstants.OAuthField.nickname: FeatureConstants.MockData.gitHubMockUser]
-                    )
-                    continuation.resume(returning: cred)
-                    return
-                }
-                #endif
                 resumeAuthError(continuation, code: GitHubAuthConfig.authFailedCode, description: L10n.Auth.authFailed)
                 return
             }
@@ -92,7 +87,7 @@ public final class GitHubAuthStrategy: NSObject, AuthStrategy {
                 }
 
                 let cred = AuthCredential(
-                    identityType: FeatureConstants.MockData.github,
+                    identityType: FeatureConstants.DefaultValue.github,
                     identifier: "",
                     credential: code,
                     extraInfo: [FeatureConstants.OAuthField.state: state]

@@ -49,6 +49,7 @@ public final class KnowledgeStore {
     @ObservationIgnored @Dependency(\.settingsStore) private var settingsStore: SettingsStore
     /// Factory 风格：属性类型标注为可选（T?）， 自动使用 resolveOptional
     @ObservationIgnored @Dependency(\.keyStore) private var keyStore: (any KeyStoreProtocol)?
+    @ObservationIgnored @Dependency(\.vaultSeedingPolicy) private var seedingPolicy: any VaultSeedingPolicyProtocol
 
     // MARK: - 私有属性
     
@@ -107,15 +108,14 @@ public final class KnowledgeStore {
                     
                     // 🎬 RAG 冷启动魔法时刻 (Aha Moment)：
                     // 在新建笔记本首次切换进入时，如果数据库为空且未播种过，则自动注入欢迎与引导数据
-                    // 防御性校验：在应用冷启动尚未完成 DI 注册前，避开早期的数据库卡片准备通知引发的竞态注入
-                    guard ServiceContainer.shared.isReady || ProcessInfo.processInfo.arguments.contains(FeatureConstants.UITestingArg.uiTesting) else {  // inject_exempt: DI 就绪性检查
+                    guard ServiceContainer.shared.isReady else { // inject_exempt: DI 就绪性检查
                         return
                     }
 
                     if let vaultID = notification.userInfo?["vaultID"] as? UUID {
-                        let isTesting = TestModeDetector.isUITesting
                         let seedKey = "seeded_vault_\(vaultID.uuidString)"
-                        if !(keyStore?.bool(forKey: seedKey) ?? false) || isTesting {
+                        let hasSeededBefore = keyStore?.bool(forKey: seedKey) ?? false
+                        if seedingPolicy.shouldSeed(vaultID: vaultID, hasSeededBefore: hasSeededBefore) {
                             Logger.shared.info(" [KnowledgeStore] Seeding guide data for vault \(vaultID.uuidString)...")
                             let vaultName = VaultService.shared.vaults.first(where: { $0.id == vaultID })?.name
                             await self.seedDefaultContent(vaultName: vaultName)

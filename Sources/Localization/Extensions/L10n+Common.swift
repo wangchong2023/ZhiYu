@@ -427,18 +427,23 @@ extension L10n {
         }
         
         public enum Snippet {
+            /// 读取含字面百分比的演示文档，将转义的 `%%` 还原为 `%`，避开 Xcode 的百分比格式警告。
+            private static func percent(_ key: String) -> String {
+                Localized.tr(key, table: t).replacingOccurrences(of: "%%", with: "%")
+            }
+
             public static var methodology: String { Localized.tr("demo.snippet.methodology", table: t) }
             public static var workflow: String { Localized.tr("demo.fallback.workflow", table: t) }
-            public static var luckin: String { Localized.tr("demo.snippet.luckin", table: t) }
-            public static var survey: String { Localized.tr("demo.snippet.survey", table: t) }
+            public static var luckin: String { percent("demo.snippet.luckin") }
+            public static var survey: String { percent("demo.snippet.survey") }
             public static var pkmRagLink: String { Localized.tr("demo.snippet.pkmRagLink", table: t) }
-            public static var pkmVoiceForget: String { Localized.tr("demo.snippet.pkmVoiceForget", table: t) }
+            public static var pkmVoiceForget: String { percent("demo.snippet.pkmVoiceForget") }
             public static var pkmClipboardFeynman: String { Localized.tr("demo.snippet.pkmClipboardFeynman", table: t) }
-            public static var pkmOcrFolder: String { Localized.tr("demo.snippet.pkmOcrFolder", table: t) }
-            public static var coffeeOcrManual: String { Localized.tr("demo.snippet.coffeeOcrManual", table: t) }
+            public static var pkmOcrFolder: String { percent("demo.snippet.pkmOcrFolder") }
+            public static var coffeeOcrManual: String { percent("demo.snippet.coffeeOcrManual") }
             public static var coffeeRagLink: String { Localized.tr("demo.snippet.coffeeRagLink", table: t) }
             public static var coffeeClipboardTeam: String { Localized.tr("demo.snippet.coffeeClipboardTeam", table: t) }
-            public static var coffeeVoiceProcure: String { Localized.tr("demo.snippet.coffeeVoiceProcure", table: t) }
+            public static var coffeeVoiceProcure: String { percent("demo.snippet.coffeeVoiceProcure") }
         }
         
         public enum FileNames {

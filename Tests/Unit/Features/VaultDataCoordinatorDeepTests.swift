@@ -162,7 +162,26 @@ final class VaultDataCoordinatorDeepTests: XCTestCase {
         VaultService.shared.autoSelectFirstVaultForUITesting()
 
         XCTAssertNil(VaultService.shared.selectedVaultID,
-                     "非 UI 测试模式下不应自动选中第一个 vault")
+                     "默认非自动选择策略下不应自动选中第一个 vault")
+    }
+
+    /// 验证通过 MockVaultSelectionPolicy 注入激活策略时，正确自动选中首个 vault
+    func testApplyDefaultVaultSelectionPolicyWhenPolicyEnabledSelectsFirstVault() {
+        VaultService.shared.selectedVaultID = nil
+        let demoVaults = VaultService.shared.buildDefaultDemoVaults()
+        VaultService.shared.vaults = demoVaults
+
+        // 注入激活策略
+        VaultService.shared.selectionPolicy = MockVaultSelectionPolicy(shouldAutoSelectFirstVault: true)
+
+        VaultService.shared.applyDefaultVaultSelectionPolicy()
+
+        XCTAssertEqual(VaultService.shared.selectedVaultID, demoVaults.first?.id,
+                       "激活选择策略后应精准选中首个笔记本 ID")
+
+        // 恢复默认策略
+        VaultService.shared.selectionPolicy = DefaultVaultSelectionPolicy()
+        VaultService.shared.selectedVaultID = nil
     }
 
     // MARK: - getVaultDatabaseURL

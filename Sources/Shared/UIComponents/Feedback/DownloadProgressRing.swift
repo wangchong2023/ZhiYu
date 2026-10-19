@@ -143,7 +143,7 @@ public struct DownloadProgressRing: View {
 
     @ViewBuilder
     private func failedContent(error: String) -> some View {
-        if error != FeatureConstants.MockData.notDownloaded {
+        if error != FeatureConstants.DefaultValue.notDownloaded {
             Image(systemName: "exclamationmark.icloud.fill")
                 .font(.system(size: size * 0.32))
                 .foregroundStyle(.red)

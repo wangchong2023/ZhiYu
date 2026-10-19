@@ -51,11 +51,6 @@ public final class ChatLLMService: NSObject, LLMChatServiceProtocol {
     ///   - systemPrompt: 系统设定
     /// - Returns: 生成纯文本结果
     public func generate(prompt: String, systemPrompt: String, maxTokens: Int = PromptConstants.TokenLimits.defaultMaxOutputTokens) async throws -> String {
-        // UI 自动化测试靶场下的智能自愈：直接返回本地 Mock 保证 100% 绿通
-        if LLMMockResponder.isUITesting {
-            return try await LLMMockResponder.mockNonStreamReply()
-        }
-
         guard isEnabled, !configManager.apiKey.isEmpty else {
             throw LLMError.notConfigured
         }
@@ -85,11 +80,6 @@ public final class ChatLLMService: NSObject, LLMChatServiceProtocol {
     ///   - pages: 关联的知识背景页面
     /// - Returns: 会话响应数据
     public func chat(query: String, history: [ChatMessageDTO], pages: [any KnowledgePageRepresentable]) async throws -> ChatMessageDTO {
-        // UI 自动化测试靶场下的智能自愈：直接返回本地 RAG Mock 保证 100% 绿通
-        if LLMMockResponder.isUITesting {
-            return try await LLMMockResponder.mockRAGReply(pages: pages)
-        }
-
         guard isEnabled, !configManager.apiKey.isEmpty else {
             throw LLMError.notConfigured
         }
@@ -129,11 +119,6 @@ public final class ChatLLMService: NSObject, LLMChatServiceProtocol {
     ///   - pages: 关联的知识背景页面
     /// - Returns: 流式字符串抛出流
     public func chatStream(query: String, history: [ChatMessageDTO], pages: [any KnowledgePageRepresentable]) -> AsyncThrowingStream<String, Error> {
-        // UI 自动化测试靶场下的智能自愈：模拟流式打字机延迟吐字，验证骨架屏 (Skeleton) 与流中止 (Stop-flow) 机制
-        if LLMMockResponder.isUITesting {
-            return LLMMockResponder.mockStream()
-        }
-
         guard isEnabled, !configManager.apiKey.isEmpty else {
             return AsyncThrowingStream { continuation in
                 continuation.finish(throwing: LLMError.notConfigured)

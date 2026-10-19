@@ -175,7 +175,15 @@ enum QuizProcessor {
            let shell = try? JSONDecoder().decode(FlexibleQuizShell.self, from: data),
            let shellQuestions = shell.questions, !shellQuestions.isEmpty {
             let questions = shellQuestions.enumerated().compactMap { index, item -> QuizQuestion? in
-                let opts = item.realOptions.isEmpty ? [L10n.AI.Prompt.Quiz.option] : item.realOptions
+                let rawOptions = item.realOptions
+                let opts: [String]
+                if rawOptions.count >= 2 {
+                    opts = rawOptions
+                } else {
+                    opts = (0..<ProcessorConstants.Synthesis.quizOptionCount).map {
+                        "\(L10n.AI.Prompt.Quiz.option) \(ProcessorConstants.Synthesis.quizLetterOptions[$0])"
+                    }
+                }
                 let validAnswer = item.realAnswerIndex
                 let id = item.id?.intValue ?? index + 1
                 let qText = item.realText

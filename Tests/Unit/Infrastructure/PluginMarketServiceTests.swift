@@ -13,7 +13,7 @@ import CryptoKit
 @testable import ZhiYu
 @testable import UFPCore
 
-final class MockURLProtocol: URLProtocol {
+private final class PluginMarketMockURLProtocol: URLProtocol {
     nonisolated(unsafe) static var requestHandler: ((URLRequest) throws -> (HTTPURLResponse, Data))?
     
     override class func canInit(with request: URLRequest) -> Bool {
@@ -25,7 +25,7 @@ final class MockURLProtocol: URLProtocol {
     }
     
     override func startLoading() {
-        guard let handler = MockURLProtocol.requestHandler else {
+        guard let handler = PluginMarketMockURLProtocol.requestHandler else {
             XCTFail("Received unexpected request with no handler set")
             return
         }
@@ -50,15 +50,15 @@ final class PluginMarketServiceTests: XCTestCase {
 
     override func setUp() async throws {
         try await super.setUp()
-        URLProtocol.registerClass(MockURLProtocol.self)
+        URLProtocol.registerClass(PluginMarketMockURLProtocol.self)
         registry = PluginRegistry()
         ServiceContainer.shared.register(registry, for: PluginRegistry.self)
         service = PluginMarketService(registry: registry)
     }
 
     override func tearDown() async throws {
-        URLProtocol.unregisterClass(MockURLProtocol.self)
-        MockURLProtocol.requestHandler = nil
+        URLProtocol.unregisterClass(PluginMarketMockURLProtocol.self)
+        PluginMarketMockURLProtocol.requestHandler = nil
         service = nil
         registry = nil
         try await super.tearDown()
@@ -85,7 +85,7 @@ final class PluginMarketServiceTests: XCTestCase {
         // swiftlint:disable:next force_unwrapping
         let responseData = jsonString.data(using: .utf8)!
         
-        MockURLProtocol.requestHandler = { request in
+        PluginMarketMockURLProtocol.requestHandler = { request in
             // swiftlint:disable:next force_unwrapping
             let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
             return (response, responseData)
@@ -126,7 +126,7 @@ final class PluginMarketServiceTests: XCTestCase {
         // swiftlint:disable:next force_unwrapping
         let responseData = jsonString.data(using: .utf8)!
         
-        MockURLProtocol.requestHandler = { request in
+        PluginMarketMockURLProtocol.requestHandler = { request in
             // swiftlint:disable:next force_unwrapping
             let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
             return (response, responseData)
@@ -140,7 +140,7 @@ final class PluginMarketServiceTests: XCTestCase {
     
     /// 验证当网络抓取失败时，availablePlugins 应清空，不进行本地 Fallback 插件填充，且 errorMessage 正确被赋值
     func testFetchPluginsFailureNoFallback() async throws {
-        MockURLProtocol.requestHandler = { _ in
+        PluginMarketMockURLProtocol.requestHandler = { _ in
             throw URLError(.notConnectedToInternet)
         }
 
@@ -204,7 +204,7 @@ final class PluginMarketServiceTests: XCTestCase {
             {"id":"link-preview","name":"Link Preview","author":"ZhiYu Team","description":"Rich preview cards.","repo":"wangchong2023/zhiyu-releases"}
         ]
         """
-        MockURLProtocol.requestHandler = { request in
+        PluginMarketMockURLProtocol.requestHandler = { request in
             // swiftlint:disable:next force_unwrapping
             let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
             return (response, Data(jsonString.utf8))
@@ -230,7 +230,7 @@ final class PluginMarketServiceTests: XCTestCase {
         let jsonString = """
         [{"id":"test","name":"Test","author":"A","description":"D","repo":"user/repo"}]
         """
-        MockURLProtocol.requestHandler = { request in
+        PluginMarketMockURLProtocol.requestHandler = { request in
             let urlString = request.url?.absoluteString ?? ""
             XCTAssertTrue(urlString.contains("community-plugins.json") || urlString.contains("community-plugins_zh-Hans.json"))
             // swiftlint:disable:next force_unwrapping
@@ -251,7 +251,7 @@ final class PluginMarketServiceTests: XCTestCase {
     }
 
     func testEmptyCommunityPluginsList() async throws {
-        MockURLProtocol.requestHandler = { request in
+        PluginMarketMockURLProtocol.requestHandler = { request in
             // swiftlint:disable:next force_unwrapping
             let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
             return (response, Data("[]".utf8))
@@ -268,7 +268,7 @@ final class PluginMarketServiceTests: XCTestCase {
         let jsonString = """
         [{"id":"mock-plugin","version":"1.0","author":"Mock","downloads":"0","rating":0,"icon":"","downloadURL":null,"names":{"en":"Mock"},"descriptions":{"en":""}}]
         """
-        MockURLProtocol.requestHandler = { request in
+        PluginMarketMockURLProtocol.requestHandler = { request in
             // swiftlint:disable:next force_unwrapping
             let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
             return (response, Data(jsonString.utf8))
@@ -299,7 +299,7 @@ final class PluginMarketServiceTests: XCTestCase {
             }
         ]
         """
-        MockURLProtocol.requestHandler = { request in
+        PluginMarketMockURLProtocol.requestHandler = { request in
             // swiftlint:disable:next force_unwrapping
             let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
             return (response, Data(jsonString.utf8))
@@ -396,7 +396,7 @@ final class PluginMarketServiceTests: XCTestCase {
         """
         
         // 使用 URLProtocol 劫持并 Mock 对应的文件 HTTP 返回
-        MockURLProtocol.requestHandler = { request in
+        PluginMarketMockURLProtocol.requestHandler = { request in
             let urlString = request.url?.absoluteString ?? ""
             // swiftlint:disable:next force_unwrapping
             let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
@@ -500,7 +500,7 @@ final class PluginMarketServiceTests: XCTestCase {
         }
         """
         
-        MockURLProtocol.requestHandler = { request in
+        PluginMarketMockURLProtocol.requestHandler = { request in
             let urlString = request.url?.absoluteString ?? ""
             // swiftlint:disable:next force_unwrapping
             let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!

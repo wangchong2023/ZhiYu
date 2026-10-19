@@ -30,7 +30,7 @@ extension ModelLabView {
                         Image(systemName: DesignTokens.Icons.photo)
                             .font(.largeTitle)
                             .foregroundStyle(Color.theme.cyan)
-                        Text(FeatureConstants.MockData.workspaceBenchFileName)
+                        Text(FeatureConstants.DefaultValue.workspaceBenchFileName)
                             .font(.caption)
                             .foregroundStyle(.appText)
                     } else {
