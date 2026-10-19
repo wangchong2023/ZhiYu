@@ -15,13 +15,30 @@ import UFPCore
 
 final class SplashPresentationPolicyTests: XCTestCase {
 
+    /// 内存版 KeyStoreProtocol 实现，用于测试隔离（避免真实持久化污染）
+    private final class InMemoryKeyStore: KeyStoreProtocol, @unchecked Sendable {
+        private var dict: [String: Any] = [:]
+        func bool(forKey key: String) -> Bool { dict[key] as? Bool ?? false }
+        func set(_ value: Bool, forKey key: String) { dict[key] = value }
+        func removeObject(forKey key: String) { dict.removeValue(forKey: key) }
+        func string(forKey key: String) -> String? { dict[key] as? String }
+        func integer(forKey key: String) -> Int { dict[key] as? Int ?? 0 }
+        func double(forKey key: String) -> Double { dict[key] as? Double ?? 0.0 }
+        func data(forKey key: String) -> Data? { dict[key] as? Data }
+        func object(forKey key: String) -> Any? { dict[key] }
+        func set(_ value: Any?, forKey key: String) { dict[key] = value }
+        func dictionaryRepresentation() -> [String: Any] { dict }
+    }
+
+    private let store = InMemoryKeyStore()
+
     override func setUp() {
         super.setUp()
-        SplashPresentationPolicy.resetSplashState()
+        SplashPresentationPolicy.resetSplashState(keyStore: store)
     }
 
     override func tearDown() {
-        SplashPresentationPolicy.resetSplashState()
+        SplashPresentationPolicy.resetSplashState(keyStore: store)
         super.tearDown()
     }
 
@@ -70,37 +87,16 @@ final class SplashPresentationPolicyTests: XCTestCase {
     // MARK: - 持久化与状态重置测试
 
     func testMarkSplashSeenAndHasSeenSplashBefore_persistsState() {
-        XCTAssertFalse(SplashPresentationPolicy.hasSeenSplashBefore(), "初始化时应为 false")
+        XCTAssertFalse(SplashPresentationPolicy.hasSeenSplashBefore(keyStore: store), "初始化时应为 false")
 
-        SplashPresentationPolicy.markSplashSeen()
-        XCTAssertTrue(SplashPresentationPolicy.hasSeenSplashBefore(), "调用 markSplashSeen 后应持久化为 true")
+        SplashPresentationPolicy.markSplashSeen(keyStore: store)
+        XCTAssertTrue(SplashPresentationPolicy.hasSeenSplashBefore(keyStore: store), "调用 markSplashSeen 后应持久化为 true")
 
-        SplashPresentationPolicy.resetSplashState()
-        XCTAssertFalse(SplashPresentationPolicy.hasSeenSplashBefore(), "调用 resetSplashState 后应恢复为 false")
+        SplashPresentationPolicy.resetSplashState(keyStore: store)
+        XCTAssertFalse(SplashPresentationPolicy.hasSeenSplashBefore(keyStore: store), "调用 resetSplashState 后应恢复为 false")
     }
 
     func testKeyStoreIntegration_readsAndWritesProperly() {
-        final class InMemoryKeyStore: KeyStoreProtocol, @unchecked Sendable {
-            private var dict: [String: Any] = [:]
-            func bool(forKey key: String) -> Bool {
-                dict[key] as? Bool ?? false
-            }
-            func set(_ value: Bool, forKey key: String) {
-                dict[key] = value
-            }
-            func removeObject(forKey key: String) {
-                dict.removeValue(forKey: key)
-            }
-            func string(forKey key: String) -> String? { dict[key] as? String }
-            func integer(forKey key: String) -> Int { dict[key] as? Int ?? 0 }
-            func double(forKey key: String) -> Double { dict[key] as? Double ?? 0.0 }
-            func data(forKey key: String) -> Data? { dict[key] as? Data }
-            func object(forKey key: String) -> Any? { dict[key] }
-            func set(_ value: Any?, forKey key: String) { dict[key] = value }
-            func dictionaryRepresentation() -> [String: Any] { dict }
-        }
-
-        let store = InMemoryKeyStore()
         XCTAssertFalse(SplashPresentationPolicy.hasSeenSplashBefore(keyStore: store))
 
         SplashPresentationPolicy.markSplashSeen(keyStore: store)
