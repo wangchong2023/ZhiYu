@@ -62,6 +62,7 @@ public final class CarrierAuthStrategy: AuthStrategy {
     /// 驱动 `AuthPhonePanel` 在用户点击登录之前即可展示真实号码。
     public static func initializeSDK(with appKey: String) {
         // SDK 接入初始化预留
+        _ = appKey
         isInitialized = true
 
         // 预取运营商掩码号：接入 ATAuthSDK 时调用：

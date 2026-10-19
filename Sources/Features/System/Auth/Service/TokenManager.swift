@@ -53,6 +53,8 @@ extension AuthService {
     /// - Returns: 是否处理成功
     @MainActor
     internal func handleSuccessfulLogin(response: LoginResponse, identity: String) async -> Bool {
+        // identity 参数保留供后续扩展（如多账号绑定日志），当前登录流程暂不直接使用
+        _ = identity
         do {
             // 写入本地安全区
             try KeychainService.shared.store(key: AppConstants.Network.jwtTokenKey, value: response.accessToken)

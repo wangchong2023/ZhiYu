@@ -67,4 +67,15 @@ if [ -f "$VERSION_SWIFT" ]; then
     echo "[inject_version] Swift 源码常量已同步: gitShortHash=$HASH  buildTimestamp=$BUILD_TIME"
 fi
 
+# ── 5.1 同步 Widget 扩展 Info.plist ──
+# App Store 校验要求：extension 的 CFBundleVersion 必须与主 App 完全一致。
+# Widget Info.plist 若未同步，会触发 "The CFBundleVersion of an app extension must match
+# that of its containing parent app" 编译告警并被 check-build-warnings.sh 阻断。
+WIDGET_PLIST="$REPO_ROOT/Sources/Platforms/iOS/Widgets/Info.plist"
+if [ -f "$WIDGET_PLIST" ]; then
+    /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION" "$WIDGET_PLIST"
+    /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD" "$WIDGET_PLIST"
+    echo "[inject_version] Widget Info.plist 已同步: CFBundleShortVersionString=$VERSION  CFBundleVersion=$BUILD"
+fi
+
 echo "[inject_version] CFBundleShortVersionString=$VERSION  CFBundleVersion=$BUILD  GIT_SHORT_HASH=$HASH  BUILD_TIMESTAMP=$BUILD_TIME"

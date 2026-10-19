@@ -108,6 +108,8 @@ public final class AuthService: AuthServiceProtocol {
     ///   - birthday: 生日
     /// - Returns: 是否更新成功
     public func updateUserProfile(nickname: String, avatar: String?, gender: Int? = nil, birthday: String? = nil) async -> Bool {
+        // 头像已改为本地 Base64 Data URL 持久化，不再回传后端，故此处忽略 avatar 参数（保留 API 签名以兼容调用方）
+        _ = avatar
         // 实际请求后端 PUT /api/v1/auth/user/profile 更新昵称和头像
         struct ProfileUpdateRequest: Codable {
             let nick: String

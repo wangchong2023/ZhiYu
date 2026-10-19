@@ -26,15 +26,11 @@ extension FeatureConstants {
     }
 
     typealias MockColorName = DemoColorName
-    typealias MockColorNameSupplement = DemoColorName
-    typealias MockText = LabDemoText
-    typealias MockData = DefaultValue
 
     // MARK: - 默认数据常量 (Default Values)
     enum DefaultValue {
         static let multipleTags = "Multiple Tags"
         static let notDownloaded = "Not Downloaded"
-        static let bearer = "Bearer"
         static let workspaceBenchFileName: String = "workspace_bench.jpg"
         static let freePlanName: String = "Free"
         static let github = "github"
@@ -198,13 +194,6 @@ extension FeatureConstants {
     /// HTTP 响应状态码常量
     enum HTTPStatusCode {
         static let ok: Int = 200
-    }
-
-    // MARK: - UI 测试参数 (UI Testing Argument)
-    /// ProcessInfo 启动参数标识
-    enum UITestingArg {
-        static let uiTesting = "--uitesting"
-        static let resetAuthState = "--reset-auth-state"
     }
 
     // MARK: - 辅助功能标识 (Accessibility Identifier)

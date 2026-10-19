@@ -13,7 +13,7 @@
 import Foundation
 
 /// 通用网络请求 Mock 拦截协议
-public final class MockURLProtocol: URLProtocol, @unchecked Sendable {
+public final class MockURLProtocol: URLProtocol {
 
     /// 响应处理闭包签名
     public typealias ResponseHandler = @Sendable (URLRequest) throws -> (HTTPURLResponse, Data)

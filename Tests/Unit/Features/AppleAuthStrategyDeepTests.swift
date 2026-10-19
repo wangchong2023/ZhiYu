@@ -231,7 +231,7 @@ final class AppleAuthStrategyDeepTests: XCTestCase {
 
     /// 验证 AuthStrategy 协议的 acquireCredentials 可通过协议调用
     func testProtocolProtocolCallAcquireCredentials() async throws {
-        let asStrategy: any AuthStrategy = strategy
+        _ = strategy as any AuthStrategy
         let credential = try await mockStrategy.acquireCredentials()
         XCTAssertEqual(credential.identityType, expectedIdentityType, "协议调用返回的 identityType 应为 apple")
     }
