@@ -19,6 +19,7 @@ class SecureEnclaveCryptoService: @unchecked Sendable {
     private static let _defaultShared = SecureEnclaveCryptoService()
     /// 全局唯一的线程安全单例入口：优先从 DI 容器解析已注册实例，否则使用默认单例
     static var shared: SecureEnclaveCryptoService {
+        // inject_exempt: 静态单例优先从 DI 解析已注册实例，否则 fallback 默认单例（冷启动降级）
         ServiceContainer.shared.resolveOptional(SecureEnclaveCryptoService.self) ?? _defaultShared
     }
     

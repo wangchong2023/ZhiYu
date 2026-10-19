@@ -20,6 +20,7 @@ class SecurityManager: @unchecked Sendable {
     private static let _defaultShared = SecurityManager()
     /// 全局单例入口：优先从 DI 容器解析已注册实例，否则使用默认单例
     static var shared: SecurityManager {
+        // inject_exempt: 静态单例优先从 DI 解析已注册实例，否则 fallback 默认单例（冷启动降级）
         ServiceContainer.shared.resolveOptional(SecurityManager.self) ?? _defaultShared
     }
 
@@ -28,6 +29,7 @@ class SecurityManager: @unchecked Sendable {
     /// 注入文件指纹签名仓储，贯彻 DIP 依赖倒置原则。
     /// 采用可选解析防止在冷启动尚未注册时发生崩溃，此时会安全降级到 UserDefaults。
     private var signatureRepository: (any FileSignatureRepository)? {
+        // inject_exempt: 可选解析，冷启动未注册时安全降级
         ServiceContainer.shared.resolveOptional((any FileSignatureRepository).self)
     }
 

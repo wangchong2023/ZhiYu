@@ -180,6 +180,7 @@ struct AppLauncher {
             
             #if DEBUG
             if CommandLine.arguments.contains("-UITest_MockData") {
+                // inject_exempt: 引导层 UI 测试环境覆盖注册，DI 编排之前执行
                 ServiceContainer.shared.register(EphemeralDatabaseBootstrapStrategy() as any DatabaseBootstrapStrategy, for: (any DatabaseBootstrapStrategy).self)
             }
             if CommandLine.arguments.contains("--uitesting") || CommandLine.arguments.contains("-UITesting") {

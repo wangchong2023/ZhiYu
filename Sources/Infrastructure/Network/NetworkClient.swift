@@ -49,7 +49,7 @@ public actor NetworkClient {
         config.timeoutIntervalForRequest = AppConstants.Network.requestTimeout
         config.timeoutIntervalForResource = AppConstants.Network.resourceTimeout
         
-        let delegateProvider = ServiceContainer.shared.resolveOptional((any URLSessionDelegateProvider).self)
+        let delegateProvider = ServiceContainer.shared.resolveOptional((any URLSessionDelegateProvider).self) // inject_exempt: 降级场景需 nil 语义
         let delegate = delegateProvider?.makeSessionDelegate()
         self.session = URLSession(configuration: config, delegate: delegate, delegateQueue: nil)
         

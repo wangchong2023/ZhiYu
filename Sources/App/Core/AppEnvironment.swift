@@ -57,6 +57,7 @@ final class AppEnvironment {
         // 2.1 DI 就绪断言：验证 Store 依赖的关键服务已全部注册
         //     仅校验 ModuleRegistrar 注册的服务；Store 自注册的服务（TagStore/KnowledgeStore 等）
         //     在 :109 AppStore.init 内完成，不在此断言范围内
+        // inject_exempt: AppEnvironment 是 DI 编排层，负责注册后校验
         ServiceContainer.shared.assertRegistered(
             [
                 (any LoggerProtocol).self,
@@ -108,6 +109,7 @@ final class AppEnvironment {
         self.store = AppStore()
 
         // 3.1 Store 自注册断言：验证 AppStore.init 内自注册的 Store 已全部就绪
+        // inject_exempt: AppEnvironment 是 DI 编排层，负责注册后校验
         ServiceContainer.shared.assertRegistered(
             [
                 AppStore.self,
@@ -185,7 +187,7 @@ final class AppEnvironment {
                 }
             }
             
-            let strategy = ServiceContainer.shared.resolveOptional((any DatabaseBootstrapStrategy).self) ?? PersistentDatabaseBootstrapStrategy()
+            let strategy = ServiceContainer.shared.resolveOptional((any DatabaseBootstrapStrategy).self) ?? PersistentDatabaseBootstrapStrategy() // inject_exempt: 引导层默认降级语义
             try strategy.setup(at: dbURL)
             Logger.shared.info("[AppEnvironment] Core database ready: \(dbURL.lastPathComponent)")
         } catch {
