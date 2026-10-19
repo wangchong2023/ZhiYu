@@ -90,7 +90,7 @@ final class PageServiceTests: XCTestCase {
 
 ### 2.3 网络层 Mock 拦截规范与废止模式 (Non-Negotiable)
 
-- **彻底废除 `forceMockBackend` / `isMockBackend`**：严禁在生产服务（如 `AuthService`、`OAuthService`）中内嵌 Mock 分支或测试后门属性。
+- **彻底废除 `forceMockBackend` / `isMockBackend`**：严禁在生产服务（如 `AuthService`，含已并入的 OAuth 认证能力）中内嵌 Mock 分支或测试后门属性。
 - **MockURLProtocol 底层拦截**：网络层测试必须统一使用 `MockURLProtocol` 进行 HTTP 响应模拟，业务逻辑走真实的生产 Request 构造、发送与 JSON 解码流程。
 - **物理隔离原则**：所有 Mock 替身、测试凭据常量必须统一存放在 `Tests/Shared/Mocks/`（如 `TestConstants.swift`、`MockGoogleAuthStrategy.swift` 等），严禁在 `Sources/` 生产代码中出现 `mock_` 凭据字面量或测试后门方法 (`*ForTesting`)。
 - **策略协议契约化**：任何针对测试场景的特殊行为，必须在 `Domain/Protocols/` 抽象为强类型策略协议（如 `VaultSelectionPolicyProtocol`、`AutoLoginPolicyProtocol` 等），生产环境走单一真实逻辑，测试环境由依赖注入测试策略。

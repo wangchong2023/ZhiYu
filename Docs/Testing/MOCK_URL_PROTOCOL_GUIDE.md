@@ -7,7 +7,7 @@
 
 ## 1. 为什么废止 `isMockBackend` / `forceMockBackend`
 
-在早期的开发中，由于后端环境不稳定，部分认证服务（如 `AuthService`、`OAuthService`）在生产逻辑中内嵌了 `isMockBackend` 开关与 `forceMockBackend` 后门属性。这带来了以下严重架构坏味道与安全风险：
+在早期的开发中，由于后端环境不稳定，部分认证服务（如 `AuthService`，其 OAuth 能力已并入）在生产逻辑中内嵌了 `isMockBackend` 开关与 `forceMockBackend` 后门属性。这带来了以下严重架构坏味道与安全风险：
 
 1. **生产环境安全隐患**：若发布构建（Release）因配置错误保留了后门分支，恶意用户可通过修改内存或参数绕过真实后端认证；
 2. **测试不真实（假阳性）**：业务代码绕过了真实的网络请求参数组装、HTTP Header 构建与 JSON 序列化/反序列化流程，测试无法发现真实的接口契约漂移；
@@ -40,7 +40,7 @@ sequenceDiagram
     participant Test as 测试用例 (XCTestCase)
     participant Mock as TestMockURLProtocol
     participant Client as NetworkClient
-    participant Service as AuthService / OAuthService
+    participant Service as AuthService
 
     Test->>Mock: setJSONResponse(for: "/api/v1/auth/login", json: {...})
     Test->>Service: login(identity: "...", password: "...")

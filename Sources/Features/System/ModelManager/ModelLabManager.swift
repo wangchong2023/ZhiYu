@@ -333,36 +333,36 @@ public final class ModelLabManager {
         case .askImage:
             extraPanelTitle = L10n.ModelManager.Lab.Extra.objectDetection
             confidenceItems = [
-                ConfidenceItem(name: FeatureConstants.LabDemoText.notebookLabel, score: 0.94, colorName: FeatureConstants.DemoColorName.cyan),
-                ConfidenceItem(name: FeatureConstants.LabDemoText.penLabel, score: 0.87, colorName: FeatureConstants.DemoColorName.purple),
-                ConfidenceItem(name: FeatureConstants.LabDemoText.iphoneScreenLabel, score: 0.81, colorName: FeatureConstants.DemoColorName.blue)
+                ConfidenceItem(name: FeatureConstants.LabDemoText.notebookLabel, score: 0.94, colorName: FeatureConstants.MockColorName.cyan),
+                ConfidenceItem(name: FeatureConstants.LabDemoText.penLabel, score: 0.87, colorName: FeatureConstants.MockColorName.purple),
+                ConfidenceItem(name: FeatureConstants.LabDemoText.iphoneScreenLabel, score: 0.81, colorName: FeatureConstants.MockColorName.blue)
             ]
         case .audioScribe:
             extraPanelTitle = L10n.ModelManager.Lab.Extra.speechTranscribing
             traceSteps = [
-                TraceStep(title: FeatureConstants.LabDemoText.traceStep1Title, desc: FeatureConstants.LabDemoText.traceStep1Desc, icon: DesignTokens.Icons.micFill, colorName: FeatureConstants.DemoColorName.cyan),
-                TraceStep(title: FeatureConstants.LabDemoText.traceStep2Title, desc: FeatureConstants.LabDemoText.traceStep2Desc, icon: DesignTokens.Icons.micFill, colorName: FeatureConstants.DemoColorName.purple)
+                TraceStep(title: FeatureConstants.LabDemoText.traceStep1Title, desc: FeatureConstants.LabDemoText.traceStep1Desc, icon: DesignTokens.Icons.micFill, colorName: FeatureConstants.MockColorName.cyan),
+                TraceStep(title: FeatureConstants.LabDemoText.traceStep2Title, desc: FeatureConstants.LabDemoText.traceStep2Desc, icon: DesignTokens.Icons.micFill, colorName: FeatureConstants.MockColorName.purple)
             ]
         case .tinyGarden:
             extraPanelTitle = L10n.ModelManager.Lab.Extra.functionCallTree
             traceSteps = [
-                TraceStep(title: L10n.ModelManager.Lab.Extra.intentMatch, desc: FeatureConstants.LabDemoText.intentMatchDesc, icon: DesignTokens.Icons.leafFill, colorName: FeatureConstants.DemoColorName.green),
-                TraceStep(title: L10n.ModelManager.Lab.Extra.apiInvocation, desc: L10n.ModelManager.Lab.Extra.gardenRender, icon: DesignTokens.Icons.dropFill, colorName: FeatureConstants.DemoColorName.blue),
-                TraceStep(title: L10n.ModelManager.Lab.Extra.uiRendering, desc: FeatureConstants.LabDemoText.uiRenderingDesc, icon: DesignTokens.Icons.sparkles, colorName: FeatureConstants.DemoColorName.purple)
+                TraceStep(title: L10n.ModelManager.Lab.Extra.intentMatch, desc: FeatureConstants.LabDemoText.intentMatchDesc, icon: DesignTokens.Icons.leafFill, colorName: FeatureConstants.MockColorName.green),
+                TraceStep(title: L10n.ModelManager.Lab.Extra.apiInvocation, desc: L10n.ModelManager.Lab.Extra.gardenRender, icon: DesignTokens.Icons.dropFill, colorName: FeatureConstants.MockColorName.blue),
+                TraceStep(title: L10n.ModelManager.Lab.Extra.uiRendering, desc: FeatureConstants.LabDemoText.uiRenderingDesc, icon: DesignTokens.Icons.sparkles, colorName: FeatureConstants.MockColorName.purple)
             ]
         case .mobileActions:
             extraPanelTitle = L10n.ModelManager.Lab.Extra.devicePipeline
             traceSteps = [
-                TraceStep(title: L10n.ModelManager.Lab.Extra.intentAnalyser, desc: FeatureConstants.LabDemoText.intentAnalyserDesc, icon: DesignTokens.Icons.magnifyingglass, colorName: FeatureConstants.DemoColorName.cyan),
-                TraceStep(title: FeatureConstants.LabDemoText.sandboxGatekeeperTitle, desc: FeatureConstants.LabDemoText.sandboxGatekeeperDesc, icon: DesignTokens.Icons.shieldFill, colorName: FeatureConstants.DemoColorName.green),
-                TraceStep(title: L10n.ModelManager.Lab.Extra.hapticFeedback, desc: FeatureConstants.LabDemoText.hapticFeedbackDesc, icon: DesignTokens.Icons.iphoneRadiowaves, colorName: FeatureConstants.DemoColorName.purple)
+                TraceStep(title: L10n.ModelManager.Lab.Extra.intentAnalyser, desc: FeatureConstants.LabDemoText.intentAnalyserDesc, icon: DesignTokens.Icons.magnifyingglass, colorName: FeatureConstants.MockColorName.cyan),
+                TraceStep(title: FeatureConstants.LabDemoText.sandboxGatekeeperTitle, desc: FeatureConstants.LabDemoText.sandboxGatekeeperDesc, icon: DesignTokens.Icons.shieldFill, colorName: FeatureConstants.MockColorName.green),
+                TraceStep(title: L10n.ModelManager.Lab.Extra.hapticFeedback, desc: FeatureConstants.LabDemoText.hapticFeedbackDesc, icon: DesignTokens.Icons.iphoneRadiowaves, colorName: FeatureConstants.MockColorName.purple)
             ]
         case .agentSkills:
             extraPanelTitle = "Agent Skills Execution Sandbox"
             traceSteps = [
-                TraceStep(title: L10n.ModelManager.Lab.Extra.toolLocation, desc: "ZhiYuSystemPlugin.summarizeActivePage", icon: DesignTokens.Icons.paperplaneFill, colorName: FeatureConstants.DemoColorName.purple),
-                TraceStep(title: FeatureConstants.LabDemoText.sandboxReadTitle, desc: FeatureConstants.LabDemoText.sandboxReadDesc, icon: DesignTokens.Icons.folderFill, colorName: FeatureConstants.DemoColorName.cyan),
-                TraceStep(title: L10n.ModelManager.Lab.Extra.contextSummary, desc: FeatureConstants.LabDemoText.contextSummaryDesc, icon: DesignTokens.Icons.checkmarkCircleFill, colorName: FeatureConstants.DemoColorName.green)
+                TraceStep(title: L10n.ModelManager.Lab.Extra.toolLocation, desc: "ZhiYuSystemPlugin.summarizeActivePage", icon: DesignTokens.Icons.paperplaneFill, colorName: FeatureConstants.MockColorName.purple),
+                TraceStep(title: FeatureConstants.LabDemoText.sandboxReadTitle, desc: FeatureConstants.LabDemoText.sandboxReadDesc, icon: DesignTokens.Icons.folderFill, colorName: FeatureConstants.MockColorName.cyan),
+                TraceStep(title: L10n.ModelManager.Lab.Extra.contextSummary, desc: FeatureConstants.LabDemoText.contextSummaryDesc, icon: DesignTokens.Icons.checkmarkCircleFill, colorName: FeatureConstants.MockColorName.green)
             ]
         default:
             break
