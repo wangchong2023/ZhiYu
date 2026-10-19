@@ -98,7 +98,20 @@ final class GoogleAuthStrategyTests: XCTestCase {
         ), "空 clientID 应视为未配置")
     }
 
-    // MARK: - Mock 替身契约
+    // MARK: - 未配置 clientID 的错误分支
+
+    /// 未配置 clientID 时应直接抛出未配置错误（-99）
+    func testAcquire_NotConfigured_ThrowsUnconfiguredError() async {
+        let strategy = makeStrategy(clientID: nil)
+        do {
+            _ = try await strategy.acquireCredentials()
+            XCTFail("未配置 clientID 时应抛出未配置错误")
+        } catch let error as NSError {
+            XCTAssertEqual(error.code, -99, "错误码应为 -99（SDK 未配置）")
+        } catch {
+            XCTFail("抛出的不是预期的 NSError: \(error)")
+        }
+    }
 
     /// 验证测试替身 MockGoogleAuthStrategy 的凭证契约与错误模拟能力
     func testMockGoogleAuthStrategyContract() async throws {
@@ -123,21 +136,6 @@ final class GoogleAuthStrategyTests: XCTestCase {
             XCTFail("设置了 shouldThrowError 后应当抛错")
         } catch let error as NSError {
             XCTAssertEqual(error.code, -100)
-        }
-    }
-
-    // MARK: - 未配置 clientID 的错误分支
-
-    /// 未配置 clientID 时应抛出未配置错误（源分支方向：生产代码不再内嵌测试模式 mock 降级）
-    func testAcquire_NotConfigured_ThrowsUnconfiguredError() async {
-        let strategy = makeStrategy(clientID: nil)
-        do {
-            _ = try await strategy.acquireCredentials()
-            XCTFail("未配置 clientID 时应抛出未配置错误")
-        } catch let error as NSError {
-            XCTAssertEqual(error.code, -99, "错误码应为 -99（SDK 未配置）")
-        } catch {
-            XCTFail("抛出的不是预期的 NSError: \(error)")
         }
     }
 

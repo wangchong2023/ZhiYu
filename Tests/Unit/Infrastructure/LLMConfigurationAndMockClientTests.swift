@@ -195,7 +195,7 @@ final class LLMConfigurationAndMockClientTests: XCTestCase {
 
     func testModelDownloadManagerSha256BufferSize() {
         XCTAssertEqual(
-            ModelDownloadManager.sha256BufferSizeForTesting,
+            ModelDownloadManager.sha256BufferSize,
             Int(SystemConstants.bytesPerKB) * Int(SystemConstants.bytesPerKB)
         )
     }
@@ -204,7 +204,7 @@ final class LLMConfigurationAndMockClientTests: XCTestCase {
 
     func testModelDownloadManagerSandboxAllocationFailedPrefix() {
         XCTAssertEqual(
-            ModelDownloadManager.sandboxAllocationFailedPrefixForTesting,
+            ModelDownloadManager.sandboxAllocationFailedPrefix,
             "Sandbox storage allocation failed:"
         )
     }
