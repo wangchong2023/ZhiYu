@@ -20,6 +20,8 @@ public protocol DeviceInfoProtocol: Sendable {
     var deviceModel: String { get }
     /// 设备用户自定义名称，如 "我的 iPhone"
     var deviceName: String { get }
+    /// 设备持久化唯一标识（IDFV 或等价物），用于登录请求 X-Device-Id 上报
+    var deviceId: String { get }
     /// 主屏幕逻辑尺寸高度（pt），watchOS/macOS 返回合理默认值
     var screenHeight: CGFloat { get }
 }
@@ -44,6 +46,7 @@ public final class NoOpDeviceInfo: DeviceInfoProtocol, Sendable {
     public var systemVersion: String { "" }
     public var deviceModel: String { "" }
     public var deviceName: String { "" }
+    public var deviceId: String { "" }
     public var screenHeight: CGFloat { 0 }
 }
 

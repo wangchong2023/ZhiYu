@@ -17,12 +17,23 @@ Authorization: Bearer <your_access_token>
 ```
 Token 可通过登录接口或刷新 Token 接口获取。
 
-### 1.3 内容类型 (Content-Type)
+### 1.3 设备标识请求头 (Device Identification Headers)
+所有接口（含登录/注册，`requiresAuth=false` 同样携带）必须透传设备标识，后端据此登记在线会话与支持设备级踢出。缺失时后端 fail-safe 跳过登记，但该用户不进在线名单、无法被设备级踢出：
+```http
+X-Device-Id: <设备持久化唯一标识>
+X-Device-Name: <设备型号，如 "iPhone 15 Pro">
+X-Device-Platform: <设备平台，如 "iOS">
+```
+- `X-Device-Id`：推荐使用 `identifierForVendor`（IDFV）或首次启动生成并持久化到 Keychain 的 UUID，保证同一设备跨会话稳定。
+- 同一 `X-Device-Id` 重复登录时后端 upsert 设备记录并覆盖在线会话（旧 token 自然失效），客户端无需特殊处理。
+- 被设备级踢出或强制下线后，接口返回 `401`（含 `TOKEN_REUSE_DETECTED` 等语义），客户端应清除本地 Token 并跳转登录页。
+
+### 1.4 内容类型 (Content-Type)
 - 普通请求/响应格式：`application/json; charset=utf-8`
 - 文件上传请求格式：`multipart/form-data`
 - 大文件/权重拉取：`application/octet-stream` (支持 HTTP `Range` 头断点续传)
 
-### 1.4 通用响应格式 (Standard Response Structure)
+### 1.5 通用响应格式 (Standard Response Structure)
 所有 JSON 接口返回统一的数据封装：
 
 ```json
@@ -34,7 +45,7 @@ Token 可通过登录接口或刷新 Token 接口获取。
 }
 ```
 
-### 1.5 常见状态码与错误码
+### 1.6 常见状态码与错误码
 
 | HTTP Status | 业务 code | 描述说明 |
 | :--- | :--- | :--- |
@@ -46,7 +57,7 @@ Token 可通过登录接口或刷新 Token 接口获取。
 | `429 Too Many Requests` | `42901` | 请求频率超出限制 (Rate Limit) |
 | `500 Internal Error` | `50001` | 服务器内部故障 |
 
-### 1.6 对外 API 接口全景汇总表
+### 1.7 对外 API 接口全景汇总表
 
 下表汇集了智宇 (ZhiYu) 系统中所有对外 RESTful API 接口的全景视图，方便架构师与开发者快速查阅与对接：
 

@@ -24,6 +24,7 @@ final class MockDeviceInfoService: DeviceInfoProtocol, @unchecked Sendable {
     var systemVersion: String
     var deviceModel: String
     var deviceName: String
+    var deviceId: String
     var screenHeight: CGFloat
 
     /// 创建 Mock 设备信息服务
@@ -31,16 +32,19 @@ final class MockDeviceInfoService: DeviceInfoProtocol, @unchecked Sendable {
     ///   - systemVersion: 模拟系统版本，默认 "17.4"
     ///   - deviceModel: 模拟设备型号，默认 "iPhone 15 Pro Mock"
     ///   - deviceName: 模拟设备名称，默认 "Test Device"
+    ///   - deviceId: 模拟设备持久化唯一标识，默认 "mock-device-id"
     ///   - screenHeight: 模拟屏幕高度，默认 852 pt
     init(
         systemVersion: String = "17.4",
         deviceModel: String = "iPhone 15 Pro Mock",
         deviceName: String = "Test Device",
+        deviceId: String = "mock-device-id",
         screenHeight: CGFloat = 852
     ) {
         self.systemVersion = systemVersion
         self.deviceModel = deviceModel
         self.deviceName = deviceName
+        self.deviceId = deviceId
         self.screenHeight = screenHeight
     }
 }

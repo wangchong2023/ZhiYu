@@ -56,6 +56,16 @@ public struct AppConstants {
         public static let headerContentType: String = SystemConstants.HTTPHeader.contentType
         /// Authorization 请求头字段名
         public static let headerAuthorization: String = SystemConstants.HTTPHeader.authorization
+        /// X-Device-Id 请求头字段名（设备持久化唯一标识）
+        public static let headerDeviceId: String = SystemConstants.HTTPHeader.xDeviceId
+        /// X-Device-Name 请求头字段名（设备名称/型号展示）
+        public static let headerDeviceName: String = SystemConstants.HTTPHeader.xDeviceName
+        /// X-Device-Platform 请求头字段名（设备平台）
+        public static let headerDevicePlatform: String = SystemConstants.HTTPHeader.xDevicePlatform
+
+        // MARK: - 平台标识
+        /// iOS 平台标识（X-Device-Platform 取值）
+        public static let platformiOS: String = SystemConstants.Platform.iOS
 
         // MARK: - Content-Type 值（引用 SystemConstants.ContentType / MIMEType）
         /// JSON 请求体 MIME 类型

@@ -25,20 +25,22 @@ final class CrossPlatformProtocolDefinitionTests: XCTestCase {
 
     // ── DeviceInfoProtocol ──
 
-    /// TC-PD-01: 验证 DeviceInfoProtocol 包含 4 个必需属性，且返回值类型正确
-    func test_DeviceInfoProtocol_hasFourRequiredProperties() {
+    /// TC-PD-01: 验证 DeviceInfoProtocol 包含 5 个必需属性，且返回值类型正确
+    func test_DeviceInfoProtocol_hasFiveRequiredProperties() {
         let mock = MockDeviceInfoService()
         let service: DeviceInfoProtocol = mock
 
-        // 访问全部 4 个属性，编译通过即可验证协议签名完整
+        // 访问全部 5 个属性，编译通过即可验证协议签名完整
         let version: String = service.systemVersion
         let model: String = service.deviceModel
         let name: String = service.deviceName
+        let deviceId: String = service.deviceId
         let height: CGFloat = service.screenHeight
 
         XCTAssertFalse(version.isEmpty, "systemVersion 不应为空")
         XCTAssertFalse(model.isEmpty, "deviceModel 不应为空")
         XCTAssertFalse(name.isEmpty, "deviceName 不应为空")
+        XCTAssertFalse(deviceId.isEmpty, "deviceId 不应为空")
         XCTAssertGreaterThan(height, 0, "screenHeight 应 > 0")
     }
 
@@ -155,6 +157,7 @@ final class CrossPlatformMockUsabilityTests: XCTestCase {
             systemVersion: "18.0",
             deviceModel: "iPhone 16 Pro",
             deviceName: "QA 测试机",
+            deviceId: "qa-device-01",
             screenHeight: 932
         )
         let service: DeviceInfoProtocol = mock
@@ -162,6 +165,7 @@ final class CrossPlatformMockUsabilityTests: XCTestCase {
         XCTAssertEqual(service.systemVersion, "18.0")
         XCTAssertEqual(service.deviceModel, "iPhone 16 Pro")
         XCTAssertEqual(service.deviceName, "QA 测试机")
+        XCTAssertEqual(service.deviceId, "qa-device-01")
         XCTAssertEqual(service.screenHeight, 932)
     }
 
@@ -174,6 +178,7 @@ final class CrossPlatformMockUsabilityTests: XCTestCase {
         XCTAssertFalse(service.systemVersion.isEmpty)
         XCTAssertFalse(service.deviceModel.isEmpty)
         XCTAssertFalse(service.deviceName.isEmpty)
+        XCTAssertFalse(service.deviceId.isEmpty)
         XCTAssertGreaterThan(service.screenHeight, 0)
     }
 
@@ -275,6 +280,7 @@ final class CrossPlatformDIRegistrationTests: XCTestCase {
             systemVersion: "17.5",
             deviceModel: "DI Test Device",
             deviceName: "DI 测试",
+            deviceId: "di-device",
             screenHeight: 1000
         )
 
@@ -292,6 +298,7 @@ final class CrossPlatformDIRegistrationTests: XCTestCase {
         XCTAssertEqual(resolved.systemVersion, "17.5")
         XCTAssertEqual(resolved.deviceModel, "DI Test Device")
         XCTAssertEqual(resolved.deviceName, "DI 测试")
+        XCTAssertEqual(resolved.deviceId, "di-device")
         XCTAssertEqual(resolved.screenHeight, 1000)
     }
 

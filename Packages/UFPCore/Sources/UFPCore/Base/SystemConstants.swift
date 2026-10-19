@@ -87,6 +87,18 @@ public enum SystemConstants {
         public static let accept: String = "Accept"
         /// User-Agent 请求头字段名
         public static let userAgent: String = "User-Agent"
+        /// X-Device-Id 请求头字段名（设备持久化唯一标识，后端据此登记在线会话/设备级踢出）
+        public static let xDeviceId: String = "X-Device-Id"
+        /// X-Device-Name 请求头字段名（设备名称/型号展示）
+        public static let xDeviceName: String = "X-Device-Name"
+        /// X-Device-Platform 请求头字段名（设备平台）
+        public static let xDevicePlatform: String = "X-Device-Platform"
+    }
+
+    // MARK: - 平台标识 (Platform)
+    public enum Platform {
+        /// iOS 平台标识
+        public static let iOS: String = "iOS"
     }
 
     // MARK: - HTTP 内容类型 (Content Types)
