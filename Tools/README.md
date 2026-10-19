@@ -53,6 +53,8 @@ Tools/
 | `ios-audit-design-magic-numbers.py` | 自动扫描代码中的魔鬼数字（颜色、尺寸及硬编码常数） |
 | `ios-check-design-hig.py` | 校验 Apple HIG 无障碍规范（字号限制、hint 等） |
 | `ios-audit-design-token-layering.py` | 校验 3 级设计令牌分层 (3-Tier Tokens) 与平台上下文动态解耦规范 |
+| `audit-debug-in-sources.py` | 阻断 Sources/ 生产代码中内嵌的 #if DEBUG 测试分支与 Mock 凭证 |
+| `check-code-test-coupling.py` | 阻断 Sources/ 生产代码中内嵌的测试专用分支、后门 API 与凭证字面量 |
 
 ### Release (安全与发布就绪)
 | 脚本 | 功能说明 |

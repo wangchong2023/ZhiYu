@@ -33,11 +33,11 @@ final class AuthRegionDetectorTests: XCTestCase {
         let usInfo = RegionCapabilities.RegionInfo(loginPageType: "international", pluginMarketUrl: "mock_url")
         let capabilities = RegionCapabilities(regions: ["CN": cnInfo, "US": usInfo])
         
-        // 2. 注入 Mock 配置
-        detector.injectCapabilities(capabilities)
+        // 2. 通过构造器直接注入测试配置，隔离单例状态
+        let customDetector = AuthRegionDetector(capabilities: capabilities)
         
         // 3. 执行默认探测（测试当前设备环境的推荐服务区）
-        let region = detector.detectDefaultRegion()
+        let region = customDetector.detectDefaultRegion()
         
         // 4. 验证返回类型是否属于合法的 AuthRegion 分类
         XCTAssertTrue(AuthRegion.allCases.contains(region))
@@ -49,11 +49,11 @@ final class AuthRegionDetectorTests: XCTestCase {
         let defaultInfo = RegionCapabilities.RegionInfo(loginPageType: "international", pluginMarketUrl: "mock_url")
         let capabilities = RegionCapabilities(regions: ["default": defaultInfo])
         
-        // 2. 注入 Mock 配置
-        detector.injectCapabilities(capabilities)
+        // 2. 通过构造器直接注入测试配置
+        let fallbackDetector = AuthRegionDetector(capabilities: capabilities)
         
         // 3. 运行探测，由于没有显式匹配当前区域，应该使用 default 兜底映射
-        let region = detector.detectDefaultRegion()
+        let region = fallbackDetector.detectDefaultRegion()
         
         // 4. 校验兜底结果是否正确匹配到了 international
         XCTAssertEqual(region, .international)

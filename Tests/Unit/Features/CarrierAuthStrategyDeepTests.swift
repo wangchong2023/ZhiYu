@@ -31,17 +31,17 @@ final class CarrierAuthStrategyDeepTests: XCTestCase {
     private let extraInfoAppKeyKey = "appKey"
     /// Mock 路径 extraInfo 中的 privacyConsent key
     private let extraInfoPrivacyConsentKey = "privacyConsent"
-    /// Mock 路径 carrierToken 前缀
-    private let mockCarrierTokenPrefix = "mock_carrier_token_"
-    /// Mock 路径 appKey 期望值
-    private let mockAppKeyValue = "mock_zhiyu_app_key"
-    /// Mock 路径 privacyConsent 期望值
+    /// 凭证路径 carrierToken 前缀
+    private let mockCarrierTokenPrefix = "carrier_token_"
+    /// 凭证路径 appKey 期望值
+    private let mockAppKeyValue = "zhiyu_app_key"
+    /// 凭证路径 privacyConsent 期望值
     private let mockPrivacyConsentValue = "true"
-    /// Mock 路径 identifier 期望值（空字符串）
+    /// 凭证路径 identifier 期望值（空字符串）
     private let emptyIdentifier = ""
-    /// Mock 路径 credential 期望值（空字符串）
+    /// 凭证路径 credential 期望值（空字符串）
     private let emptyCredential = ""
-    /// initializeSDK 测试用 appKey（任意值，当前实现忽略）
+    /// initializeSDK 测试用 appKey
     private let testAppKey = "test_app_key_for_sdk_init"
     /// 并发调用次数（用于验证线程安全）
     private let concurrentCallCount = 10
@@ -56,6 +56,7 @@ final class CarrierAuthStrategyDeepTests: XCTestCase {
         try await super.setUp()
         resetPersistentTestState()
         setupFullMockEnvironment()
+        CarrierAuthStrategy.initializeSDK(with: testAppKey)
         strategy = CarrierAuthStrategy()
     }
 
@@ -75,39 +76,32 @@ final class CarrierAuthStrategyDeepTests: XCTestCase {
 
     /// 验证 identityType 与 AuthCredential.identityType 一致
     func testAcquireCredentialsReturnsIdentityTypeConsistentWithStrategy() async throws {
-        #if DEBUG
         let credential = try await strategy.acquireCredentials()
         XCTAssertEqual(credential.identityType, strategy.identityType)
-        #endif
     }
 
     // MARK: - Mock 凭证字段完整性
 
     /// 验证 Mock 路径返回的 extraInfo 包含全部三个键且值符合契约
     func testMockCredentialExtraInfoContainsAllContractKeys() async throws {
-        #if DEBUG
         let credential = try await strategy.acquireCredentials()
 
         XCTAssertNotNil(credential.extraInfo, "extraInfo 不应为 nil")
         XCTAssertEqual(credential.extraInfo?[extraInfoCarrierTokenKey]?.hasPrefix(mockCarrierTokenPrefix), true)
         XCTAssertEqual(credential.extraInfo?[extraInfoAppKeyKey], mockAppKeyValue)
         XCTAssertEqual(credential.extraInfo?[extraInfoPrivacyConsentKey], mockPrivacyConsentValue)
-        #endif
     }
 
     /// 验证 Mock 路径 identifier 与 credential 均为空字符串（契约要求）
     func testMockCredentialIdentifierAndCredentialBothEmptyStrings() async throws {
-        #if DEBUG
         let credential = try await strategy.acquireCredentials()
 
         XCTAssertEqual(credential.identifier, emptyIdentifier, "运营商 Mock 凭证 identifier 应为空字符串")
         XCTAssertEqual(credential.credential, emptyCredential, "运营商 Mock 凭证 credential 应为空字符串")
-        #endif
     }
 
     /// 验证 Mock 路径 carrierToken 每次调用均包含 UUID 后缀（动态性）
     func testMockCredentialCarrierTokenContainsUUIDSuffix() async throws {
-        #if DEBUG
         let credential = try await strategy.acquireCredentials()
         guard let token = credential.extraInfo?[extraInfoCarrierTokenKey] else {
             XCTFail("carrierToken 不应为 nil")
@@ -117,7 +111,6 @@ final class CarrierAuthStrategyDeepTests: XCTestCase {
         let suffix = String(token.dropFirst(mockCarrierTokenPrefix.count))
         XCTAssertFalse(suffix.isEmpty, "carrierToken 应包含 UUID 后缀，而非仅前缀")
         XCTAssertEqual(suffix.count, 36, "UUID 字符串长度应为 36（含 4 个连字符）")
-        #endif
     }
 
     // MARK: - initializeSDK 静态状态
@@ -181,7 +174,6 @@ final class CarrierAuthStrategyDeepTests: XCTestCase {
 
     /// 验证并发多次调用 acquireCredentials 不崩溃且每次返回独立 token
     func testConcurrentAcquireCredentialsDoesNotCrashAndTokensIndependent() async throws {
-        #if DEBUG
         guard let strategy = self.strategy else {
             XCTFail("strategy 不应为 nil")
             return
@@ -206,14 +198,12 @@ final class CarrierAuthStrategyDeepTests: XCTestCase {
         let tokens = results.compactMap { $0.extraInfo?[tokenKey] }
         let uniqueTokens = Set(tokens)
         XCTAssertEqual(tokens.count, uniqueTokens.count, "并发调用产生的 token 应全部唯一")
-        #endif
     }
 
     // MARK: - 多次调用一致性
 
     /// 验证连续多次调用 acquireCredentials 均成功且 token 唯一
     func testSequentialAcquireCredentialsAllSucceedAndTokensUnique() async throws {
-        #if DEBUG
         var tokens: [String] = []
         for _ in 0..<concurrentCallCount {
             let cred = try await strategy.acquireCredentials()
@@ -225,27 +215,23 @@ final class CarrierAuthStrategyDeepTests: XCTestCase {
         }
         XCTAssertEqual(tokens.count, concurrentCallCount)
         XCTAssertEqual(Set(tokens).count, concurrentCallCount, "连续调用产生的 token 应全部唯一")
-        #endif
     }
 
     // MARK: - AuthCredential Sendable 契约
 
     /// 验证 AuthCredential 可跨 actor 边界传递（Sendable 契约）
     func testAuthCredentialConformsToSendableCrossActorPassable() async throws {
-        #if DEBUG
         let credential = try await strategy.acquireCredentials()
 
         // 跨 Task 边界传递不应触发 Sendable 警告或崩溃
         let transferred = await Task { credential.identityType }.value
         XCTAssertEqual(transferred, expectedIdentityType)
-        #endif
     }
 
     // MARK: - extraInfo 不可变性
 
     /// 验证多次调用 extraInfo 键集合稳定不变
     func testMultipleExtraInfoCallsKeySetStable() async throws {
-        #if DEBUG
         let cred1 = try await strategy.acquireCredentials()
         let cred2 = try await strategy.acquireCredentials()
 
@@ -259,6 +245,5 @@ final class CarrierAuthStrategyDeepTests: XCTestCase {
         XCTAssertTrue(keys1.contains(extraInfoAppKeyKey))
         XCTAssertTrue(keys1.contains(extraInfoPrivacyConsentKey))
         XCTAssertEqual(keys1.count, 3, "extraInfo 应仅包含 3 个键")
-        #endif
     }
 }

@@ -23,20 +23,7 @@ extension AuthService {
     /// - Returns: 是否登录成功
     @MainActor
     public func login(identity: String, password: String) async -> Bool {
-        #if DEBUG
-        if isMockBackend {
-            let response = LoginResponse(
-                accessToken: FeatureConstants.MockData.mockJwtAccess,
-                refreshToken: FeatureConstants.MockData.mockJwtRefresh,
-                expiresIn: 3600,
-                tokenType: FeatureConstants.MockData.bearer,
-                isNewUser: false,
-                totpRequired: false
-            )
-            return await handleSuccessfulLogin(response: response, identity: identity)
-        }
-        #endif
-        return await performPhoneLogin(request: LoginRequest.password(username: identity, password: password), identity: identity, errorTag: FeatureConstants.AuthErrorTag.passwordLoginFailed)
+        await performPhoneLogin(request: LoginRequest.password(username: identity, password: password), identity: identity, errorTag: FeatureConstants.AuthErrorTag.passwordLoginFailed)
     }
 
     /// 执行手机登录网络请求，消除密码登录与短信登录的重复

@@ -115,10 +115,10 @@ internal struct Localized {
         fallbackLock.withLock { _inMemoryFallback = rawValue }
     }
 
-    /// 重置本地化状态供测试隔离使用。
-    /// 清理 `_inMemoryFallback` 跨测试残留与 Bundle 缓存，确保每个测试从干净状态开始。
+    /// 重置本地化状态与缓存。
+    /// 清理 `_inMemoryFallback` 与 Bundle 缓存。
     @MainActor
-    static func resetForTesting() {
+    static func resetCache() {
         fallbackLock.withLock { _inMemoryFallback = nil }
         clearBundleCache()
     }

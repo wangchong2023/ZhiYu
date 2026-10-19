@@ -54,32 +54,23 @@ final class AuthLogoutDeepTests: XCTestCase {
         AuthSession.shared.logout()
         try? KeychainService.shared.delete(key: jwtTokenKey)
         try? KeychainService.shared.delete(key: refreshTokenKey)
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
     }
 
     override func tearDown() async throws {
         AuthSession.shared.logout()
-        await awaitAllLogoutTasks()
+        await AuthService.shared.performLogout()
         await NetworkClient.shared.awaitRefreshTask()
         await NetworkClient.shared.setTestSession(nil)
         TestMockURLProtocol.requestHandler = nil
         KeychainService.testOverride = nil
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         try await super.tearDown()
     }
 
     // MARK: - 辅助方法
 
-    /// 等待所有 logout 后台任务完成
+    /// 等待所有 logout 完成
     private func awaitAllLogoutTasks() async {
-        for task in AuthService.shared.testLogoutTasks {
-            await task.value
-        }
-        AuthService.shared.testLogoutTasks.removeAll()
+        await AuthService.shared.performLogout()
     }
 
     /// 构造测试用户
@@ -106,43 +97,43 @@ final class AuthLogoutDeepTests: XCTestCase {
         )
     }
 
-    // MARK: - logout 后台任务管理
+    // MARK: - performLogout 结构化异步登出测试
 
-    /// 验证 logout 后 testLogoutTask 被设置
-    func testLogoutSetsTestLogoutTask() async {
+    /// 验证 performLogout 直接异步登出并清空状态
+    func testPerformLogoutClearsStateDirectly() async {
         AuthSession.shared.update(user: makeTestUser())
+        XCTAssertTrue(AuthService.shared.isAuthenticated)
 
-        AuthService.shared.logout()
-        await awaitAllLogoutTasks()
+        await AuthService.shared.performLogout()
 
-        XCTAssertNotNil(AuthService.shared.testLogoutTask, "logout 应设置 testLogoutTask")
+        XCTAssertFalse(AuthService.shared.isAuthenticated, "performLogout 后 isAuthenticated 应为 false")
+        XCTAssertNil(AuthService.shared.currentUser, "performLogout 后 currentUser 应为 nil")
     }
 
-    /// 验证 logout 后 testLogoutTasks 列表追加任务
-    /// - Note: `awaitAllLogoutTasks` 会清空 testLogoutTasks 数组，因此需在 await 前检查 count。
-    func testLogoutTestLogoutTasksListAppendsTask() async {
+    /// 验证多次连续调用 performLogout 具备幂等性
+    func testPerformLogoutMultipleCallsIsIdempotent() async {
         AuthSession.shared.update(user: makeTestUser())
 
-        let initialCount = AuthService.shared.testLogoutTasks.count
-        AuthService.shared.logout()
-        // logout() 同步追加 task 到 testLogoutTasks，await 前检查
-        XCTAssertEqual(AuthService.shared.testLogoutTasks.count, initialCount + 1, "logout 应向 testLogoutTasks 追加任务")
-        await awaitAllLogoutTasks()
+        await AuthService.shared.performLogout()
+        XCTAssertFalse(AuthService.shared.isAuthenticated)
+
+        await AuthService.shared.performLogout()
+        XCTAssertFalse(AuthService.shared.isAuthenticated)
     }
 
-    /// 验证多次 logout 后 testLogoutTasks 列表持续增长
-    /// - Note: `awaitAllLogoutTasks` 会清空 testLogoutTasks 数组，因此每次 logout 后立即检查。
-    func testLogoutMultipleCallsTestLogoutTasksKeepGrowing() async {
+    /// 验证并发调用 performLogout 具备线程安全性
+    func testPerformLogoutConcurrentCallsAreSafe() async {
         AuthSession.shared.update(user: makeTestUser())
 
-        let initialCount = AuthService.shared.testLogoutTasks.count
-        AuthService.shared.logout()
-        XCTAssertEqual(AuthService.shared.testLogoutTasks.count, initialCount + 1, "第一次 logout 应追加任务")
-        await awaitAllLogoutTasks()
+        await withTaskGroup(of: Void.self) { group in
+            for _ in 0..<3 {
+                group.addTask {
+                    await AuthService.shared.performLogout()
+                }
+            }
+        }
 
-        AuthService.shared.logout()
-        XCTAssertEqual(AuthService.shared.testLogoutTasks.count, 1, "第二次 logout 应追加任务（数组已清空）")
-        await awaitAllLogoutTasks()
+        XCTAssertFalse(AuthService.shared.isAuthenticated)
     }
 
     /// 验证 logout 清空 isAuthenticated

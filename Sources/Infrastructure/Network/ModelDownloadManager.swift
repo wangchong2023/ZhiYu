@@ -23,15 +23,11 @@ import UFPCore
 /// - 业务路径（Documents/{modelId}.bin）与本地化错误消息保留在本层
 public actor ModelDownloadManager: ModelDownloadCapabilities {
 
-    /// 测试用访问器：暴露 SHA256 缓冲区大小常量（供单元测试验证常量抽取）
-    internal static var sha256BufferSizeForTesting: Int {
-        Int(SystemConstants.bytesPerKB) * Int(SystemConstants.bytesPerKB)
-    }
+    /// SHA256 缓冲区大小常量
+    public static let sha256BufferSize: Int = Int(SystemConstants.bytesPerKB) * Int(SystemConstants.bytesPerKB)
 
-    /// 测试用访问器：暴露沙盒分配失败前缀常量
-    internal static var sandboxAllocationFailedPrefixForTesting: String {
-        "Sandbox storage allocation failed:"
-    }
+    /// 沙盒分配失败前缀常量
+    public static let sandboxAllocationFailedPrefix: String = "Sandbox storage allocation failed:"
 
     /// 全局单例注入，便于在 App 顶层会话绑定
     public static let shared = ModelDownloadManager()

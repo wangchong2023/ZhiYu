@@ -19,15 +19,9 @@ public final class WeChatAuthStrategy: AuthStrategy {
     
     public init() {}
     
-    /// 获取微信认证凭证（iOS 模拟实现）
+    /// 获取微信认证凭证（待三方 SDK 接入，当前返回未配置错误）
     public func acquireCredentials() async throws -> AuthCredential {
-        let mockCode = "mock_wechat_code_\(UUID().uuidString)"
-        return AuthCredential(
-            identityType: identityType,
-            identifier: "mock_wechat_openid",
-            credential: mockCode,
-            extraInfo: [FeatureConstants.OAuthField.state: UUID().uuidString, FeatureConstants.OAuthField.nickname: FeatureConstants.MockData.weChatMockUser]
-        )
+        throw AppError.auth(domain: FeatureConstants.ModuleName.weChatAuthStrategy, code: -99, description: FeatureConstants.ErrorDescription.weChatSDKNotConfigured)
     }
 }
 

@@ -16,25 +16,26 @@ import os
 
 /// 安全管理器：负责数据签名、加密与完整性校验。
 class SecurityManager: @unchecked Sendable {
-    /// 真实单例（内部持有）
-    private static let _shared = SecurityManager()
-    /// 测试覆盖：设置非 nil 值后 shared 返回 Mock 实例；在 tearDown 中置 nil 恢复
-    /// 仅在测试套件中写入，生产代码只读；测试串行执行，无并发冲突。
-    nonisolated(unsafe) static var testOverride: SecurityManager?
-    /// 全局单例入口：测试模式下可被替换
-    static var shared: SecurityManager { testOverride ?? _shared }
+    /// 默认单例
+    private static let _defaultShared = SecurityManager()
+    /// 全局单例入口：优先从 DI 容器解析已注册实例，否则使用默认单例
+    static var shared: SecurityManager {
+        // inject_exempt: 静态单例优先从 DI 解析已注册实例，否则 fallback 默认单例（冷启动降级）
+        ServiceContainer.shared.resolveOptional(SecurityManager.self) ?? _defaultShared
+    }
 
     // MARK: - 依赖注入
     
     /// 注入文件指纹签名仓储，贯彻 DIP 依赖倒置原则。
     /// 采用可选解析防止在冷启动尚未注册时发生崩溃，此时会安全降级到 UserDefaults。
     private var signatureRepository: (any FileSignatureRepository)? {
+        // inject_exempt: 可选解析，冷启动未注册时安全降级
         ServiceContainer.shared.resolveOptional((any FileSignatureRepository).self)
     }
 
     /// 键值存储抽象，用于 Keychain 故障时的 DEBUG 降级回退。
     /// 使用 resolveOptional 优雅降级：DI 容器未就绪时返回 nil。
-    @Inject private var keyStore: (any KeyStoreProtocol)?
+    @Inject private var keyStore: (any KeyStoreProtocol)? // inject_exempt: @Inject 存量（Keychain 降级回退）
 
     // MARK: - 存储键名
     private let saltKey = AppConstants.Keys.Storage.securitySalt

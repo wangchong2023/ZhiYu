@@ -282,17 +282,17 @@ final class WatchSyncTests: XCTestCase {
     #if os(watchOS)
     /// 验证 watchOS 端的 WatchWatchSyncService 实现与 WCSessionDelegate 回调行为
     func testWatchWatchSyncServiceImplementation() async {
-        // 1. 实例化 WatchWatchSyncService
-        let service = WatchWatchSyncService()
+        // 1. 实例化 WatchWatchSyncService，测试未激活状态
+        var mockState: WCSessionActivationState = .notActivated
+        let service = WatchWatchSyncService(activationStateProvider: { mockState })
         XCTAssertEqual(service.lastReceivedText, "", "初始化时接收文本应为空")
         
         // 2. 测试发送内容 (由于在测试环境中 session activationState 不是 activated，应提前返回而不会崩溃)
         XCTAssertNoThrow(service.sendContent("测试发送"), "在未激活会话下发送不应抛出异常或崩溃")
         
         // 2.1 模拟已激活状态下的数据发送逻辑，覆盖 transferUserInfo 的完整拼装流程
-        service.mockActivationState = .activated
-        XCTAssertNoThrow(service.sendContent("模拟已激活发送"), "在激活插桩状态下发送不应崩溃")
-        service.mockActivationState = nil
+        mockState = .activated
+        XCTAssertNoThrow(service.sendContent("模拟已激活发送"), "在激活状态下发送不应崩溃")
         
         // 3. 模拟激活成功及激活异常回调
         let session = WCSession.default
@@ -331,13 +331,14 @@ final class WatchSyncTests: XCTestCase {
     
     /// 验证 watchOS 端音频录音文件分片与断点续传的离线缓存与重连机制 (TC-WAT-03)
     func testWatchAudioOfflineTransferAndSelfHealing() {
-        let service = WatchWatchSyncService()
+        var mockState: WCSessionActivationState = .notActivated
+        let service = WatchWatchSyncService(activationStateProvider: { mockState })
         let originalSize = 100 * 1024 // 100KB
         var randomBytes = Data(count: originalSize)
         
         UserDefaults.standard.removeObject(forKey: "watch_pending_audio_transfers")
         
-        // 尝试发送，由于离线（mockActivationState 默认为 nil 且未激活），分片应缓存于本地
+        // 尝试发送，由于离线（mockState 为 .notActivated），分片应缓存于本地
         service.sendAudioData(randomBytes, filename: "offline_voice.m4a")
         
         let pending = UserDefaults.standard.dictionary(forKey: "watch_pending_audio_transfers") as? [String: [String: Any]]
@@ -352,15 +353,14 @@ final class WatchSyncTests: XCTestCase {
             XCTFail("缓存数据结构解析失败")
         }
         
-        // 模拟重连激活 (激活插桩改为 .activated)
-        service.mockActivationState = .activated
+        // 模拟重连激活 (闭包返回状态改为 .activated)
+        mockState = .activated
         service.triggerPendingTransfers()
         
         // 验证发送完毕后，本地离线队列应被清零
         let pendingAfterActive = UserDefaults.standard.dictionary(forKey: "watch_pending_audio_transfers") as? [String: [String: Any]]
         XCTAssertTrue(pendingAfterActive?.isEmpty ?? true, "重传成功后，本地离线队列应被清空")
         
-        service.mockActivationState = nil
         UserDefaults.standard.removeObject(forKey: "watch_pending_audio_transfers")
     }
     #endif

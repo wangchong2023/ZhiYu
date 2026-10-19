@@ -52,6 +52,8 @@ extension FeatureConstants {
         static let clientIDKey = "GIDClientID"
         /// 占位客户端 ID，用于区分「已配置」与「未替换占位」
         static let placeholderClientID = "your-google-client-id"
+        /// Google OAuth 占位凭据（Google 登录依靠 extraInfo["idToken"]，credential 字段填充非空占位以满足后端 @NotBlank 校验）
+        static let oidcCredentialPlaceholder = "google_oidc_token"
     }
 
     // MARK: - 插件权限名 (Permission Name)
@@ -94,8 +96,17 @@ extension FeatureConstants {
     /// 区域与语言标识符
     enum LocaleIdentifier {
         static let cn = "CN"
+        static let zh = "zh"
         static let zhHans = "zh-Hans"
         static let zhHansCN = "_CN"
+        static let chinaTimeZones: [String] = [
+            "Asia/Shanghai",
+            "Asia/Chongqing",
+            "Asia/Harbin",
+            "Asia/Urumqi",
+            "Asia/Beijing",
+            "PRC"
+        ]
     }
 
     // MARK: - 错误描述 (Error Description)
@@ -104,18 +115,7 @@ extension FeatureConstants {
         static let githubURLError = "GitHub URL Error"
         static let githubCallbackError = "GitHub Callback Error"
         static let githubStateMismatch = "GitHub State Mismatch"
-    }
-
-    // MARK: - Mock 凭证 (Mock Credential)
-    /// Mock 认证凭证字面量
-    enum MockCredential {
-        static let mockJwtToken = "mock_jwt_token"
-    }
-
-    // MARK: - Mock 凭证 JSON Key (Mock Credential JSON Key)
-    /// OAuth mock userInfo 字典 key
-    enum MockCredentialKey {
-        static let nickname = "nickname"
+        static let weChatSDKNotConfigured = "WeChat SDK Not Configured"
     }
 
     // MARK: - 认证翻转动效 (Auth Flip Animation)

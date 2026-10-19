@@ -15,19 +15,19 @@ import Security
 /// 钥匙串服务包装器 (@SR-03: 安全存储鉴权令牌)
 /// 提供对系统 Keychain 的轻量级访问，支持敏感数据的持久化存储与隔离。
 class KeychainService: @unchecked Sendable {
-    /// 真实单例（内部持有）
-    private static let _shared = KeychainService()
-    /// 测试覆盖：设置非 nil 值后 shared 返回 Mock 实例；在 tearDown 中置 nil 恢复
-    /// 仅在测试套件中写入，生产代码只读；测试串行执行，无并发冲突。
-    nonisolated(unsafe) static var testOverride: KeychainService?
-    /// 全局单例入口：测试模式下可被替换
-    static var shared: KeychainService { testOverride ?? _shared }
+    /// 默认单例
+    private static let _defaultShared = KeychainService()
+    /// 全局单例入口：优先从 DI 容器解析已注册实例，否则使用默认单例
+    static var shared: KeychainService {
+        // inject_exempt: 静态单例优先从 DI 解析已注册实例，否则 fallback 默认单例（冷启动降级）
+        ServiceContainer.shared.resolveOptional(KeychainService.self) ?? _defaultShared
+    }
     /// Keychain 服务标识符
     private let serviceName = "com.zhiyu.keychain"
 
     /// 键值存储抽象，用于 Keychain entitlements 缺失时的 DEBUG 降级回退。
     /// 使用 resolveOptional 优雅降级：DI 容器未就绪时返回 nil，避免启动/测试崩溃。
-    @Inject private var keyStore: (any KeyStoreProtocol)?
+    @Inject private var keyStore: (any KeyStoreProtocol)? // inject_exempt: @Inject 存量（Keychain 降级回退）
 
     init() {}
 

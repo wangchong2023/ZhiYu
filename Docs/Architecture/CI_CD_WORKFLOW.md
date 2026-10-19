@@ -152,6 +152,16 @@ curl -X POST "http://127.0.0.1:8480/api/v4/projects/constantine%2FZhiYu/protecte
   }'
 ```
 
+### 3.4 分支同步与冲突预防 (Branch Sync & Conflict Prevention)
+
+> 功能分支与 main 并行演进时，若两边对同一批文件异源同改，MR 合并会产生大规模冲突（如 2026-10 源分支与 main 各自独立集成 Google Sign-In 导致 7 文件冲突）。为避免此类情况：
+
+1. **功能分支周期同步 main（强制）**：功能分支每经历一次 main 有新提交（其他 MR 合入），必须尽快 `git fetch origin main && git merge origin/main`（或 `git rebase origin/main`）同步基线，严禁在长期滞后的祖先上积累大量分叉。
+2. **新功能单一来源**：同一功能只允许在一个负责人分支开发，经 MR 合入 main。严禁在 main 直接开发或另起分支重复实现同一功能，避免两分支对同一批文件异源同改。
+3. **提前合并后的跟进**：main 提前合并功能分支部分内容后，功能分支必须立即 merge/rebase main 保持基线一致，避免两分支从不同祖先继续演进同一功能线。
+4. **MR 小步快跑**：每个 MR 聚焦单一主题、控制提交规模（建议 ≤ 10 个提交），避免一次合并跨多个领域。
+5. **合并前冲突预演**：发起 MR 前先在本地 `git merge origin/main` 预演，提前消化冲突，禁止把冲突一次性积压到 MR 合并阶段。
+
 ---
 
 ## 4. 四层纵深防御矩阵 (Defense-in-Depth)

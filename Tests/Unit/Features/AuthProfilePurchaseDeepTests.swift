@@ -77,32 +77,23 @@ final class AuthProfilePurchaseDeepTests: XCTestCase {
         AuthSession.shared.logout()
         try? KeychainService.shared.delete(key: jwtTokenKey)
         try? KeychainService.shared.delete(key: refreshTokenKey)
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
     }
 
     override func tearDown() async throws {
         AuthSession.shared.logout()
-        await awaitAllLogoutTasks()
+        await AuthService.shared.performLogout()
         await NetworkClient.shared.awaitRefreshTask()
         await NetworkClient.shared.setTestSession(nil)
         TestMockURLProtocol.requestHandler = nil
         KeychainService.testOverride = nil
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         try await super.tearDown()
     }
 
     // MARK: - 辅助方法
 
-    /// 等待所有 logout 后台任务完成
+    /// 等待所有 logout 完成
     private func awaitAllLogoutTasks() async {
-        for task in AuthService.shared.testLogoutTasks {
-            await task.value
-        }
-        AuthService.shared.testLogoutTasks.removeAll()
+        await AuthService.shared.performLogout()
     }
 
     /// 构造测试用户
@@ -131,11 +122,70 @@ final class AuthProfilePurchaseDeepTests: XCTestCase {
 
     // MARK: - verifyApplePurchase Mock 模式
 
-    /// 验证 Mock 模式下 verifyApplePurchase 成功激活 Pro
+    /// 快速设置 Apple 验证成功多路由响应
+    private func setupMockVerifySuccess(orderNo: String? = nil, planKey: String = "pro") {
+        TestMockURLProtocol.requestHandler = { request in
+            guard let url = request.url else { throw URLError(.badURL) }
+            guard let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: ["Content-Type": "application/json"]) else {
+                throw URLError(.badServerResponse)
+            }
+            if url.path.contains("verify") {
+                let json: [String: Any] = [
+                    "code": 0, "message": "success",
+                    "data": ["orderNo": orderNo ?? self.testOrderNo, "status": "success", "planKey": planKey],
+                    "requestId": "req", "timestamp": 123
+                ]
+                let data = (try? JSONSerialization.data(withJSONObject: json)) ?? Data()
+                return (response, data)
+            } else if url.path.contains("user/profile") {
+                let json: [String: Any] = [
+                    "code": 0, "message": "success",
+                    "data": [
+                        "userId": 10001, "username": "test_user", "nick": "原始用户",
+                        "avatar": NSNull(), "email": self.testEmail, "mobile": self.testPhone,
+                        "gender": self.testGenderMale, "birthday": self.testBirthday
+                    ],
+                    "requestId": "req", "timestamp": 123
+                ]
+                let data = (try? JSONSerialization.data(withJSONObject: json)) ?? Data()
+                return (response, data)
+            } else if url.path.contains("subscriptions/me") {
+                let quotas: [String: Any] = [
+                    "max_knowledge_pages": User.DefaultQuotas.proMaxPages,
+                    "max_vaults_count": User.DefaultQuotas.proMaxVaults,
+                    "max_plugins_count": User.DefaultQuotas.proMaxPlugins,
+                    "max_file_size_mb": 50,
+                    "daily_ai_messages": -1,
+                    "cloud_llm_models_enabled": true,
+                    "vector_search_enabled": true,
+                    "graph_advanced_enabled": false,
+                    "audio_overview_enabled": false,
+                    "large_attachment_sync": true,
+                    "advanced_export_enabled": true,
+                    "spotlight_indexing_enabled": true,
+                    "pro_plugins_enabled": true,
+                    "custom_local_llm_enabled": true,
+                    "ad_free_enabled": true
+                ]
+                let quotasData = (try? JSONSerialization.data(withJSONObject: quotas)) ?? Data()
+                let quotasJson = String(data: quotasData, encoding: .utf8) ?? ""
+                let json: [String: Any] = [
+                    "code": 0, "message": "success",
+                    "data": ["planKey": planKey, "quotasJson": quotasJson, "featuresJson": NSNull()],
+                    "requestId": "req", "timestamp": 123
+                ]
+                let data = (try? JSONSerialization.data(withJSONObject: json)) ?? Data()
+                return (response, data)
+            }
+            return (response, Data())
+        }
+    }
+
+    // MARK: - verifyApplePurchase 模拟网络响应模式
+
+    /// 验证模拟网络响应下 verifyApplePurchase 成功激活 Pro
     func testVerifyApplePurchaseMockModeSuccessActivatePro() async {
-        #if DEBUG
-        AuthService.forceMockBackend = true
-        defer { AuthService.forceMockBackend = false }
+        setupMockVerifySuccess()
         AuthSession.shared.update(user: makeTestUser(planKey: PlanKey.free))
 
         let success = await AuthService.shared.verifyApplePurchase(
@@ -144,19 +194,22 @@ final class AuthProfilePurchaseDeepTests: XCTestCase {
             orderNo: testOrderNo
         )
 
-        XCTAssertTrue(success, "Mock 模式下验证苹果支付应成功")
+        XCTAssertTrue(success, "验证苹果支付应成功")
         XCTAssertEqual(AuthService.shared.currentUser?.planKey, PlanKey.pro, "应激活为 Pro 套餐")
         XCTAssertEqual(AuthService.shared.currentUser?.maxVaults, proMaxVaults, "应更新为 Pro 最大笔记本数")
         XCTAssertEqual(AuthService.shared.currentUser?.maxPages, proMaxPages, "应更新为 Pro 最大页面数")
         XCTAssertEqual(AuthService.shared.currentUser?.maxPlugins, proMaxPlugins, "应更新为 Pro 最大插件数")
-        #endif
     }
 
-    /// 验证 Mock 模式下 verifyApplePurchase 无当前用户时返回 false
+    /// 验证网络失败下 verifyApplePurchase 返回 false
     func testVerifyApplePurchaseMockModeNoCurrentUserReturnsFalse() async {
-        #if DEBUG
-        AuthService.forceMockBackend = true
-        defer { AuthService.forceMockBackend = false }
+        TestMockURLProtocol.requestHandler = { request in
+            guard let url = request.url else { throw URLError(.badURL) }
+            guard let response = HTTPURLResponse(url: url, statusCode: 500, httpVersion: nil, headerFields: nil) else {
+                throw URLError(.badServerResponse)
+            }
+            return (response, Data())
+        }
         AuthSession.shared.logout()
 
         let success = await AuthService.shared.verifyApplePurchase(
@@ -165,18 +218,12 @@ final class AuthProfilePurchaseDeepTests: XCTestCase {
             orderNo: testOrderNo
         )
 
-        XCTAssertFalse(success, "Mock 模式下无当前用户应返回 false")
-        #endif
+        XCTAssertFalse(success, "网络失败时应返回 false")
     }
 
-    /// 🐛 Bug #2: verifyApplePurchase Mock 模式下激活 Pro 丢失 gender/birthday/features/phone
-    /// 源码 AuthService.swift:235-247，Mock 模式构造 updated User 时未传入 gender、birthday、features、phone，
-    /// 导致这些字段被 User.init 默认值覆盖（gender=nil, birthday=nil, features=[], phone=nil）。
-    /// 严重程度：中（用户购买 Pro 后丢失个人资料字段）
+    /// 验证网络拦截下激活 Pro 保留本地 profile 信息
     func testVerifyApplePurchaseMockModeActivateProLosesGenderAndBirthday() async {
-        #if DEBUG
-        AuthService.forceMockBackend = true
-        defer { AuthService.forceMockBackend = false }
+        setupMockVerifySuccess()
         AuthSession.shared.update(user: makeTestUser(
             gender: testGenderMale,
             birthday: testBirthday,
@@ -191,19 +238,14 @@ final class AuthProfilePurchaseDeepTests: XCTestCase {
         )
 
         XCTAssertTrue(success, "激活应成功")
-        // 🐛 Bug #2: gender 和 birthday 应保留，但实际被重置为 nil
-        XCTAssertNil(AuthService.shared.currentUser?.gender, "当前实现丢失 gender（Bug #2: 应保留原值 \(testGenderMale)）")
-        XCTAssertNil(AuthService.shared.currentUser?.birthday, "当前实现丢失 birthday（Bug #2: 应保留原值 \(testBirthday)）")
-        XCTAssertNil(AuthService.shared.currentUser?.phone, "当前实现丢失 phone（Bug #2: 应保留原值 \(testPhone)）")
-        XCTAssertTrue(AuthService.shared.currentUser?.features.isEmpty == true, "当前实现丢失 features（Bug #2: 应保留原 features）")
-        #endif
+        XCTAssertEqual(AuthService.shared.currentUser?.gender, testGenderMale)
+        XCTAssertEqual(AuthService.shared.currentUser?.birthday, testBirthday)
+        XCTAssertEqual(AuthService.shared.currentUser?.phone, testPhone)
     }
 
-    /// 验证 Mock 模式下 verifyApplePurchase 保留 name 和 email
+    /// 验证模拟网络响应下 verifyApplePurchase 保留 name 和 email
     func testVerifyApplePurchaseMockModeKeepsNameAndEmail() async {
-        #if DEBUG
-        AuthService.forceMockBackend = true
-        defer { AuthService.forceMockBackend = false }
+        setupMockVerifySuccess()
         AuthSession.shared.update(user: makeTestUser())
 
         let success = await AuthService.shared.verifyApplePurchase(
@@ -215,14 +257,11 @@ final class AuthProfilePurchaseDeepTests: XCTestCase {
         XCTAssertTrue(success, "激活应成功")
         XCTAssertEqual(AuthService.shared.currentUser?.name, "原始用户", "应保留原 name")
         XCTAssertEqual(AuthService.shared.currentUser?.email, testEmail, "应保留原 email")
-        #endif
     }
 
-    /// 验证 Mock 模式下 verifyApplePurchase orderNo 为 nil 时仍成功
+    /// 验证 orderNo 为 nil 时仍成功
     func testVerifyApplePurchaseMockModeOrderNoNilStillSucceeds() async {
-        #if DEBUG
-        AuthService.forceMockBackend = true
-        defer { AuthService.forceMockBackend = false }
+        setupMockVerifySuccess(orderNo: nil)
         AuthSession.shared.update(user: makeTestUser())
 
         let success = await AuthService.shared.verifyApplePurchase(
@@ -232,16 +271,12 @@ final class AuthProfilePurchaseDeepTests: XCTestCase {
         )
 
         XCTAssertTrue(success, "orderNo 为 nil 时应仍能成功激活")
-        #endif
     }
 
     // MARK: - verifyApplePurchase 非 Mock 模式
 
     /// 验证非 Mock 模式下 verifyApplePurchase 网络失败时返回 false
     func testVerifyApplePurchaseNonMockModeNetworkFailureReturnsFalse() async {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         AuthSession.shared.update(user: makeTestUser())
         try? KeychainService.shared.store(key: jwtTokenKey, value: testJWTToken)
 

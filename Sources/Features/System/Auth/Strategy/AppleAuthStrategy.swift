@@ -40,26 +40,6 @@ public final class AppleAuthStrategy: NSObject, AuthStrategy {
     /// - Returns: 标准化登录凭证
     /// - Throws: 用户取消授权、获取令牌失败等 NSError
     public func acquireCredentials() async throws -> AuthCredential {
-        #if DEBUG
-        #if targetEnvironment(simulator)
-        // 物理自愈与降级：若在模拟器进行 UI 自动化测试时，为避免拉起 ASAuthorizationController 物理弹窗失败超时，降级返回 Mock
-        // 只有显式在启动参数中配置了 --uitesting 时才退避进入 mock，日常手动调试及真机均走真实逻辑
-        if TestModeDetector.isAnyTesting {
-            let mockAppleToken = "mock_apple_identity_token_\(UUID().uuidString)"
-            return AuthCredential(
-                identityType: identityType,
-                identifier: "mock_apple_user_id",
-                credential: FeatureConstants.MockData.mockAppleCode,
-                extraInfo: [
-                    "idToken": mockAppleToken,
-                    "email": "mock_apple_user@example.com",
-                    "nickname": "Apple Mock User"
-                ]
-            )
-        }
-        #endif
-        #endif
-
         return try await withCheckedThrowingContinuation { continuation in
             self.continuation = continuation
             

@@ -73,25 +73,13 @@ public final class DynamicComplianceManager: @unchecked Sendable, TestStateReset
         return custom ?? fallback
     }
 
-    #if DEBUG
-    /// 测试专用：清空所有远程覆盖，恢复 fallback 默认行为
-    public func clearRemoteOverridesForTesting() {
+    // MARK: - TestStateResettable
+
+    /// 重置单例状态用于测试隔离
+    public func resetStateForTesting() {
         lock.withLock {
             remoteTextOverrides.removeAll()
             remotePatternOverrides.removeAll()
         }
     }
-
-    // MARK: - TestStateResettable
-
-    /// 重置单例状态用于测试隔离
-    public func resetStateForTesting() {
-        clearRemoteOverridesForTesting()
-    }
-    #else
-    // MARK: - TestStateResettable
-
-    /// 重置单例状态用于测试隔离（Release 下无远程覆盖状态需清理，空实现）
-    public func resetStateForTesting() {}
-    #endif
 }

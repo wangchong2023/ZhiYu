@@ -71,6 +71,15 @@ public final class ServiceContainer: @unchecked Sendable {
         #endif
     }
 
+    /// 注销服务
+    /// - Parameter type: 待注销服务的协议或类类型
+    public func unregister<T>(_ type: T.Type) {
+        let key = makeKey(for: type)
+        lock.withLock {
+            _ = services.removeValue(forKey: key)
+        }
+    }
+
     /// 标记是否由生产注册链（AppEnvironment）完成初始化，防止测试误清
     private var isProductionChainPopulated = false
 

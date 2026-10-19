@@ -257,12 +257,12 @@ final class ModelDownloadAndStoreKitDeepTests: XCTestCase {
     // MARK: - 5. AppleAuthStrategy 凭证获取测试
 
     func testAppleAuthStrategy_AcquireCredentials() async throws {
-        let strategy = AppleAuthStrategy()
+        let strategy = MockAppleAuthStrategy()
         XCTAssertEqual(strategy.identityType, "apple")
 
         let credential = try await strategy.acquireCredentials()
         XCTAssertEqual(credential.identityType, "apple")
         XCTAssertEqual(credential.identifier, "mock_apple_user_id")
-        XCTAssertEqual(credential.credential, FeatureConstants.MockData.mockAppleCode)
+        XCTAssertEqual(credential.credential, TestConstants.Auth.mockAppleCode)
     }
 }

@@ -30,25 +30,20 @@ actor AISynthesisService: AISynthesisServiceProtocol {
         return llm
     }
 
-    private init() {
-        // 降级至 LLMService.shared 避免单例初始化崩溃：DI 未就绪时 liveValue 解析会失败
-        // LLMService.shared 是 @MainActor 隔离，actor init 可能从后台线程调用，
-        // 使用 runOnMainSync 安全桥接至主线程，避免 MainActor.assumeIsolated 在非主线程崩溃
-        if let resolved = ServiceContainer.shared.resolveOptional((any LLMServiceProtocol).self) {  // inject_exempt: actor init 需可选降级，@Dependency 返回非可选会 crash
+    public init(
+        llm: (any LLMServiceProtocol)? = nil,
+        promptService: PromptService? = nil
+    ) {
+        if let customLLM = llm {
+            self.llm = customLLM
+        } else if let resolved = ServiceContainer.shared.resolveOptional((any LLMServiceProtocol).self) {  // inject_exempt: actor init 需可选降级，@Dependency 返回非可选会 crash
             self.llm = resolved
         } else {
             self.llm = runOnMainSync { LLMService.shared }
         }
-        self.promptService = PromptService(defaults: .standard)
+        self.promptService = promptService ?? PromptService(defaults: .standard)
         self.taskCenter = runOnMainSync { TaskCenter(activityService: ActivityService.shared) }
     }
-
-    #if DEBUG
-    /// [仅测试] 替换 actor 内部的 LLM 实现，解决单例持旧 Mock 引用导致测试失效的问题
-    func updateLLMForTesting(_ newLLM: any LLMServiceProtocol) {
-        self.llm = newLLM
-    }
-    #endif
 
     /// 输入截断保护：超长内容统一截断至 PromptConstants.TokenLimits.maxSynthesisInputLength
     private func truncated(_ content: String) -> String {

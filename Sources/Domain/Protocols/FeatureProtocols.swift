@@ -42,8 +42,11 @@ public protocol AuthServiceProtocol {
     /// - Returns: 是否注册成功
     func register(phone: String, code: String, password: String) async -> Bool
     
-    /// 退出登录
+    /// 退出登录（发起异步登出，非阻塞）
     func logout()
+    
+    /// 退出登录（结构化并发异步版本：等待服务端吊销与本地令牌清理彻底完成）
+    func performLogout() async
     
     /// 自动静默登录验证
     /// - Returns: 是否成功恢复会话
@@ -226,5 +229,181 @@ extension DependencyValues {
     nonisolated var chatService: any ChatServiceProtocol {
         get { self[ChatServiceKey.self] }
         set { self[ChatServiceKey.self] = newValue }
+    }
+}
+
+// MARK: - 笔记本配置与选择策略契约
+
+/// 笔记本自动加载配置策略契约
+public protocol VaultConfigurationProtocol: Sendable {
+    /// 是否在启动时自动从存储加载笔记本数据
+    var shouldAutoLoadOnStartup: Bool { get }
+}
+
+/// 生产环境默认笔记本配置策略
+public struct DefaultVaultConfiguration: VaultConfigurationProtocol {
+    public init() {}
+    public var shouldAutoLoadOnStartup: Bool { true }
+}
+
+/// 笔记本自动选择策略契约
+public protocol VaultSelectionPolicyProtocol: Sendable {
+    /// 决策是否应当自动选择第一个笔记本
+    var shouldAutoSelectFirstVault: Bool { get }
+}
+
+/// 生产环境默认笔记本选择策略
+public struct DefaultVaultSelectionPolicy: VaultSelectionPolicyProtocol {
+    public init() {}
+    public var shouldAutoSelectFirstVault: Bool { false }
+}
+
+/// VaultSelectionPolicyProtocol 的 DependencyKey
+public enum VaultSelectionPolicyKey: DependencyKey {
+    public static var liveValue: any VaultSelectionPolicyProtocol {
+        DefaultVaultSelectionPolicy()
+    }
+    public static var testValue: any VaultSelectionPolicyProtocol {
+        DefaultVaultSelectionPolicy()
+    }
+    public static var previewValue: any VaultSelectionPolicyProtocol { testValue }
+}
+
+extension DependencyValues {
+    /// 笔记本自动选择策略
+    public var vaultSelectionPolicy: any VaultSelectionPolicyProtocol {
+        get { self[VaultSelectionPolicyKey.self] }
+        set { self[VaultSelectionPolicyKey.self] = newValue }
+    }
+}
+
+// MARK: - 交互与布局决策策略契约
+
+/// 笔记本标识交互策略契约
+public protocol VaultBadgeInteractionPolicyProtocol: Sendable {
+    /// 是否渲染为直通点击按钮（true：点击直接退出笔记本；false：点击展开上下文菜单）
+    var isDirectButton: Bool { get }
+}
+
+/// 生产环境默认笔记本标识交互策略
+public struct DefaultVaultBadgeInteractionPolicy: VaultBadgeInteractionPolicyProtocol {
+    public init() {}
+    public var isDirectButton: Bool { false }
+}
+
+/// VaultBadgeInteractionPolicyProtocol 的 DependencyKey
+public enum VaultBadgeInteractionPolicyKey: DependencyKey {
+    public static var liveValue: any VaultBadgeInteractionPolicyProtocol {
+        DefaultVaultBadgeInteractionPolicy()
+    }
+    public static var testValue: any VaultBadgeInteractionPolicyProtocol {
+        DefaultVaultBadgeInteractionPolicy()
+    }
+    public static var previewValue: any VaultBadgeInteractionPolicyProtocol { testValue }
+}
+
+extension DependencyValues {
+    /// 笔记本标识交互策略
+    public var vaultBadgeInteractionPolicy: any VaultBadgeInteractionPolicyProtocol {
+        get { self[VaultBadgeInteractionPolicyKey.self] }
+        set { self[VaultBadgeInteractionPolicyKey.self] = newValue }
+    }
+}
+
+/// 导航与布局渲染策略契约
+public protocol NavigationLayoutPolicyProtocol: Sendable {
+    /// 是否强制使用传统 TabView 布局
+    var prefersLegacyTabView: Bool { get }
+    /// 是否启用辅助退出入口
+    var enablesAuxiliaryExitAccess: Bool { get }
+}
+
+/// 生产环境默认导航布局策略
+public struct DefaultNavigationLayoutPolicy: NavigationLayoutPolicyProtocol {
+    public init() {}
+    public var prefersLegacyTabView: Bool { false }
+    public var enablesAuxiliaryExitAccess: Bool { false }
+}
+
+/// NavigationLayoutPolicyProtocol 的 DependencyKey
+public enum NavigationLayoutPolicyKey: DependencyKey {
+    public static var liveValue: any NavigationLayoutPolicyProtocol {
+        DefaultNavigationLayoutPolicy()
+    }
+    public static var testValue: any NavigationLayoutPolicyProtocol {
+        DefaultNavigationLayoutPolicy()
+    }
+    public static var previewValue: any NavigationLayoutPolicyProtocol { testValue }
+}
+
+extension DependencyValues {
+    /// 导航与布局渲染策略
+    public var navigationLayoutPolicy: any NavigationLayoutPolicyProtocol {
+        get { self[NavigationLayoutPolicyKey.self] }
+        set { self[NavigationLayoutPolicyKey.self] = newValue }
+    }
+}
+
+/// 自动登录尝试策略契约
+public protocol AutoLoginPolicyProtocol: Sendable {
+    /// 决策是否应当在启动挂载时尝试从本地恢复凭据登录
+    var shouldAttemptAutoLogin: Bool { get }
+}
+
+/// 生产环境默认自动登录策略
+public struct DefaultAutoLoginPolicy: AutoLoginPolicyProtocol {
+    public init() {}
+    public var shouldAttemptAutoLogin: Bool { true }
+}
+
+/// AutoLoginPolicyProtocol 的 DependencyKey
+public enum AutoLoginPolicyKey: DependencyKey {
+    public static var liveValue: any AutoLoginPolicyProtocol {
+        DefaultAutoLoginPolicy()
+    }
+    public static var testValue: any AutoLoginPolicyProtocol {
+        DefaultAutoLoginPolicy()
+    }
+    public static var previewValue: any AutoLoginPolicyProtocol { testValue }
+}
+
+extension DependencyValues {
+    /// 自动登录尝试策略
+    public var autoLoginPolicy: any AutoLoginPolicyProtocol {
+        get { self[AutoLoginPolicyKey.self] }
+        set { self[AutoLoginPolicyKey.self] = newValue }
+    }
+}
+
+/// 笔记本冷启动引导内容播种策略契约
+public protocol VaultSeedingPolicyProtocol: Sendable {
+    /// 决策是否应当执行播种
+    func shouldSeed(vaultID: UUID, hasSeededBefore: Bool) -> Bool
+}
+
+/// 生产环境默认笔记本播种策略
+public struct DefaultVaultSeedingPolicy: VaultSeedingPolicyProtocol {
+    public init() {}
+    public func shouldSeed(vaultID: UUID, hasSeededBefore: Bool) -> Bool {
+        !hasSeededBefore
+    }
+}
+
+/// VaultSeedingPolicyProtocol 的 DependencyKey
+public enum VaultSeedingPolicyKey: DependencyKey {
+    public static var liveValue: any VaultSeedingPolicyProtocol {
+        DefaultVaultSeedingPolicy()
+    }
+    public static var testValue: any VaultSeedingPolicyProtocol {
+        DefaultVaultSeedingPolicy()
+    }
+    public static var previewValue: any VaultSeedingPolicyProtocol { testValue }
+}
+
+extension DependencyValues {
+    /// 笔记本冷启动播种策略
+    public var vaultSeedingPolicy: any VaultSeedingPolicyProtocol {
+        get { self[VaultSeedingPolicyKey.self] }
+        set { self[VaultSeedingPolicyKey.self] = newValue }
     }
 }

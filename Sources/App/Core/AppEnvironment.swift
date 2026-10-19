@@ -44,15 +44,8 @@ final class AppEnvironment {
 
         Logger.shared.info("[AppEnvironment] Starting initialization...")
 
-        // 🧪 检测是否运行于 XCTest (Unit Test) 环境 — 避免污染测试 DI 状态
-        let isRunningInUnitTests = NSClassFromString("XCTestCase") != nil && !CommandLine.arguments.contains("-UITest_MockData")
-        #if DEBUG
-        if CommandLine.arguments.contains("-UITest_MockData") {
-            Logger.shared.info("[AppEnvironment] Detected UI Test environment, using ephemeral setup")
-        } else if isRunningInUnitTests {
-            Logger.shared.info("[AppEnvironment] Detected XCTest unit test environment, using lightweight test setup")
-        }
-        #endif
+        // 检测是否运行于 XCTest 单元测试环境
+        let isRunningInUnitTests = NSClassFromString("XCTestCase") != nil
 
         // 1. 准备底层物理存储 (@P0: 确保护航数据库在注册前就绪)
         prepareDatabase()
@@ -64,6 +57,7 @@ final class AppEnvironment {
         // 2.1 DI 就绪断言：验证 Store 依赖的关键服务已全部注册
         //     仅校验 ModuleRegistrar 注册的服务；Store 自注册的服务（TagStore/KnowledgeStore 等）
         //     在 :109 AppStore.init 内完成，不在此断言范围内
+        // inject_exempt: AppEnvironment 是 DI 编排层，负责注册后校验
         ServiceContainer.shared.assertRegistered(
             [
                 (any LoggerProtocol).self,
@@ -115,6 +109,7 @@ final class AppEnvironment {
         self.store = AppStore()
 
         // 3.1 Store 自注册断言：验证 AppStore.init 内自注册的 Store 已全部就绪
+        // inject_exempt: AppEnvironment 是 DI 编排层，负责注册后校验
         ServiceContainer.shared.assertRegistered(
             [
                 AppStore.self,
@@ -192,14 +187,9 @@ final class AppEnvironment {
                 }
             }
             
-            if CommandLine.arguments.contains("-UITest_MockData") {
-                let memoryQueue = try DatabaseQueue()
-                try DatabaseManager.shared.setupForTesting(with: memoryQueue)
-                Logger.shared.info("[AppEnvironment] Core database ready (In-Memory Mock)")
-            } else {
-                try DatabaseManager.shared.setup(at: dbURL)
-                Logger.shared.info("[AppEnvironment] Core database ready (App Group): \(dbURL.lastPathComponent)")
-            }
+            let strategy = ServiceContainer.shared.resolveOptional((any DatabaseBootstrapStrategy).self) ?? PersistentDatabaseBootstrapStrategy() // inject_exempt: 引导层默认降级语义
+            try strategy.setup(at: dbURL)
+            Logger.shared.info("[AppEnvironment] Core database ready: \(dbURL.lastPathComponent)")
         } catch {
             Logger.shared.error("[AppEnvironment] Critical: Database initialization failed", error: error)
         }
@@ -227,6 +217,7 @@ final class AppEnvironment {
     /// 注意：AppStore/SearchStore/AIWorkflowStore/AIInsightStore/TagStore/KnowledgeStore
     ///       已在 AppStore.init 内自注册，此处仅注册 IngestStore/SynthesisStore
     private func registerStoresToContainer() {
+        // inject_exempt: AppEnvironment 是 DI 编排层，负责 Store 注册
         let container = ServiceContainer.shared
         container.register(self.ingestStore, for: IngestStore.self)
         container.register(self.synthesisStore, for: SynthesisStore.self)

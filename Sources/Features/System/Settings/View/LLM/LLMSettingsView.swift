@@ -24,6 +24,8 @@ struct LLMSettingsView: View {
     @State private var showAPIKey = false
     @State private var isProvidersExpanded = true  // 默认展开方便用户直观查看与切换提供商
     @State private var isCustomModelInput = false  // 非自定义提供商下是否切为手动输入模式
+    @State private var showAlert = false
+    @State private var alertMessage = ""
     
     enum TestResult {
         case success(latency: Int, streamOK: Bool, streamTested: Bool)
@@ -37,7 +39,27 @@ struct LLMSettingsView: View {
         Form {
             // 1. 服务开关
             Section {
-                Toggle(isOn: $config.isEnabled) {
+                Toggle(isOn: Binding(
+                    get: { config.isEnabled },
+                    set: { newValue in
+                        if newValue {
+                            let validation = config.provider.validateAPIKeyFormat(config.apiKey)
+                            if !validation.isValid {
+                                HapticFeedback.shared.trigger(.error)
+                                alertMessage = validation.message ?? L10n.AI.LLM.Error.notConfigured
+                                showAlert = true
+                                return
+                            }
+                            if config.provider == .custom && config.baseURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                                HapticFeedback.shared.trigger(.error)
+                                alertMessage = L10n.AI.LLM.Error.invalidURL
+                                showAlert = true
+                                return
+                            }
+                        }
+                        config.isEnabled = newValue
+                    }
+                )) {
                     Label(L10n.AI.LLM.enableAssistant, systemImage: DesignTokens.Icons.sparkles)
                         .foregroundStyle(.appText)
                 }
@@ -46,6 +68,21 @@ struct LLMSettingsView: View {
                 Toggle(isOn: Binding(
                     get: { config.autoScan && config.autoRefactor },
                     set: { newValue in
+                        if newValue {
+                            if !config.isEnabled {
+                                HapticFeedback.shared.trigger(.error)
+                                alertMessage = L10n.AI.LLM.Error.notConfigured
+                                showAlert = true
+                                return
+                            }
+                            let validation = config.provider.validateAPIKeyFormat(config.apiKey)
+                            if !validation.isValid {
+                                HapticFeedback.shared.trigger(.error)
+                                alertMessage = validation.message ?? L10n.AI.LLM.Error.notConfigured
+                                showAlert = true
+                                return
+                            }
+                        }
                         config.autoScan = newValue
                         config.autoRefactor = newValue
                     }
@@ -131,6 +168,8 @@ struct LLMSettingsView: View {
                     }
                     .buttonStyle(.plain)
                 }
+            } footer: {
+                Text(L10n.AI.LLM.info.localKey)
             }
             .appListRowBackground()
             
@@ -192,6 +231,11 @@ struct LLMSettingsView: View {
         }
         .insetGroupedListStyleIfIOS()
         .scrollContentBackground(.hidden)
+        .alert(L10n.Common.configureAI, isPresented: $showAlert) {
+            Button(L10n.Common.ok, role: .cancel) { }
+        } message: {
+            Text(alertMessage)
+        }
     }
     
     /// 配置内容视图（API Key / Base URL / Model 选择与编辑）
@@ -221,12 +265,14 @@ struct LLMSettingsView: View {
                 )
             }
             
-            // Base URL
-            VStack(alignment: .leading, spacing: DesignTokens.Spacing.tightPadding) {
-                Text(L10n.AI.LLM.apiAddress)
-                    .font(.caption.weight(.medium))
-                    .foregroundStyle(.appSecondary)
-                monospacedTextField(FeatureConstants.Placeholder.apiBaseURL, text: $config.baseURL, keyboardType: .URL)
+            // Base URL (仅自定义 API 模式下展示可编辑输入框，官方厂商使用内置标准服务网关)
+            if config.provider == .custom {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.tightPadding) {
+                    Text(L10n.AI.LLM.apiAddress)
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(.appSecondary)
+                    monospacedTextField(FeatureConstants.Placeholder.apiBaseURL, text: $config.baseURL, keyboardType: .URL)
+                }
             }
             
             // Model (非自定义模式呈现 Picker 下拉菜单，自定义模式或手动模式呈现 TextField)
@@ -304,6 +350,7 @@ struct LLMSettingsView: View {
                     testing = false
                     if res.isSuccess {
                         testResult = .success(latency: res.latencyMS, streamOK: res.streamOK, streamTested: res.streamTested)
+                        HapticFeedback.shared.trigger(.success)
                     } else {
                         testResult = .failure(code: res.errorCode ?? CoreConstants.ErrorCode.llmTestUnclassified, message: res.errorMessage ?? CoreConstants.ErrorCode.llmTestUnknownError, latency: res.latencyMS, streamTested: res.streamTested)
                     }

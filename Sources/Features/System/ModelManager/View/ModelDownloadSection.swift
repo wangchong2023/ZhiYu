@@ -22,7 +22,7 @@ struct ModelDownloadStatusBar: View {
     var body: some View {
         switch downloadState {
         case .failed(let error):
-            if error == FeatureConstants.MockData.notDownloaded {
+            if error == FeatureConstants.DefaultValue.notDownloaded {
                 EmptyView()
             } else {
                 ringWithStatus(state: downloadState, statusText: error, color: Color.theme.red)

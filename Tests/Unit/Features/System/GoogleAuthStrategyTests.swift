@@ -98,26 +98,10 @@ final class GoogleAuthStrategyTests: XCTestCase {
         ), "空 clientID 应视为未配置")
     }
 
-    // MARK: - 未配置 clientID 的降级分支
+    // MARK: - 未配置 clientID 的错误分支
 
-    /// Debug 模式下未配置 clientID 应安全降级为 Mock 登录
-    func testAcquire_NotConfigured_DebugReturnsMock() async {
-        #if DEBUG
-        let strategy = makeStrategy(clientID: nil)
-        do {
-            let credential = try await strategy.acquireCredentials()
-            XCTAssertEqual(credential.identityType, "google")
-            XCTAssertEqual(credential.identifier, "mock_google_user_id")
-            XCTAssertFalse((credential.extraInfo?["idToken"] ?? "").isEmpty, "Mock 凭证应包含非空 idToken")
-        } catch {
-            XCTFail("Debug 未配置 clientID 应安全降级为 Mock 登录，不应抛错: \(error)")
-        }
-        #endif
-    }
-
-    /// Release 模式下未配置 clientID 应抛出未配置错误
-    func testAcquire_NotConfigured_ThrowsInRelease() async {
-        #if !DEBUG
+    /// 未配置 clientID 时应直接抛出未配置错误（-99）
+    func testAcquire_NotConfigured_ThrowsUnconfiguredError() async {
         let strategy = makeStrategy(clientID: nil)
         do {
             _ = try await strategy.acquireCredentials()
@@ -127,7 +111,32 @@ final class GoogleAuthStrategyTests: XCTestCase {
         } catch {
             XCTFail("抛出的不是预期的 NSError: \(error)")
         }
-        #endif
+    }
+
+    /// 验证测试替身 MockGoogleAuthStrategy 的凭证契约与错误模拟能力
+    func testMockGoogleAuthStrategyContract() async throws {
+        let mock = MockGoogleAuthStrategy(
+            idToken: "custom_token_999",
+            identifier: "custom_user_id",
+            email: "test@google.com",
+            nickname: "Tester"
+        )
+        XCTAssertEqual(mock.identityType, "google")
+
+        let credential = try await mock.acquireCredentials()
+        XCTAssertEqual(credential.identityType, "google")
+        XCTAssertEqual(credential.identifier, "custom_user_id")
+        XCTAssertEqual(credential.extraInfo?["idToken"], "custom_token_999")
+        XCTAssertEqual(credential.extraInfo?["email"], "test@google.com")
+        XCTAssertEqual(credential.extraInfo?["nickname"], "Tester")
+
+        mock.shouldThrowError = NSError(domain: "GoogleAuth", code: -100, userInfo: nil)
+        do {
+            _ = try await mock.acquireCredentials()
+            XCTFail("设置了 shouldThrowError 后应当抛错")
+        } catch let error as NSError {
+            XCTAssertEqual(error.code, -100)
+        }
     }
 
     // MARK: - 已配置 clientID 的 signIn 分支
@@ -150,7 +159,7 @@ final class GoogleAuthStrategyTests: XCTestCase {
         XCTAssertEqual(credential.extraInfo?["idToken"], "token-abc", "idToken 应透传后端验证")
         XCTAssertEqual(credential.extraInfo?["email"], "a@b.com")
         XCTAssertEqual(credential.extraInfo?["nickname"], "Alice B")
-        XCTAssertEqual(credential.credential, FeatureConstants.MockData.mockGoogleCode)
+        XCTAssertEqual(credential.credential, FeatureConstants.GoogleConfig.oidcCredentialPlaceholder)
         XCTAssertNotNil(provider.presentedController, "signIn 分支应传入根控制器")
     }
 

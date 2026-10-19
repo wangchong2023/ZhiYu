@@ -66,32 +66,23 @@ final class TokenManagerDeepTests: XCTestCase {
         AuthSession.shared.logout()
         try? KeychainService.shared.delete(key: jwtTokenKey)
         try? KeychainService.shared.delete(key: refreshTokenKey)
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
     }
 
     override func tearDown() async throws {
         AuthSession.shared.logout()
-        await awaitAllLogoutTasks()
+        await AuthService.shared.performLogout()
         await NetworkClient.shared.awaitRefreshTask()
         await NetworkClient.shared.setTestSession(nil)
         TestMockURLProtocol.requestHandler = nil
         KeychainService.testOverride = nil
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         try await super.tearDown()
     }
 
     // MARK: - 辅助方法
 
-    /// 等待所有 logout 后台任务完成
+    /// 等待所有 logout 完成
     private func awaitAllLogoutTasks() async {
-        for task in AuthService.shared.testLogoutTasks {
-            await task.value
-        }
-        AuthService.shared.testLogoutTasks.removeAll()
+        await AuthService.shared.performLogout()
     }
 
     /// 构造测试用户
@@ -183,58 +174,71 @@ final class TokenManagerDeepTests: XCTestCase {
         ]
     }
 
-    // MARK: - tryAutoLogin Mock 模式
+    /// 快速设置 Profile 响应
+    private func setupMockProfileResponse(
+        email: String = "mock_autologin@example.com",
+        phone: String = "13800000000"
+    ) {
+        TestMockURLProtocol.requestHandler = { request in
+            guard let url = request.url else { throw URLError(.badURL) }
+            guard let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: ["Content-Type": "application/json"]) else {
+                throw URLError(.badServerResponse)
+            }
+            let json: [String: Any] = [
+                "code": 0, "message": "success",
+                "data": [
+                    "userId": 10001, "username": "test_user", "nick": "Auto User",
+                    "avatar": NSNull(), "email": email, "mobile": phone
+                ],
+                "requestId": "req", "timestamp": 123
+            ]
+            let data = (try? JSONSerialization.data(withJSONObject: json)) ?? Data()
+            return (response, data)
+        }
+    }
 
-    /// 验证 Mock 模式下 tryAutoLogin 注入的 Mock 用户邮箱正确
+    // MARK: - tryAutoLogin 模拟网络响应模式
+
+    /// 验证模拟网络响应下 tryAutoLogin 正确解析邮箱
     func testTryAutoLoginMockModeInjectsCorrectEmail() async {
-        #if DEBUG
-        AuthService.forceMockBackend = true
-        defer { AuthService.forceMockBackend = false }
+        try? KeychainService.shared.store(key: jwtTokenKey, value: testJWTToken)
+        setupMockProfileResponse(email: "mock_autologin@example.com")
         AuthSession.shared.logout()
 
         let success = await AuthService.shared.tryAutoLogin()
 
-        XCTAssertTrue(success, "Mock 模式下应成功")
-        XCTAssertEqual(AuthService.shared.currentUser?.email, "mock_autologin@example.com", "应注入 Mock 邮箱")
-        #endif
+        XCTAssertTrue(success, "应成功登录")
+        XCTAssertEqual(AuthService.shared.currentUser?.email, "mock_autologin@example.com", "应解析正确邮箱")
     }
 
-    /// 验证 Mock 模式下 tryAutoLogin 注入的 Mock 用户手机号正确
+    /// 验证模拟网络响应下 tryAutoLogin 正确解析手机号
     func testTryAutoLoginMockModeInjectsCorrectPhone() async {
-        #if DEBUG
-        AuthService.forceMockBackend = true
-        defer { AuthService.forceMockBackend = false }
+        try? KeychainService.shared.store(key: jwtTokenKey, value: testJWTToken)
+        setupMockProfileResponse(phone: "13800000000")
         AuthSession.shared.logout()
 
         let success = await AuthService.shared.tryAutoLogin()
 
-        XCTAssertTrue(success, "Mock 模式下应成功")
-        XCTAssertEqual(AuthService.shared.currentUser?.phone, "13800000000", "应注入 Mock 手机号")
-        #endif
+        XCTAssertTrue(success, "应成功登录")
+        XCTAssertEqual(AuthService.shared.currentUser?.phone, "13800000000", "应解析正确手机号")
     }
 
-    /// 验证 Mock 模式下 tryAutoLogin 调用 saveState 持久化
+    /// 验证模拟网络响应下 tryAutoLogin 更新 isGuest
     func testTryAutoLoginMockModeCallsSaveState() async {
-        #if DEBUG
-        AuthService.forceMockBackend = true
-        defer { AuthService.forceMockBackend = false }
+        try? KeychainService.shared.store(key: jwtTokenKey, value: testJWTToken)
+        setupMockProfileResponse()
         AuthSession.shared.logout()
         AuthSession.shared.isGuest = true
 
         _ = await AuthService.shared.tryAutoLogin()
 
-        // saveState 会将 isGuest 写入 KeyStore，tryAutoLogin 后 isGuest 应为 false
         XCTAssertFalse(AuthService.shared.isGuest, "tryAutoLogin 后 isGuest 应为 false")
-        #endif
     }
 
     // MARK: - tryAutoLogin 非 Mock 模式
 
     /// 验证非 Mock 模式下 tryAutoLogin 有 Token 但网络失败返回 false
     func testTryAutoLoginNonMockModeHasTokenNetworkFailureReturnsFalse() async {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         try? KeychainService.shared.store(key: jwtTokenKey, value: testJWTToken)
         AuthSession.shared.logout()
 
@@ -258,9 +262,6 @@ final class TokenManagerDeepTests: XCTestCase {
 
     /// 验证非 Mock 模式下 tryAutoLogin 有 Token 且网络成功返回 true 并填充 currentUser
     func testTryAutoLoginNonMockModeHasTokenNetworkSuccessReturnsTrueAndFillsUser() async throws {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         try KeychainService.shared.store(key: jwtTokenKey, value: testJWTToken)
         AuthSession.shared.logout()
 
@@ -299,9 +300,6 @@ final class TokenManagerDeepTests: XCTestCase {
 
     /// 验证非 Mock 模式下 tryAutoLogin 网络成功后调用 saveState（isGuest 为 false）
     func testTryAutoLoginNonMockModeNetworkSuccessCallsSaveState() async throws {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         try? KeychainService.shared.store(key: jwtTokenKey, value: testJWTToken)
         AuthSession.shared.logout()
         AuthSession.shared.isGuest = true
@@ -326,9 +324,6 @@ final class TokenManagerDeepTests: XCTestCase {
 
     /// 验证非 Mock 模式下 tryAutoLogin 后端返回 code != 0 时返回 false
     func testTryAutoLoginNonMockModeBackendBusinessErrorReturnsFalse() async {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         try? KeychainService.shared.store(key: jwtTokenKey, value: testJWTToken)
         AuthSession.shared.logout()
 
@@ -358,9 +353,6 @@ final class TokenManagerDeepTests: XCTestCase {
 
     /// 验证非 Mock 模式下 tryAutoLogin 后端返回 data 为 null 时返回 false
     func testTryAutoLoginNonMockModeDataNullReturnsFalse() async {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         try? KeychainService.shared.store(key: jwtTokenKey, value: testJWTToken)
         AuthSession.shared.logout()
 
@@ -391,52 +383,63 @@ final class TokenManagerDeepTests: XCTestCase {
 
     // MARK: - handleSuccessfulLogin Mock 模式
 
-    /// 验证 Mock 模式下 handleSuccessfulLogin 写入 Keychain Token
-    /// - Note: login 的 Mock 分支固定构造 accessToken="mock_jwt_access_token"，
-    ///         refreshToken="mock_jwt_refresh_token"，无法传入自定义 response。
-    ///         此处验证 login Mock 模式写入的固定 token 值。
+    /// 验证模拟网络响应下 handleSuccessfulLogin 写入 Keychain Token
     func testHandleSuccessfulLoginMockModeWritesKeychainToken() async throws {
-        #if DEBUG
-        AuthService.forceMockBackend = true
-        defer { AuthService.forceMockBackend = false }
         AuthSession.shared.logout()
         try? KeychainService.shared.delete(key: jwtTokenKey)
         try? KeychainService.shared.delete(key: refreshTokenKey)
 
-        // login Mock 分支固定写入 mock_jwt_access_token / mock_jwt_refresh_token
+        TestMockURLProtocol.requestHandler = { request in
+            guard let url = request.url else { throw URLError(.badURL) }
+            guard let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: ["Content-Type": "application/json"]) else {
+                throw URLError(.badServerResponse)
+            }
+            if url.path.contains(APIPaths.phoneLoginPath) {
+                let json = self.makeLoginResponseJSON(accessToken: "mock_jwt_access_token", refreshToken: "mock_jwt_refresh_token")
+                return (response, (try? JSONSerialization.data(withJSONObject: json)) ?? Data())
+            } else {
+                let profile = self.makeProfileResponseJSON(nick: "mockuser")
+                return (response, (try? JSONSerialization.data(withJSONObject: profile)) ?? Data())
+            }
+        }
+
         let success = await AuthService.shared.login(identity: "mockuser", password: "pass")
 
-        XCTAssertTrue(success, "Mock 模式登录应成功")
+        XCTAssertTrue(success, "登录应成功")
         let jwt = try? KeychainService.shared.retrieve(key: jwtTokenKey)
-        XCTAssertEqual(jwt, "mock_jwt_access_token", "应写入 Mock access token")
+        XCTAssertEqual(jwt, "mock_jwt_access_token", "应写入 access token")
         let refresh = try? KeychainService.shared.retrieve(key: refreshTokenKey)
-        XCTAssertEqual(refresh, "mock_jwt_refresh_token", "应写入 Mock refresh token")
-        #endif
+        XCTAssertEqual(refresh, "mock_jwt_refresh_token", "应写入 refresh token")
     }
 
-    /// 验证 Mock 模式下 handleSuccessfulLogin 设置 currentUser 为 identity
+    /// 验证模拟网络响应下 handleSuccessfulLogin 设置 currentUser 为 identity
     func testHandleSuccessfulLoginMockModeSetsCurrentUserToIdentity() async {
-        #if DEBUG
-        AuthService.forceMockBackend = true
-        defer { AuthService.forceMockBackend = false }
         AuthSession.shared.logout()
+
+        TestMockURLProtocol.requestHandler = { request in
+            guard let url = request.url else { throw URLError(.badURL) }
+            guard let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: ["Content-Type": "application/json"]) else {
+                throw URLError(.badServerResponse)
+            }
+            if url.path.contains(APIPaths.phoneLoginPath) {
+                let json = self.makeLoginResponseJSON()
+                return (response, (try? JSONSerialization.data(withJSONObject: json)) ?? Data())
+            } else {
+                let profile = self.makeProfileResponseJSON(nick: "alice")
+                return (response, (try? JSONSerialization.data(withJSONObject: profile)) ?? Data())
+            }
+        }
 
         let success = await AuthService.shared.login(identity: "alice", password: "pwd")
 
         XCTAssertTrue(success, "登录应成功")
-        XCTAssertEqual(AuthService.shared.currentUser?.name, "alice", "Mock 模式下 name 应为 identity")
-        XCTAssertEqual(AuthService.shared.currentUser?.email, "", "Mock 模式下 email 应为空字符串")
-        XCTAssertNil(AuthService.shared.currentUser?.phone, "Mock 模式下 phone 应为 nil")
-        #endif
+        XCTAssertEqual(AuthService.shared.currentUser?.name, "alice")
     }
 
-    // MARK: - handleSuccessfulLogin 非 Mock 模式
+    // MARK: - handleSuccessfulLogin 网络状态测试
 
-    /// 验证非 Mock 模式下 handleSuccessfulLogin 写入 access 和 refresh token
+    /// 验证 handleSuccessfulLogin 写入 access 和 refresh token
     func testHandleSuccessfulLoginNonMockModeWritesAccessAndRefreshToken() async throws {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         AuthSession.shared.logout()
         try? KeychainService.shared.delete(key: jwtTokenKey)
         try? KeychainService.shared.delete(key: refreshTokenKey)
@@ -474,9 +477,6 @@ final class TokenManagerDeepTests: XCTestCase {
 
     /// 验证非 Mock 模式下 handleSuccessfulLogin 无 refreshToken 时只写入 access token
     func testHandleSuccessfulLoginNonMockModeNoRefreshTokenOnlyWritesAccessToken() async throws {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         AuthSession.shared.logout()
         try? KeychainService.shared.delete(key: jwtTokenKey)
         try? KeychainService.shared.delete(key: refreshTokenKey)
@@ -513,9 +513,6 @@ final class TokenManagerDeepTests: XCTestCase {
 
     /// 验证非 Mock 模式下 handleSuccessfulLogin 拉取 profile 失败时返回 false
     func testHandleSuccessfulLoginNonMockModeFetchProfileFailureReturnsFalse() async throws {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         AuthSession.shared.logout()
 
         TestMockURLProtocol.requestHandler = { request in
@@ -546,9 +543,6 @@ final class TokenManagerDeepTests: XCTestCase {
 
     /// 验证非 Mock 模式下 handleSuccessfulLogin 拉取 profile 成功后填充 currentUser
     func testHandleSuccessfulLoginNonMockModeFetchProfileSuccessFillsCurrentUser() async throws {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         AuthSession.shared.logout()
 
         TestMockURLProtocol.requestHandler = { request in
@@ -633,9 +627,6 @@ final class TokenManagerDeepTests: XCTestCase {
 
     /// 验证 refreshUserProfile 订阅接口失败时降级为 Free 默认配额
     func testRefreshUserProfileSubscriptionFailureDegradesToFreeDefaultQuotas() async throws {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         try? KeychainService.shared.store(key: jwtTokenKey, value: testJWTToken)
         AuthSession.shared.update(user: makeTestUser(planKey: PlanKey.pro))
 
@@ -677,9 +668,6 @@ final class TokenManagerDeepTests: XCTestCase {
 
     /// 验证 refreshUserProfile 订阅返回 Pro 套餐时更新配额为 Pro
     func testRefreshUserProfileSubscriptionProUpdatesToProQuotas() async throws {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         try? KeychainService.shared.store(key: jwtTokenKey, value: testJWTToken)
         AuthSession.shared.update(user: makeTestUser(planKey: PlanKey.free))
 
@@ -740,9 +728,6 @@ final class TokenManagerDeepTests: XCTestCase {
 
     /// 验证 refreshUserProfile 订阅返回 features JSON 时解析并更新 features
     func testRefreshUserProfileSubscriptionReturnsFeaturesParsesAndUpdates() async throws {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         try? KeychainService.shared.store(key: jwtTokenKey, value: testJWTToken)
         AuthSession.shared.update(user: makeTestUser(features: []))
 
@@ -782,9 +767,6 @@ final class TokenManagerDeepTests: XCTestCase {
 
     /// 验证 refreshUserProfile 订阅返回无效 features JSON 时保持空数组
     func testRefreshUserProfileInvalidFeaturesJsonKeepsEmptyArray() async throws {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         try? KeychainService.shared.store(key: jwtTokenKey, value: testJWTToken)
         AuthSession.shared.update(user: makeTestUser(features: ["old_feature"]))
 
@@ -821,9 +803,6 @@ final class TokenManagerDeepTests: XCTestCase {
 
     /// 验证 refreshUserProfile 订阅返回无效 quotas JSON 时降级为 Free 默认配额
     func testRefreshUserProfileInvalidQuotasJsonDegradesToFreeDefaultQuotas() async throws {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         try? KeychainService.shared.store(key: jwtTokenKey, value: testJWTToken)
         AuthSession.shared.update(user: makeTestUser(planKey: PlanKey.pro))
 
@@ -861,9 +840,6 @@ final class TokenManagerDeepTests: XCTestCase {
 
     /// 验证 refreshUserProfile 订阅返回 planKey 为 nil 时降级为 free
     func testRefreshUserProfileSubscriptionPlanKeyNilDegradesToFree() async throws {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         try? KeychainService.shared.store(key: jwtTokenKey, value: testJWTToken)
         AuthSession.shared.update(user: makeTestUser(planKey: PlanKey.pro))
 
@@ -903,9 +879,6 @@ final class TokenManagerDeepTests: XCTestCase {
 
     /// 验证 refreshUserProfile profile 接口失败时抛出错误
     func testRefreshUserProfileProfileFailureThrowsError() async {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         try? KeychainService.shared.store(key: jwtTokenKey, value: testJWTToken)
         AuthSession.shared.update(user: makeTestUser())
 
@@ -931,9 +904,6 @@ final class TokenManagerDeepTests: XCTestCase {
 
     /// 验证 refreshUserProfile 保留原 user.id
     func testRefreshUserProfileKeepsOriginalUserId() async throws {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         try? KeychainService.shared.store(key: jwtTokenKey, value: testJWTToken)
         let originalUser = makeTestUser()
         AuthSession.shared.update(user: originalUser)
@@ -967,9 +937,6 @@ final class TokenManagerDeepTests: XCTestCase {
 
     /// 验证 refreshUserProfile 后端返回空 email 时保留本地 email
     func testRefreshUserProfileEmptyEmailKeepsLocalEmail() async throws {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         try? KeychainService.shared.store(key: jwtTokenKey, value: testJWTToken)
         AuthSession.shared.update(user: makeTestUser())
 
@@ -1007,9 +974,6 @@ final class TokenManagerDeepTests: XCTestCase {
 
     /// 验证 refreshUserProfile 后端返回非空 email 时更新本地 email
     func testRefreshUserProfileNonEmptyEmailUpdatesLocalEmail() async throws {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         try? KeychainService.shared.store(key: jwtTokenKey, value: testJWTToken)
         AuthSession.shared.update(user: makeTestUser())
 

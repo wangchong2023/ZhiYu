@@ -117,7 +117,9 @@ public enum PromptConstants {
                   "options": {
                     "type": "array",
                     "items": { "type": "string" },
-                    "description": "Options list (at least 2 items)"
+                    "minItems": 4,
+                    "maxItems": 4,
+                    "description": "Options list (exactly 4 distinct choices: A, B, C, D)"
                   },
                   "answer": { "type": "integer", "description": "Correct option index starting from 0" },
                   "explanation": { "type": "string", "description": "Explanation text" }

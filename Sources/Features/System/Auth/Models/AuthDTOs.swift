@@ -108,10 +108,12 @@ public typealias OAuthGitHubRequest = OAuthCodeStateRequest
 
 public struct OAuthGoogleRequest: Encodable, Sendable {
     public let code: String
+    public let state: String?
     public let idToken: String
 
-    public init(code: String, idToken: String) {
+    public init(code: String, state: String? = nil, idToken: String) {
         self.code = code
+        self.state = state
         self.idToken = idToken
     }
 }

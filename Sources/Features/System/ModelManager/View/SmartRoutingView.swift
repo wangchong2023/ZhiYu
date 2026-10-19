@@ -105,8 +105,8 @@ public struct SmartRoutingView: View {
                 }
                 
                 Divider()
-                statusRow(label: L10n.ModelManager.Routing.networkCurrent, value: FeatureConstants.MockData.wifi, status: .healthy)
-                statusRow(label: L10n.ModelManager.Routing.networkLatency, value: FeatureConstants.MockData.latency23ms, status: .healthy)
+                statusRow(label: L10n.ModelManager.Routing.networkCurrent, value: FeatureConstants.DefaultValue.wifi, status: .healthy)
+                statusRow(label: L10n.ModelManager.Routing.networkLatency, value: FeatureConstants.DefaultValue.latency23ms, status: .healthy)
                 statusRow(label: L10n.ModelManager.Routing.networkBandwidth, value: L10n.ModelManager.Routing.networkBandwidthExcellent, status: .healthy)
             }
             .cardStyle(horizontalPadding: DesignTokens.Spacing.standardPadding, verticalPadding: DesignTokens.Spacing.standardPadding)

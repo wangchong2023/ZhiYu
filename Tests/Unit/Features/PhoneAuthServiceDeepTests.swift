@@ -63,32 +63,23 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
         AuthSession.shared.logout()
         try? KeychainService.shared.delete(key: jwtTokenKey)
         try? KeychainService.shared.delete(key: refreshTokenKey)
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
     }
 
     override func tearDown() async throws {
         AuthSession.shared.logout()
-        await awaitAllLogoutTasks()
+        await AuthService.shared.performLogout()
         await NetworkClient.shared.awaitRefreshTask()
         await NetworkClient.shared.setTestSession(nil)
         TestMockURLProtocol.requestHandler = nil
         KeychainService.testOverride = nil
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         try await super.tearDown()
     }
 
     // MARK: - 辅助方法
 
-    /// 等待所有 logout 后台任务完成
+    /// 等待所有 logout 完成
     private func awaitAllLogoutTasks() async {
-        for task in AuthService.shared.testLogoutTasks {
-            await task.value
-        }
-        AuthService.shared.testLogoutTasks.removeAll()
+        await AuthService.shared.performLogout()
     }
 
     /// 构造 LoginResponse 成功响应 JSON
@@ -147,28 +138,40 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
         ]
     }
 
-    // MARK: - login Mock 模式
+    /// 快速设置手机登录成功响应
+    private func setupMockPhoneLoginResponse(refreshToken: String? = "mock_jwt_refresh_token") {
+        TestMockURLProtocol.requestHandler = { request in
+            guard let url = request.url else { throw URLError(.badURL) }
+            guard let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: ["Content-Type": "application/json"]) else {
+                throw URLError(.badServerResponse)
+            }
+            if url.path.contains(APIPaths.userProfilePath) {
+                let profile = self.makeProfileResponseJSON()
+                return (response, (try? JSONSerialization.data(withJSONObject: profile)) ?? Data())
+            }
+            let json = self.makeLoginResponseJSON(refreshToken: refreshToken)
+            let data = (try? JSONSerialization.data(withJSONObject: json)) ?? Data()
+            return (response, data)
+        }
+    }
 
-    /// 验证 Mock 模式下密码登录成功并设置 currentUser
+    // MARK: - login 模拟网络响应模式
+
+    /// 验证模拟网络响应下密码登录成功并设置 currentUser
     func testLoginMockModeSuccessSetsCurrentUser() async {
-        #if DEBUG
-        AuthService.forceMockBackend = true
-        defer { AuthService.forceMockBackend = false }
+        setupMockPhoneLoginResponse()
         AuthSession.shared.logout()
 
         let success = await AuthService.shared.login(identity: testIdentity, password: testPassword)
 
-        XCTAssertTrue(success, "Mock 模式下登录应成功")
-        XCTAssertEqual(AuthService.shared.currentUser?.name, testIdentity, "name 应为 identity")
+        XCTAssertTrue(success, "登录应成功")
+        XCTAssertEqual(AuthService.shared.currentUser?.name, "Profile用户", "name 应为登录后后端 profile 返回的昵称")
         XCTAssertTrue(AuthService.shared.isAuthenticated, "应已登录")
-        #endif
     }
 
-    /// 验证 Mock 模式下密码登录写入 refresh token
+    /// 验证模拟网络响应下密码登录写入 refresh token
     func testLoginMockModeWritesRefreshToken() async throws {
-        #if DEBUG
-        AuthService.forceMockBackend = true
-        defer { AuthService.forceMockBackend = false }
+        setupMockPhoneLoginResponse(refreshToken: "mock_jwt_refresh_token")
         AuthSession.shared.logout()
         try? KeychainService.shared.delete(key: refreshTokenKey)
 
@@ -176,28 +179,22 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
 
         XCTAssertTrue(success, "登录应成功")
         let refresh = try? KeychainService.shared.retrieve(key: refreshTokenKey)
-        XCTAssertEqual(refresh, "mock_jwt_refresh_token", "应写入 Mock refresh token")
-        #endif
+        XCTAssertEqual(refresh, "mock_jwt_refresh_token", "应写入 refresh token")
     }
 
-    /// 验证 Mock 模式下密码登录空密码仍成功（Mock 不校验凭证）
+    /// 验证模拟网络响应下空密码由后端决定返回（网络响应成功则完成登录）
     func testLoginMockModeEmptyPasswordStillSucceeds() async {
-        #if DEBUG
-        AuthService.forceMockBackend = true
-        defer { AuthService.forceMockBackend = false }
+        setupMockPhoneLoginResponse()
         AuthSession.shared.logout()
 
         let success = await AuthService.shared.login(identity: testIdentity, password: "")
 
-        XCTAssertTrue(success, "Mock 模式不校验凭证，空密码应仍成功")
-        #endif
+        XCTAssertTrue(success, "网络返回成功时登录应成功")
     }
 
-    /// 验证 Mock 模式下密码登录 isGuest 被置为 false
+    /// 验证模拟网络响应下密码登录 isGuest 被置为 false
     func testLoginMockModeSetsIsGuestToFalse() async {
-        #if DEBUG
-        AuthService.forceMockBackend = true
-        defer { AuthService.forceMockBackend = false }
+        setupMockPhoneLoginResponse()
         AuthSession.shared.logout()
         AuthSession.shared.isGuest = true
 
@@ -205,16 +202,12 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
 
         XCTAssertTrue(success, "登录应成功")
         XCTAssertFalse(AuthService.shared.isGuest, "登录后 isGuest 应为 false")
-        #endif
     }
 
-    // MARK: - login 非 Mock 模式
+    // MARK: - login 网络状态测试
 
-    /// 验证非 Mock 模式下密码登录网络成功返回 true
+    /// 验证密码登录网络成功返回 true
     func testLoginNonMockModeNetworkSuccessReturnsTrue() async throws {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         AuthSession.shared.logout()
 
         TestMockURLProtocol.requestHandler = { request in
@@ -243,9 +236,6 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
 
     /// 验证非 Mock 模式下密码登录后端业务错误（code != 0）返回 false
     func testLoginNonMockModeBackendBusinessErrorReturnsFalse() async {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         AuthSession.shared.logout()
 
         TestMockURLProtocol.requestHandler = { request in
@@ -274,9 +264,6 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
 
     /// 验证非 Mock 模式下密码登录后端返回 data 为 null 返回 false
     func testLoginNonMockModeDataNullReturnsFalse() async {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         AuthSession.shared.logout()
 
         TestMockURLProtocol.requestHandler = { request in
@@ -305,9 +292,6 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
 
     /// 验证非 Mock 模式下密码登录 HTTP 500 返回 false
     func testLoginNonMockModeHttp500ReturnsFalse() async {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         AuthSession.shared.logout()
 
         TestMockURLProtocol.requestHandler = { request in
@@ -328,9 +312,6 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
 
     /// 验证非 Mock 模式下密码登录成功后写入 Keychain token
     func testLoginNonMockModeSuccessWritesKeychainToken() async throws {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         AuthSession.shared.logout()
         try? KeychainService.shared.delete(key: jwtTokenKey)
 
@@ -366,9 +347,6 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
 
     /// 验证非 Mock 模式下 sendSmsCode 网络成功返回 true
     func testSendSmsCodeNonMockModeNetworkSuccessReturnsTrue() async {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         TestMockURLProtocol.requestHandler = { request in
             let url = try XCTUnwrap(request.url)
             let response = try XCTUnwrap(HTTPURLResponse(
@@ -389,9 +367,6 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
 
     /// 验证非 Mock 模式下 sendSmsCode 网络失败返回 false    /// 验证非 Mock 模式下 sendSmsCode 后端业务错误返回 false
     func testSendSmsCodeNonMockModeBackendBusinessErrorReturnsFalse() async {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         TestMockURLProtocol.requestHandler = { request in
             let url = try XCTUnwrap(request.url)
             let response = try XCTUnwrap(HTTPURLResponse(
@@ -419,9 +394,6 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
     /// - Note: TestMockURLProtocol 中 request.httpBody 可能为 nil（body 流已被消费），
     ///         此处仅验证请求成功返回 true，scene 参数传递由编译期 SendSmsRequest 保证。
     func testSendSmsCodeNonMockModeSceneRegisterNormalRequest() async {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         TestMockURLProtocol.requestHandler = { request in
             let url = try XCTUnwrap(request.url)
             let response = try XCTUnwrap(HTTPURLResponse(
@@ -442,9 +414,6 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
 
     /// 验证非 Mock 模式下 sendSmsCode 请求路径正确
     func testSendSmsCodeNonMockModeRequestPathCorrect() async {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         var capturedPath: String?
 
         TestMockURLProtocol.requestHandler = { request in
@@ -468,9 +437,6 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
 
     /// 验证非 Mock 模式下 sendSmsCode 请求方法为 POST
     func testSendSmsCodeNonMockModeRequestMethodIsPost() async {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         var capturedMethod: String?
 
         TestMockURLProtocol.requestHandler = { request in
@@ -494,9 +460,6 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
 
     /// 验证非 Mock 模式下 sendSmsCode requiresAuth 为 false
     func testSendSmsCodeNonMockModeRequiresAuthIsFalse() async {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         var hasAuthHeader = false
 
         TestMockURLProtocol.requestHandler = { request in
@@ -522,9 +485,6 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
 
     /// 验证非 Mock 模式下 register 网络成功返回 true
     func testRegisterNonMockModeNetworkSuccessReturnsTrue() async throws {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         AuthSession.shared.logout()
 
         TestMockURLProtocol.requestHandler = { request in
@@ -553,9 +513,6 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
 
     /// 验证非 Mock 模式下 register 网络失败返回 false    /// 验证非 Mock 模式下 register 后端业务错误返回 false
     func testRegisterNonMockModeBackendBusinessErrorReturnsFalse() async {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         AuthSession.shared.logout()
 
         TestMockURLProtocol.requestHandler = { request in
@@ -585,9 +542,6 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
     /// - Note: register 会先请求 phoneLoginPath 再请求 userProfilePath，
     ///         此处捕获所有请求路径并验证包含 phoneLoginPath。
     func testRegisterNonMockModeRequestPathCorrect() async {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         var capturedPaths: [String] = []
 
         TestMockURLProtocol.requestHandler = { request in
@@ -618,9 +572,6 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
 
     /// 验证非 Mock 模式下 register 成功后 currentUser name 为 phone
     func testRegisterNonMockModeSuccessCurrentUserNameIsPhone() async throws {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         AuthSession.shared.logout()
 
         TestMockURLProtocol.requestHandler = { request in
@@ -651,9 +602,6 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
 
     /// 验证非 Mock 模式下 register 成功后写入 Keychain token
     func testRegisterNonMockModeSuccessWritesKeychainToken() async throws {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         AuthSession.shared.logout()
         try? KeychainService.shared.delete(key: jwtTokenKey)
 
@@ -689,9 +637,6 @@ final class PhoneAuthServiceDeepTests: XCTestCase {
 
     /// 验证非 Mock 模式下 register 拉取 profile 失败返回 false
     func testRegisterNonMockModeFetchProfileFailedReturnsFalse() async {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         AuthSession.shared.logout()
 
         TestMockURLProtocol.requestHandler = { request in

@@ -137,14 +137,13 @@ final class StoreKitAndInfraServiceDeepTests: XCTestCase {
     // MARK: - 3. AppleAuthStrategy 策略与代理深测
 
     func testAppleAuthStrategy_AcquireCredentialsInTestMode() async throws {
-        let strategy = AppleAuthStrategy()
+        let strategy = MockAppleAuthStrategy()
         XCTAssertEqual(strategy.identityType, "apple")
 
-        // 在模拟器与测试感知环境下应返回 MockCredential
         let cred = try await strategy.acquireCredentials()
         XCTAssertEqual(cred.identityType, "apple")
         XCTAssertEqual(cred.identifier, "mock_apple_user_id")
-        XCTAssertEqual(cred.credential, FeatureConstants.MockData.mockAppleCode)
+        XCTAssertEqual(cred.credential, TestConstants.Auth.mockAppleCode)
         XCTAssertNotNil(cred.extraInfo?["idToken"])
         XCTAssertEqual(cred.extraInfo?["email"], "mock_apple_user@example.com")
         XCTAssertEqual(cred.extraInfo?["nickname"], "Apple Mock User")

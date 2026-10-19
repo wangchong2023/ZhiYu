@@ -64,32 +64,15 @@ final class AuthStateGuestDeepTests: XCTestCase {
         AuthSession.shared.logout()
         try? KeychainService.shared.delete(key: jwtTokenKey)
         try? KeychainService.shared.delete(key: refreshTokenKey)
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
     }
 
     override func tearDown() async throws {
-        AuthSession.shared.logout()
-        await awaitAllLogoutTasks()
+        await AuthService.shared.performLogout()
         await NetworkClient.shared.awaitRefreshTask()
         await NetworkClient.shared.setTestSession(nil)
         TestMockURLProtocol.requestHandler = nil
         KeychainService.testOverride = nil
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         try await super.tearDown()
-    }
-
-    // MARK: - 辅助方法
-
-    /// 等待所有 logout 后台任务完成
-    private func awaitAllLogoutTasks() async {
-        for task in AuthService.shared.testLogoutTasks {
-            await task.value
-        }
-        AuthService.shared.testLogoutTasks.removeAll()
     }
 
     /// 构造测试用户
@@ -114,27 +97,6 @@ final class AuthStateGuestDeepTests: XCTestCase {
             gender: gender,
             birthday: birthday
         )
-    }
-
-    // MARK: - isMockBackend / isMockMode 状态
-
-    /// 验证非 DEBUG Mock 模式下 isMockBackend 为 false
-    func testIsMockBackendNonMockModeReturnsFalse() {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        XCTAssertFalse(AuthService.shared.isMockBackend, "非 Mock 模式下 isMockBackend 应为 false")
-        XCTAssertFalse(AuthService.shared.isMockMode, "非 Mock 模式下 isMockMode 应为 false")
-        #endif
-    }
-
-    /// 验证 forceMockBackend 启用时 isMockBackend 为 true
-    func testIsMockBackendForceMockBackendEnabledReturnsTrue() {
-        #if DEBUG
-        AuthService.forceMockBackend = true
-        defer { AuthService.forceMockBackend = false }
-        XCTAssertTrue(AuthService.shared.isMockBackend, "forceMockBackend 启用时 isMockBackend 应为 true")
-        XCTAssertTrue(AuthService.shared.isMockMode, "forceMockBackend 启用时 isMockMode 应为 true")
-        #endif
     }
 
     // MARK: - continueAsGuest
@@ -208,42 +170,46 @@ final class AuthStateGuestDeepTests: XCTestCase {
 
     // MARK: - tryAutoLogin Mock 模式
 
-    /// 验证 Mock 模式下 tryAutoLogin 成功并注入 Mock 用户
-    func testTryAutoLoginMockModeSuccessInjectsMockUser() async {
-        #if DEBUG
-        AuthService.forceMockBackend = true
-        defer { AuthService.forceMockBackend = false }
+    // MARK: - tryAutoLogin 状态测试
+
+    /// 验证当存在有效 Token 且 Profile 响应成功时，tryAutoLogin 成功并恢复用户信息
+    func testTryAutoLoginWithValidTokenRestoresUser() async throws {
+        try KeychainService.shared.store(key: jwtTokenKey, value: "valid_jwt_token")
         AuthSession.shared.logout()
 
+        let profileJson = """
+        {
+            "code": 0,
+            "message": "success",
+            "requestId": "req_auto_login",
+            "timestamp": 1700000000000,
+            "data": {
+                "userId": 12345,
+                "username": "autologin_user",
+                "nick": "Auto User",
+                "email": "auto@example.com",
+                "mobile": "13900139000"
+            }
+        }
+        """
+        TestMockURLProtocol.requestHandler = { request in
+            guard let url = request.url else { throw URLError(.badURL) }
+            guard let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: ["Content-Type": "application/json"]) else {
+                throw URLError(.badServerResponse)
+            }
+            return (response, profileJson.data(using: .utf8))
+        }
+
         let success = await AuthService.shared.tryAutoLogin()
 
-        XCTAssertTrue(success, "Mock 模式下 tryAutoLogin 应成功")
+        XCTAssertTrue(success, "有效 Token 且接口正常时 tryAutoLogin 应成功")
         XCTAssertTrue(AuthService.shared.isAuthenticated, "应已登录")
-        XCTAssertEqual(AuthService.shared.currentUser?.name, "Mock Autologin User", "应注入 Mock 用户")
-        #endif
+        XCTAssertFalse(AuthService.shared.isGuest, "登录后 isGuest 应为 false")
+        XCTAssertEqual(AuthService.shared.currentUser?.name, "Auto User")
     }
 
-    /// 验证 Mock 模式下 tryAutoLogin 设置 isGuest 为 false
-    func testTryAutoLoginMockModeSetsIsGuestFalse() async {
-        #if DEBUG
-        AuthService.forceMockBackend = true
-        defer { AuthService.forceMockBackend = false }
-        AuthSession.shared.isGuest = true
-
-        let success = await AuthService.shared.tryAutoLogin()
-
-        XCTAssertTrue(success, "Mock 模式下应成功")
-        XCTAssertFalse(AuthService.shared.isGuest, "tryAutoLogin 成功后 isGuest 应为 false")
-        #endif
-    }
-
-    // MARK: - tryAutoLogin 非 Mock 模式
-
-    /// 验证非 Mock 模式下 tryAutoLogin 无 Token 时返回 false
-    func testTryAutoLoginNonMockModeNoTokenReturnsFalse() async {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
+    /// 验证无 Token 时 tryAutoLogin 返回 false
+    func testTryAutoLoginNoTokenReturnsFalse() async {
         try? KeychainService.shared.delete(key: jwtTokenKey)
         AuthSession.shared.logout()
 

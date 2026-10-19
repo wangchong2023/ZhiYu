@@ -30,7 +30,8 @@ final class PluginEnginePool: @unchecked Sendable {
     /// 并发保护锁，用以保障连接池字典的读写安全性
     private let lockPointer: UnsafeMutablePointer<os_unfair_lock>
     
-    private init() {
+    /// 初始化连接池
+    init() {
         lockPointer = UnsafeMutablePointer<os_unfair_lock>.allocate(capacity: 1)
         lockPointer.initialize(to: os_unfair_lock())
     }
@@ -47,6 +48,9 @@ final class PluginEnginePool: @unchecked Sendable {
 
         if let context = availableContexts.popLast() {
             context.exception = nil
+            // 复用 context 时重建硬化与初始键基线，防止池内残留插件注入的污染变量
+            // 在后续复用中因 __zhiyu_initial_keys 已含同名键而无法被清理
+            applySandboxHardening(to: context)
             return context
         }
 
@@ -58,8 +62,15 @@ final class PluginEnginePool: @unchecked Sendable {
             fatalError("Cannot create JSContext")
         }
 
+        applySandboxHardening(to: newContext)
+        return newContext
+    }
+
+    /// 对 JSContext 应用沙箱安全硬化：禁用 eval/Function、冻结原生原型、重建初始键基线
+    /// - Note: 抽取为独立方法，供新 context 创建与池内 context 复用共用，确保每次借出都是干净状态。
+    private func applySandboxHardening(to context: JSContext) {
         // 安全硬化：禁用 eval/Function（纯 JS 语法，无 Swift 代码）
-        newContext.evaluateScript("""
+        context.evaluateScript("""
         (function() {
             var fnProto = (typeof Function !== 'undefined') ? Function.prototype : null;
             try { delete globalThis.eval; } catch(e) {}
@@ -73,9 +84,7 @@ final class PluginEnginePool: @unchecked Sendable {
             }
         })();
         """)
-        newContext.exception = nil
-
-        return newContext
+        context.exception = nil
     }
 
     /// 归还 JSContext 到池中
@@ -115,18 +124,6 @@ final class PluginEnginePool: @unchecked Sendable {
         """)
         availableContexts.append(context)
     }
-
-    #if DEBUG
-    /// 重置连接池状态（仅供测试隔离使用）
-    ///
-    /// 清空池中所有缓存的 JSContext，确保后续 `borrowContext` 创建全新 context。
-    /// 生产环境不应调用此方法。
-    func resetPoolForTesting() {
-        os_unfair_lock_lock(lockPointer)
-        defer { os_unfair_lock_unlock(lockPointer) }
-        availableContexts.removeAll()
-    }
-    #endif
 }
 
 #endif

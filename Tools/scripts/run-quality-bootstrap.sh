@@ -117,6 +117,14 @@ echo "⚙️  运行 xcodegen generate..."
 cd "$PROJECT_DIR"
 xcodegen generate
 
+# ── 第六步：自动注入动态构建信息（时间戳与短哈希 SSOT）──
+echo "⚙️  注入动态构建版本与时间戳..."
+if [ -f "$PROJECT_DIR/Sources/Info.plist" ] && [ -f "$PROJECT_DIR/Tools/CI/build-pipeline-version-inject.sh" ]; then
+    bash "$PROJECT_DIR/Tools/CI/build-pipeline-version-inject.sh" "$PROJECT_DIR/Sources/Info.plist"
+    echo "✅ 动态构建版本与时间戳已更新至最新"
+fi
+
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "✅ Bootstrap 完成！用 Xcode 打开 ZhiYu.xcodeproj"
+

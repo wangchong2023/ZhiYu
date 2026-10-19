@@ -57,6 +57,7 @@ final class GitHubAuthStrategyDeepTests: XCTestCase {
     // MARK: - 被测对象
 
     private var strategy: GitHubAuthStrategy!
+    private var mockStrategy: MockGitHubAuthStrategy!
 
     // MARK: - 生命周期
 
@@ -65,10 +66,12 @@ final class GitHubAuthStrategyDeepTests: XCTestCase {
         resetPersistentTestState()
         setupFullMockEnvironment()
         strategy = GitHubAuthStrategy()
+        mockStrategy = MockGitHubAuthStrategy()
     }
 
     override func tearDown() async throws {
         strategy = nil
+        mockStrategy = nil
         try await super.tearDown()
     }
 
@@ -83,53 +86,43 @@ final class GitHubAuthStrategyDeepTests: XCTestCase {
 
     /// 验证 Mock 路径返回的 extraInfo 包含 state 与 nickname 两个键
     func testMockCredentialExtraInfoContainsStateAndNicknameKeys() async throws {
-        #if DEBUG
-        let credential = try await strategy.acquireCredentials()
+        let credential = try await mockStrategy.acquireCredentials()
 
         XCTAssertNotNil(credential.extraInfo, "extraInfo 不应为 nil")
         XCTAssertNotNil(credential.extraInfo?[extraInfoStateKey], "state 不应为 nil")
         XCTAssertEqual(credential.extraInfo?[extraInfoNicknameKey], mockNicknameValue)
-        #endif
     }
 
     /// 验证 Mock 路径 identifier 为固定 mock_github_user_id
     func testMockCredentialIdentifierIsFixedValue() async throws {
-        #if DEBUG
-        let credential = try await strategy.acquireCredentials()
+        let credential = try await mockStrategy.acquireCredentials()
         XCTAssertEqual(credential.identifier, mockIdentifier)
-        #endif
     }
 
     /// 验证 Mock 路径 credential 以 mock_github_code_ 前缀开头且非空
     func testMockCredentialCredentialStartsWithMockPrefixAndNonEmpty() async throws {
-        #if DEBUG
-        let credential = try await strategy.acquireCredentials()
+        let credential = try await mockStrategy.acquireCredentials()
         XCTAssertFalse(credential.credential.isEmpty)
         XCTAssertTrue(credential.credential.hasPrefix(mockCodePrefix))
-        #endif
     }
 
     /// 验证 Mock 路径 credential 包含 UUID 后缀
     func testMockCredentialCredentialContainsUUIDSuffix() async throws {
-        #if DEBUG
-        let credential = try await strategy.acquireCredentials()
+        let credential = try await mockStrategy.acquireCredentials()
         let suffix = String(credential.credential.dropFirst(mockCodePrefix.count))
         XCTAssertFalse(suffix.isEmpty, "credential 应包含 UUID 后缀")
         XCTAssertEqual(suffix.count, uuidStringLength, "UUID 字符串长度应为 36")
-        #endif
     }
 
     /// 验证 Mock 路径 state 为合法 UUID 字符串
     func testMockCredentialStateIsLegalUUIDString() async throws {
-        #if DEBUG
-        let credential = try await strategy.acquireCredentials()
+        let credential = try await mockStrategy.acquireCredentials()
         guard let state = credential.extraInfo?[extraInfoStateKey] else {
             XCTFail("state 不应为 nil")
             return
         }
         XCTAssertEqual(state.count, uuidStringLength, "state 应为 UUID 字符串")
         XCTAssertNotNil(UUID(uuidString: state), "state 应可解析为 UUID")
-        #endif
     }
 
     // MARK: - state CSRF 防护
@@ -137,26 +130,22 @@ final class GitHubAuthStrategyDeepTests: XCTestCase {
     /// 验证 Mock 路径下 state 被包含在 extraInfo 中供后端校验
     /// - Note: C-6/Bug#2 已修复 — 真实 OAuth 回调路径现已校验 state 一致性（CSRF 防护）。
     func testMockPathStateIncludedInExtraInfoForBackendVerification() async throws {
-        #if DEBUG
-        let credential = try await strategy.acquireCredentials()
+        let credential = try await mockStrategy.acquireCredentials()
         // Mock 路径将 state 放入 extraInfo，后端可据此校验
         XCTAssertNotNil(credential.extraInfo?[extraInfoStateKey], "state 应包含在 extraInfo 中供后端校验")
-        #endif
     }
 
     /// 验证多次调用 state 互不相同（CSRF 防护基础）
     func testMultipleCallsStateAreDistinct() async throws {
-        #if DEBUG
         var states: [String] = []
         for _ in 0..<concurrentCallCount {
-            let cred = try await strategy.acquireCredentials()
+            let cred = try await mockStrategy.acquireCredentials()
             if let state = cred.extraInfo?[extraInfoStateKey] {
                 states.append(state)
             }
         }
         XCTAssertEqual(states.count, concurrentCallCount)
         XCTAssertEqual(Set(states).count, concurrentCallCount, "多次调用 state 应全部唯一")
-        #endif
     }
 
     // MARK: - clientId 配置
@@ -182,31 +171,29 @@ final class GitHubAuthStrategyDeepTests: XCTestCase {
 
     /// 验证连续多次调用 acquireCredentials 均成功且 credential 唯一
     func testSequentialAcquireCredentialsAllSucceedAndCredentialsUnique() async throws {
-        #if DEBUG
         var codes: [String] = []
         for _ in 0..<concurrentCallCount {
-            let cred = try await strategy.acquireCredentials()
+            let cred = try await mockStrategy.acquireCredentials()
             codes.append(cred.credential)
         }
         XCTAssertEqual(codes.count, concurrentCallCount)
         XCTAssertEqual(Set(codes).count, concurrentCallCount, "连续调用 credential 应全部唯一")
-        #endif
     }
 
     // MARK: - 并发安全
 
     /// 验证并发多次调用 acquireCredentials 不崩溃且 credential 唯一
     func testConcurrentAcquireCredentialsDoesNotCrashAndCredentialsUnique() async throws {
-        #if DEBUG
-        guard let strategy = self.strategy else {
+        guard let strategy = self.mockStrategy else {
             XCTFail("strategy 不应为 nil")
             return
         }
         let callCount = self.concurrentCallCount
+        let targetStrategy = strategy
         let results = try await withThrowingTaskGroup(of: AuthCredential.self) { group in
             for _ in 0..<callCount {
                 group.addTask {
-                    try await strategy.acquireCredentials()
+                    try await targetStrategy.acquireCredentials()
                 }
             }
             var collected: [AuthCredential] = []
@@ -219,7 +206,6 @@ final class GitHubAuthStrategyDeepTests: XCTestCase {
         XCTAssertEqual(results.count, concurrentCallCount)
         let codes = results.map { $0.credential }
         XCTAssertEqual(Set(codes).count, concurrentCallCount, "并发调用 credential 应全部唯一")
-        #endif
     }
 
     // MARK: - extraInfo 键集合稳定性

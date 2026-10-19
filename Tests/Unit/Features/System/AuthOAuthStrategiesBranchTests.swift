@@ -23,12 +23,8 @@ final class AuthOAuthStrategiesBranchTests: XCTestCase {
     override func setUp() async throws {
         try await super.setUp()
         setupFullMockEnvironment()
-        AuthService.forceMockBackend = true
 
         // 注入 TestMockURLProtocol 的测试 URLSession
-        // logout() 创建的后台任务会发起网络调用吊销 refresh token，
-        // 若不拦截将因无 mock handler 而挂起至 requestTimeout（30 秒），
-        // stale 任务泄漏至后续测试类的 awaitAllLogoutTasks() 导致 CI 600 秒超时
         let config = URLSessionConfiguration.ephemeral
         config.protocolClasses = [TestMockURLProtocol.self]
         testSession = URLSession(configuration: config)
@@ -36,26 +32,14 @@ final class AuthOAuthStrategiesBranchTests: XCTestCase {
     }
 
     override func tearDown() async throws {
-        AuthService.forceMockBackend = false
         AuthSession.shared.logout()
-        await awaitAllLogoutTasks()
+        await AuthService.shared.performLogout()
         await NetworkClient.shared.awaitRefreshTask()
         await NetworkClient.shared.setTestSession(nil)
         TestMockURLProtocol.requestHandler = nil
         DatabaseManager.shared.reset()
         ServiceContainer.shared.reset()
         try await super.tearDown()
-    }
-
-    // MARK: - 辅助方法
-
-    /// 等待所有 logout 后台任务完成并清空任务列表
-    /// - Note: 防止 stale 任务泄漏至后续测试类，导致 awaitAllLogoutTasks() 挂起
-    private func awaitAllLogoutTasks() async {
-        for task in AuthService.shared.testLogoutTasks {
-            await task.value
-        }
-        AuthService.shared.testLogoutTasks.removeAll()
     }
 
     // MARK: - 1. 游客模式生命周期分支
@@ -71,12 +55,12 @@ final class AuthOAuthStrategiesBranchTests: XCTestCase {
 
     // MARK: - 2. 登出流程清理分支
 
-    func testLogout_ClearsSessionAndSelectedVault() {
+    func testLogout_ClearsSessionAndSelectedVault() async {
         let authService = AuthService.shared
         AuthSession.shared.update(user: User(name: "tester", email: "test@example.com"))
         VaultService.shared.selectedVaultID = UUID()
 
-        authService.logout()
+        await authService.performLogout()
 
         XCTAssertFalse(authService.isAuthenticated, "登出后 isAuthenticated 应为 false")
         XCTAssertFalse(authService.isGuest, "登出后 isGuest 应为 false")
@@ -86,8 +70,8 @@ final class AuthOAuthStrategiesBranchTests: XCTestCase {
 
     // MARK: - 3. Apple 策略凭证获取与 Mock 登录分支
 
-    func testAppleAuthStrategy_AcquireCredentials_InTestMode() async throws {
-        let strategy = AppleAuthStrategy()
+    func testAppleAuthStrategy_AcquireCredentials() async throws {
+        let strategy = MockAppleAuthStrategy()
         let credential = try await strategy.acquireCredentials()
 
         XCTAssertEqual(credential.identityType, "apple")
@@ -98,12 +82,52 @@ final class AuthOAuthStrategiesBranchTests: XCTestCase {
     // MARK: - 4. OAuth 中台统一登录成功分支
 
     func testLoginUsingStrategy_WithMockBackend_Succeeds() async {
+        let loginJson = """
+        {
+            "code": 0,
+            "message": "success",
+            "requestId": "mock_req",
+            "timestamp": 1700000000000,
+            "data": {
+                "accessToken": "mock_access_token_123",
+                "refreshToken": "mock_refresh_token_123",
+                "expiresIn": 7200,
+                "tokenType": "Bearer"
+            }
+        }
+        """
+        let profileJson = """
+        {
+            "code": 0,
+            "message": "success",
+            "requestId": "mock_profile_req",
+            "timestamp": 1700000000000,
+            "data": {
+                "userId": 12345,
+                "username": "oauth_user",
+                "nick": "OAuth User",
+                "email": "oauth@example.com",
+                "mobile": "13800000000"
+            }
+        }
+        """
+        TestMockURLProtocol.requestHandler = { request in
+            guard let url = request.url else { throw URLError(.badURL) }
+            guard let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: ["Content-Type": "application/json"]) else {
+                throw URLError(.badServerResponse)
+            }
+            if url.path.contains(APIPaths.userProfilePath) {
+                return (response, profileJson.data(using: .utf8))
+            }
+            return (response, loginJson.data(using: .utf8))
+        }
+
         let authService = AuthService.shared
-        let strategy = AppleAuthStrategy()
+        let strategy = MockAppleAuthStrategy()
 
         let success = await authService.login(using: strategy)
 
-        XCTAssertTrue(success, "Mock 后端环境下第三方登录应当返回成功")
+        XCTAssertTrue(success, "网络拦截模拟成功响应后第三方登录应当返回成功")
         XCTAssertTrue(authService.isAuthenticated, "登录成功后应当处于已鉴权状态")
     }
 }

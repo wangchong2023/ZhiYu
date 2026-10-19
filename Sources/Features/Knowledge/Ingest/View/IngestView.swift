@@ -55,7 +55,7 @@ struct IngestView: View {
             Button(L10n.Ingest.ok) { coordinator.showError = false }
         } message: { Text(coordinator.errorMessage ?? "") }
         .alert(L10n.Common.configureAI, isPresented: $coordinator.showLLMAlert) {
-            Button(L10n.ModelManager.Lab.configurations) {
+            Button(L10n.Settings.Section.ai) {
                 HapticFeedback.shared.trigger(.selection)
                 router.isShowingAISettingsSheet = true
             }

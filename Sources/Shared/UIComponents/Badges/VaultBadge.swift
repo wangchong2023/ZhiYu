@@ -22,9 +22,11 @@ struct VaultBadge: View {
     @Dependency(\.appEnvironment) var platformEnv
     @Environment(ThemeManager.self) var themeManager
 
-    /// UI 测试模式下使用直通 Button 替代 Menu（XCUITest 对 SwiftUI Menu 交互不可靠）
+    @Dependency(\.vaultBadgeInteractionPolicy) private var interactionPolicy: any VaultBadgeInteractionPolicyProtocol
+
+    /// 交互策略决策是否采用直通点击按钮
     private var usesPassthroughButton: Bool {
-        TestModeDetector.isUITesting
+        interactionPolicy.isDirectButton
     }
     
     var body: some View {

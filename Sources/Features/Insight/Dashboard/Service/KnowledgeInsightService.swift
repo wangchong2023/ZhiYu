@@ -63,32 +63,14 @@ actor KnowledgeInsightService {
     func generateDailyRecap(pages: [KnowledgePage], llmService: any LLMServiceProtocol, forceRefresh: Bool = false) async throws -> DailyRecap {
         guard !pages.isEmpty else { throw AppError.insight(L10n.Dashboard.insight.addPagesFirst) }
 
-        // 是否处于自动化 UI 测试模式
-        let isTesting = TestModeDetector.isUITesting
-
         // 1. 尝试从本地加载有效缓存
         if let cached = await loadValidCache(pages: pages, forceRefresh: forceRefresh) {
             return cached
         }
 
-        // 2. 测试靶场下的智能自愈
-        if isTesting {
-            guard let target = pages.first else {
-                throw AppError.insight(L10n.Dashboard.insight.addPagesFirst)
-            }
-            let recap = DailyRecap(
-                targetPageID: target.id,
-                targetPageTitle: target.title,
-                insight: L10n.Dashboard.insight.mock.insight,
-                suggestedConnection: L10n.Dashboard.insight.mock.suggestedConnection
-            )
-            await saveCachedDailyRecap(recap)
-            return recap
-        }
-
         updateStatus(L10n.AI.Status.extracting)
 
-        // 3. 挑选目标页面以供 RAG 分析
+        // 2. 挑选目标页面以供 RAG 分析
         let target = try selectTargetPage(pages: pages)
         
         let now = Date()

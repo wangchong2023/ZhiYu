@@ -109,23 +109,12 @@ struct SubscriptionPurchaseFlow: View {
                     }
                     isPurchasing = false
                 } else {
-                    #if DEBUG
-                    try await performMockPurchase()
-                    #else
                     errorMessage = L10n.Auth.verifyFailed
                     isPurchasing = false
-                    #endif
                 }
             } catch {
-                #if DEBUG
-                // Bug #95 修复：catch 块用 defer 确保 isPurchasing 必定重置，
-                // 即使 performMockPurchase 抛错也不会卡在 purchasing 状态。
-                defer { isPurchasing = false }
-                try? await performMockPurchase()
-                #else
                 errorMessage = L10n.Auth.verifyFailed
                 isPurchasing = false
-                #endif
             }
         }
     }
@@ -167,16 +156,6 @@ struct SubscriptionPurchaseFlow: View {
                 }
             }
         }
-    }
-
-    private func performMockPurchase() async throws {
-        try await Task.sleep(for: .seconds(1.5))
-        isPurchasing = false
-        withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
-            isUpgradeSuccess = true
-        }
-        updateSessionToPro()
-        HapticFeedback.shared.trigger(.success)
     }
 
     private func updateSessionToPro() {

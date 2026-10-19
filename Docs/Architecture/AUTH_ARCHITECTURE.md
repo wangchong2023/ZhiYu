@@ -55,6 +55,8 @@
 | `KeychainService` | 底层安全加密存储，负责将 Access Token 及长效 Refresh Token 存储于硬件物理沙盒密钥区 |
 | `NetworkClient` | 网络客户端，负责 Header Authorization Token 的自动拦截注入、并在捕获 401 时发起 Token 刷新重试 |
 
+> 🛡️ **测试纯净化红线**：`AuthService` 与认证子系统已全面剔除 `isMockBackend`、`forceMockBackend`、`testLogoutTasks` 等生产内嵌测试分支。自动化测试统一通过底层 `TestMockURLProtocol` 进行 HTTP 响应模拟，Mock 策略实体收敛于 `Tests/Shared/Mocks/`。
+
 ### 2.3 物理代码结构归位对齐
 
 项目采用垂直化功能架构 (Vertical Slices)，代码不再放在 Shared 目录下，而是按照职责深度物理归位：

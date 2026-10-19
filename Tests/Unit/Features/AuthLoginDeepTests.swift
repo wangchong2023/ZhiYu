@@ -61,32 +61,23 @@ final class AuthLoginDeepTests: XCTestCase {
         // 确保干净状态
         AuthSession.shared.logout()
         try? KeychainService.shared.delete(key: jwtTokenKey)
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
     }
 
     override func tearDown() async throws {
         AuthSession.shared.logout()
-        await awaitAllLogoutTasks()
+        await AuthService.shared.performLogout()
         await NetworkClient.shared.awaitRefreshTask()
         await NetworkClient.shared.setTestSession(nil)
         TestMockURLProtocol.requestHandler = nil
         KeychainService.testOverride = nil
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         try await super.tearDown()
     }
 
     // MARK: - 辅助方法
 
-    /// 等待所有 logout 后台任务完成
+    /// 等待所有 logout 完成
     private func awaitAllLogoutTasks() async {
-        for task in AuthService.shared.testLogoutTasks {
-            await task.value
-        }
-        AuthService.shared.testLogoutTasks.removeAll()
+        await AuthService.shared.performLogout()
     }
 
     /// 构造测试用户
@@ -113,98 +104,112 @@ final class AuthLoginDeepTests: XCTestCase {
         )
     }
 
-    // MARK: - updateUserProfile Mock 模式
+    /// 设置 Mock 更新资料响应
+    private func setupMockUpdateProfileResponse(
+        nick: String? = nil,
+        avatar: String? = nil,
+        gender: Int? = nil,
+        birthday: String? = nil
+    ) {
+        TestMockURLProtocol.requestHandler = { request in
+            guard let url = request.url else { throw URLError(.badURL) }
+            guard let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: ["Content-Type": "application/json"]) else {
+                throw URLError(.badServerResponse)
+            }
+            let json: [String: Any] = [
+                "code": 0,
+                "message": "success",
+                "data": [
+                    "userId": 10001,
+                    "username": "test_user",
+                    "nick": nick ?? self.testNickname,
+                    "avatar": avatar as Any,
+                    "email": self.testEmail,
+                    "mobile": self.testPhone,
+                    "gender": gender as Any,
+                    "birthday": birthday as Any
+                ],
+                "requestId": "test_req_id",
+                "timestamp": 123456789
+            ]
+            let data = try JSONSerialization.data(withJSONObject: json)
+            return (response, data)
+        }
+    }
 
-    /// 验证 Mock 模式下 updateUserProfile 成功更新昵称
+    // MARK: - updateUserProfile 模拟网络响应
+
+    /// 验证模拟网络响应下 updateUserProfile 成功更新昵称
     func testUpdateUserProfileMockModeSuccessUpdateNickname() async {
-        #if DEBUG
-        AuthService.forceMockBackend = true
-        defer { AuthService.forceMockBackend = false }
+        setupMockUpdateProfileResponse(nick: testNickname)
         AuthSession.shared.update(user: makeTestUser())
 
         let success = await AuthService.shared.updateUserProfile(nickname: testNickname, avatar: nil)
 
-        XCTAssertTrue(success, "Mock 模式下更新昵称应成功")
+        XCTAssertTrue(success, "更新昵称应成功")
         XCTAssertEqual(AuthService.shared.currentUser?.name, testNickname, "昵称应被更新")
-        #endif
     }
 
-    /// 验证 Mock 模式下 updateUserProfile 更新头像 URL
+    /// 验证模拟网络响应下 updateUserProfile 更新头像保留本地头像
     func testUpdateUserProfileMockModeUpdateAvatarURL() async {
-        #if DEBUG
-        AuthService.forceMockBackend = true
-        defer { AuthService.forceMockBackend = false }
-        AuthSession.shared.update(user: makeTestUser())
+        setupMockUpdateProfileResponse(nick: testNickname, avatar: testAvatarURL)
+        var user = makeTestUser()
+        user.avatarURL = URL(string: testAvatarURL)
+        AuthSession.shared.update(user: user)
 
         let success = await AuthService.shared.updateUserProfile(nickname: testNickname, avatar: testAvatarURL)
 
-        XCTAssertTrue(success, "Mock 模式下更新头像应成功")
-        XCTAssertEqual(AuthService.shared.currentUser?.avatarURL?.absoluteString, testAvatarURL, "头像 URL 应被更新")
-        #endif
+        XCTAssertTrue(success, "更新头像应成功")
+        XCTAssertEqual(AuthService.shared.currentUser?.avatarURL?.absoluteString, testAvatarURL, "头像 URL 应被保留")
     }
 
-    /// 验证 Mock 模式下 updateUserProfile 更新性别
+    /// 验证模拟网络响应下 updateUserProfile 更新性别
     func testUpdateUserProfileMockModeUpdateGender() async {
-        #if DEBUG
-        AuthService.forceMockBackend = true
-        defer { AuthService.forceMockBackend = false }
+        setupMockUpdateProfileResponse(gender: testGenderFemale)
         AuthSession.shared.update(user: makeTestUser(gender: testGenderMale))
 
         let success = await AuthService.shared.updateUserProfile(nickname: testNickname, avatar: nil, gender: testGenderFemale)
 
-        XCTAssertTrue(success, "Mock 模式下更新性别应成功")
+        XCTAssertTrue(success, "更新性别应成功")
         XCTAssertEqual(AuthService.shared.currentUser?.gender, testGenderFemale, "性别应被更新为女")
-        #endif
     }
 
-    /// 验证 Mock 模式下 updateUserProfile 更新生日
+    /// 验证模拟网络响应下 updateUserProfile 更新生日
     func testUpdateUserProfileMockModeUpdateBirthday() async {
-        #if DEBUG
-        AuthService.forceMockBackend = true
-        defer { AuthService.forceMockBackend = false }
+        setupMockUpdateProfileResponse(birthday: testBirthday)
         AuthSession.shared.update(user: makeTestUser(birthday: "1990-01-01"))
 
         let success = await AuthService.shared.updateUserProfile(nickname: testNickname, avatar: nil, birthday: testBirthday)
 
-        XCTAssertTrue(success, "Mock 模式下更新生日应成功")
+        XCTAssertTrue(success, "更新生日应成功")
         XCTAssertEqual(AuthService.shared.currentUser?.birthday, testBirthday, "生日应被更新")
-        #endif
     }
 
-    /// 验证 Mock 模式下 updateUserProfile 不传性别时保留原性别
+    /// 验证模拟网络响应下 updateUserProfile 不传性别时保留原性别
     func testUpdateUserProfileMockModeNoGenderKeepsOriginal() async {
-        #if DEBUG
-        AuthService.forceMockBackend = true
-        defer { AuthService.forceMockBackend = false }
+        setupMockUpdateProfileResponse(gender: testGenderMale)
         AuthSession.shared.update(user: makeTestUser(gender: testGenderMale))
 
         let success = await AuthService.shared.updateUserProfile(nickname: testNickname, avatar: nil, gender: nil)
 
         XCTAssertTrue(success, "更新应成功")
         XCTAssertEqual(AuthService.shared.currentUser?.gender, testGenderMale, "不传性别应保留原性别")
-        #endif
     }
 
-    /// 验证 Mock 模式下 updateUserProfile 不传生日时保留原生日
+    /// 验证模拟网络响应下 updateUserProfile 不传生日时保留原生日
     func testUpdateUserProfileMockModeNoBirthdayKeepsOriginal() async {
-        #if DEBUG
-        AuthService.forceMockBackend = true
-        defer { AuthService.forceMockBackend = false }
+        setupMockUpdateProfileResponse(birthday: "1990-01-01")
         AuthSession.shared.update(user: makeTestUser(birthday: "1990-01-01"))
 
         let success = await AuthService.shared.updateUserProfile(nickname: testNickname, avatar: nil, birthday: nil)
 
         XCTAssertTrue(success, "更新应成功")
         XCTAssertEqual(AuthService.shared.currentUser?.birthday, "1990-01-01", "不传生日应保留原生日")
-        #endif
     }
 
-    /// 验证 Mock 模式下 updateUserProfile 保留 email 和 phone
-    /// - Note: C-4 已修复 — Mock 模式构造 User 时补充了 phone 和 features 参数。
+    /// 验证模拟网络响应下 updateUserProfile 保留 email 和 phone
     func testUpdateUserProfileMockModeKeepsEmailAndPhone() async {
-        #if DEBUG
-        AuthService.forceMockBackend = true
-        defer { AuthService.forceMockBackend = false }
+        setupMockUpdateProfileResponse()
         AuthSession.shared.update(user: makeTestUser(phone: testPhone))
 
         let success = await AuthService.shared.updateUserProfile(nickname: testNickname, avatar: nil)
@@ -212,41 +217,38 @@ final class AuthLoginDeepTests: XCTestCase {
         XCTAssertTrue(success, "更新应成功")
         XCTAssertEqual(AuthService.shared.currentUser?.email, testEmail, "应保留原 email")
         XCTAssertEqual(AuthService.shared.currentUser?.phone, testPhone, "应保留原 phone")
-        #endif
     }
 
-    /// 验证 Mock 模式下 updateUserProfile 保留 planKey 和配额
+    /// 验证模拟网络响应下 updateUserProfile 保留 planKey 和配额
     func testUpdateUserProfileMockModeKeepsPlanKeyAndQuota() async {
-        #if DEBUG
-        AuthService.forceMockBackend = true
-        defer { AuthService.forceMockBackend = false }
+        setupMockUpdateProfileResponse()
         AuthSession.shared.update(user: makeTestUser(planKey: PlanKey.pro))
 
         let success = await AuthService.shared.updateUserProfile(nickname: testNickname, avatar: nil)
 
         XCTAssertTrue(success, "更新应成功")
         XCTAssertEqual(AuthService.shared.currentUser?.planKey, PlanKey.pro, "应保留原 planKey")
-        #endif
     }
 
-    /// 验证 Mock 模式下 updateUserProfile 无当前用户时返回 false
+    /// 验证网络失败下 updateUserProfile 返回 false
     func testUpdateUserProfileMockModeNoCurrentUserReturnsFalse() async {
-        #if DEBUG
-        AuthService.forceMockBackend = true
-        defer { AuthService.forceMockBackend = false }
+        TestMockURLProtocol.requestHandler = { request in
+            guard let url = request.url else { throw URLError(.badURL) }
+            guard let response = HTTPURLResponse(url: url, statusCode: 500, httpVersion: nil, headerFields: nil) else {
+                throw URLError(.badServerResponse)
+            }
+            return (response, Data())
+        }
         AuthSession.shared.logout()
 
         let success = await AuthService.shared.updateUserProfile(nickname: testNickname, avatar: nil)
 
-        XCTAssertFalse(success, "Mock 模式下无当前用户应返回 false")
-        #endif
+        XCTAssertFalse(success, "网络失败时应返回 false")
     }
 
-    /// 验证 Mock 模式下 updateUserProfile 头像传 nil 时保留原头像
+    /// 验证模拟网络响应下 updateUserProfile 头像传 nil 时保留原头像
     func testUpdateUserProfileMockModeAvatarNilKeepsOriginal() async {
-        #if DEBUG
-        AuthService.forceMockBackend = true
-        defer { AuthService.forceMockBackend = false }
+        setupMockUpdateProfileResponse(avatar: nil)
         var user = makeTestUser()
         user.avatarURL = URL(string: testAvatarURL)
         AuthSession.shared.update(user: user)
@@ -255,7 +257,6 @@ final class AuthLoginDeepTests: XCTestCase {
 
         XCTAssertTrue(success, "更新应成功")
         XCTAssertEqual(AuthService.shared.currentUser?.avatarURL?.absoluteString, testAvatarURL, "头像传 nil 应保留原头像")
-        #endif
     }
 
     // MARK: - updateUserProfile 非 Mock 模式
@@ -265,9 +266,6 @@ final class AuthLoginDeepTests: XCTestCase {
     /// 但函数末尾仍 `return true`。这意味着即使没有当前用户，也报告更新成功，但实际未更新任何用户。
     /// 严重程度：中（用户无感知更新失败，可能导致 UI 显示成功但数据未变更）
     func testUpdateUserProfileNonMockModeNoCurrentUserIncorrectlyReturnsTrue() async throws {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         AuthSession.shared.logout()
 
         // Mock 后端返回成功响应
@@ -304,21 +302,15 @@ final class AuthLoginDeepTests: XCTestCase {
         XCTAssertNil(AuthService.shared.currentUser, "无当前用户时不应创建用户")
     }
 
-    /// 验证非 Mock 模式下 updateUserProfile 网络失败时返回 false
+    /// 验证网络失败时 updateUserProfile 返回 false
     func testUpdateUserProfileNonMockModeNetworkFailureReturnsFalse() async {
-        #if DEBUG
-        AuthService.forceMockBackend = false
-        #endif
         AuthSession.shared.update(user: makeTestUser())
 
         TestMockURLProtocol.requestHandler = { request in
-            let url = try XCTUnwrap(request.url)
-            let response = try XCTUnwrap(HTTPURLResponse(
-                url: url,
-                statusCode: 500,
-                httpVersion: nil,
-                headerFields: nil
-            ))
+            guard let url = request.url else { throw URLError(.badURL) }
+            guard let response = HTTPURLResponse(url: url, statusCode: 500, httpVersion: nil, headerFields: nil) else {
+                throw URLError(.badServerResponse)
+            }
             return (response, Data())
         }
 
@@ -327,32 +319,44 @@ final class AuthLoginDeepTests: XCTestCase {
         XCTAssertFalse(success, "网络失败应返回 false")
     }
 
-    // MARK: - uploadAvatar Mock 模式
+    // MARK: - uploadAvatar 模拟网络响应
 
-    /// 验证 Mock 模式下 uploadAvatar 返回非 nil URL 字符串
+    /// 验证模拟网络响应下 uploadAvatar 返回有效 Data URL 字符串并更新本地头像
     func testUploadAvatarMockModeReturnsNonNilURLString() async {
-        #if DEBUG
-        AuthService.forceMockBackend = true
-        defer { AuthService.forceMockBackend = false }
+        AuthSession.shared.update(user: makeTestUser())
+        TestMockURLProtocol.requestHandler = { request in
+            guard let url = request.url else { throw URLError(.badURL) }
+            guard let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: ["Content-Type": "application/json"]) else {
+                throw URLError(.badServerResponse)
+            }
+            let json: [String: Any] = [
+                "code": 0, "message": "success",
+                "data": "https://oss.example.com/avatar.png",
+                "requestId": "req", "timestamp": 123
+            ]
+
+            let data = (try? JSONSerialization.data(withJSONObject: json)) ?? Data()
+            return (response, data)
+        }
 
         let result = await AuthService.shared.uploadAvatar(imageData: testAvatarImageData)
 
-        XCTAssertNotNil(result, "Mock 模式下 uploadAvatar 应返回非 nil URL 字符串")
-        XCTAssertTrue(result?.hasPrefix("https://") == true, "返回的 URL 应以 https:// 开头")
-        XCTAssertTrue(result?.hasSuffix(".png") == true, "返回的 URL 应以 .png 结尾")
-        #endif
+        XCTAssertNotNil(result, "上传头像应成功返回 Data URL 字符串")
+        XCTAssertTrue(result?.hasPrefix("data:") == true, "返回的 URL 应为 base64 Data URL")
+        XCTAssertEqual(AuthService.shared.currentUser?.avatarURL?.absoluteString, result, "本地用户头像应被同步更新")
     }
 
-    /// 验证 Mock 模式下 uploadAvatar 多次调用返回不同 URL
-    func testUploadAvatarMockModeMultipleCallsReturnDifferentURLs() async {
-        #if DEBUG
-        AuthService.forceMockBackend = true
-        defer { AuthService.forceMockBackend = false }
+    /// 验证 uploadAvatar 网络失败时返回 nil
+    func testUploadAvatarMockModeNetworkFailureReturnsNil() async {
+        TestMockURLProtocol.requestHandler = { request in
+            guard let url = request.url else { throw URLError(.badURL) }
+            guard let response = HTTPURLResponse(url: url, statusCode: 500, httpVersion: nil, headerFields: nil) else {
+                throw URLError(.badServerResponse)
+            }
+            return (response, Data())
+        }
 
-        let result1 = await AuthService.shared.uploadAvatar(imageData: testAvatarImageData)
-        let result2 = await AuthService.shared.uploadAvatar(imageData: testAvatarImageData)
-
-        XCTAssertNotEqual(result1, result2, "多次调用应返回不同 URL（含 UUID）")
-        #endif
+        let result = await AuthService.shared.uploadAvatar(imageData: testAvatarImageData)
+        XCTAssertNil(result, "网络失败时应返回 nil")
     }
 }

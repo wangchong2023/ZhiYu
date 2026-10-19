@@ -147,4 +147,35 @@ final class QuizProcessorTests: XCTestCase {
         let result = try XCTUnwrap(QuizProcessor.convertJSONToMarkdown(json))
         XCTAssertTrue(result.contains(L10n.Quiz.title))
     }
+
+    // MARK: - 选项完整性与自愈防线测试
+
+    func testGenerateFallbackQuiz_ProducesStandardFourOptions() throws {
+        let fallbackJSON = SynthesisProcessor.generateFallbackQuiz(from: "测试内容", title: "测试标题")
+        let model = try XCTUnwrap(QuizProcessor.parseToQuizModel(fallbackJSON))
+        XCTAssertFalse(model.questions.isEmpty)
+        let firstQuestion = model.questions[0]
+        XCTAssertEqual(firstQuestion.options.count, 4, "降级自愈生成的测验题目必须包含标准 4 个单选选项，绝不能只有 1 个")
+    }
+
+    func testParseToQuizModel_SingleOrEmptyOptions_SelfHealsToFourOptions() throws {
+        // 模拟大模型输出残缺 JSON（只有 1 个选项）
+        let brokenJSON = """
+        {
+            "title": "残缺选项测试",
+            "questions": [
+                {
+                    "id": 1,
+                    "question": "这是一道残缺题？",
+                    "options": ["仅有唯一的这一个选项"],
+                    "answer": 0,
+                    "explanation": "解析"
+                }
+            ]
+        }
+        """
+        let model = try XCTUnwrap(QuizProcessor.parseToQuizModel(brokenJSON))
+        let firstQ = model.questions[0]
+        XCTAssertEqual(firstQ.options.count, 4, "当大模型仅产生 1 个选项或格式异常时，QuizProcessor 必须自愈补齐至 4 个选项")
+    }
 }

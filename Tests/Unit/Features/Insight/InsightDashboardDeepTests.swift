@@ -317,6 +317,39 @@ final class InsightDashboardDeepTests: XCTestCase {
         }
     }
 
+    /// 验证：在非空知识库下，通过 MockLLMService 驱动完整的页面分析、Prompt 拼装与 JSON 见解解析
+    func testKnowledgeInsightService_ValidPages_GeneratesRecapViaLLMAndCaches() async throws {
+        let insightService = KnowledgeInsightService()
+        let mockLLM = MockLLMService()
+        let testPage = KnowledgePage(
+            id: UUID(),
+            title: "分层架构设计规范",
+            pageType: .concept,
+            content: "智宇系统遵循 L0-L3 单向分层架构，表现层依赖功能层，禁止反向跨层依赖。",
+            tags: ["架构", "规范"],
+            updatedAt: Date().addingTimeInterval(-60 * 60 * 24 * 45) // 45 天前的冷页面
+        )
+
+        let recap = try await insightService.generateDailyRecap(
+            pages: [testPage],
+            llmService: mockLLM,
+            forceRefresh: true
+        )
+
+        XCTAssertEqual(recap.targetPageID, testPage.id, "生成的见解应精准绑定选中的冷页面 ID")
+        XCTAssertEqual(recap.targetPageTitle, testPage.title, "目标标题应匹配")
+        XCTAssertFalse(recap.insight.isEmpty, "见解内容不应为空")
+        XCTAssertFalse(recap.suggestedConnection.isEmpty, "关联建议不应为空")
+
+        // 再次获取（非 forceRefresh），验证有效命中本地缓存
+        let cachedRecap = try await insightService.generateDailyRecap(
+            pages: [testPage],
+            llmService: mockLLM,
+            forceRefresh: false
+        )
+        XCTAssertEqual(cachedRecap.targetPageID, testPage.id, "缓存命中后应返回相同页面的见解")
+    }
+
     func testKnowledgePageListView_AllFilterTypes() {
         for pageType in [PageType.concept, PageType.entity, PageType.source, PageType.comparison, nil] {
             let rawList = KnowledgePageListView(filterType: pageType)

@@ -63,11 +63,11 @@ extension VaultService {
 
                 self.vaults = loadedVaults
                 await refreshAllPageCounts()
-                autoSelectFirstVaultForUITesting()
+                applyDefaultVaultSelectionPolicy()
             } catch {
                 Logger.shared.error(" [VaultService] Failed to asynchronously load notebook metadata: \(error)", error: error)
                 self.vaults = buildFallbackDemoVaults()
-                autoSelectFirstVaultForUITesting()
+                applyDefaultVaultSelectionPolicy()
             }
         }
 
@@ -130,14 +130,11 @@ extension VaultService {
         }
     }
 
-    // MARK: - UI 测试支持
-
-    /// UI 测试模式自动选中第一个金库，跳过 NotebookHubView 直接进入主界面。
-    /// 根因：NotebookCard 的 accessibilityElement(children: .combine) 导致 isHittable=false，
-    /// XCUITest 的 element.tap() 会抛错，coordinate.tap() 不触发 SwiftUI Button action，
-    /// 测试无法通过 UI 点击进入金库。此处通过预置 selectedVaultID 正向绕过该限制。
-    func autoSelectFirstVaultForUITesting() {
-        guard TestModeDetector.isUITesting, !TestModeDetector.skipAutoVault,
+    // MARK: - 笔记本策略决策
+    
+    /// 应用默认笔记本自动选择策略（若注入策略要求自动选择，则选中首个笔记本以平滑过渡）
+    func applyDefaultVaultSelectionPolicy() {
+        guard selectionPolicy.shouldAutoSelectFirstVault,
               selectedVaultID == nil,
               let firstVault = vaults.first else { return }
         selectedVaultID = firstVault.id

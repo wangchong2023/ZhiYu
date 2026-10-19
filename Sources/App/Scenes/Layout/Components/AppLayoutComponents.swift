@@ -51,9 +51,8 @@ extension ContentView {
             
             globalOverlaySheets()
             
-            // UI 测试专用退出按钮：toolbar 中的 VaultBadge 在 principal 位置，
-            // XCUITest 点击不可靠。添加一个透明的退出区域，仅在 UI 测试模式下显示。
-            if TestModeDetector.isUITesting {
+            // 辅助退出入口：根据导航布局策略决策是否挂载辅助退出按钮
+            if navigationLayoutPolicy.enablesAuxiliaryExitAccess {
                 Button {
                     vaultService.exitVault()
                 } label: {
@@ -68,14 +67,14 @@ extension ContentView {
         .appToast()
     }
 
-    /// 渲染适配当前硬件平台与测试模式下的核心 TabView/SplitView 容器
+    /// 渲染适配当前硬件平台与策略模式下的核心 TabView/SplitView 容器
     /// - Parameter tintColor: 全局着色色彩
     /// - Returns: 返回经过平台决策后的主内容容器视图
     @ViewBuilder
     private func adaptiveTabView(tintColor: Color) -> some View {
         #if !os(macOS)
-        // 1. 若处于 iOS/iPadOS UI 自动化测试模式下，一律强制回退至 legacyTabView 以保障 TabBar 元素定位在 iPhone/iPad 上绝对可靠
-        if TestModeDetector.isUITesting {
+        // 1. 若布局策略偏好传统模式，强制使用 legacyTabView
+        if navigationLayoutPolicy.prefersLegacyTabView {
             legacyTabView(tintColor: tintColor)
         } else if appEnv.screenClass != .compact {
             if #available(iOS 18.0, *) {

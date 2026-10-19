@@ -12,17 +12,39 @@ import Foundation
 import UFPCore
 import Dependencies
 
+/// AI 指标分析服务契约 (L1-Infra)
+public protocol AIAnalyticsServiceProtocol: Sendable {
+    /// 记录单次 LLM 调用指标
+    func recordUsage(model: String, response: [String: Any], latency: Int)
+
+    /// 执行 RAG 性能指标异步计算与评估（含检索源标注）
+    func recordRAGMetrics(
+        query: String,
+        response: String,
+        context: String,
+        sources: [KnowledgeSource]?,
+        systemPrompt: String,
+        modelName: String,
+        latency: Int
+    )
+}
+
 /// AI 指标分析服务 (L1-Infra)
-public final class AIAnalyticsService: @unchecked Sendable {
+public final class AIAnalyticsService: AIAnalyticsServiceProtocol, @unchecked Sendable {
     @Dependency(\.ragGovernanceRepository) private var governance: any RAGGovernanceRepository
     @Dependency(\.ragEvaluationService) private var evalService: RAGEvaluationService
 
-    public init() {}
+    private let isEnabled: Bool
+
+    /// 初始化分析服务
+    /// - Parameter isEnabled: 是否启用后台指标收集（生产默认启用，测试环境可通过注入禁用以保证并发隔离）
+    public init(isEnabled: Bool = true) {
+        self.isEnabled = isEnabled
+    }
 
     /// 记录单次 LLM 调用指标
     public func recordUsage(model: String, response: [String: Any], latency: Int) {
-        // 单测环境下禁用后台异步指标写入，以防重置 DI 容器导致的崩溃
-        guard !TestModeDetector.isUnitTesting else { return }
+        guard isEnabled else { return }
 
         guard let usage = response["usage"] as? [String: Any],
               let prompt = usage["prompt_tokens"] as? Int,
@@ -51,8 +73,7 @@ public final class AIAnalyticsService: @unchecked Sendable {
         modelName: String,
         latency: Int
     ) {
-        // 单测环境下禁用后台异步指标写入，以防重置 DI 容器导致的崩溃
-        guard !TestModeDetector.isUnitTesting else { return }
+        guard isEnabled else { return }
 
         let governance = self.governance
         let evalService = self.evalService
@@ -100,7 +121,7 @@ public enum AIAnalyticsServiceKey: DependencyKey {
     }
 
     public static var testValue: AIAnalyticsService {
-        ServiceContainer.shared.resolveOptional(AIAnalyticsService.self) ?? AIAnalyticsService()
+        ServiceContainer.shared.resolveOptional(AIAnalyticsService.self) ?? AIAnalyticsService(isEnabled: false)
     }
     public static var previewValue: AIAnalyticsService { testValue }
 }

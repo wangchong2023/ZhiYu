@@ -117,20 +117,83 @@ final class GlobalModelManagerTests: XCTestCase {
         XCTAssertEqual(manager.downloadedModelIds.count, 1)
     }
 
-    // MARK: - isChinaRegion
+    // MARK: - isChinaRegion & 下载源路由测试
 
     func testIsChinaRegionOverrideTrue() {
         manager.isChinaRegionOverride = true
-
-        // 通过 startDownload 间接验证，或直接验证行为
-        // 这里只验证 override 不崩溃
-        XCTAssertNotNil(manager.isChinaRegionOverride)
+        XCTAssertTrue(manager.isChinaRegion, "当 override 为 true 时，isChinaRegion 必须返回 true")
     }
 
     func testIsChinaRegionOverrideFalse() {
         manager.isChinaRegionOverride = false
+        XCTAssertFalse(manager.isChinaRegion, "当 override 为 false 时，isChinaRegion 必须返回 false")
+    }
 
-        XCTAssertNotNil(manager.isChinaRegionOverride)
+    func testIsChinaRegionMultiDimensionalConstantsCoverage() {
+        // 验证多维判断所依赖的中国时区集合与语言代码常量完备性
+        XCTAssertTrue(FeatureConstants.LocaleIdentifier.chinaTimeZones.contains("Asia/Shanghai"))
+        XCTAssertTrue(FeatureConstants.LocaleIdentifier.chinaTimeZones.contains("Asia/Chongqing"))
+        XCTAssertTrue(FeatureConstants.LocaleIdentifier.chinaTimeZones.contains("Asia/Urumqi"))
+        XCTAssertEqual(FeatureConstants.LocaleIdentifier.zh, "zh")
+        XCTAssertEqual(FeatureConstants.LocaleIdentifier.cn, "CN")
+    }
+
+    func testStartDownload_ChinaRegion_PrefersModelScope() async throws {
+        let recordingMock = RecordingMockModelDownloadManager()
+        ServiceContainer.shared.register(recordingMock as any ModelDownloadCapabilities, for: (any ModelDownloadCapabilities).self)
+        let localManager = GlobalModelManager()
+        localManager.isChinaRegionOverride = true
+
+        let manifest = LLMManifest(
+            modelId: "test-china-route",
+            displayName: "TestModel",
+            vendor: "Vendor",
+            fileSizeInBytes: 1_000,
+            minDeviceMemoryInGb: 0.1,
+            remoteURLString: "https://fallback.com/model.bin",
+            sha256Checksum: "abc",
+            parameterCount: "1B",
+            supportedTasks: ["chat"],
+            description: "Desc",
+            defaultParameters: InferenceParameters(temperature: 0.7, topP: 0.9, topK: 40, maxTokens: 1024),
+            huggingfaceURLString: "https://huggingface.co/model.bin",
+            modelscopeURLString: "https://modelscope.cn/model.bin"
+        )
+
+        localManager.startDownload(for: manifest)
+        try await Task.sleep(nanoseconds: 80_000_000)
+
+        XCTAssertEqual(recordingMock.downloadedURLs.first?.absoluteString, "https://modelscope.cn/model.bin", "中国境内必须优先路由至 ModelScope")
+    }
+
+    func testStartDownload_NonChinaRegion_PrimaryHuggingFace_FailoverToModelScope() async throws {
+        let failoverMock = FailoverMockModelDownloadManager()
+        ServiceContainer.shared.register(failoverMock as any ModelDownloadCapabilities, for: (any ModelDownloadCapabilities).self)
+        let localManager = GlobalModelManager()
+        localManager.isChinaRegionOverride = false
+
+        let manifest = LLMManifest(
+            modelId: "test-failover-route",
+            displayName: "TestModel",
+            vendor: "Vendor",
+            fileSizeInBytes: 1_000,
+            minDeviceMemoryInGb: 0.1,
+            remoteURLString: "https://default.com/model.bin",
+            sha256Checksum: "abc",
+            parameterCount: "1B",
+            supportedTasks: ["chat"],
+            description: "Desc",
+            defaultParameters: InferenceParameters(temperature: 0.7, topP: 0.9, topK: 40, maxTokens: 1024),
+            huggingfaceURLString: "https://huggingface.co/model.bin",
+            modelscopeURLString: "https://modelscope.cn/model.bin"
+        )
+
+        localManager.startDownload(for: manifest)
+        try await Task.sleep(nanoseconds: 120_000_000)
+
+        // 验证首选为 HuggingFace，失败后自动 Failover 降级调用 ModelScope
+        XCTAssertEqual(failoverMock.recordedURLs.first?.absoluteString, "https://huggingface.co/model.bin", "海外优先路由至 HuggingFace")
+        XCTAssertTrue(failoverMock.recordedURLs.contains(where: { $0.absoluteString == "https://modelscope.cn/model.bin" }), "首选源失败后必须自动无缝 Failover 重试 ModelScope")
     }
 
     // MARK: - reload
@@ -193,5 +256,38 @@ final class GlobalModelManagerTests: XCTestCase {
         manager.resetForTesting()
         manager.resubscribeActiveDownloads()
         XCTAssertTrue(manager.downloadStates.isEmpty)
+    }
+}
+
+// MARK: - 测试辅助 Mock 类
+
+private final class RecordingMockModelDownloadManager: ModelDownloadCapabilities, @unchecked Sendable {
+    var downloadedURLs: [URL] = []
+
+    func startDownload(modelId: String, remoteURL: URL) async throws {
+        downloadedURLs.append(remoteURL)
+    }
+    func pauseDownload(modelId: String) async throws {}
+    func resumeDownload(modelId: String) async throws {}
+    func cancelDownload(modelId: String) async throws {}
+    func observeDownloadState(for modelId: String) async -> AsyncStream<DownloadState> {
+        AsyncStream { $0.finish() }
+    }
+}
+
+private final class FailoverMockModelDownloadManager: ModelDownloadCapabilities, @unchecked Sendable {
+    var recordedURLs: [URL] = []
+
+    func startDownload(modelId: String, remoteURL: URL) async throws {
+        recordedURLs.append(remoteURL)
+        if remoteURL.host?.contains("huggingface") == true {
+            throw NSError(domain: "NetworkError", code: -1001, userInfo: [NSLocalizedDescriptionKey: "HuggingFace connection timeout"])
+        }
+    }
+    func pauseDownload(modelId: String) async throws {}
+    func resumeDownload(modelId: String) async throws {}
+    func cancelDownload(modelId: String) async throws {}
+    func observeDownloadState(for modelId: String) async -> AsyncStream<DownloadState> {
+        AsyncStream { $0.finish() }
     }
 }

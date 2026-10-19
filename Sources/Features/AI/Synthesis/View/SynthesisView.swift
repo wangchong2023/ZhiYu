@@ -460,7 +460,7 @@ extension View {
     /// - Parameter isPresented: isPresented
     func alertLLMNotConfigured(isPresented: Binding<Bool>, onConfigure: @escaping () -> Void) -> some View {
         self.alert(L10n.Common.configureAI, isPresented: isPresented) {
-            Button(L10n.ModelManager.Lab.configurations) {
+            Button(L10n.Settings.Section.ai) {
                 HapticFeedback.shared.trigger(.selection)
                 onConfigure()
             }

@@ -5,11 +5,12 @@
 //  Created by CodeFree on 2026/08/20.
 //  Copyright © 2026 WangChong. All rights reserved.
 //
-//  系统层级：[L0.5] 系统集成层
-//  核心职责：集中检测测试模式（UI 测试 / 单元测试 / Mock 数据），避免在视图/服务层散布测试耦合代码。
+//  系统层级：[Test] 单元测试共享基础设施
+//  核心职责：集中检测测试模式（UI 测试 / 单元测试 / Mock 数据），专供测试套件使用，彻底剥离出生产代码。
 //
 
 import Foundation
+@testable import ZhiYu
 
 /// 测试模式检测器：集中管理所有测试模式判断，生产代码通过此工具类引用，不在各处散布 launch argument 检测。
 public enum TestModeDetector {

@@ -12,9 +12,9 @@ import UFPCore
 // MARK: - 跨领域共享常量
 extension FeatureConstants {
 
-    // MARK: - Mock 数据颜色名 (Mock Color Names)
-    /// ModelLab Mock 数据中 colorName 字段的强类型常量
-    enum MockColorName {
+    // MARK: - 演示数据颜色名 (Demo Color Names)
+    /// ModelLab 演示数据中 colorName 字段的强类型常量
+    enum DemoColorName {
         static let cyan: String = "cyan"
         static let purple: String = "purple"
         static let blue: String = "blue"
@@ -25,32 +25,12 @@ extension FeatureConstants {
         static let pink: String = "pink"
     }
 
-    // MARK: - Mock 颜色名补充 (Mock Color Name Supplement)
-    /// ModelLab Mock 数据中 colorName 字段补充
-    enum MockColorNameSupplement {
-        static let green = "green"
-        static let blue = "blue"
-    }
+    typealias MockColorName = DemoColorName
 
-    // MARK: - Mock 数据 (Mock Data)
-    /// Mock/Preview 测试数据中的字符串常量
-    enum MockData {
+    // MARK: - 默认数据常量 (Default Values)
+    enum DefaultValue {
         static let multipleTags = "Multiple Tags"
         static let notDownloaded = "Not Downloaded"
-        static let mockGoogleCode = "mock_google_code"
-        static let mockSub123 = "mock_sub_123"
-        static let mockJwtAccess = "mock_jwt_access_token"
-        static let mockJwtRefresh = "mock_jwt_refresh_token"
-        static let mockAutologinUser = "Mock Autologin User"
-        static let mockAutologinEmail = "mock_autologin@example.com"
-        static let mockAutologinPhone = "13800000000"
-        static let mockAppleCode = "mock_apple_authorization_code"
-        static let weChatMockUser = "WeChat Mock User"
-        static let gitHubMockUser = "GitHub Mock User"
-        static let googleMockUser = "Google Mock User"
-        static let bearer = "Bearer"
-        /// Mock 模式下 token 过期时间（秒）
-        static let mockExpiresInSeconds: Int = 3600
         static let workspaceBenchFileName: String = "workspace_bench.jpg"
         static let freePlanName: String = "Free"
         static let github = "github"
@@ -58,9 +38,8 @@ extension FeatureConstants {
         static let latency23ms = "23ms"
     }
 
-    // MARK: - Mock 文本 (Mock Text)
-    /// ModelLab Mock 演示数据中的文本（通过 L10n 强类型访问，避免硬编码中文）
-    enum MockText {
+    // MARK: - 实验室演示文本 (Lab Demo Text)
+    enum LabDemoText {
         static let notebookLabel = L10n.ModelManager.Lab.Mock.notebookLabel
         static let penLabel = L10n.ModelManager.Lab.Mock.penLabel
         static let iphoneScreenLabel = L10n.ModelManager.Lab.Mock.iphoneScreenLabel
@@ -84,6 +63,7 @@ extension FeatureConstants {
     enum ModuleName {
         static let tagStore = "TagStore"
         static let googleAuthStrategy = "GoogleAuthStrategy"
+        static let weChatAuthStrategy = "WeChatAuthStrategy"
         static let aiWorkflowStore = "AIWorkflowStore"
         static let ingestService = "IngestService"
         static let dashboard = "Dashboard"
@@ -214,13 +194,6 @@ extension FeatureConstants {
     /// HTTP 响应状态码常量
     enum HTTPStatusCode {
         static let ok: Int = 200
-    }
-
-    // MARK: - UI 测试参数 (UI Testing Argument)
-    /// ProcessInfo 启动参数标识
-    enum UITestingArg {
-        static let uiTesting = "--uitesting"
-        static let resetAuthState = "--reset-auth-state"
     }
 
     // MARK: - 辅助功能标识 (Accessibility Identifier)

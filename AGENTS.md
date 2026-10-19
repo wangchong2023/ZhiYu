@@ -99,6 +99,16 @@
    - **复合表达式中的换算常量必须抽取**：`5 * 1024 * 1024` 应改为 `5 * BytesPerKB * BytesPerKB`，`1024` 不被「常量定义行」规则吞掉。
    - **豁免统一走 ExemptionRegistry**：在 `Config/exemptions/manual_whitelist.yml` 的 `business_magic_exempt` 分类下登记，含 file/line/reason/expiry_check，不支持行注释豁免。
 
+## 分支同步与冲突预防规范 (Branch Sync & Conflict Prevention Policy)
+
+> **所有 Agent 与开发者在此仓库发起功能分支 / MR 时，必须遵守以下约束，防止跨分支并行演进导致大规模 merge 冲突。**
+
+1. **功能分支周期同步 main（强制）**：功能分支每经历一次 main 有新提交（其他 MR 合入），必须尽快执行 `git fetch origin main && git merge origin/main`（或 `git rebase origin/main`）同步基线，严禁在长期滞后的祖先上演进、积累大量分叉。
+2. **新功能单一来源**：同一功能只允许在一个负责人分支上开发，通过 MR 合入 main。严禁在 main 直接开发，也严禁另起分支对同一功能重复实现（否则两边对同一批文件异源同改，放大冲突）。
+3. **提前合并后的跟进**：若 main 提前合并了功能分支的部分内容，功能分支必须立即 merge/rebase main 保持基线一致，避免两分支从不同祖先继续演进同一功能线。
+4. **MR 小步快跑**：每个 MR 聚焦单一主题、控制提交规模（建议 ≤ 10 个提交），避免一次合并跨多个领域。
+5. **合并前冲突预演**：发起 MR 前先在本地 `git merge origin/main` 预演，提前消化冲突，禁止把冲突一次性积压到 MR 合并阶段。
+
 ## 项目概览
 
 智宇 (ZhiYu) — 面向 iOS/macOS/watchOS 的 AI 原生知识管理应用，基于 Karpathy 的 LLM Wiki 方法论构建。不仅是一个 Markdown 编辑器，更是一个 RAG 闭环系统：语义分块 → 混合 FTS5+向量存储 → AI 合成实验室（含深度引用）。660 个 Swift 文件，~90K 行代码。
@@ -147,6 +157,13 @@ xcodebuild build -project ZhiYu.xcodeproj -scheme ZhiYuWatch -destination 'gener
 | **L1.5** | 领域层 | 业务规则、RAG 编排、跨模块契约（Domain Models、Protocols、KnowledgePageManager、KnowledgeIngestPipeline） |
 | **L1** | 服务层 | 数据仓储（Repository）、AI 适配器（LLM、Embedding）、存储引擎、插件系统 |
 | **L0** | 基础设施层 | SQLite (GRDB)、网络、Keychain、Logger、平台适配、DI 容器、基础协议 |
+
+### 测试专用代码剥离出生产 target
+
+> **测试专用代码（测试探测工具、测试 Mock / Responder 等）严禁放入生产 target（`Sources/`），必须归入测试 target（`Tests/Shared/Mocks/`）。生产代码不得依赖测试基础设施。**
+
+- 典型反例：`TestModeDetector`（测试模式探测）、`LLMMockResponder`（mock 响应器）曾在 `Sources/` 被 18+ 个生产文件依赖（生产代码内嵌测试模式 mock 分支）。此类测试耦合应从生产代码剥离。
+- 生产代码需要测试替身时，通过协议/依赖注入（如 `GoogleAuthStrategy` 注入 `signInProvider`、`clientIDResolver`），而非在生产代码里依赖测试专用类型。
 
 ## 项目结构（关键路径）
 

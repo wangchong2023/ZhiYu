@@ -117,12 +117,6 @@ struct SplashView: View {
     
     // MARK: - 动画序列
     private func startAnimations() {
-        #if DEBUG
-        if TestModeDetector.isUITesting {
-            onDismiss()
-            return
-        }
-        #endif
         // 背景动画启动
         starTwinkle = true
         nodeGlow = true

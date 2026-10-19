@@ -13,12 +13,10 @@ import XCTest
 final class AuthIntegrationTests: XCTestCase {
     
     override func setUpWithError() throws {
-        // 强制关闭 Mock，走真实后端网络
-        MainActor.assumeIsolated { AuthService.forceMockBackend = false }
+        // 走真实后端网络
     }
 
     override func tearDownWithError() throws {
-        MainActor.assumeIsolated { AuthService.forceMockBackend = false }
     }
 
     // MARK: - Test Strategies
