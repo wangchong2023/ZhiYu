@@ -13,17 +13,17 @@ flowchart LR
     A[GitLab CE :8480] -->|push / MR| B[GitLab CI/CD Engine]
     B -->|Job Queue| C[macOS Shell Runner]
     C --> D[XcodeGen + Gatekeeper]
-    D --> E[analyze 阶段]
-    D --> F[prepare 阶段]
-    E --> G[static-analysis<br/>20项审计]
-    E --> H[SonarQube<br/>95%/90%门禁]
-    F --> I[build-ios]
-    F --> J[build-macos]
-    F --> K[build-watchos]
+    D --> E[prepare 阶段]
+    D --> F[analyze 阶段]
+    F --> G[static-analysis<br/>20项审计]
+    E --> I[build-ios]
+    E --> J[build-macos]
+    E --> K[build-watchos]
     I --> L[test-and-coverage<br/>语句≥95% 分支≥90%]
     J --> L
     K --> L
-    L --> M{Quality Gate}
+    L --> P[perf-baseline<br/>性能回归基线]
+    P --> M{Quality Gate}
     M -->|通过| N[MR 可合并]
     M -->|阻断| O[MR 被拒绝]
 ```
@@ -66,17 +66,19 @@ swift test --package-path Packages/ZhiYuFeatures
 
 ## 2. 主 CI 流水线 (`.gitlab-ci.yml`)
 
-流水线包含 4 个核心阶段 (Stages)：`analyze` → `prepare` → `build` → `test`
+流水线包含 5 个核心阶段 (Stages)：`prepare` → `analyze` → `build` → `test` → `perf`
 
 | 阶段 (Stage) | 任务 (Job) | 触发条件 | 执行内容 |
 |---|---|---|---|
+| **prepare** | `build-prepare` | `main` / `develop` / `release/*` push | `xcodegen generate` + 解析 SPM 依赖 + 注入版本号 |
 | **analyze** | `static-analysis` | 所有 push / MR | 运行 20 项 Gatekeeper 静态合规审计 |
-| | `sonarqube-analysis` | 所有 push / MR | 运行 SonarQube 全语言 (Swift, Python, Shell, YAML) 质量分析与 95% 语句 / 90% 分支 Quality Gate 硬阻断 |
-| **prepare** | `build-prepare` | `main` / `develop` / `release/*` push | `xccodegen generate` + 解析 SPM 依赖 + 注入版本号 |
 | **build** | `build-ios` | `main` / `develop` / `release/*` push | 构建 iOS 模拟器目标 (`ZhiYu`) |
 | | `build-macos` | `main` / `develop` / `release/*` push | 构建 macOS Catalyst 目标 (`ZhiYuMac`) |
 | | `build-watchos` | `main` / `develop` / `release/*` push | 构建 watchOS 模拟器目标 (`ZhiYuWatch`) |
-| **test** | `test-and-coverage` | `main` / `develop` / `release/*` push | 运行全量单元测试与覆盖率熔断门禁（语句 ≥ 95%，分支 ≥ 90%） |
+| **test** | `test-and-coverage` | `main` / `develop` / `release/*` push | 运行全量单元测试与覆盖率熔断门禁（语句 ≥ 95%，分支 ≥ 90%；门禁由 xccov 本地脚本 `check_xccov_coverage.py` 执行） |
+| **perf** | `perf-baseline` | 每周夜间 + 手动触发 | 运行性能测试与回归基线 |
+
+> **说明**：SonarQube Community Edition 不支持 Swift 语言分析，代码质量与覆盖率门禁统一由 `static-analysis` 与 `test-and-coverage` 阶段执行，不再配置独立的 `sonarqube-analysis` job。
 
 
 
@@ -166,7 +168,7 @@ curl -X POST "http://127.0.0.1:8480/api/v4/projects/constantine%2FZhiYu/protecte
 
 ## 4. 四层纵深防御矩阵 (Defense-in-Depth)
 
-| 检查项 | 脚本/工具 | Layer 1: Pre-commit | Layer 2: Build Phase | Layer 3: Woodpecker CI | Layer 4: GitHub Actions |
+| 检查项 | 脚本/工具 | Layer 1: Pre-commit | Layer 2: Build Phase | Layer 3: GitLab CI | Layer 4: GitHub Actions |
 |--------|-----------|:---:|:---:|:---:|:---:|
 | 硬编码密钥扫描 | `assert-release-hardcoded-secrets.py` | ✅ | ✅ | ✅ | ✅ |
 | 本地化合规 | `check-code-localization.py` | ✅(仅报告) | ✅ | ❌ | ✅ |
@@ -186,16 +188,16 @@ curl -X POST "http://127.0.0.1:8480/api/v4/projects/constantine%2FZhiYu/protecte
 | 分层标记审计 | `lint_layer_markers.sh` | ❌ | ❌ | ✅ | ❌ |
 | Unsafe String.Index 扫描 | `scan_unsafe_string_index.py` | ❌ | ❌ | ✅ | ❌ |
 | SPM 完整性 | `check-arch-spm-integrity.sh` | ❌ | ❌ | ✅ | ✅ |
-| SPM 依赖漏洞审计 | `ci-audit-spm-dependencies.py` | ❌ | ❌ | ❌ | ✅ |
+| SPM 依赖漏洞审计 | `audit-arch-spm-deps.py` | ❌ | ❌ | ❌ | ✅ |
 | SBOM 生成 (SPDX+CycloneDX) | `generate-arch-sbom-single.py` / `generate-arch-sbom-merged.py` | ❌ | ❌ | ✅ | ✅ |
-| 代码覆盖率红线 (85%) | `assert-test-coverage.py` | ❌ | ❌ | ✅ | ✅ |
+| 代码覆盖率红线 (95% 行 / 90% 分支) | `assert-test-coverage.py` | ❌ | ❌ | ✅ | ✅ |
 
-> **¹ ShellCheck 条件性**：`scripts-audit-quality-scripts.py` 在运行时 `shutil.which("shellcheck")` 动态探测，仅当 Agent/runner 已安装 shellcheck 才合流校验，否则静默跳过。GitHub-hosted macos-15 runner 预装 shellcheck；自托管 Woodpecker iOS Agent 需自行 `brew install shellcheck`。
+> **¹ ShellCheck 条件性**：`scripts-audit-quality-scripts.py` 在运行时 `shutil.which("shellcheck")` 动态探测，仅当 Agent/runner 已安装 shellcheck 才合流校验，否则静默跳过。GitHub-hosted macos-15 runner 预装 shellcheck；自托管 GitLab iOS Agent 需自行 `brew install shellcheck`。
 
 **分层原则：**
 - **Layer 1 (Pre-commit)**: 最快，只阻断密钥泄露，其余仅报告
 - **Layer 2 (Build Phase)**: 每次本地构建运行，覆盖代码质量 + 魔鬼数字 + 架构分层 + SwiftLint `--strict`（与 CI 同口径，杜绝本地绕过）
-- **Layer 3 (Woodpecker)**: 自托管 CI，`run-code-static-analysis.sh` 并发 19 项 + 三平台编译 + 测试覆盖率
+- **Layer 3 (GitLab CI)**: 自托管 CI，`run-code-static-analysis.sh` 并发 19 项 + 三平台编译 + 测试覆盖率
 - **Layer 4 (GitHub Actions)**: 独立验证 + 产物上传 + 多平台矩阵 + SPM 漏洞审计
 
 ---
@@ -290,25 +292,25 @@ Tools/
 │   ├── audit-code-swift-quality.py           # Swift 函数长度与注释完备性
 │   ├── check-arch-test-di-setup.py           # 测试环境 DI 完整性
 │   ├── docs-check-config-docs.py        # 文档完整性 + 死链 + 配置一致性
-│   └── assert-test-coverage.py                # 覆盖率红线 (Domain 层, 85%)
+│   └── assert-test-coverage.py                # 覆盖率红线 (Domain 层, 95% 行 / 90% 分支)
 ├── CI/                                  # CI 流水线脚本
 │   ├── run-code-static-analysis.sh           # 并发调度 19 项静态分析
-│   ├── ci-build-pipeline-env-prepare.sh     # xcodegen generate 等构建前准备
-│   ├── ci-build-pipeline-version-inject.sh                # 版本号注入（git tag → Info.plist）
-│   ├── ci-build-pipeline-platform.sh                # 单平台 xcodebuild 构建封装
-│   ├── ci-build-pipeline-multi-platform.sh          # 多平台矩阵构建封装
-│   ├── ci-run-test-with-coverage.sh        # xcodebuild test + 覆盖率红线
+│   ├── build-pipeline-env-prepare.sh     # xcodegen generate 等构建前准备
+│   ├── build-pipeline-version-inject.sh                # 版本号注入（git tag → Info.plist）
+│   ├── build-pipeline-platform.sh                # 单平台 xcodebuild 构建封装
+│   ├── build-pipeline-multi-platform.sh          # 多平台矩阵构建封装
+│   ├── run-test-with-coverage.sh        # xcodebuild test + 覆盖率红线
 │   ├── run-test-unit.sh                # 单元测试 (CI 侧)
-│   ├── ci-run-test-ui.sh                  # UI 测试 (跳过 Monkey)
+│   ├── run-test-ui.sh                  # UI 测试 (跳过 Monkey)
 │   ├── assert-test-coverage.py                # 覆盖率红线 (与 Gatekeeper 版不同, 见 §8)
 │   ├── check-pipeline-perf-regression.py         # 性能回归分析
 │   ├── generate-pipeline-perf-baseline.sh          # 性能基线更新
 │   ├── run-test-flaky-report.sh           # Flaky 测试收集
-│   ├── ci-run-test-progress.sh              # 管道式实时测试进度监控（百分比+失败提示+Top5最慢+汇总）
-│   ├── ci-audit-spm-dependencies.py        # SPM 依赖漏洞审计
+│   ├── run-test-progress.sh              # 管道式实时测试进度监控（百分比+失败提示+Top5最慢+汇总）
+│   ├── audit-arch-spm-deps.py        # SPM 依赖漏洞审计
 │   ├── check-arch-spm-integrity.sh          # SPM 包完整性校验
-│   ├── ci-check-security-commit-signature.sh       # GPG 提交签名校验
-│   ├── ci-check-pipeline-reproducible.sh     # 确定性构建验证
+│   ├── check-release-commit-signature.sh       # GPG 提交签名校验
+│   ├── check-pipeline-reproducible.sh     # 确定性构建验证
 │   ├── generate-arch-sbom-single.py                 # SPDX 2.3 SBOM 生成
 │   ├── generate-arch-sbom-merged.py                    # SPDX + CycloneDX SBOM 合并
 │   └── run-pipeline-feishu.sh                 # 飞鱼 CI 通知
@@ -366,7 +368,7 @@ Tools/
 
 | 症状 | 可能原因 | 检查方式 |
 |------|----------|---------|
-| 推送未触发流水线 | Gitea Webhook 失效 | `curl localhost:3000/api/v1/repos/constantine/ZhiYu/hooks` |
-| Agent 未接管任务 | 标签不匹配 | 确认 Agent plist `WOODPECKER_LABELS` 与 `.woodpecker.yml` `labels` 一致 |
+| 推送未触发流水线 | GitLab Webhook / CI 触发失效 | `curl http://127.0.0.1:8480/api/v4/projects/constantine%2FZhiYu`（验证 GitLab 可达） |
+| Agent 未接管任务 | 标签不匹配 | 确认 Runner `tags: macos,shell,xcode` 与 `.gitlab-ci.yml` job `tags` 一致 |
 | 端口冲突 | healthcheck 端口被占 | `lsof -i :3001` / `lsof -i :3002` |
 | Woodpecker Server 无响应 | 容器未运行 | `docker ps \| grep woodpecker-server` |

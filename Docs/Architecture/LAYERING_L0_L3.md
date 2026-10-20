@@ -56,7 +56,7 @@
 ### 红线 3：UI 视图穿透依赖物理存储引擎
 *   **违规行为**：在 SwiftUI 的 View 中直接声明 `let db = DatabaseManager.shared`。
 *   **危害**：使 UI 与 SQLite/CloudKit 物理引擎强绑定，无法进行无数据 Mock 的快照测试 (Snapshot Tests) 和单元测试。
-*   **最佳实践**：通过 `@Inject var pageStore: any AnyPageStoreCapabilities` 进行协议注入。
+*   **最佳实践**：通过 `@Dependency(\.pageStoreCapabilities) var pageStore: any AnyPageStoreCapabilities` 进行协议注入。
 
 ---
 
@@ -226,7 +226,7 @@ public final class ChatViewModel: ObservableObject {
 
 ## 6. 架构门禁自动扫描规范
 
-为了确保规范在团队协作中不被突破，配置以下构建门禁（全部通过 `Tools/ci/run-code-static-analysis.sh` 集成串行执行）：
+为了确保规范在团队协作中不被突破，配置以下构建门禁（全部通过 `Tools/CI/run-code-static-analysis.sh` 集成串行执行）：
 
 | # | 脚本 | 检测内容 | 路径 |
 |---|------|---------|------|
@@ -245,7 +245,7 @@ public final class ChatViewModel: ObservableObject {
 | 13 | `check-code-complexity.py` | 🆕 圈复杂度门禁（SwiftLint cyclomatic_complexity, error≤10） | `Tools/ios/` |
 | 14 | `audit-arch-view-duplication.py` | 🆕 启发式 View 结构与修饰符链复用沉淀门禁 | `Tools/ios/` |
 
-> **执行方式**：本地开发使用 `bash Tools/ci/run-code-static-analysis.sh`；CI 流水线同脚本自动执行。全部 **15 项**并行执行，任一项失败即熔断构建。完整的 CI 体系见 [`Docs/Architecture/CI_CD_WORKFLOW.md`](./CI_CD_WORKFLOW.md)。
+> **执行方式**：本地开发使用 `bash Tools/CI/run-code-static-analysis.sh`；CI 流水线同脚本自动执行。全部 **15 项**并行执行，任一项失败即熔断构建。完整的 CI 体系见 [`Docs/Architecture/CI_CD_WORKFLOW.md`](./CI_CD_WORKFLOW.md)。
 
 ---
 

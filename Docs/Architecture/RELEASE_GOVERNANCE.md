@@ -126,14 +126,14 @@
 
 | 编号 | 检查项 | 检查脚本/工具 | 阻断条件 | 现有状态 |
 |------|--------|-------------|----------|----------|
-| **R-01** | 版本号一致性（semVer == git tag） | `ci-build-pipeline-version-inject.sh` | tag 与 semVer 不一致 → WARNING（不阻断） | ✅ 已有 |
+| **R-01** | 版本号一致性（semVer == git tag） | `build-pipeline-version-inject.sh` | tag 与 semVer 不一致 → WARNING（不阻断） | ✅ 已有 |
 | **R-02** | 版本号格式合规（纯数字点分） | `ios-check-release-appstore.py` | 格式不合规 → 阻断 | ✅ 已有 |
 | **R-03** | App Store 就绪度（Info.plist/权限/隐私清单） | `ios-check-release-appstore.py` | 任一项不合规 → 阻断 | ✅ 已有 |
-| **R-04** | 三平台编译通过（iOS/macOS/watchOS） | `ci-build-pipeline-multi-platform.sh` | 任一平台编译失败 → 阻断 | ✅ 已有 |
-| **R-05** | 全量单元测试通过 | `ci-run-test-with-coverage.sh` | 任一测试失败 → 阻断 | ✅ 已有 |
+| **R-04** | 三平台编译通过（iOS/macOS/watchOS） | `build-pipeline-multi-platform.sh` | 任一平台编译失败 → 阻断 | ✅ 已有 |
+| **R-05** | 全量单元测试通过 | `run-test-with-coverage.sh` | 任一测试失败 → 阻断 | ✅ 已有 |
 | **R-06** | 覆盖率门禁（语句 ≥ 95%，分支 ≥ 90%） | `assert-test-coverage.py` | 覆盖率不达标 → 阻断 | ✅ 已有 |
 | **R-07** | 密钥/Token 扫描（零容忍） | `assert-release-hardcoded-secrets.py` | 命中 → 阻断 | ✅ 已有 |
-| **R-08** | SPM 依赖漏洞审计 | `ci-audit-spm-dependencies.py` | 高危漏洞 → 阻断 | ✅ 已有 |
+| **R-08** | SPM 依赖漏洞审计 | `audit-arch-spm-deps.py` | 高危漏洞 → 阻断 | ✅ 已有 |
 | **R-09** | SBOM 生成（SPDX + CycloneDX） | `generate-arch-sbom-*.py` | 生成失败 → 阻断 | ✅ 已有 |
 | **R-10** | **CHANGELOG 更新检查** | *(待新建)* `check-release-changelog.py` | release 分支无 CHANGELOG 变更 → 阻断 | ❌ 缺失 |
 | **R-11** | **ROADMAP 版本对齐检查** | *(待新建)* `check-release-roadmap-align.py` | semVer 不在 ROADMAP 规划版本中 → WARNING | ❌ 缺失 |

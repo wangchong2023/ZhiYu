@@ -359,6 +359,24 @@ concept_words:
   expiry_check: false
   category:
   - doc-drift
+- symbol: UNINDEXED
+  reason: FTS5 SQL 关键字（DATABASE_SCHEMA.md），标准 SQL 语法，非 Swift 代码符号
+  added: 2026-10-20
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: GraphLayoutEngineTests
+  reason: 真实测试类（Tests/Unit/Infrastructure/GraphLayoutEngineTests.swift），doc-drift 仅索引生产代码 Sources/ 不含测试类
+  added: 2026-10-20
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: GraphUITests
+  reason: 真实测试类（Tests/UI/GraphUITests.swift），doc-drift 仅索引生产代码 Sources/ 不含测试类
+  added: 2026-10-20
+  expiry_check: false
+  category:
+  - doc-drift
 sql_artifacts:
 - symbol: v1_initial
   reason: 数据库迁移版本号

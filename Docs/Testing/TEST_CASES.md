@@ -137,54 +137,6 @@
 
 ---
 
-## 10. TC → XCTest 映射表
-
-| 文档用例 ID | XCTest 类 | XCTest 方法 |
-| :--- | :--- | :--- |
-| TC-STR-01 | `AppStoreTests` (Tests/Shared) | `testAddPage` |
-| TC-STR-02 | `DatabaseIntegrityTests` (Tests/Unit/Storage) | `testDatabaseIntegrityCheckOnCorruptedFile` |
-| TC-SRC-01 | `SearchPerformanceTests` | `testFTSSearchShortWordPriority` |
-| TC-SRC-02 | `SearchPerformanceTests` | `testHybridSearchRecallRate` |
-| TC-AI-01 | `LLMServiceTests` | `testSemanticSummaryGeneration` |
-| TC-AI-02 | `LLMServiceTests` | `testHighConcurrencyQueueStability` |
-| TC-ING-01 | `IngestQueueTests` | `testWebIngestAndMarkdownParsing` |
-| TC-ING-02 | `IngestQueueTests` | `testMultiFormatIngestCompatibility` |
-| TC-NAV-01 | `ZhiYuUITests` (Tests/UI) | `testWikiLinkNavigationStack` |
-| TC-NAV-02 | `KnowledgeBaseUITests` (Tests/UI) | `testDeepLinkRoutingAction` |
-| TC-UI-01 | `RecapTests` (Tests/Unit) | `testDailyRecapRefreshRecalculation` |
-| TC-SEC-01 | `ZhiYuUITests` (Tests/UI) | `testBiometricUnlockAuthSimulation` |
-| TC-SEC-02 | `KnowledgeRepositoryTests` (Tests/Unit/Storage) | `testPrivatePageContentIsEncryptedInDB` |
-| TC-GRF-01 | `GraphLayoutProcessorTests` (Tests/Unit/Graph) | `testLayoutMultiplePagesCreatesNodesForAll`, `testLayoutNodePositionsAreDistinct` |
-| TC-GRF-02 | `KnowledgeBaseUITests` | `testNavigateTo3DGraph` |
-| TC-GRF-03 | `GraphCanvasUITests` | `testGraphCanvasZoomAndPan` |
-| TC-GRF-04 | `GraphClusteringServiceTests` | `testGraphClusteringStability` |
-| TC-GRF-05 | `GraphNodeUITests` | `testGraphNodeSelectionAndHighlight` |
-| TC-GRF-06 | `GraphLayoutProcessorTests` (Tests/Unit/Graph) | `testLayoutIsolatedNodeHasNoEdges` |
-| TC-PLG-01 | `PluginSandboxTests` (Tests/Unit/Plugins) | `testLoadPluginRegistersAndCallsOnLoad`, `testUnloadPluginRemovesAndCallsOnUnload` |
-| TC-PLG-02 | `PluginSandboxTests` (Tests/Unit/Plugins) | `testInterceptionPluginIsRegisteredAsInterceptor` |
-| TC-PLG-03 | `PluginSandboxTests` (Tests/Unit/Plugins) | `testPluginExceptionDoesNotCrashRegistry` |
-| TC-PLG-04 | `PluginSandboxTests` (Tests/Unit/Plugins) | `testPluginUnauthorizedAccessIntercepted` |
-| TC-PLG-05 | `PluginSandboxTests` (Tests/Unit/Plugins) | `testPostProcessRenderModifiedMarkdown` |
-| TC-PLG-06 | `PluginSandboxTests` (Tests/Unit/Plugins) | `testPluginMarketInstallationAndUpgrade` |
-| TC-VLT-01 | `VaultSecurityTests` (Tests/Unit/Security) | `testLockSetsIsLockedToTrue`, `testLockUnlockCycle` |
-| TC-VLT-02 | `VaultSecurityTests` (Tests/Unit/Security) | `testPrivateContentBlurFilter` |
-| TC-VLT-03 | `VaultSecurityTests` (Tests/Unit/Security) | `testMultipleLockCallsStayLocked` |
-| TC-VLT-04 | `SecurityIntegrityTests` (Tests/Unit/Security) | `testHMACCalculationAndVerification`, `testHMACIntegrityCheck` |
-| TC-VLT-05 | `AuditLoggerTests` | `testAuditLogsForSensitiveOperations` |
-| TC-MAC-01 | `MacCatalystTests` | `testMacMenuBarExists` |
-| TC-MAC-02 | `MacCatalystTests` | `testMacKeyboardShortcuts` |
-| TC-WAT-01 | `WatchSyncTests` (Tests/Platforms) | `testWatchVoiceRecorderSync` |
-| TC-WAT-02 | `WatchSyncTests` (Tests/Platforms) | `testWatchMicroRecapCacheSync` |
-| TC-WAT-03 | `WatchPlatformTests` (Tests/Platforms) | `testWatchModelCompilerThrows`, `testWatchSecurityScopedStorageStub`, `testWatchBiometricAuthProviderInterface` |
-| TC-WID-01 | `KnowledgeStatsWidgetTests` (Tests/Unit/System) | `testWidgetSnapshotEntryCalculation` |
-| TC-WID-02 | `KnowledgeStatsWidgetTests` (Tests/Unit/System) | `testWidgetTimelinePolicyCalculation` |
-| TC-DEE-05 | `DeepLinkTests` (Tests/Unit/Services) | `testWidgetCreateActionDeepLinkResolution`, `testWidgetEmptySearchDeepLinkSafetyGrace` |
-| TC-VLT-06 | `MultiVaultSwitchTests` (Tests/Integration) | `testConcurrentVaultSwitchAndDeadlockAvoidance`, `testVaultSwitchNotificationBroadcast` |
-| TC-ING-03 | `IngestQueueTests` (Tests/Unit/RAG) | `testCascadeGrabAndPaywallBypass` (Pending) |
-| TC-DEE-06 | `DeepLinkTests` (Tests/Unit/Services) | `testAgentIntentsIntegrationAndRateLimit` (Pending) |
-
----
-
 ## 9.5 iOS 静态小组件与 Deep Link 专项测试用例
 
 | 用例 ID | 模块 | 测试场景 | 预期结果 | 优先级 |
@@ -193,4 +145,52 @@
 | TC-WID-02 | Widget | 小组件 Timeline 数据源检索 | 验证 Widget 刷新时能够正常拉起数据并生成 `WidgetEntry`，且时间轴策略返回 `.atEnd`。 | P0 |
 | TC-DEE-05 | Navigation | 小组件 Deep Link 容灾解析 | 验证主应用对于 `zhiyu://create` 快捷创建 and `zhiyu://search` 空白搜索参数的 Deep Link 具备高宽限安全解析与 Tab 降级。 | P0 |
 
-> 提示：本映射表覆盖的所有测试用例已全部和系统的 XCTest 自动化测试防线（Tests/）进行完美对齐。
+---
+
+## 10. TC → XCTest 映射表
+
+| 文档用例 ID | XCTest 类 | XCTest 方法 |
+| :--- | :--- | :--- |
+| TC-STR-01 | `AppStoreStorageTests` (Tests/Unit/App/AppStoreStorageTests.swift) | `testAddPage`, `testUpdatePage`, `testDeletePage` |
+| TC-STR-02 | `DatabaseNotificationNameTests` (Tests/Unit/Infrastructure/StorageAndNetworkDeepTests.swift) | `testDatabaseIntegrityCheckFailedNotificationName`, `testPostDatabaseIntegrityCheckFailedNotification` |
+| TC-SRC-01 | `SearchPerformanceTests` (Tests/Performance/SearchPerformanceTests.swift) | `testFTS5SearchPerformance` |
+| TC-SRC-02 | `SearchPerformanceTests` (Tests/Performance/SearchPerformanceTests.swift) | `testVectorRetrievalPerformance` |
+| TC-AI-01 | `AISynthesisServiceDeepTests` (Tests/Unit/Features/AISynthesisServiceDeepTests.swift) | `testSummarizeNormalTextReturnsCleanedMarkdown`, `testSummarizeOverlongContentTruncatedTo8000Chars` |
+| TC-AI-02 | `ChatStoreStreamErrorTests` (Tests/Unit/Features/AI/ChatStoreStreamErrorTests.swift) | `testCancelCurrentRequestCleansState` |
+| TC-ING-01 | `WebScraperProcessorChainTests` (Tests/Unit/Infrastructure/WebScraperProcessorChainTests.swift) | `testJinaHandlerReturnsMarkdownOnSuccess`, `testGooglebotHandlerReturnsMarkdownOnSuccess` |
+| TC-ING-02 | `KnowledgeIngestPipelineTests` / `MarkdownProcessorTests` (Tests/Unit/Domain/、Tests/Unit/Infrastructure/) | `testProcess_withTableMarkdown_keepsTableContent`, `testParse_codeBlock`, `testParse_codeBlock_noLanguage` |
+| TC-ING-03 | `WebScraperProcessorTests` (Tests/Unit/Infrastructure/WebScraperProcessorTests.swift) | `testPaywallDirectBypass`, `testCascadeGrabDisasterRecovery` |
+| TC-NAV-01 | `ZhiYuUITests` (Tests/UI/ZhiYuUITests.swift) | `testPageLinkNavigation` |
+| TC-NAV-02 | `DeepLinkTests` (Tests/Unit/Core/DeepLinkTests.swift) | `testHandleURL_ValidSchemes` |
+| TC-UI-01 | `AIInsightStoreTests` (Tests/Unit/Features/AI/AIInsightStoreTests.swift) | `testGenerateDailyRecapForceRefresh`, `testGenerateDailyRecapNoCrash` |
+| TC-SEC-01 | `VaultSecurityTests` (Tests/Unit/Core/VaultSecurityTests.swift) | `testAuthenticateWithBiometricsSuccess`, `testAuthenticateWithBiometricsFailure` |
+| TC-SEC-02 | `KnowledgeRepositoryTests` (Tests/Unit/Infrastructure/KnowledgeRepositoryTests.swift) | `testPrivatePageContentIsEncryptedInDB` |
+| TC-GRF-01 | `GraphLayoutEngineTests` (Tests/Unit/Infrastructure/GraphLayoutEngineTests.swift) | `testLayoutMultiplePagesCreatesNodesForAll`, `testLayoutNodePositionsAreDistinct` |
+| TC-GRF-02 | `GraphViewAnd3DRenderingTests` (Tests/Unit/Features/Knowledge/GraphViewAnd3DRenderingTests.swift) | `testGraphViewModel_ModeToggles` |
+| TC-GRF-03 | `GraphUITests` (Tests/UI/GraphUITests.swift) | `testGraphZoomControls` |
+| TC-GRF-04 | `GraphClusteringServiceTests` (Tests/Unit/Features/Knowledge/GraphClusteringServiceTests.swift) | `testCluster_sufficientEmbeddings_producesClusters`, `testCluster_inconsistentDimensions_handlesGracefully` |
+| TC-GRF-05 | `GraphViewModelTests` (Tests/Unit/Features/Knowledge/GraphViewModelTests.swift) | `testSetSelectedNodeID` |
+| TC-GRF-06 | `GraphLayoutEngineTests` (Tests/Unit/Infrastructure/GraphLayoutEngineTests.swift) | `testLayoutIsolatedNodeHasNoEdges` |
+| TC-PLG-01 | `PluginSandboxTests` (Tests/Unit/Infrastructure/PluginSandboxTests.swift) | `testLoadPluginRegistersAndCallsOnLoad`, `testUnloadPluginRemovesAndCallsOnUnload` |
+| TC-PLG-02 | `PluginSandboxTests` (Tests/Unit/Infrastructure/PluginSandboxTests.swift) | `testInterceptionPluginIsRegisteredAsInterceptor` |
+| TC-PLG-03 | `PluginSandboxTests` (Tests/Unit/Infrastructure/PluginSandboxTests.swift) | `testPluginExceptionDoesNotCrashRegistry` |
+| TC-PLG-04 | `PluginFetchPermissionTests` (Tests/Unit/Infrastructure/PluginFetchPermissionTests.swift) | `testAuditFetch_withoutNetworkPermissionThrowsPermissionDenied`, `testAuditFetch_permissionCheckPrecedesDomainCheck` |
+| TC-PLG-05 | `PluginLoadUnloadTests` (Tests/Unit/Infrastructure/PluginLoadUnloadTests.swift) | `testWordCounterPostProcess`, `testLinkPreviewPostProcess` |
+| TC-PLG-06 | `PluginMarketServiceTests` (Tests/Unit/Infrastructure/PluginMarketServiceTests.swift) | `testDownloadPluginSuccess`, `testDownloadPluginWithIDMismatchSuccess` |
+| TC-VLT-01 | `VaultSecurityTests` (Tests/Unit/Core/VaultSecurityTests.swift) | `testLockSetsIsLockedToTrue`, `testLockUnlockCycle` |
+| TC-VLT-02 | 无对应自动化测试（需求场景：`#private` 页面内容高斯模糊展示） | — |
+| TC-VLT-03 | `VaultSecurityTests` (Tests/Unit/Core/VaultSecurityTests.swift) | `testMultipleLockCallsStayLocked` |
+| TC-VLT-04 | `SecurityIntegrityTests` (Tests/Unit/Core/SecurityIntegrityTests.swift) | `testHMACCalculationAndVerification`, `testIntegrityFailureOnTamper` |
+| TC-VLT-05 | `StorageRecordsTests` (Tests/Unit/Infrastructure/StorageRecordsTests.swift) | `testAuditLogRecord_databaseTableName_isAuditLogs`, `testAuditLogRecord_initWithCustomValues_storesProperties` |
+| TC-VLT-06 | `MultiVaultSwitchTests` (Tests/Integration/MultiVaultSwitchTests.swift) | `testConcurrencyVaultSwitchingStability`, `testVaultSwitchingNotificationBroadcasting` |
+| TC-MAC-01 | 无对应自动化测试（需求场景：macOS Catalyst 顶栏系统原生菜单） | — |
+| TC-MAC-02 | 无对应自动化测试（需求场景：macOS Catalyst 全局键盘快捷键） | — |
+| TC-WAT-01 | `WatchSyncTests` (Tests/Platforms/WatchSyncTests.swift) | `testWatchVoiceRecorderSync` |
+| TC-WAT-02 | `WatchSyncTests` (Tests/Platforms/WatchSyncTests.swift) | `testWatchMicroRecapCacheSync` |
+| TC-WAT-03 | `WatchPlatformTests` (Tests/Platforms/WatchPlatformTests.swift) | `testWatchModelCompilerThrows`, `testWatchSecurityScopedStorageStub`, `testWatchBiometricAuthProviderInterface` |
+| TC-WID-01 | `KnowledgeStatsWidgetTests` (Tests/Unit/Platforms/KnowledgeStatsWidgetTests.swift) | `testKnowledgeStatsEntryWithWidgetModels`, `testKnowledgeStatsEntryConfiguration` |
+| TC-WID-02 | `KnowledgeStatsWidgetTests` (Tests/Unit/Platforms/KnowledgeStatsWidgetTests.swift) | `testWidgetRefreshIntervalDefinition` |
+| TC-DEE-05 | `DeepLinkTests` (Tests/Unit/Core/DeepLinkTests.swift) | `testHandleURL_WidgetSpecificDeepLinks` |
+| TC-DEE-06 | `DeepLinkTests` (Tests/Unit/Core/DeepLinkTests.swift) | `testHandleURL_RateLimiterBypassAndBlock` |
+
+> 提示：本映射表覆盖的用例已与系统 XCTest 自动化测试防线（Tests/）对齐；标注"无对应自动化测试"的用例为纯需求/UI 场景，尚未建立对应 XCTest。

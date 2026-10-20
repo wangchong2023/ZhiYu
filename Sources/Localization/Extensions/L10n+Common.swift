@@ -427,23 +427,23 @@ extension L10n {
         }
         
         public enum Snippet {
-            /// 读取含字面百分比的演示文档，将转义的 `%%` 还原为 `%`，避开 Xcode 的百分比格式警告。
-            private static func percent(_ key: String) -> String {
-                Localized.tr(key, table: t).replacingOccurrences(of: "%%", with: "%")
-            }
+            /// 含字面百分比的演示 snippet 已迁移至独立 `DemoSnippets` table（传统 `.strings`，按语言 `.lproj` 分发），
+            /// 规避 Xcode String Catalog 的 `XCStringsPercentSymbolValidation` 警告。
+            /// 传统 `.strings` 不受该校验约束；`NSLocalizedString` 不做 printf 格式化，`%` 原样显示。
+            private static let s = SystemConstants.Localization.demoSnippetTable
 
             public static var methodology: String { Localized.tr("demo.snippet.methodology", table: t) }
             public static var workflow: String { Localized.tr("demo.fallback.workflow", table: t) }
-            public static var luckin: String { percent("demo.snippet.luckin") }
-            public static var survey: String { percent("demo.snippet.survey") }
+            public static var luckin: String { Localized.tr("demo.snippet.luckin", table: s) }
+            public static var survey: String { Localized.tr("demo.snippet.survey", table: s) }
             public static var pkmRagLink: String { Localized.tr("demo.snippet.pkmRagLink", table: t) }
-            public static var pkmVoiceForget: String { percent("demo.snippet.pkmVoiceForget") }
+            public static var pkmVoiceForget: String { Localized.tr("demo.snippet.pkmVoiceForget", table: s) }
             public static var pkmClipboardFeynman: String { Localized.tr("demo.snippet.pkmClipboardFeynman", table: t) }
-            public static var pkmOcrFolder: String { percent("demo.snippet.pkmOcrFolder") }
-            public static var coffeeOcrManual: String { percent("demo.snippet.coffeeOcrManual") }
+            public static var pkmOcrFolder: String { Localized.tr("demo.snippet.pkmOcrFolder", table: s) }
+            public static var coffeeOcrManual: String { Localized.tr("demo.snippet.coffeeOcrManual", table: s) }
             public static var coffeeRagLink: String { Localized.tr("demo.snippet.coffeeRagLink", table: t) }
             public static var coffeeClipboardTeam: String { Localized.tr("demo.snippet.coffeeClipboardTeam", table: t) }
-            public static var coffeeVoiceProcure: String { percent("demo.snippet.coffeeVoiceProcure") }
+            public static var coffeeVoiceProcure: String { Localized.tr("demo.snippet.coffeeVoiceProcure", table: s) }
         }
         
         public enum FileNames {

@@ -61,7 +61,7 @@
 * **测试方法**：
   1. 载入包含死循环代码（如 `while(true){}`）的 JavaScript 插件；
   2. 调用 `PluginRegistry.shared.execute(...)`，触发后台 Watchdog 计时；
-  3. 验证 Watchdog 在毫秒级监控检测到超时（默认 `300ms`）后是否能成功强行注销 `JSContext`，释放主线程。
+  3. 验证 Watchdog 在毫秒级监控检测到超时（默认 `0.5s`，对应 `PluginConstants.Sandbox.jsExecutionTimeLimitSeconds`）后是否能成功强行注销 `JSContext`，释放主线程。
 
 ---
 
@@ -77,7 +77,7 @@
 
 ### 4.2 自动化校验红线
 ```swift
-// 位于 Tests/ZhiYuTests/RAGEvaluationTests.swift
+// 位于 Tests/Unit/Domain/RAGEvaluationServiceTests.swift
 func testRAGGoldenSetPerformance() async throws {
     let evaluator = GoldenSetEvaluator()
     let results = await evaluator.runEvaluation(set: RAGGoldenSet.standard)
@@ -94,6 +94,6 @@ func testRAGGoldenSetPerformance() async throws {
 ### 4.3 运行评估集成命令
 在本地开发或 CI 中，通过以下命令触发整体 RAG 质量度量熔断校验：
 ```bash
-xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:ZhiYuTests/RAGEvaluationTests > build/rag_evaluation.log 2>&1
+xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iOS Simulator,name=iPhone 17 Pro' -only-testing:ZhiYuTests/RAGEvaluationServiceTests > build/rag_evaluation.log 2>&1
 ```
 可在 `build/rag_evaluation.log` 中查看每一条 Query 的召回命中率诊断，防止算法退化。

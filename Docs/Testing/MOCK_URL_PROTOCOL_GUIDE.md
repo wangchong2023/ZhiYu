@@ -21,7 +21,7 @@
 工程在 `Tests/Shared/MockURLProtocol.swift` 提供了线程安全的统一拦截器：
 
 ```swift
-final class TestMockURLProtocol: URLProtocol, @unchecked Sendable {
+final class MockURLProtocol: URLProtocol, @unchecked Sendable {
     // 注入响应处理器
     static func setHandler(for path: String, handler: @escaping (URLRequest) throws -> (HTTPURLResponse, Data))
     
@@ -38,7 +38,7 @@ final class TestMockURLProtocol: URLProtocol, @unchecked Sendable {
 ```mermaid
 sequenceDiagram
     participant Test as 测试用例 (XCTestCase)
-    participant Mock as TestMockURLProtocol
+    participant Mock as MockURLProtocol
     participant Client as NetworkClient
     participant Service as AuthService
 
@@ -61,7 +61,7 @@ sequenceDiagram
 ```swift
 func testLogin_Success() async throws {
     // 1. Arrange: 注入期望的后端标准 JSON 响应
-    TestMockURLProtocol.setJSONResponse(
+    MockURLProtocol.setJSONResponse(
         for: "/api/v1/auth/login",
         statusCode: 200,
         json: [
@@ -77,7 +77,7 @@ func testLogin_Success() async throws {
             ]
         ]
     )
-    defer { TestMockURLProtocol.reset() }
+    defer { MockURLProtocol.reset() }
 
     // 2. Act: 调用业务服务真实 API
     let success = await authService.login(identity: "13800000000", password: "Password123!")
@@ -94,7 +94,7 @@ func testLogin_Success() async throws {
 ```swift
 func testLogin_InvalidPassword_ThrowsError() async throws {
     // 1. Arrange: 模拟后端返回 401 业务错误
-    TestMockURLProtocol.setJSONResponse(
+    MockURLProtocol.setJSONResponse(
         for: "/api/v1/auth/login",
         statusCode: 401,
         json: [
@@ -102,7 +102,7 @@ func testLogin_InvalidPassword_ThrowsError() async throws {
             "message": "密码错误"
         ]
     )
-    defer { TestMockURLProtocol.reset() }
+    defer { MockURLProtocol.reset() }
 
     // 2. Act & Assert: 验证业务优雅降级或抛出标准 AppError
     let success = await authService.login(identity: "13800000000", password: "WrongPassword")

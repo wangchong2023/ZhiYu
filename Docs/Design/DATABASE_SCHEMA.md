@@ -1,41 +1,40 @@
 # 智宇 (ZhiYu) 数据库 Schema 设计
 
-本文件记录了智宇 (ZhiYu) 核心数据库的结构设计及其版本演进历程。系统基于 SQLite 存储，使用 GRDB.swift 进行版本管理与对象映射。
+本文件记录了智宇 (ZhiYu) 核心数据库的结构设计。系统基于 SQLite 存储，使用 GRDB.swift 与 UFPStorage 进行对象映射与版本管理。
+
+> **Schema 权威来源**：专属笔记本库的核心表结构 DDL 以 `Sources/Infrastructure/Storage/Persistence/init_schema.sql` 为唯一权威（本文档为说明性引用，若与 SQL 冲突以 SQL 为准）。版本化迁移由 `Packages/UFPStorage`（`GenericSchemaMigrator` / `GenericDatabaseManager`）统一管理。
 
 ## 0. ER 关系总览
 
 ```mermaid
 erDiagram
-    pages ||--o{ page_chunks : "1:N 分块"
-    pages ||--o{ page_links : "双向链接"
-    pages ||--o{ import_records : "导入记录"
-    pages ||--o{ tag_relations : "标签关联"
-    page_chunks ||--o{ page_chunks : "parent_id 层级"
+    pages ||--o{ page_chunks : "1:N 语义分块"
+    pages ||--o{ links : "双向链接"
+    pages ||--o{ page_embeddings : "1:1 稠密向量"
+    pages ||--o{ page_tags : "标签关联"
+    tags ||--o{ page_tags : ""
+    pages ||--o{ srs_metadata : "间隔重复"
+    pages ||--o{ token_usage : "AI 调用监控"
     pages_fts }o--|| pages : "FTS5 同步"
-    token_usage }o--|| pages : "AI 调用监控"
 
     pages {
-        UUID id PK
+        BLOB id PK
         TEXT title UK
-        TEXT content
         TEXT page_type
+        TEXT content
+        TEXT status
+        TEXT confidence
         INTEGER lamport_timestamp
+        DATETIME created_at
         DATETIME updated_at
     }
     page_chunks {
         TEXT id PK
-        UUID page_id FK
+        BLOB page_id FK
         TEXT parent_id FK
         TEXT chunk_type
         TEXT content
         BLOB embedding
-    }
-    token_usage {
-        INTEGER id PK
-        TEXT model
-        INTEGER prompt_tokens
-        INTEGER completion_tokens
-        DATETIME created
     }
 ```
 
@@ -48,106 +47,182 @@ erDiagram
 
 | 字段 | 类型 | 约束 | 说明 |
 | :--- | :--- | :--- | :--- |
-| `id` | UUID | PRIMARY KEY | 页面唯一标识符 |
-| `title` | TEXT | NOT NULL, UNIQUE | 标题（V4 强制唯一索引） |
-| `content` | TEXT | | Markdown 原始内容 |
-| `page_type` | TEXT | NOT NULL | 页面类型 (concept, entity, source, etc.) |
+| `id` | BLOB | PRIMARY KEY | 页面唯一标识 (UUID 字节序) |
+| `title` | TEXT | NOT NULL, UNIQUE | 页面标题，FTS5 全文索引键 |
+| `page_type` | TEXT | NOT NULL | 页面类型 (`concept` / `entity` / `source` / `comparison` / `raw`) |
+| `content` | TEXT | NOT NULL | Markdown 原始内容，经插件 preProcess 后入库 |
+| `aliases` | TEXT | | 别名列表（逗号分隔），用于搜索联想与 `[[链接]]` 解析 |
+| `tags` | TEXT | | 标签列表（逗号分隔，非规范化的冗余存储） |
+| `status` | TEXT | NOT NULL DEFAULT `'active'` | 页面状态 (`active` / `stub` / `needsUpdate` / `deprecated`) |
+| `confidence` | TEXT | NOT NULL DEFAULT `'medium'` | 可信度 (`high` / `medium` / `low`) |
+| `sources` | TEXT | | 引用来源 ID 列表（逗号分隔） |
+| `related_page_ids` | TEXT | | 双向链接关联页面 ID（逗号分隔，冗余存储） |
+| `is_pinned` | BOOLEAN | NOT NULL DEFAULT 0 | 是否置顶 |
+| `content_hash` | TEXT | | 内容 SHA256 哈希，用于增量同步与去重 |
 | `custom_icon` | TEXT | | 用户自定义 SF Symbol 图标 |
-| `file_size` | INTEGER | NOT NULL | 物理字节大小 |
-| `tags` | TEXT | | 标签列表（以逗号分隔） |
-| `aliases` | TEXT | | 别名列表（以逗号分隔） |
-| `source_url` | TEXT | | 原始资料链接 (网页或 YouTube) |
+| `source_url` | TEXT | | 原始资料链接（网页/YouTube），支持溯源 |
 | `raw_snippet` | TEXT | | 原始资料片段，用于校验 |
-| `lamport_timestamp` | INTEGER | NOT NULL | 逻辑时钟，用于分布式冲突解决 |
-| `updated_at` | DATETIME | NOT NULL | 最后更新时间 |
-| `vector` | BLOB | | 页面级向量（已废弃，迁至 page_chunks） |
+| `file_size` | INTEGER | | 物理字节大小 |
+| `source_type` | TEXT | | 来源类型 (`markdown` / `pdf` / `voice` / `ocr`) |
+| `lamport_timestamp` | INTEGER | NOT NULL DEFAULT 0 | 逻辑时钟，用于分布式冲突解决 |
+| `created_at` | DATETIME | NOT NULL DEFAULT CURRENT_TIMESTAMP | 创建时间 |
+| `updated_at` | DATETIME | NOT NULL DEFAULT CURRENT_TIMESTAMP | 最后更新时间（触发器维护） |
 
-### 1.2 `page_chunks` (RAG 分块表)
+> `idx_pages_page_type` 索引建在 `page_type` 上。
+
+### 1.2 `page_chunks` (RAG 语义分块表)
 支持高级 RAG（层级分块、问答对、摘要）的核心存储。
 
 | 字段 | 类型 | 约束 | 说明 |
 | :--- | :--- | :--- | :--- |
-| `id` | TEXT | PRIMARY KEY | 分块 ID (格式: p_{uuid}_{index}) |
-| `page_id` | UUID | NOT NULL, REFERENCES pages(id) | 所属页面 ID |
-| `parent_id` | TEXT | INDEX | 父块 ID（V5 引入，支持 Small-to-Big） |
-| `chunk_type` | TEXT | NOT NULL | 类型: `regular`, `summary`, `qa_pair` |
+| `id` | TEXT | PRIMARY KEY | 分块 ID (格式: `p_{uuid}_{index}`) |
+| `page_id` | BLOB | NOT NULL, FK → pages(id) ON DELETE CASCADE | 所属页面 ID |
+| `parent_id` | TEXT | FK → page_chunks(id) ON DELETE CASCADE | 父块 ID，支持 Small-to-Big 层级 |
+| `chunk_type` | TEXT | NOT NULL | 类型: `regular` / `summary` / `qa_pair` |
 | `content` | TEXT | NOT NULL | 分块文本内容 |
-| `embedding` | BLOB | | 向量数据 |
-| `start_index` | INTEGER | NOT NULL | 在原文档中的字符偏移位置 |
+| `anchor_path` | TEXT | | 原文档中的锚点路径 |
+| `chunk_index` | INTEGER | NOT NULL | 分块在原文档中的序号 |
+| `embedding` | BLOB | | 分块级向量数据 |
+| `start_index` | INTEGER | | 在原文档中的字符偏移位置 |
+| `created_at` | DATETIME | NOT NULL DEFAULT CURRENT_TIMESTAMP | 创建时间 |
+| `updated_at` | DATETIME | NOT NULL DEFAULT CURRENT_TIMESTAMP | 更新时间 |
 
-### 1.3 `token_usage` (AI 资源监控表)
-记录 LLM 调用的开销情况（V6 引入）。
+### 1.3 `links` (知识图谱双向链接表)
+知识图谱的边存储，双向链接。
 
 | 字段 | 类型 | 约束 | 说明 |
 | :--- | :--- | :--- | :--- |
-| `id` | INTEGER | PRIMARY KEY AUTOINCREMENT | 记录 ID |
-| `model` | TEXT | NOT NULL | 使用的模型 ID (e.g., gpt-4o) |
-| `prompt_tokens` | INTEGER | NOT NULL | 输入消耗 Token |
-| `completion_tokens` | INTEGER | NOT NULL | 输出产生 Token |
-| `total_tokens` | INTEGER | NOT NULL | 总消耗 |
-| `created` | DATETIME | NOT NULL, INDEX | 产生时间 |
+| `source_id` | BLOB | PRIMARY KEY, FK → pages(id) ON DELETE CASCADE | 源页面 ID |
+| `target_id` | BLOB | PRIMARY KEY, FK → pages(id) ON DELETE CASCADE | 目标页面 ID |
+| `context` | TEXT | | 链接上下文描述 |
+| `created_at` | DATETIME | NOT NULL DEFAULT CURRENT_TIMESTAMP | 创建时间 |
+
+> `idx_links_target_id` 索引建在 `target_id` 上（支持反向遍历）。
+
+### 1.4 `page_embeddings` (页面级高维稠密向量表)
+
+| 字段 | 类型 | 约束 | 说明 |
+| :--- | :--- | :--- | :--- |
+| `id` | BLOB | PRIMARY KEY, FK → pages(id) ON DELETE CASCADE | 与页面 1:1 |
+| `vector_blob` | BLOB | NOT NULL | 页面级向量 |
+| `model_name` | TEXT | NOT NULL | 生成向量的模型名 |
+| `created_at` | DATETIME | NOT NULL DEFAULT CURRENT_TIMESTAMP | 创建时间 |
+| `updated_at` | DATETIME | NOT NULL DEFAULT CURRENT_TIMESTAMP | 更新时间 |
+
+### 1.5 `tags` (范式化标签字典) 与 `page_tags` (页面-标签关联)
+
+`tags`：
+
+| 字段 | 类型 | 约束 | 说明 |
+| :--- | :--- | :--- | :--- |
+| `id` | TEXT | PRIMARY KEY | 标签 ID |
+| `name` | TEXT | NOT NULL, UNIQUE | 标签名 |
+| `created_at` | DATETIME | NOT NULL DEFAULT CURRENT_TIMESTAMP | 创建时间 |
+
+`page_tags`：
+
+| 字段 | 类型 | 约束 | 说明 |
+| :--- | :--- | :--- | :--- |
+| `page_id` | BLOB | PRIMARY KEY, FK → pages(id) ON DELETE CASCADE | 页面 ID |
+| `tag_id` | TEXT | PRIMARY KEY, FK → tags(id) ON DELETE CASCADE | 标签 ID |
+
+### 1.6 `srs_metadata` (间隔重复记忆调度表)
+
+| 字段 | 类型 | 约束 | 说明 |
+| :--- | :--- | :--- | :--- |
+| `page_id` | BLOB | PRIMARY KEY, FK → pages(id) ON DELETE CASCADE | 页面 ID |
+| `ease_factor` | REAL | NOT NULL DEFAULT 2.50 | 难度因子 |
+| `repetitions` | INTEGER | NOT NULL DEFAULT 0 | 复习次数 |
+| `review_interval` | INTEGER | NOT NULL DEFAULT 0 | 复习间隔（天） |
+| `next_review_at` | DATETIME | NOT NULL | 下次复习时间 |
+| `created_at` | DATETIME | NOT NULL DEFAULT CURRENT_TIMESTAMP | 创建时间 |
+| `updated_at` | DATETIME | NOT NULL DEFAULT CURRENT_TIMESTAMP | 更新时间 |
+
+> `idx_srs_next_review` 索引建在 `next_review_at` 上。
+
+### 1.7 `token_usage` / `llm_call_logs` / `rag_evaluations` (AI 资源开销与治理)
+
+`token_usage`：
+
+| 字段 | 类型 | 说明 |
+| :--- | :--- | :--- |
+| `id` | INTEGER PK AUTOINCREMENT | 记录 ID |
+| `model` | TEXT NOT NULL | 使用的模型 ID |
+| `prompt_tokens` | INTEGER NOT NULL | 输入 Token |
+| `completion_tokens` | INTEGER NOT NULL | 输出 Token |
+| `total_tokens` | INTEGER NOT NULL | 总消耗 |
+| `created_at` | DATETIME NOT NULL | 产生时间 |
+
+`llm_call_logs`：
+
+| 字段 | 类型 | 说明 |
+| :--- | :--- | :--- |
+| `id` | INTEGER PK AUTOINCREMENT | 记录 ID |
+| `model` | TEXT NOT NULL | 使用的模型 ID |
+| `prompt_tokens` | INTEGER NOT NULL | 输入 Token |
+| `completion_tokens` | INTEGER NOT NULL | 输出 Token |
+| `latency_ms` | INTEGER NOT NULL | 请求耗时 (毫秒) |
+| `status` | TEXT NOT NULL | success / failure |
+| `created_at` | DATETIME NOT NULL | 产生时间 |
+
+`rag_evaluations`：
+
+| 字段 | 类型 | 说明 |
+| :--- | :--- | :--- |
+| `id` | INTEGER PK AUTOINCREMENT | 记录 ID |
+| `query` | TEXT NOT NULL | 用户提问 |
+| `answer` | TEXT NOT NULL | AI 回答内容 |
+| `faithfulness_score` | REAL NOT NULL | 忠实度评分 (0-1) |
+| `relevance_score` | REAL NOT NULL | 相关性评分 (0-1) |
+| `context_precision` | REAL NOT NULL | 上下文精准度 (0-1) |
+| `evaluator_model` | TEXT NOT NULL | 执行评估的大模型名称 |
+| `created_at` | DATETIME NOT NULL | 评估时间 |
 
 ---
 
-## 2. 索引与搜索增强
+## 2. 全文检索 (FTS5)
 
-### 2.1 全文检索 (FTS5)
-系统创建了 `pages_fts` 虚拟表，并与 `pages` 表同步：
+系统创建了 `pages_fts` 虚拟表，以 `pages` 表为 external content，并通过触发器保持同步：
+
 ```sql
-CREATE VIRTUAL TABLE pages_fts USING fts5(
-    title, 
-    content, 
-    content='pages', 
-    content_rowid='id'
+CREATE VIRTUAL TABLE IF NOT EXISTS pages_fts USING fts5(
+    id UNINDEXED, title, content, tags, aliases,
+    content='pages'
 );
 ```
 
-### 2.2 触发器 (Triggers)
-系统通过触发器确保全文检索索引与物理数据自动同步。
+- `id` 标记为 `UNINDEXED`（仅作行关联），`tags`/`aliases` 纳入全文索引以支持别名与标签搜索。
+- 联动触发器：`pages_ai`（INSERT）、`pages_ad`（DELETE）、`pages_au`（UPDATE）在 `pages` 表写入时同步维护 `pages_fts` 索引。
+- `pages` 表自身通过 `trigger_update_pages_timestamp` 在 UPDATE 时自动刷新 `updated_at`。
 
 ---
 
-## 3. 版本迁移历史 (Migration Logs)
+## 3. 迁移机制说明
 
-| 版本 | 标识 | 变更描述 |
-| :--- | :--- | :--- |
-| **V1** | `v1_initial` | 创建核心 `pages` 表。 |
-| **V2** | `v2_fts` | 启用 SQLite FTS5 全文检索模块。 |
-| **V3** | `v3_rag_chunks` | 引入初步的分块存储支持。 |
-| **V4** | `v4_unique_title` | **重大变更**：清理同名页面，为 `title` 字段添加 UNIQUE 唯一约束。 |
-| **V5** | `v5_upgrade_page_chunks` | **RAG 升级**：为分块表添加 `parent_id` (层级支持) 和 `chunk_type` (分类支持)。 |
-| **V6** | `v6_resource_audit` | **资源治理**：创建 `token_usage` 表，支持 Token 消耗统计。 |
-| **V7** | `v7_enhanced_governance` | **增强治理**：创建 `llm_call_logs` (调用日志) 和 `rag_evaluations` (质量评估) 表。 |
-| **V8** | `v8_karpathy_metadata` | **模式增强**：补全 `pages` 表的物理溯源元数据 (`file_size`, `source_type`)。 |
-| **V9** | `v9_distributed_sync` | **同步增强**：引入 `lamport_timestamp` 逻辑时钟，添加 `source_url` 与 `custom_icon` 字段。 |
+核心表结构由 `Sources/Infrastructure/Storage/Persistence/init_schema.sql` 提供最终 DDL；版本化迁移由 `Sources/Infrastructure/Storage/Persistence/DatabaseSchemaMigrator.swift` 渐进执行。
+
+**专属笔记本库迁移历史**（`DatabaseSchemaMigrator`）：
+
+| 版本 | 标识 |
+|------|------|
+| V1 | `v1_initial_schema` |
+| V2 | `v2_fts_initial` |
+| V3 | `v3_tag_normalization` |
+| V4 | `v4_srs_metadata` |
+| V5 | `v5_rag_hallucination_citation` |
+| V6 | `v6_retrieval_quality` |
+| V7 | `v7_import_records` |
+| V8 | `v8_import_record_tags` |
+| V9 | `v9_feedback_entries` |
+| V10 | `v10_rag_answer_correctness` |
+| V11 | `v11_rag_context_sufficiency` |
+| V12 | `v12_rag_user_rating` |
+| V13 | `v13_feedback_status` |
+
+> 本文档原始 `V1-V9`（`v1_initial`/`v2_fts`/…）标识符已废弃，以 `DatabaseSchemaMigrator.swift` 的实际迁移标识符为准。
 
 ---
 
-## 4. 增强治理表 (V7 引入)
+## 4. 多笔记本全局库
 
-### 4.1 `llm_call_logs` (LLM 调用日志)
-用于系统性能分析与开销审计。
-
-| 字段 | 类型 | 说明 |
-| :--- | :--- | :--- |
-| `id` | INTEGER | PRIMARY KEY |
-| `model` | TEXT | 使用的模型 ID |
-| `prompt_tokens` | INTEGER | 输入 Token |
-| `completion_tokens` | INTEGER | 输出 Token |
-| `latency_ms` | INTEGER | 请求耗时 (毫秒) |
-| `status` | TEXT | success / failure |
-| `created` | DATETIME | 产生时间 |
-
-### 4.2 `rag_evaluations` (RAG 质量评估)
-用于持续跟踪 AI 回答的忠实度与相关性。
-
-| 字段 | 类型 | 说明 |
-| :--- | :--- | :--- |
-| `id` | INTEGER | PRIMARY KEY |
-| `query` | TEXT | 用户提问 |
-| `answer` | TEXT | AI 回答内容 |
-| `faithfulness_score` | DOUBLE | 忠实度评分 (0-1) |
-| `relevance_score` | DOUBLE | 相关性评分 (0-1) |
-| `context_precision` | DOUBLE | 上下文精准度 (0-1) |
-| `evaluator_model` | TEXT | 执行评估的大模型名称 |
-| `created` | DATETIME | 评估时间 |
+除专属笔记本库外，系统包含一个多笔记本全局库（承载 `global_vaults` / `global_settings` / `audit_logs` / `plugin_records` 等跨笔记本数据）。其迁移历史为 `v1_global_schema` → `v2_global_page_count`。具体表结构请以 `DatabaseSchemaMigrator.swift` 源码为权威来源，本文档不重复列举。

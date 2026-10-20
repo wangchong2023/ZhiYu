@@ -9,6 +9,7 @@
 //  核心职责：全局 HTTP 网络客户端，支持自动注入 Bearer Token 以及 401 无感刷新双重拦截。
 //
 
+import Dependencies
 import Foundation
 import UFPCore
 
@@ -109,6 +110,7 @@ public actor NetworkClient {
             AppConstants.Network.contentTypeMultipartPrefix + boundary,
             forHTTPHeaderField: AppConstants.Network.headerContentType
         )
+        applyDeviceHeaders(to: &request)
         applyBearerToken(to: &request, requiresAuth: requiresAuth)
 
         // 构造 multipart body
@@ -190,6 +192,17 @@ public actor NetworkClient {
         )
     }
 
+    /// 为 URLRequest 注入设备标识请求头（X-Device-Id / X-Device-Name / X-Device-Platform），
+    /// 供后端登记在线会话与设备级踢出。设备标识为空（测试/无宿主环境）时整体跳过（fail-safe，不影响请求）。
+    private func applyDeviceHeaders(to request: inout URLRequest) {
+        @Dependency(\.deviceInfo) var deviceInfo
+        let deviceId = deviceInfo.deviceId
+        guard !deviceId.isEmpty else { return }
+        request.addValue(deviceId, forHTTPHeaderField: AppConstants.Network.headerDeviceId)
+        request.addValue(deviceInfo.deviceModel, forHTTPHeaderField: AppConstants.Network.headerDeviceName)
+        request.addValue(AppConstants.Network.platformiOS, forHTTPHeaderField: AppConstants.Network.headerDevicePlatform)
+    }
+
     /// 校验 HTTP 响应为 2xx 成功状态码，否则抛 `NetworkError.invalidHTTPResponse`
     private func validateHTTPSuccessResponse(_ response: URLResponse) throws {
         guard let httpResponse = response as? HTTPURLResponse,
@@ -203,6 +216,7 @@ public actor NetworkClient {
         var request = URLRequest(url: url)
         request.httpMethod = method
         request.addValue(AppConstants.Network.contentTypeJSON, forHTTPHeaderField: AppConstants.Network.headerContentType)
+        applyDeviceHeaders(to: &request)
         applyBearerToken(to: &request, requiresAuth: requiresAuth)
         if let body = body {
             request.httpBody = try encoder.encode(body)
@@ -261,6 +275,7 @@ public actor NetworkClient {
             var request = URLRequest(url: refreshEndpoint)
             request.httpMethod = AppConstants.Network.methodPOST
             request.addValue(AppConstants.Network.contentTypeJSON, forHTTPHeaderField: AppConstants.Network.headerContentType)
+            applyDeviceHeaders(to: &request)
             
             do {
                 request.httpBody = try encoder.encode(req)
