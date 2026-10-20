@@ -409,5 +409,7 @@ public enum SystemConstants {
     public enum Localization {
         public static let lproj = "lproj"
         public static let commonTable = "Common"
+        /// 演示知识页 snippet 独立本地化表（传统 .strings，规避 String Catalog 百分比校验）
+        public static let demoSnippetTable = "DemoSnippets"
     }
 }

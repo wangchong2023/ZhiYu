@@ -73,6 +73,7 @@ options:
     - fr
     - ar
     - ru
+    - pt
   deploymentTarget:
     iOS: "27.0"
     macOS: "27.0"
