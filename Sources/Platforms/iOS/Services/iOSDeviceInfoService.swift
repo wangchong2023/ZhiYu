@@ -26,6 +26,11 @@ final class iOSDeviceInfoService: DeviceInfoProtocol, Sendable {
         runOnMainSync { UIDevice.current.name }
     }
 
+    var deviceId: String {
+        // 使用 IDFV 作为设备持久化唯一标识；测试环境（无 Host App）返回 nil 时降级为空串
+        runOnMainSync { UIDevice.current.identifierForVendor?.uuidString ?? "" }
+    }
+
     var screenHeight: CGFloat {
         // iOS 26.0 废弃 UIScreen.main，改为从活跃 UIWindowScene 获取 screen
         // 测试环境（无 Host App）无 foregroundActive 场景，回退到 UITraitCollection

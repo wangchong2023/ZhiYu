@@ -28,10 +28,7 @@ stages:
 
 default:
   tags:
-    - macos
-    - shell
-    - xcode
-    - arm64
+    - zhiyu-ios
   before_script:
     - echo "export OPENSRC_ROOT=${OPENSRC_ROOT:-/Users/constantine/Documents/work/code/opensrc/swift}" > Config/.env.local
     # 将 OPENSRC_ROOT 复制（硬链接）到 CI 构建根目录，避免 macOS TCC 限制 xcodebuild 访问 ~/Documents

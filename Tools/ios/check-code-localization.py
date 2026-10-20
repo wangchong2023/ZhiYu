@@ -775,6 +775,8 @@ class MissingKeyDetector:
     def _build_xcstrings_index(self):
         """
         构建所有 xcstrings 键及其所属的物理表索引。
+        同时纳入 Sources/Localization/*.lproj/*.strings 传统本地化表的键，
+        以支持从 xcstrings 迁出至 .strings 的 key（规避 String Catalog 百分比校验等）。
         
         :return: (all_keys, table_keys)
         """
@@ -792,7 +794,42 @@ class MissingKeyDetector:
                         table_keys[table] = set(strings.keys())
                     except Exception:
                         continue
+        # 纳入传统 .strings 表（Sources/Localization/*.lproj/*.strings）
+        strings_table_keys = self._index_strings_tables()
+        for table, keys in strings_table_keys.items():
+            all_keys.update(keys)
+            table_keys.setdefault(table, set()).update(keys)
         return all_keys, table_keys
+
+    def _index_strings_tables(self):
+        """
+        扫描 Sources/Localization/*.lproj/*.strings 传统本地化表，按 table 归类键。
+        同一 table 的 key 在各语言 .lproj 下应一致，此处取并集。
+        
+        :return: dict[table_name, set[key]]
+        """
+        lproj_root = os.path.dirname(self.catalogs_dir)
+        if not os.path.isdir(lproj_root):
+            return {}
+        strings_table_keys = {}
+        for entry in os.listdir(lproj_root):
+            if not entry.endswith('.lproj'):
+                continue
+            lproj_dir = os.path.join(lproj_root, entry)
+            for file in os.listdir(lproj_dir):
+                if not file.endswith('.strings'):
+                    continue
+                table = file.replace('.strings', '')
+                path = os.path.join(lproj_dir, file)
+                try:
+                    with open(path, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                    # 提取 "key" = "value"; 形式的键（忽略注释行）
+                    for m in re.finditer(r'^\s*"([^"\\]*(?:\\.[^"\\]*)*)"\s*=\s*"', content, re.MULTILINE):
+                        strings_table_keys.setdefault(table, set()).add(m.group(1))
+                except Exception:
+                    continue
+        return strings_table_keys
 
     def _audit_extension_line_keys(self, line, declared_table, all_keys, table_keys, path, missing, tr_pattern, tr_func_pattern, l_tr_pattern):
         """
@@ -800,18 +837,7 @@ class MissingKeyDetector:
         """
         keys = set(tr_pattern.findall(line) + tr_func_pattern.findall(line) + l_tr_pattern.findall(line))
         for key in keys:
-            table_match = re.search(r'table\s*:\s*"([^"]+)"', line)
-            target_table = declared_table
-            if table_match:
-                logical_table = table_match.group(1)
-                target_table = self.domain_map.get(logical_table, logical_table)
-            else:
-                # 检测显式模块前缀调用（如 Common.tr("ok") 在 Ingest 扩展中引用 Common 表）
-                # 这是合法的跨表共享，避免重复定义通用 key
-                for mod_name, mod_table in self.domain_map.items():
-                    if f"{mod_name}.tr(" in line or f"{mod_name}.trf(" in line:
-                        target_table = mod_table
-                        break
+            target_table = self._resolve_target_table(line, declared_table)
 
             # 过滤以点号结尾的动态拼接前缀键（如 "graph." + key）
             if key.endswith('.'):
@@ -819,10 +845,33 @@ class MissingKeyDetector:
 
             if key not in all_keys:
                 missing.append((path, key, f"Key used in L10n extension but missing from ALL .xcstrings files", "ERROR"))
-            elif target_table in table_keys:
+            elif target_table is not None and target_table in table_keys:
                 if key not in table_keys[target_table]:
                     actual_files = [t for t, ks in table_keys.items() if key in ks]
                     missing.append((path, key, f"Table mismatch: key in extension (table=\"{target_table}\") but key resides in {actual_files}", "ERROR"))
+
+    def _resolve_target_table(self, line, declared_table):
+        """
+        从单行 tr() 调用中解析目标物理表名。
+        - table: "字面量" → 经 domain_map 映射
+        - table: <变量/常量引用> → 无法静态解析，返回 None（跳过跨表校验）
+        - 模块前缀调用（如 Common.tr(...)）→ 对应模块表
+        - 其他 → declared_table（扩展默认表）
+        """
+        table_match = re.search(r'table\s*:\s*"([^"]+)"', line)
+        if table_match:
+            logical_table = table_match.group(1)
+            return self.domain_map.get(logical_table, logical_table)
+        if re.search(r'table\s*:\s*[A-Za-z_]', line):
+            # table: <变量/常量引用>（如 table: SystemConstants.Localization.demoSnippetTable）
+            # 无法静态解析具体表名，跳过跨表校验，仅验证 key 存在性
+            return None
+        # 检测显式模块前缀调用（如 Common.tr("ok") 在 Ingest 扩展中引用 Common 表）
+        # 这是合法的跨表共享，避免重复定义通用 key
+        for mod_name, mod_table in self.domain_map.items():
+            if f"{mod_name}.tr(" in line or f"{mod_name}.trf(" in line:
+                return mod_table
+        return declared_table
 
     def _check_extension_keys(self, all_keys, table_keys, missing):
         """

@@ -9,7 +9,7 @@
 ## 1. 概述与设计原则
 
 - **集中式门禁管理者 (`FeatureGateManager`)**：位于 L1.5 领域层，负责在全局范围内管理套餐能力与配额。
-- **纯离线保底策略 (Cold-Start Baseline)**：新装机未联网或未登录时，默认兜底使用 Lite 配额 (`PlanQuotasVo.createLiteDefault`)。
+- **纯离线保底策略 (Cold-Start Baseline)**：新装机未联网或未登录时，默认兜底使用 Lite 配额 (`PlanQuotasVo.createFreeDefault`)。
 - **协议契约**：所有配额字段在 JSON 协议、后端数据库 `quotas_json` 及 Swift 模型 `PlanQuotasVo` 中 100% 保持命名对齐。
 
 ---
@@ -21,7 +21,7 @@
 | 领域 / 功能模块 | 控制功能项 (Control Feature) | 控制项编码 (Control Code) | Lite 基础版 (Free Baseline) | Pro 专业版 (Pro Plan) | 说明 / 物理打卡逻辑 |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **存储容量** | **最大知识页数** | `max_knowledge_pages` | **1,000 页** | **50,000 页** | 超限拦截文档保存，弹出收银台模态框 |
-| | **独立笔记本数** | `max_vaults_count` | **2 个** | **100 个** | 超限阻止创建新笔记本 |
+| | **独立笔记本数** | `max_vaults_count` | **4 个** | **10 个** | 超限阻止创建新笔记本 |
 | | **单文件附件大小上限** | `max_file_size_mb` | **10 MB** | **50 MB** | 导入超限时弹出提示框并中断解析 |
 | **AI 智脑** | **每日云端 AI 消息上限** | `daily_ai_messages` | **0 条** (仅离线/端侧) | **无限制 (-1)** | 决定是否允许向云端 API 发送消息 |
 | | **高阶云端大模型** | `cloud_llm_models_enabled` | ❌ 隐藏 (无 GPT-4o / Claude) | ✅ 开通 (GPT-4o, Claude 3.5, Qwen) | 控制模型选择下拉菜单中的高阶云端模型 |

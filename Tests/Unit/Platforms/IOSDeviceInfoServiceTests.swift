@@ -53,6 +53,15 @@ final class IOSDeviceInfoServiceTests: XCTestCase {
         XCTAssertFalse(name.isEmpty, "设备名称不应为空")
     }
 
+    // MARK: - deviceId
+
+    /// deviceId 应返回持久化设备唯一标识（IDFV；无宿主测试环境允许为空串，不阻塞）
+    func testDeviceIdReturnsValue() {
+        let service = iOSDeviceInfoService()
+        _ = service.deviceId
+        XCTAssertNotNil(service.deviceId, "deviceId 读取不应抛错")
+    }
+
     // MARK: - screenHeight
 
     /// screenHeight 应返回大于最小阈值的正值

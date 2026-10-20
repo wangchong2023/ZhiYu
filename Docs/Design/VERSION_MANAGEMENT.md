@@ -30,7 +30,7 @@
 ```
 AppConstants.Version.semVer              ← 唯一版本来源（已提交，防抵赖）
         │
-        ├── ci-build-pipeline-version-inject.sh            ← CI / fastlane 调用
+        ├── build-pipeline-version-inject.sh            ← CI / fastlane 调用
         │       ├── 读取 semVer
         │       ├── 校验 git tag 一致性（有 tag 时告警）
         │       ├── 写 Info.plist（CFBundleShortVersionString / CFBundleVersion / hash / timestamp）
@@ -144,7 +144,7 @@ clone-repo → static-analysis
 clone-repo → build-prepare → build-ios → build-macos → build-watchos → test
                  ├─ xcodegen generate
                  ├─ SPM resolve
-                 └─ ci-build-pipeline-version-inject.sh     ← 版本注入合并在此步骤
+                 └─ build-pipeline-version-inject.sh     ← 版本注入合并在此步骤
 ```
 
 测试步骤 (`test-and-verify-coverage`) 首尾打印版本信息。
@@ -173,7 +173,7 @@ clone-repo → build-prepare → build-ios → build-macos → build-watchos →
 2. git add . && git commit                 # 提交版本号变更
 3. git tag -a v1.1.0 -m "Release v1.1.0"  # 打 tag（与 semVer 一致）
 4. git push --tags                         # 推送 tag
-5. CI 自动触发                             # ci-build-pipeline-version-inject.sh 校验通过，构建
+5. CI 自动触发                             # build-pipeline-version-inject.sh 校验通过，构建
 6. fastlane canary                         # 上传 TestFlight（CI 自动执行）
 7. App Store Connect                       # 提交审核
 ```
@@ -217,7 +217,7 @@ clone-repo → build-prepare → build-ios → build-macos → build-watchos →
 
 ## 9. 测试
 
-### 9.1 ci-build-pipeline-version-inject.sh 单元测试
+### 9.1 build-pipeline-version-inject.sh 单元测试
 
 `Tools/ci/run-test-version-inject-unit.sh`
 

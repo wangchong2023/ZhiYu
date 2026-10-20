@@ -9,6 +9,7 @@
 //  核心职责：针对 NetworkClient 开展无感刷新与 Token 过期踢出重试机制的自动化单元测试。
 //
 
+import Dependencies
 import XCTest
 @testable import ZhiYu
 
@@ -52,6 +53,37 @@ final class NetworkClientTests: XCTestCase {
         try KeychainService.shared.store(key: AppConstants.Network.jwtTokenKey, value: "fake_jwt")
         let token = try KeychainService.shared.retrieve(key: AppConstants.Network.jwtTokenKey)
         XCTAssertEqual(token, "fake_jwt")
+    }
+
+    // MARK: - 设备标识请求头
+
+    /// 所有请求（含登录 requiresAuth=false）应携带 X-Device-Id / X-Device-Name / X-Device-Platform，供后端登记在线会话
+    func testRequestCarriesDeviceHeaders() async throws {
+        var captured: URLRequest?
+        TestMockURLProtocol.requestHandler = { request in
+            captured = request
+            let url = try XCTUnwrap(request.url)
+            let apiResponse = ApiResponse<String>(code: 0, message: "ok", data: "ok", requestId: "r", timestamp: 1)
+            let data = try JSONEncoder().encode(apiResponse)
+            let response = try XCTUnwrap(
+                HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil,
+                                headerFields: ["Content-Type": "application/json"])
+            )
+            return (response, data)
+        }
+
+        try await withDependencies {
+            $0.deviceInfo = MockDeviceInfoService(deviceId: "unit-test-device")
+        } operation: {
+            let _: String = try await NetworkClient.shared.request(
+                path: "/api/v1/test/device", method: "GET", requiresAuth: false
+            )
+        }
+
+        let request = try XCTUnwrap(captured)
+        XCTAssertEqual(request.value(forHTTPHeaderField: AppConstants.Network.headerDeviceId), "unit-test-device")
+        XCTAssertEqual(request.value(forHTTPHeaderField: AppConstants.Network.headerDeviceName), "iPhone 15 Pro Mock")
+        XCTAssertEqual(request.value(forHTTPHeaderField: AppConstants.Network.headerDevicePlatform), AppConstants.Network.platformiOS)
     }
 
     // MARK: - 无感刷新与失效退登测试

@@ -56,6 +56,16 @@ public struct AppConstants {
         public static let headerContentType: String = SystemConstants.HTTPHeader.contentType
         /// Authorization 请求头字段名
         public static let headerAuthorization: String = SystemConstants.HTTPHeader.authorization
+        /// X-Device-Id 请求头字段名（设备持久化唯一标识）
+        public static let headerDeviceId: String = SystemConstants.HTTPHeader.xDeviceId
+        /// X-Device-Name 请求头字段名（设备名称/型号展示）
+        public static let headerDeviceName: String = SystemConstants.HTTPHeader.xDeviceName
+        /// X-Device-Platform 请求头字段名（设备平台）
+        public static let headerDevicePlatform: String = SystemConstants.HTTPHeader.xDevicePlatform
+
+        // MARK: - 平台标识
+        /// iOS 平台标识（X-Device-Platform 取值）
+        public static let platformiOS: String = SystemConstants.Platform.iOS
 
         // MARK: - Content-Type 值（引用 SystemConstants.ContentType / MIMEType）
         /// JSON 请求体 MIME 类型
@@ -444,9 +454,9 @@ extension AppConstants {
         /// 引用 SystemConstants.Version.defaultSemVer 作为默认值
         public static let semVer: String = SystemConstants.Version.defaultSemVer
         /// Git 短提交哈希（构建时自动注入）
-        public static let gitShortHash = "9883f4ee"
+        public static let gitShortHash = "e8dcf54d"
         /// 构建时间戳 ISO 8601（构建时自动注入）
-        public static let buildTimestamp = "2026-10-19T04:57:09Z"
+        public static let buildTimestamp = "2026-10-20T04:26:48Z"
     }
 
     /// 通用格式化常量

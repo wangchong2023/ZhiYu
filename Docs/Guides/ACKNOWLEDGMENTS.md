@@ -10,7 +10,10 @@
 | [Lottie](https://github.com/airbnb/lottie-ios) | Apache 2.0 | JSON 驱动的动画渲染引擎 |
 | [ZIPFoundation](https://github.com/weichsel/ZIPFoundation) | MIT | ZIP 归档文件的创建与解压 |
 | [swift-markdown](https://github.com/swiftlang/swift-markdown) | Apache 2.0 | Apple 官方 Markdown 解析器，块级语法解析 |
-| [KeychainAccess](https://github.com/kishikawakatsumi/KeychainAccess) | MIT | 系统 Keychain 安全存储封装，支持 JWT Token / API Key 持久化 |
+| [swift-markdown-ui](https://github.com/gonzalezreal/swift-markdown-ui) | MIT | SwiftUI 原生 Markdown 渲染组件 |
+| SwiftJSONSanitizer | MIT | JSON 清洗与安全解析（离线 vendored，`opensrc/swift/`） |
+| PartialJSON | Apache 2.0 | 流式部分 JSON 解析（离线 vendored，`opensrc/swift/`） |
+| [GoogleSignIn](https://github.com/google/GoogleSignIn-iOS) | Apache 2.0 | Google 账号 OAuth 登录 |
 | [swift-snapshot-testing](https://github.com/pointfreeco/swift-snapshot-testing) | MIT | 快照测试框架（仅测试依赖） |
 
 ## 2. Swift Package Manager 传递依赖
