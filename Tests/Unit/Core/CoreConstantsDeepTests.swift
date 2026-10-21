@@ -299,23 +299,23 @@ final class AppConstantsTests: XCTestCase {
 
 final class APIPathsTests: XCTestCase {
 
-    /// 验证认证 API 路径
+    /// 验证认证 API 路径（网关按 /subscriber 前缀路由并剥前缀）
     func testAuthAPIPaths() {
-        XCTAssertEqual(APIPaths.refreshPath, "/api/v1/auth/refresh")
-        XCTAssertEqual(APIPaths.logoutPath, "/api/v1/auth/logout")
-        XCTAssertEqual(APIPaths.phoneLoginPath, "/api/v1/auth/login")
-        XCTAssertEqual(APIPaths.smsSendPath, "/api/v1/auth/sms/send")
-        XCTAssertEqual(APIPaths.oauthApplePath, "/api/v1/auth/oauth/apple")
-        XCTAssertEqual(APIPaths.oauthWeChatPath, "/api/v1/auth/oauth/wechat")
-        XCTAssertEqual(APIPaths.oauthGooglePath, "/api/v1/auth/oauth/google")
-        XCTAssertEqual(APIPaths.oauthGitHubPath, "/api/v1/auth/oauth/github")
-        XCTAssertEqual(APIPaths.carrierAuthPath, "/api/v1/auth/carrier")
+        XCTAssertEqual(APIPaths.refreshPath, "/api/v1/auth/subscriber/refresh")
+        XCTAssertEqual(APIPaths.logoutPath, "/api/v1/auth/subscriber/logout")
+        XCTAssertEqual(APIPaths.phoneLoginPath, "/api/v1/auth/subscriber/login")
+        XCTAssertEqual(APIPaths.smsSendPath, "/api/v1/auth/subscriber/sms/send")
+        XCTAssertEqual(APIPaths.oauthApplePath, "/api/v1/auth/subscriber/oauth/apple")
+        XCTAssertEqual(APIPaths.oauthWeChatPath, "/api/v1/auth/subscriber/oauth/wechat")
+        XCTAssertEqual(APIPaths.oauthGooglePath, "/api/v1/auth/subscriber/oauth/google")
+        XCTAssertEqual(APIPaths.oauthGitHubPath, "/api/v1/auth/subscriber/oauth/github")
+        XCTAssertEqual(APIPaths.carrierAuthPath, "/api/v1/auth/subscriber/carrier")
     }
 
-    /// 验证用户 API 路径
+    /// 验证用户 API 路径（网关按 /subscriber 前缀路由并剥前缀）
     func testUserAPIPaths() {
-        XCTAssertEqual(APIPaths.userProfilePath, "/api/v1/auth/user/profile")
-        XCTAssertEqual(APIPaths.avatarUploadPath, "/api/v1/auth/user/profile/avatar")
+        XCTAssertEqual(APIPaths.userProfilePath, "/api/v1/auth/subscriber/user/profile")
+        XCTAssertEqual(APIPaths.avatarUploadPath, "/api/v1/auth/subscriber/user/profile/avatar")
     }
 
     /// 验证订阅 API 路径

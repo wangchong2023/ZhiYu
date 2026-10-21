@@ -12,32 +12,33 @@ import UFPCore
 public enum APIPaths {
 
     // MARK: - 认证相关 API 路径
+    // 网关按 /subscriber 前缀路由到订阅端实例并剥前缀，故 auth 路径统一带 /api/v1/auth/subscriber 段。
 
     /// Token 刷新接口路径
-    public static let refreshPath = "/api/v1/auth/refresh"
+    public static let refreshPath = "/api/v1/auth/subscriber/refresh"
     /// 登出接口路径
-    public static let logoutPath = "/api/v1/auth/logout"
+    public static let logoutPath = "/api/v1/auth/subscriber/logout"
     /// 手机号登录接口路径
-    public static let phoneLoginPath = "/api/v1/auth/login"
+    public static let phoneLoginPath = "/api/v1/auth/subscriber/login"
     /// 发送短信验证码接口路径
-    public static let smsSendPath = "/api/v1/auth/sms/send"
+    public static let smsSendPath = "/api/v1/auth/subscriber/sms/send"
     /// Apple OAuth 登录接口路径
-    public static let oauthApplePath = "/api/v1/auth/oauth/apple"
+    public static let oauthApplePath = "/api/v1/auth/subscriber/oauth/apple"
     /// WeChat OAuth 登录接口路径
-    public static let oauthWeChatPath = "/api/v1/auth/oauth/wechat"
+    public static let oauthWeChatPath = "/api/v1/auth/subscriber/oauth/wechat"
     /// Google OAuth 登录接口路径
-    public static let oauthGooglePath = "/api/v1/auth/oauth/google"
+    public static let oauthGooglePath = "/api/v1/auth/subscriber/oauth/google"
     /// GitHub OAuth 登录接口路径
-    public static let oauthGitHubPath = "/api/v1/auth/oauth/github"
+    public static let oauthGitHubPath = "/api/v1/auth/subscriber/oauth/github"
     /// 运营商认证登录接口路径
-    public static let carrierAuthPath = "/api/v1/auth/carrier"
+    public static let carrierAuthPath = "/api/v1/auth/subscriber/carrier"
 
     // MARK: - 用户相关 API 路径
 
     /// 用户资料接口路径
-    public static let userProfilePath = "/api/v1/auth/user/profile"
+    public static let userProfilePath = "/api/v1/auth/subscriber/user/profile"
     /// 用户资料头像上传接口路径
-    public static let avatarUploadPath = "/api/v1/auth/user/profile/avatar"
+    public static let avatarUploadPath = "/api/v1/auth/subscriber/user/profile/avatar"
 
     // MARK: - 订阅相关 API 路径
 
