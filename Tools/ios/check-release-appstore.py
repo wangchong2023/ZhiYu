@@ -103,7 +103,7 @@ def _check_plist_version_strings(plist_data, issues):
     # CFBundleShortVersionString (如 1.0.0)
     version_string = plist_data.get("CFBundleShortVersionString")
     if version_string:
-        if not re.match(r'^\d+(\.\d+){1,2}$', str(version_string)):
+        if not _is_valid_version_placeholder(str(version_string)):
             issues.append({
                 "type": "error",
                 "message": f"CFBundleShortVersionString 格式不规范（当前值: '{version_string}'）。必须为点分纯数字（如 1.0 或 1.0.0）。"
@@ -112,11 +112,34 @@ def _check_plist_version_strings(plist_data, issues):
     # CFBundleVersion (如 1)
     bundle_version = plist_data.get("CFBundleVersion")
     if bundle_version:
-        if not re.match(r'^\d+(\.\d+)*$', str(bundle_version)):
+        if not _is_valid_version_placeholder(str(bundle_version)):
             issues.append({
                 "type": "error",
                 "message": f"CFBundleVersion 格式不规范（当前值: '{bundle_version}'）。必须为纯数字或点分纯数字。"
             })
+
+
+def _is_valid_version_placeholder(value: str) -> bool:
+    """
+    校验版本号是否合法：点分纯数字，或构建变量占位符（$(...)）。
+
+    版本号在 CI 阶段由 inject_version.sh 注入真实值，源码中的 Info.plist
+    允许保留 $(MARKETING_VERSION) / $(CURRENT_PROJECT_VERSION) 占位符，
+    由 Xcode 在编译期展开，因此占位符不参与静态格式校验。
+
+    :param value: 待校验的版本号字符串
+    :return: 是否通过校验
+    """
+    # 构建变量占位符，兼容 $(VAR) 与 ${VAR} 两种形式
+    if re.match(r'^\$(\([A-Za-z0-9_]+\)|\{[A-Za-z0-9_]+\})$', value):
+        return True
+    # CFBundleShortVersionString (如 1.0 或 1.0.0)
+    if re.match(r'^\d+(\.\d+){1,2}$', value):
+        return True
+    # CFBundleVersion (如 1 或 1.0.1)
+    if re.match(r'^\d+(\.\d+)*$', value):
+        return True
+    return False
 
 
 def _check_plist_ats(plist_data, issues):

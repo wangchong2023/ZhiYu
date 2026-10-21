@@ -609,6 +609,307 @@ concurrent = 1
 
 ---
 
+### Task 12: 更新 ZhiYu 仓库 CI_CD_WORKFLOW.md 文档
+
+**Files:**
+- Modify: `Docs/Architecture/CI_CD_WORKFLOW.md`（3 处）
+
+**Interfaces:**
+- Consumes: 所有 runner tag 改动已完成
+- Produces: 架构文档反映最终 runner 配置
+
+- [ ] **Step 1: 更新架构图中的 runner 名称和 tag（Line 33-34）**
+
+用 edit 工具将：
+```
+│ macOS Shell Runner       │
+│ tags: macos,shell,xcode  │
+```
+改为：
+```
+│ macOS Xcode Runner       │
+│ tags: zhiyu-ios          │
+```
+
+- [ ] **Step 2: 更新 Runner 组件表（Line 63）**
+
+用 edit 工具将：
+```
+| **GitLab Runner** | macOS launchd 原生服务 | `macos-shell-runner` | 执行 iOS/macOS/watchOS 构建与测试 |
+```
+改为：
+```
+| **GitLab Runner** | macOS launchd 原生服务 | `macos-xcode-runner`（tags: `zhiyu-ios`） | 执行 iOS/macOS/watchOS 构建与测试 |
+```
+
+- [ ] **Step 3: 更新排障指南的 tag 描述（Line 372）**
+
+用 edit 工具将：
+```
+| Agent 未接管任务 | 标签不匹配 | 确认 Runner `tags: macos,shell,xcode` 与 `.gitlab-ci.yml` job `tags` 一致 |
+```
+改为：
+```
+| Agent 未接管任务 | 标签不匹配 | 确认 Runner `tags: zhiyu-ios` 与 `.gitlab-ci.yml` job `tags` 一致 |
+```
+
+- [ ] **Step 4: 验证改动**
+
+```bash
+grep -n "macos,shell,xcode\|macos-shell-runner" Docs/Architecture/CI_CD_WORKFLOW.md
+```
+
+Expected: 无输出（旧 tag 和旧名称已全部替换）。
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add Docs/Architecture/CI_CD_WORKFLOW.md
+git commit -m "docs: CI_CD_WORKFLOW 更新 runner tag 为 zhiyu-ios 并修正 runner 名称"
+```
+
+---
+
+### Task 13: 更新 ZhiYu-Backend 仓库 ci-cd.md 文档
+
+**Files:**
+- Modify: `/Users/constantine/Documents/work/code/projects/ZhiYu-Backend/docs/2-how-to/ci-cd.md`（Runner 标签匹配规则表 + 配置文件表）
+
+**Interfaces:**
+- Consumes: Task 4 已改 ZhiYu-Backend CI tag，Task 6 已改 macos-xcode-runner tag
+- Produces: Backend 文档反映最终 runner 配置
+
+- [ ] **Step 1: 更新 Runner 标签匹配规则表（Line 299-300）**
+
+用 edit 工具将：
+```
+| Runner 1 (`macos-shell-runner`) | `macos, shell, xcode, arm64` | ZhiYu Swift iOS 编译与测试 |
+| Runner 2 (`local-runner`) | *(无特异标签，默认)* | ZhiYu-Backend 容器化流水线 |
+```
+改为：
+```
+| Runner 1 (`macos-xcode-runner`) | `zhiyu-ios` | ZhiYu Swift iOS/macOS/watchOS 编译与测试 |
+| Runner 2 (`zhiyu-docker-runner`) | `zhiyu-backend` | ZhiYu-Backend 容器化流水线 |
+```
+
+- [ ] **Step 2: 更新配置文件表（Line 306-307）**
+
+用 edit 工具将：
+```
+| Runner 1 | `/Users/constantine/.gitlab-runner/config.toml` | `brew services log gitlab-runner` |
+| Runner 2 | `/Users/constantine/devs/rnd-cicd/gitlab/runner-config/config.toml` | `docker logs rnd-cicd-gitlab-runner-1` |
+```
+改为：
+```
+| Runner 1 | `/Users/constantine/.gitlab-runner/config.toml` | `brew services log gitlab-runner` |
+| Runner 2 | `/Users/constantine/.gitlab-runner/config.toml` | `brew services log gitlab-runner` |
+```
+
+注意：两个 runner 现在都在同一个 config.toml 中（zhiyu-docker-runner 是 docker executor，但配置文件与 macos-xcode-runner 同路径）。
+
+- [ ] **Step 3: 验证改动**
+
+```bash
+grep -n "macos-shell-runner\|local-runner" /Users/constantine/Documents/work/code/projects/ZhiYu-Backend/docs/2-how-to/ci-cd.md
+```
+
+Expected: 无输出（旧 runner 名称已全部替换）。
+
+- [ ] **Step 4: Commit 并推送**
+
+```bash
+git -C /Users/constantine/Documents/work/code/projects/ZhiYu-Backend add docs/2-how-to/ci-cd.md
+git -C /Users/constantine/Documents/work/code/projects/ZhiYu-Backend commit -m "docs: ci-cd 更新 runner 标签匹配规则为项目专属 tag"
+git -C /Users/constantine/Documents/work/code/projects/ZhiYu-Backend push
+```
+
+---
+
+### Task 14: 更新 rnd-cicd 仓库 README 和 Runner 注册脚本/模板
+
+**Files:**
+- Modify: `/Users/constantine/Documents/work/rnd-env/rnd-cicd/README.md`（Runner 注册章节 + 新增 tag 命名规范）
+- Modify: `/Users/constantine/Documents/work/rnd-env/rnd-cicd/.env.example`（Runner tag 默认值）
+- Modify: `/Users/constantine/Documents/work/rnd-env/rnd-cicd/tools/register-runners.sh`（默认 tag + 移除 ucp 注册函数）
+- Modify: `/Users/constantine/Documents/work/rnd-env/rnd-cicd/gitlab/runner-config/config.toml.template`（concurrent + tag 注释 + 移除 ucp-shell-runner 块）
+
+**Interfaces:**
+- Consumes: 所有 runner tag 改动已完成（Task 2-9）
+- Produces: rnd-cicd 基础设施仓库反映最终 runner 配置 + tag 命名规范文档
+
+**为什么这一步**：rnd-cicd 是 CI/CD 基础设施的 SSOT 仓库，`register-runners.sh` 和 `config.toml.template` 是重建 runner 时的源头。如果不同步更新，未来重建基础设施会用旧 tag 重新注册 runner，导致回退。
+
+- [ ] **Step 1: 更新 .env.example 的 Runner tag 默认值**
+
+用 edit 工具将：
+```
+ZHIYU_RUNNER_TAGS="docker,zhiyu"
+```
+改为：
+```
+ZHIYU_RUNNER_TAGS="zhiyu-backend,ucp,utp"
+```
+
+将：
+```
+UCP_RUNNER_TAGS="shell,ucp"
+```
+整段删除（ucp-shell-runner 已删除，不再需要此变量）。
+
+同时删除 `UCP_RUNNER_REGISTRATION_TOKEN` 行（如果存在）。
+
+- [ ] **Step 2: 更新 register-runners.sh — 移除 ucp 注册函数**
+
+用 edit 工具：
+1. 移除 `register_ucp_runner()` 整个函数定义
+2. 移除主流程中对 ucp 的调用（`register_ucp_runner` 调用行 + `case "ucp"` 分支）
+3. 更新脚本头部注释：`注册 zhiyu-docker-runner 和 ucp-shell-runner` → `注册 zhiyu-docker-runner`，移除 ucp 相关用法示例
+4. 更新 `register_zhiyu_runner()` 中的默认 tag：`local runner_tags="${ZHIYU_RUNNER_TAGS:-docker,zhiyu}"` → `local runner_tags="${ZHIYU_RUNNER_TAGS:-zhiyu-backend,ucp,utp}"`
+
+- [ ] **Step 3: 更新 config.toml.template**
+
+用 edit 工具：
+1. `concurrent = 2` → `concurrent = 1`
+2. 更新 zhiyu-docker-runner 块的注释：`tags: [docker, zhiyu]` → `tags: [zhiyu-backend, ucp, utp]`
+3. 移除 ucp-shell-runner 的整个 `[[runners]]` 块（如果模板中存在）
+
+- [ ] **Step 4: 更新 README.md — Runner 注册章节**
+
+用 edit 工具更新以下内容：
+
+**4a. 前置条件的 .env 示例（Line 202-209）**：
+将：
+```bash
+# ZhiYu-Backend 项目（docker executor）
+ZHIYU_RUNNER_REGISTRATION_TOKEN=glrtr-xxxxxxxxxxxxxxxxxxxx
+ZHIYU_RUNNER_TAGS="docker,zhiyu"
+ZHIYU_RUNNER_IMAGE="10.211.55.2:5001/ufp-ci-build:1.0.0-683866d"
+
+# Uniform-Common-Platform 项目（shell executor）
+UCP_RUNNER_REGISTRATION_TOKEN=glrtr-xxxxxxxxxxxxxxxxxxxx
+UCP_RUNNER_TAGS="shell,ucp"
+```
+改为：
+```bash
+# ZhiYu-Backend / UCP / UTP 项目（docker executor，按项目专属 tag 调度）
+ZHIYU_RUNNER_REGISTRATION_TOKEN=glrtr-xxxxxxxxxxxxxxxxxxxx
+ZHIYU_RUNNER_TAGS="zhiyu-backend,ucp,utp"
+ZHIYU_RUNNER_IMAGE="10.211.55.2:5001/ufp-ci-build:1.0.0-683866d"
+```
+
+**4b. 注册命令示例（Line 225-232）**：
+将：
+```bash
+# 注册全部 Runner（zhiyu-docker + ucp-shell）
+./tools/register-runners.sh
+
+# 仅注册 zhiyu-docker-runner
+./tools/register-runners.sh zhiyu
+
+# 仅注册 ucp-shell-runner
+./tools/register-runners.sh ucp
+```
+改为：
+```bash
+# 注册全部 Runner（zhiyu-docker）
+./tools/register-runners.sh
+
+# 仅注册 zhiyu-docker-runner
+./tools/register-runners.sh zhiyu
+```
+
+**4c. Runner 架构表（Line 243-246）**：
+将：
+```
+| Runner | Executor | 镜像 | Tags | 用途 |
+|--------|----------|------|------|------|
+| `zhiyu-docker-runner` | docker | `ufp-ci-build:1.0.0-683866d` | `docker,zhiyu` | ZhiYu-Backend CI（JDK 21） |
+| `ucp-shell-runner` | shell | — | `shell,ucp` | Uniform-Common-Platform CI（Docker-in-Shell） |
+```
+改为：
+```
+| Runner | Executor | 镜像 | Tags | 用途 |
+|--------|----------|------|------|------|
+| `zhiyu-docker-runner` | docker | `ufp-ci-build:1.0.0-683866d` | `zhiyu-backend,ucp,utp` | ZhiYu-Backend + UCP + UTP CI（按项目专属 tag 调度） |
+| `macos-xcode-runner` | shell | — | `zhiyu-ios` | ZhiYu iOS/macOS/watchOS 编译（宿主机 launchd 原生部署，非容器化） |
+
+> **ucp-shell-runner 已删除**：原 UCP shell executor 闲置，UCP/UTP 已改用 zhiyu-docker-runner（docker executor）。
+```
+
+- [ ] **Step 5: 在 README.md 新增「Runner Tag 命名规范」小节**
+
+在「Runner 架构」表之后（helper_image 说明之前），用 edit 工具插入新小节：
+
+```markdown
+### Runner Tag 命名规范
+
+Runner tag 采用**项目专属 tag** 策略，确保精确调度、无跨项目争抢：
+
+| 规则 | 说明 | 示例 |
+|------|------|------|
+| **一项目一 tag** | 每个项目用专属 tag，runner 通过包含该 tag 匹配 | `zhiyu-ios`、`zhiyu-backend`、`ucp`、`utp` |
+| **不使用 executor 描述 tag** | `shell`/`docker` 是 executor 类型，已由 `config.toml` 决定，放入 tag 是冗余 | ❌ `docker`、`shell` |
+| **不使用宽泛归属 tag** | 避免一个 tag 匹配多个项目导致争抢 | ❌ `zhiyu`（ZhiYu 和 Backend 都含"zhiyu"） |
+| **不使用架构描述 tag** | `arm64`/`x86` 由 runner 所在主机决定，非调度维度 | ❌ `arm64` |
+
+**当前 tag 分配**：
+
+| Tag | Runner | 项目 | 
+|-----|--------|------|
+| `zhiyu-ios` | `macos-xcode-runner` | ZhiYu（iOS/macOS/watchOS） |
+| `zhiyu-backend` | `zhiyu-docker-runner` | ZhiYu-Backend |
+| `ucp` | `zhiyu-docker-runner` | Uniform-Common-Platform |
+| `utp` | `zhiyu-docker-runner` | Uniform-ThirdParty-Platform |
+
+**concurrent 策略**：`concurrent = 1`（单 Mac 串行执行），避免多 job 并发导致 CPU/内存争抢和 OOM kill。ZhiYu 的 build-ios/macos/watchos 串行执行，pipeline 总时长增加但稳定可靠。
+
+**新增项目/runner 时**：
+1. 在项目 `.gitlab-ci.yml` 的 `default.tags` 声明项目专属 tag
+2. 在目标 runner 的 tag_list 中添加该 tag（GitLab API 或 `register-runners.sh`）
+3. 更新本节的「当前 tag 分配」表
+```
+
+- [ ] **Step 6: 更新 README.md 目录结构中的 register-runners.sh 注释（Line 63）**
+
+将：
+```
+│   ├── register-runners.sh        ← 向 GitLab 注册 CI Runner（zhiyu-docker + ucp-shell）
+```
+改为：
+```
+│   ├── register-runners.sh        ← 向 GitLab 注册 CI Runner（zhiyu-docker）
+```
+
+- [ ] **Step 7: 验证所有改动**
+
+```bash
+echo "=== .env.example 无旧 tag ==="
+grep -n "docker,zhiyu\|shell,ucp" /Users/constantine/Documents/work/rnd-env/rnd-cicd/.env.example
+echo "=== register-runners.sh 无 ucp 函数 ==="
+grep -n "register_ucp\|ucp-shell" /Users/constantine/Documents/work/rnd-env/rnd-cicd/tools/register-runners.sh
+echo "=== config.toml.template concurrent=1 ==="
+grep "^concurrent" /Users/constantine/Documents/work/rnd-env/rnd-cicd/gitlab/runner-config/config.toml.template
+echo "=== README 无旧 tag ==="
+grep -n "docker,zhiyu\|shell,ucp\|ucp-shell-runner" /Users/constantine/Documents/work/rnd-env/rnd-cicd/README.md
+```
+
+Expected: 前两个 grep 无输出（旧内容已删除），第三个显示 `concurrent = 1`，第四个无输出（或仅保留"已删除"说明行）。
+
+- [ ] **Step 8: Commit 并推送**
+
+```bash
+git -C /Users/constantine/Documents/work/rnd-env add rnd-cicd/README.md rnd-cicd/.env.example rnd-cicd/tools/register-runners.sh rnd-cicd/gitlab/runner-config/config.toml.template
+git -C /Users/constantine/Documents/work/rnd-env commit -m "ci: runner tag 隔离——更新注册脚本/模板/文档为项目专属 tag
+
+- zhiyu-docker-runner tag: docker,zhiyu → zhiyu-backend,ucp,utp
+- 删除 ucp-shell-runner（闲置，UCP/UTP 已改用 docker executor）
+- concurrent 2→1 避免 OOM
+- 新增 Runner Tag 命名规范小节"
+git -C /Users/constantine/Documents/work/rnd-env push
+```
+
+---
+
 ## 回滚步骤
 
 如果任何阶段出现问题，按以下顺序回滚：
