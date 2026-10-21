@@ -49,9 +49,17 @@ public actor NetworkClient {
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = AppConstants.Network.requestTimeout
         config.timeoutIntervalForResource = AppConstants.Network.resourceTimeout
-        
-        let delegateProvider = ServiceContainer.shared.resolveOptional((any URLSessionDelegateProvider).self) // inject_exempt: 降级场景需 nil 语义
-        let delegate = delegateProvider?.makeSessionDelegate()
+
+        // 本地开发/联调自签名证书信任（受 AppConfig 运行时开关控制，生产默认关闭）
+        let delegate: URLSessionDelegate?
+        if AppConfig.allowSelfSignedCert {
+            // 本地开发直连局域网后端：绕过系统代理（Shadowrocket 等代理会拦截 .104 导致 -1009），并信任自签证书
+            config.connectionProxyDictionary = [:]
+            delegate = SelfSignedSessionDelegateProvider().makeSessionDelegate()
+        } else {
+            let delegateProvider = ServiceContainer.shared.resolveOptional((any URLSessionDelegateProvider).self) // inject_exempt: 降级场景需 nil 语义
+            delegate = delegateProvider?.makeSessionDelegate()
+        }
         self.session = URLSession(configuration: config, delegate: delegate, delegateQueue: nil)
         
         self.decoder = JSONDecoder()

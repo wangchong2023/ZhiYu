@@ -1,9 +1,12 @@
 {
   "network": {
-    "backend_base_url": "https://192.168.0.103:30444",
+    "backend_base_url": "https://192.168.0.104:30444",
     "plugin_market_production": "https://raw.githubusercontent.com/knowledge-management/plugins/main/community.json",
     "jina_reader_base": "https://r.jina.ai/",
     "github_oauth_client_id": "Ov23liuwnwZcxVnmUMiS"
+  },
+  "security": {
+    "allow_self_signed_cert": true
   },
   "llm_providers": {
     "openai": "https://api.openai.com/v1",
