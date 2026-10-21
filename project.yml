@@ -145,7 +145,7 @@ targets:
           - "MacInfo.plist"
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.zhiyu.app
+        PRODUCT_BUNDLE_IDENTIFIER: top.izhiyu.app
         INFOPLIST_FILE: Sources/Info.plist
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon-iOS
         ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS: NO
@@ -184,7 +184,7 @@ targets:
           - "LaunchScreen.storyboard"
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.zhiyu.app.mac
+        PRODUCT_BUNDLE_IDENTIFIER: top.izhiyu.app.mac
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon-iOS
         INFOPLIST_FILE: Sources/MacInfo.plist
         SUPPORTS_MACCATALYST: "YES"
@@ -276,7 +276,7 @@ targets:
       - path: Sources/Shared/Platforms/Adaptor/WatchFeaturePlaceholderView.swift
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.zhiyu.app.watch
+        PRODUCT_BUNDLE_IDENTIFIER: top.izhiyu.app.watch
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon-Watch
         SDKROOT: watchos
         ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS: NO
@@ -297,14 +297,12 @@ targets:
       - path: Sources/Localization/Catalogs/Platform.xcstrings
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.zhiyu.app.widgets
+        PRODUCT_BUNDLE_IDENTIFIER: top.izhiyu.app.widgets
         SWIFT_ACTIVE_COMPILATION_CONDITIONS: WIDGET
         INFOPLIST_FILE: Sources/Platforms/iOS/Widgets/Info.plist
         GENERATE_INFOPLIST_FILE: "NO"
         NSSupportsLiveActivities: YES
         CODE_SIGN_ENTITLEMENTS: Sources/ZhiYuWidgets.entitlements
-        CODE_SIGNING_ALLOWED: NO
-        CODE_SIGNING_REQUIRED: NO
         SDKROOT: iphoneos
         SKIP_INSTALL: "YES"
         TARGETED_DEVICE_FAMILY: "1"
@@ -341,6 +339,7 @@ targets:
     settings:
       base:
         SWIFT_STRICT_CONCURRENCY: minimal
+        PRODUCT_BUNDLE_IDENTIFIER: top.izhiyu.app.ZhiYuTests
     dependencies:
       - target: ZhiYu
       - package: SnapshotTesting
@@ -350,6 +349,9 @@ targets:
     platform: iOS
     sources:
       - path: Tests/UI
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: top.izhiyu.app.ZhiYuUITests
     dependencies:
       - target: ZhiYu
       - package: SnapshotTesting
@@ -364,6 +366,9 @@ targets:
           - "Platforms/WatchSyncTests.swift"
           - "Platforms/WatchViewTests.swift"
           - "Shared/TestMocks.swift"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: top.izhiyu.app.ZhiYuWatchTests
     dependencies:
       - target: ZhiYuWatch
 
@@ -384,6 +389,9 @@ targets:
           - "Core/Base/Protocols/FileArchiverProtocol.swift"
           - "Core/Base/Protocols/PlatformCapabilities.swift"
           - "Core/Base/Constants/AppConstants.swift"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: top.izhiyu.app.ZhiYuMacTests
 
 schemes:
   ZhiYu:
