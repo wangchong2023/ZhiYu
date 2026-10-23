@@ -102,7 +102,7 @@ final class NetworkClientTests: XCTestCase {
         TestMockURLProtocol.requestHandler = { request in
             callCount += 1
             let url = try XCTUnwrap(request.url)
-            if url.path == "/api/v1/auth/refresh" {
+            if url.path == APIPaths.refreshPath {
                 XCTAssertEqual(request.httpMethod, "POST")
                 if let bodyData = request.httpBodyStreamData() ?? request.httpBody,
                    let json = try? JSONSerialization.jsonObject(with: bodyData) as? [String: Any],
@@ -181,7 +181,7 @@ final class NetworkClientTests: XCTestCase {
         //   - 交互B：自动触发 /api/v1/auth/refresh 刷新 -> 返回 401 失败或 Code == 40103
         TestMockURLProtocol.requestHandler = { request in
             let url = try XCTUnwrap(request.url)
-            if url.path == "/api/v1/auth/refresh" {
+            if url.path == APIPaths.refreshPath {
                 let apiResponse: ApiResponse<LoginResponse> = ApiResponse(code: 40103, message: "Refresh Token Expired", data: nil, requestId: "test_req_id", timestamp: 123456789)
                 let data = try JSONEncoder().encode(apiResponse)
                 let response = try XCTUnwrap(HTTPURLResponse(url: url, statusCode: 401, httpVersion: nil, headerFields: ["Content-Type": "application/json"]))
