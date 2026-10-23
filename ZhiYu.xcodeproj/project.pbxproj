@@ -2017,6 +2017,7 @@
 		AFED032DD3F4F9B40C817426 /* PDFServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF52BE01681A44F450B012CC /* PDFServiceProtocol.swift */; };
 		B01A61C8161DDDCA90025210 /* RegionCapabilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200E06E0088695445022BAF3 /* RegionCapabilities.swift */; };
 		B0363C176736A2E4441989C1 /* SwiftMarkdownASTCleaner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 800A07A53BD8A6A8220B8A40 /* SwiftMarkdownASTCleaner.swift */; };
+		B086029062FA072851E313FA /* SelfSignedSessionDelegateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B82FBA29B09593AD5841024 /* SelfSignedSessionDelegateProvider.swift */; };
 		B0990AB59C040C22B7B5C878 /* testInsightStatDefault.1.png in Resources */ = {isa = PBXBuildFile; fileRef = 5CEA889F1C5DDA9C94F31424 /* testInsightStatDefault.1.png */; };
 		B0A75C5CB88C4DA4C1705923 /* FeedbackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20C0463C6EF23090BE0C1C9 /* FeedbackView.swift */; };
 		B0E41B46CBDB7C9DFAC1D6DF /* RAGEvaluationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF056668E2CBDB478EB793AC /* RAGEvaluationView.swift */; };
@@ -3369,7 +3370,7 @@
 		2E5A28FCDB60EED14BFB29E2 /* AppBackupServiceDeepMutationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppBackupServiceDeepMutationTests.swift; sourceTree = "<group>"; };
 		2E90BD834EB38BF336501889 /* UserProfileMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileMenu.swift; sourceTree = "<group>"; };
 		2E91D4E730AD5584BBDFF9A9 /* DemoImageBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoImageBuilder.swift; sourceTree = "<group>"; };
-		2E9CC61B47B0CB325F62E15D /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		2E9CC61B47B0CB325F62E15D /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		2EBFB2A44BE153D3964D8D8E /* testTaskCenterView_WithAssociatedPage.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testTaskCenterView_WithAssociatedPage.1.png; sourceTree = "<group>"; };
 		2EC7B091242E9303760DB5C1 /* KnowledgeIngestPipelineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KnowledgeIngestPipelineTests.swift; sourceTree = "<group>"; };
 		2ED71F317625964139CFC71B /* GraphCanvasInteractiveSnapshots.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphCanvasInteractiveSnapshots.swift; sourceTree = "<group>"; };
@@ -3434,7 +3435,7 @@
 		36BF45212E5CBF4CFAB039B7 /* testPluginCenterViewMyPluginsEmpty.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testPluginCenterViewMyPluginsEmpty.1.png; sourceTree = "<group>"; };
 		371D1100DB229A9FEDC6CFE7 /* SwiftMarkdownASTCleanerEdgeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftMarkdownASTCleanerEdgeTests.swift; sourceTree = "<group>"; };
 		371FCB95A47FEF84D9117F1D /* PluginEnginePool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginEnginePool.swift; sourceTree = "<group>"; };
-		3744107E6BF0E8F88B523FA5 /* ZhiYuWidgets.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = ZhiYuWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		3744107E6BF0E8F88B523FA5 /* ZhiYuWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ZhiYuWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		3777EC4B6918402191AE0104 /* PromptRegistryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptRegistryTests.swift; sourceTree = "<group>"; };
 		37831FBA563DD802F0D7BCA9 /* DeviceHardwareGuard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceHardwareGuard.swift; sourceTree = "<group>"; };
 		379EB33CD08039E70EBE5D88 /* AIContentEnricher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIContentEnricher.swift; sourceTree = "<group>"; };
@@ -3564,7 +3565,7 @@
 		4A290507B31772CB6CFEA5E4 /* testSynthesisErrorStateView_RendersGracefulFallbackCard.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testSynthesisErrorStateView_RendersGracefulFallbackCard.1.png; sourceTree = "<group>"; };
 		4A536E224D4E199BF9F85012 /* AppLayoutComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLayoutComponents.swift; sourceTree = "<group>"; };
 		4AB0E83E99E67D66F8BB5F49 /* EntityDetailBodyView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntityDetailBodyView.swift; sourceTree = "<group>"; };
-		4AE25E1F50F0A77EE5602DD1 /* zh-Hans */ = {isa = PBXFileReference; name = "zh-Hans"; path = "zh-Hans.lproj/voice_note_procurement.m4a"; sourceTree = "<group>"; };
+		4AE25E1F50F0A77EE5602DD1 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = file; name = "zh-Hans"; path = "zh-Hans.lproj/voice_note_procurement.m4a"; sourceTree = "<group>"; };
 		4AF2C169596D9C75082220C5 /* PromptRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptRegistry.swift; sourceTree = "<group>"; };
 		4AF35B39DBBDE179FFE339BD /* SourceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceView.swift; sourceTree = "<group>"; };
 		4AFD6BAE1DF4383BCA25A5C0 /* PerformanceBenchmarker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceBenchmarker.swift; sourceTree = "<group>"; };
@@ -3777,7 +3778,7 @@
 		63C3D0FE793568646D7C3F9E /* WatchDeviceInfoService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchDeviceInfoService.swift; sourceTree = "<group>"; };
 		63C5E05248EAF6D2CF275CCC /* AppStore+AI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppStore+AI.swift"; sourceTree = "<group>"; };
 		63FD160FB200B0ED44B841C8 /* L10n+Log.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "L10n+Log.swift"; sourceTree = "<group>"; };
-		64107641678BEE149996E9B5 /* init_schema.sql */ = {isa = PBXFileReference; path = init_schema.sql; sourceTree = "<group>"; };
+		64107641678BEE149996E9B5 /* init_schema.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = init_schema.sql; sourceTree = "<group>"; };
 		64466B0E139619FB84CB6C1E /* ModelLabConfigSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelLabConfigSheet.swift; sourceTree = "<group>"; };
 		645DCA2C8694525EF13FBC48 /* GraphLayoutSupplementTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphLayoutSupplementTests.swift; sourceTree = "<group>"; };
 		646D54BBE9FF4AA576884179 /* SynthesisMindmapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynthesisMindmapView.swift; sourceTree = "<group>"; };
@@ -3949,7 +3950,7 @@
 		790DA192B89B19D052B820FA /* WatchSpeechService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchSpeechService.swift; sourceTree = "<group>"; };
 		7910C651F6DAC19BB01BFE3D /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
 		798D9AEF322ABE09DFEB7C1A /* WatchKnowledgeStatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchKnowledgeStatsView.swift; sourceTree = "<group>"; };
-		79A620414E80D0AC144E21FE /* global_schema.sql */ = {isa = PBXFileReference; path = global_schema.sql; sourceTree = "<group>"; };
+		79A620414E80D0AC144E21FE /* global_schema.sql */ = {isa = PBXFileReference; lastKnownFileType = text; path = global_schema.sql; sourceTree = "<group>"; };
 		79A7FE08393AEFD123212E5D /* WorkflowServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowServiceTests.swift; sourceTree = "<group>"; };
 		79C2D8D8A9BF1777B1CFF092 /* NotebookHubViewModelDeepTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotebookHubViewModelDeepTests.swift; sourceTree = "<group>"; };
 		79C7DDBBF56B74B614F48C65 /* ReportSynthesisStrategy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReportSynthesisStrategy.swift; sourceTree = "<group>"; };
@@ -3977,7 +3978,7 @@
 		7D231FC0BBBB98655EBA22DA /* DesignSystemComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystemComponentTests.swift; sourceTree = "<group>"; };
 		7D954EABD1BB0304FCCC7BBA /* GraphViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphViewModelTests.swift; sourceTree = "<group>"; };
 		7DDA46686C68D592D918AC61 /* RAGPipelineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RAGPipelineTests.swift; sourceTree = "<group>"; };
-		7DF7720A732732AB4A8444F7 /* en */ = {isa = PBXFileReference; name = en; path = en.lproj/voice_note_forgetting_curve.m4a; sourceTree = "<group>"; };
+		7DF7720A732732AB4A8444F7 /* en */ = {isa = PBXFileReference; lastKnownFileType = file; name = en; path = en.lproj/voice_note_forgetting_curve.m4a; sourceTree = "<group>"; };
 		7E12AD5BEA111DB5F6D20E4B /* LinkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkService.swift; sourceTree = "<group>"; };
 		7E46E5C04CEA5EC16BD8FE68 /* CoreMLModerationClassifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreMLModerationClassifierTests.swift; sourceTree = "<group>"; };
 		7E63423E10C46C7A03143E2A /* testImportRecordCard_File.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testImportRecordCard_File.1.png; sourceTree = "<group>"; };
@@ -4018,7 +4019,7 @@
 		83466D0DA85F0E9AA358DEB1 /* AgentTool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentTool.swift; sourceTree = "<group>"; };
 		8390567A95F898612D1932BB /* DatabaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseManager.swift; sourceTree = "<group>"; };
 		84178368317126D7B249CF11 /* testRAGEvaluationViewLoading.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testRAGEvaluationViewLoading.1.png; sourceTree = "<group>"; };
-		845931ACF7AF46702940544A /* ZhiYu.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ZhiYu.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		845931ACF7AF46702940544A /* ZhiYu.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ZhiYu.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		847817CF10BD9D479CA8EAEB /* KeyStoreProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyStoreProtocol.swift; sourceTree = "<group>"; };
 		84C96C55407D9FEE1F154ED4 /* RouterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouterTests.swift; sourceTree = "<group>"; };
 		8507C1D9328F794453226F0F /* QuizSynthesisStrategy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizSynthesisStrategy.swift; sourceTree = "<group>"; };
@@ -4177,6 +4178,7 @@
 		9B405A33588B2850F9706996 /* AIInsightStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIInsightStoreTests.swift; sourceTree = "<group>"; };
 		9B44E501E553493FB0C9082F /* CarrierAuthStrategyDeepTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarrierAuthStrategyDeepTests.swift; sourceTree = "<group>"; };
 		9B806A8B301DE10BFB19C8EE /* L10nCommonDeepTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = L10nCommonDeepTests.swift; sourceTree = "<group>"; };
+		9B82FBA29B09593AD5841024 /* SelfSignedSessionDelegateProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SelfSignedSessionDelegateProvider.swift; sourceTree = "<group>"; };
 		9BA32EEB7F25B605AAAC31F7 /* ImportRecordCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportRecordCard.swift; sourceTree = "<group>"; };
 		9BE4FEDA1B6DE771664D3508 /* DateExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateExtensionsTests.swift; sourceTree = "<group>"; };
 		9C1F1DCAED02CB78630D8F55 /* TagBubbleRatioCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagBubbleRatioCalculator.swift; sourceTree = "<group>"; };
@@ -4513,7 +4515,7 @@
 		C4491027B6858EB826BACE53 /* testRecentEditRowBasic.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testRecentEditRowBasic.1.png; sourceTree = "<group>"; };
 		C4511C699EAAC3B47CC6EBA4 /* TaskCenterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskCenterView.swift; sourceTree = "<group>"; };
 		C45EAFEF1ABC6AAD24D5F209 /* WidgetWatchNumberFormattingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetWatchNumberFormattingTests.swift; sourceTree = "<group>"; };
-		C460C21FBF33758EC4196AEE /* zh-Hans */ = {isa = PBXFileReference; name = "zh-Hans"; path = "zh-Hans.lproj/voice_note_forgetting_curve.m4a"; sourceTree = "<group>"; };
+		C460C21FBF33758EC4196AEE /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = file; name = "zh-Hans"; path = "zh-Hans.lproj/voice_note_forgetting_curve.m4a"; sourceTree = "<group>"; };
 		C46DC51686E8F23CAF73750A /* MarkdownProcessorParsingBranchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownProcessorParsingBranchTests.swift; sourceTree = "<group>"; };
 		C47DBC173836CDC906F7D0AA /* SynthesisDeepTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynthesisDeepTests.swift; sourceTree = "<group>"; };
 		C4CABC11FED68EDACD344972 /* CoreMLModerationClassifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreMLModerationClassifier.swift; sourceTree = "<group>"; };
@@ -4786,7 +4788,7 @@
 		E92FE4BF6D3C2B13FB6C09A0 /* testServerConfigViewDefault.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testServerConfigViewDefault.1.png; sourceTree = "<group>"; };
 		E9411DFF7B55CF59ECFF0614 /* FormLabelRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormLabelRow.swift; sourceTree = "<group>"; };
 		E942AEC1CD06EC9AAAB55CEB /* PlanQuotasVo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlanQuotasVo.swift; sourceTree = "<group>"; };
-		E947E53DEA905BDBA4330780 /* en */ = {isa = PBXFileReference; name = en; path = en.lproj/voice_note_procurement.m4a; sourceTree = "<group>"; };
+		E947E53DEA905BDBA4330780 /* en */ = {isa = PBXFileReference; lastKnownFileType = file; name = en; path = en.lproj/voice_note_procurement.m4a; sourceTree = "<group>"; };
 		E98B68137F1F611196FAEAD6 /* TagCloudMainContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagCloudMainContent.swift; sourceTree = "<group>"; };
 		E9942F81B14C0062D145574D /* SpotlightService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightService.swift; sourceTree = "<group>"; };
 		E9998E1BE95E800CF1515D41 /* ZhiYuWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZhiYuWatchApp.swift; sourceTree = "<group>"; };
@@ -8655,6 +8657,7 @@
 				C3B31BE8D03CDA71C15E602F /* NetworkClient.swift */,
 				0BBACC9C467DD88E737F5E2D /* RemoteConfigService.swift */,
 				6F7E7F015287FFF98F086671 /* Models */,
+				9B82FBA29B09593AD5841024 /* SelfSignedSessionDelegateProvider.swift */,
 			);
 			path = Network;
 			sourceTree = "<group>";
@@ -9364,8 +9367,6 @@
 				14F5B42A1AF2DD2E4CDBD0BC /* PBXTargetDependency */,
 			);
 			name = ZhiYuWatchTests;
-			packageProductDependencies = (
-			);
 			productName = ZhiYuWatchTests;
 			productReference = B84C2651B064CBE7EDA3E029 /* ZhiYuWatchTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -9381,8 +9382,6 @@
 			dependencies = (
 			);
 			name = ZhiYuMacTests;
-			packageProductDependencies = (
-			);
 			productName = ZhiYuMacTests;
 			productReference = 2511A3BFC59EA7B984445CCC /* ZhiYuMacTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -9549,16 +9548,10 @@
 					6408FAB740B3056A6CC305BA = {
 						DevelopmentTeam = XSC749SK6J;
 					};
-					67D028F10F307E1351F7262E = {
-						DevelopmentTeam = XSC749SK6J;
-					};
 					7A6CFC0442842DC91A9C4990 = {
 						DevelopmentTeam = XSC749SK6J;
 					};
 					CA36AA72CE67A8D6DE96055E = {
-						DevelopmentTeam = XSC749SK6J;
-					};
-					E56CC6F666A8D6AEEA068124 = {
 						DevelopmentTeam = XSC749SK6J;
 					};
 				};
@@ -9583,21 +9576,21 @@
 			mainGroup = F7830C324A588F24A3F73C4A;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				AA534F88156CA7BFF2CB567E /* XCLocalSwiftPackageReference "/Users/constantine/Documents/work/code/opensrc/swift/GRDB.swift" */,
-				24EC745229D6F1414778BF5F /* XCLocalSwiftPackageReference "/Users/constantine/Documents/work/code/opensrc/swift/GoogleSignIn-iOS" */,
-				CB0DC0CDF3D8D056150CB1F8 /* XCLocalSwiftPackageReference "/Users/constantine/Documents/work/code/opensrc/swift/lottie-ios" */,
-				303F6819A350D0E794D9CCD1 /* XCLocalSwiftPackageReference "/Users/constantine/Documents/work/code/opensrc/swift/PartialJSON" */,
-				526A4682863E0FBB114FFD1E /* XCLocalSwiftPackageReference "/Users/constantine/Documents/work/code/opensrc/swift/swift-snapshot-testing" */,
-				0157566A8E4BFC5EDAF2FBA8 /* XCLocalSwiftPackageReference "/Users/constantine/Documents/work/code/opensrc/swift/SwiftJSONSanitizer" */,
-				6565B68099C6F4D6DCA6A41C /* XCLocalSwiftPackageReference "/Users/constantine/Documents/work/code/opensrc/swift/swift-markdown" */,
-				857C804B1848FEE87ED8CF1E /* XCLocalSwiftPackageReference "/Users/constantine/Documents/work/code/opensrc/swift/swift-markdown-ui" */,
-				E82C45EAD713EA155022E2EA /* XCLocalSwiftPackageReference "Packages/UFPCore" */,
-				A1102E25593CF9B1AA242023 /* XCLocalSwiftPackageReference "Packages/UFPDesignSystem" */,
-				2BA8038BE3D0ED8543110DEB /* XCLocalSwiftPackageReference "Packages/UFPStorage" */,
-				98635B7EDB3EF051A1B6CC5A /* XCLocalSwiftPackageReference "/Users/constantine/Documents/work/code/opensrc/swift/ZIPFoundation" */,
-				A123B3FF54CA9DAA337BD361 /* XCLocalSwiftPackageReference "Packages/ZhiYuAICore" */,
-				E3F7DE8EA655157F993A7D29 /* XCLocalSwiftPackageReference "Packages/ZhiYuDomain" */,
-				5DB841C5334235DD8D829B65 /* XCLocalSwiftPackageReference "Packages/ZhiYuFeatures" */,
+				AA534F88156CA7BFF2CB567E /* XCLocalSwiftPackageReference "GRDB.swift" */,
+				24EC745229D6F1414778BF5F /* XCLocalSwiftPackageReference "GoogleSignIn-iOS" */,
+				CB0DC0CDF3D8D056150CB1F8 /* XCLocalSwiftPackageReference "lottie-ios" */,
+				303F6819A350D0E794D9CCD1 /* XCLocalSwiftPackageReference "PartialJSON" */,
+				526A4682863E0FBB114FFD1E /* XCLocalSwiftPackageReference "swift-snapshot-testing" */,
+				0157566A8E4BFC5EDAF2FBA8 /* XCLocalSwiftPackageReference "SwiftJSONSanitizer" */,
+				6565B68099C6F4D6DCA6A41C /* XCLocalSwiftPackageReference "swift-markdown" */,
+				857C804B1848FEE87ED8CF1E /* XCLocalSwiftPackageReference "swift-markdown-ui" */,
+				E82C45EAD713EA155022E2EA /* XCLocalSwiftPackageReference "UFPCore" */,
+				A1102E25593CF9B1AA242023 /* XCLocalSwiftPackageReference "UFPDesignSystem" */,
+				2BA8038BE3D0ED8543110DEB /* XCLocalSwiftPackageReference "UFPStorage" */,
+				98635B7EDB3EF051A1B6CC5A /* XCLocalSwiftPackageReference "ZIPFoundation" */,
+				A123B3FF54CA9DAA337BD361 /* XCLocalSwiftPackageReference "ZhiYuAICore" */,
+				E3F7DE8EA655157F993A7D29 /* XCLocalSwiftPackageReference "ZhiYuDomain" */,
+				5DB841C5334235DD8D829B65 /* XCLocalSwiftPackageReference "ZhiYuFeatures" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = CCFAD42D3B309C34A67CC37B /* Products */;
@@ -12484,6 +12477,7 @@
 				034B9431F359B6154EFED00C /* iOSSpotlightIndexer.swift in Sources */,
 				7923E14DD5E2FF3A621A772C /* iOSURLOpenerService.swift in Sources */,
 				4BBF6B71EE8BD14D0FEE0367 /* iOSWatchSyncService.swift in Sources */,
+				B086029062FA072851E313FA /* SelfSignedSessionDelegateProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -12785,7 +12779,7 @@
 					"@loader_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 27.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.zhiyu.app.ZhiYuMacTests;
+				PRODUCT_BUNDLE_IDENTIFIER = top.izhiyu.app.ZhiYuMacTests;
 				SDKROOT = macosx;
 			};
 			name = Debug;
@@ -12799,7 +12793,7 @@
 				INFOPLIST_KEY_WKApplication = YES;
 				INFOPLIST_KEY_WKWatchKitApp = YES;
 				INFOPLIST_KEY_WKWatchOnly = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.zhiyu.app.watch;
+				PRODUCT_BUNDLE_IDENTIFIER = top.izhiyu.app.watch;
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 4;
@@ -12809,9 +12803,8 @@
 		38C03A640871817FE6C90EBB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGNING_ALLOWED = NO;
-				CODE_SIGNING_REQUIRED = NO;
 				CODE_SIGN_ENTITLEMENTS = Sources/ZhiYuWidgets.entitlements;
+				DEVELOPMENT_TEAM = 8A472TXX33;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Sources/Platforms/iOS/Widgets/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -12820,7 +12813,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				NSSupportsLiveActivities = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.zhiyu.app.widgets;
+				PRODUCT_BUNDLE_IDENTIFIER = top.izhiyu.app.widgets;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = WIDGET;
@@ -12840,7 +12833,7 @@
 					"@loader_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 27.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.zhiyu.app.ZhiYuMacTests;
+				PRODUCT_BUNDLE_IDENTIFIER = top.izhiyu.app.ZhiYuMacTests;
 				SDKROOT = macosx;
 			};
 			name = Release;
@@ -12855,7 +12848,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.zhiyu.app.ZhiYuTests;
+				PRODUCT_BUNDLE_IDENTIFIER = top.izhiyu.app.ZhiYuTests;
 				SDKROOT = iphoneos;
 				SWIFT_STRICT_CONCURRENCY = minimal;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -12876,7 +12869,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.zhiyu.app.mac;
+				PRODUCT_BUNDLE_IDENTIFIER = top.izhiyu.app.mac;
 				SDKROOT = iphoneos;
 				SUPPORTS_MACCATALYST = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "Sources/App/ZhiYu-Bridging-Header.h";
@@ -12926,7 +12919,10 @@
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
-				FRAMEWORK_SEARCH_PATHS = "$(inherited) $(PROJECT_DIR)/Frameworks";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Frameworks",
+				);
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -12941,7 +12937,12 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				HEADER_SEARCH_PATHS = "$(inherited) /Users/constantine/Documents/work/code/opensrc/swift/swift-cmark/src/include /Users/constantine/Documents/work/code/opensrc/swift/swift-cmark/extensions/include /Users/constantine/Documents/work/code/opensrc/swift/swift-markdown/Sources/CAtomic/include";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"/Users/constantine/Documents/work/code/opensrc/swift/swift-cmark/src/include",
+					"/Users/constantine/Documents/work/code/opensrc/swift/swift-cmark/extensions/include",
+					"/Users/constantine/Documents/work/code/opensrc/swift/swift-markdown/Sources/CAtomic/include",
+				);
 				INFOPLIST_FILE = Sources/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
 				MACOSX_DEPLOYMENT_TARGET = 27.0;
@@ -12970,7 +12971,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.zhiyu.app.ZhiYuTests;
+				PRODUCT_BUNDLE_IDENTIFIER = top.izhiyu.app.ZhiYuTests;
 				SDKROOT = iphoneos;
 				SWIFT_STRICT_CONCURRENCY = minimal;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -12987,7 +12988,7 @@
 				INFOPLIST_KEY_WKApplication = YES;
 				INFOPLIST_KEY_WKWatchKitApp = YES;
 				INFOPLIST_KEY_WKWatchOnly = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.zhiyu.app.watch;
+				PRODUCT_BUNDLE_IDENTIFIER = top.izhiyu.app.watch;
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 4;
@@ -13001,6 +13002,7 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_ENTITLEMENTS = Sources/ZhiYu.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = 8A472TXX33;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"Frameworks\"",
@@ -13011,7 +13013,7 @@
 					"@executable_path/Frameworks",
 				);
 				NSSupportsLiveActivities = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.zhiyu.app;
+				PRODUCT_BUNDLE_IDENTIFIER = top.izhiyu.app;
 				SDKROOT = iphoneos;
 				SWIFT_OBJC_BRIDGING_HEADER = "Sources/App/ZhiYu-Bridging-Header.h";
 				SWIFT_STRICT_CONCURRENCY = targeted;
@@ -13032,7 +13034,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.zhiyu.app.mac;
+				PRODUCT_BUNDLE_IDENTIFIER = top.izhiyu.app.mac;
 				SDKROOT = iphoneos;
 				SUPPORTS_MACCATALYST = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "Sources/App/ZhiYu-Bridging-Header.h";
@@ -13047,6 +13049,7 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_ENTITLEMENTS = Sources/ZhiYu.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = 8A472TXX33;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"Frameworks\"",
@@ -13057,7 +13060,7 @@
 					"@executable_path/Frameworks",
 				);
 				NSSupportsLiveActivities = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.zhiyu.app;
+				PRODUCT_BUNDLE_IDENTIFIER = top.izhiyu.app;
 				SDKROOT = iphoneos;
 				SWIFT_OBJC_BRIDGING_HEADER = "Sources/App/ZhiYu-Bridging-Header.h";
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -13073,7 +13076,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.zhiyu.app.ZhiYuUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = top.izhiyu.app.ZhiYuUITests;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = ZhiYu;
@@ -13083,9 +13086,8 @@
 		E669F5AFAB98EA4BF680C441 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGNING_ALLOWED = NO;
-				CODE_SIGNING_REQUIRED = NO;
 				CODE_SIGN_ENTITLEMENTS = Sources/ZhiYuWidgets.entitlements;
+				DEVELOPMENT_TEAM = 8A472TXX33;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Sources/Platforms/iOS/Widgets/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -13094,7 +13096,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				NSSupportsLiveActivities = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.zhiyu.app.widgets;
+				PRODUCT_BUNDLE_IDENTIFIER = top.izhiyu.app.widgets;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = WIDGET;
@@ -13144,7 +13146,10 @@
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
-				FRAMEWORK_SEARCH_PATHS = "$(inherited) $(PROJECT_DIR)/Frameworks";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Frameworks",
+				);
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -13153,7 +13158,12 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				HEADER_SEARCH_PATHS = "$(inherited) /Users/constantine/Documents/work/code/opensrc/swift/swift-cmark/src/include /Users/constantine/Documents/work/code/opensrc/swift/swift-cmark/extensions/include /Users/constantine/Documents/work/code/opensrc/swift/swift-markdown/Sources/CAtomic/include";
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"/Users/constantine/Documents/work/code/opensrc/swift/swift-cmark/src/include",
+					"/Users/constantine/Documents/work/code/opensrc/swift/swift-cmark/extensions/include",
+					"/Users/constantine/Documents/work/code/opensrc/swift/swift-markdown/Sources/CAtomic/include",
+				);
 				INFOPLIST_FILE = Sources/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
 				MACOSX_DEPLOYMENT_TARGET = 27.0;
@@ -13180,7 +13190,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.zhiyu.app.ZhiYuWatchTests;
+				PRODUCT_BUNDLE_IDENTIFIER = top.izhiyu.app.ZhiYuWatchTests;
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 4;
@@ -13197,7 +13207,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.zhiyu.app.ZhiYuUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = top.izhiyu.app.ZhiYuUITests;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = ZhiYu;
@@ -13213,7 +13223,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.zhiyu.app.ZhiYuWatchTests;
+				PRODUCT_BUNDLE_IDENTIFIER = top.izhiyu.app.ZhiYuWatchTests;
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 4;
@@ -13308,63 +13318,63 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		0157566A8E4BFC5EDAF2FBA8 /* XCLocalSwiftPackageReference "/Users/constantine/Documents/work/code/opensrc/swift/SwiftJSONSanitizer" */ = {
+		0157566A8E4BFC5EDAF2FBA8 /* XCLocalSwiftPackageReference "SwiftJSONSanitizer" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = /Users/constantine/Documents/work/code/opensrc/swift/SwiftJSONSanitizer;
 		};
-		24EC745229D6F1414778BF5F /* XCLocalSwiftPackageReference "/Users/constantine/Documents/work/code/opensrc/swift/GoogleSignIn-iOS" */ = {
+		24EC745229D6F1414778BF5F /* XCLocalSwiftPackageReference "GoogleSignIn-iOS" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = "/Users/constantine/Documents/work/code/opensrc/swift/GoogleSignIn-iOS";
 		};
-		2BA8038BE3D0ED8543110DEB /* XCLocalSwiftPackageReference "Packages/UFPStorage" */ = {
+		2BA8038BE3D0ED8543110DEB /* XCLocalSwiftPackageReference "UFPStorage" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/UFPStorage;
 		};
-		303F6819A350D0E794D9CCD1 /* XCLocalSwiftPackageReference "/Users/constantine/Documents/work/code/opensrc/swift/PartialJSON" */ = {
+		303F6819A350D0E794D9CCD1 /* XCLocalSwiftPackageReference "PartialJSON" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = /Users/constantine/Documents/work/code/opensrc/swift/PartialJSON;
 		};
-		526A4682863E0FBB114FFD1E /* XCLocalSwiftPackageReference "/Users/constantine/Documents/work/code/opensrc/swift/swift-snapshot-testing" */ = {
+		526A4682863E0FBB114FFD1E /* XCLocalSwiftPackageReference "swift-snapshot-testing" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = "/Users/constantine/Documents/work/code/opensrc/swift/swift-snapshot-testing";
 		};
-		5DB841C5334235DD8D829B65 /* XCLocalSwiftPackageReference "Packages/ZhiYuFeatures" */ = {
+		5DB841C5334235DD8D829B65 /* XCLocalSwiftPackageReference "ZhiYuFeatures" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/ZhiYuFeatures;
 		};
-		6565B68099C6F4D6DCA6A41C /* XCLocalSwiftPackageReference "/Users/constantine/Documents/work/code/opensrc/swift/swift-markdown" */ = {
+		6565B68099C6F4D6DCA6A41C /* XCLocalSwiftPackageReference "swift-markdown" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = "/Users/constantine/Documents/work/code/opensrc/swift/swift-markdown";
 		};
-		857C804B1848FEE87ED8CF1E /* XCLocalSwiftPackageReference "/Users/constantine/Documents/work/code/opensrc/swift/swift-markdown-ui" */ = {
+		857C804B1848FEE87ED8CF1E /* XCLocalSwiftPackageReference "swift-markdown-ui" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = "/Users/constantine/Documents/work/code/opensrc/swift/swift-markdown-ui";
 		};
-		98635B7EDB3EF051A1B6CC5A /* XCLocalSwiftPackageReference "/Users/constantine/Documents/work/code/opensrc/swift/ZIPFoundation" */ = {
+		98635B7EDB3EF051A1B6CC5A /* XCLocalSwiftPackageReference "ZIPFoundation" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = /Users/constantine/Documents/work/code/opensrc/swift/ZIPFoundation;
 		};
-		A1102E25593CF9B1AA242023 /* XCLocalSwiftPackageReference "Packages/UFPDesignSystem" */ = {
+		A1102E25593CF9B1AA242023 /* XCLocalSwiftPackageReference "UFPDesignSystem" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/UFPDesignSystem;
 		};
-		A123B3FF54CA9DAA337BD361 /* XCLocalSwiftPackageReference "Packages/ZhiYuAICore" */ = {
+		A123B3FF54CA9DAA337BD361 /* XCLocalSwiftPackageReference "ZhiYuAICore" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/ZhiYuAICore;
 		};
-		AA534F88156CA7BFF2CB567E /* XCLocalSwiftPackageReference "/Users/constantine/Documents/work/code/opensrc/swift/GRDB.swift" */ = {
+		AA534F88156CA7BFF2CB567E /* XCLocalSwiftPackageReference "GRDB.swift" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = /Users/constantine/Documents/work/code/opensrc/swift/GRDB.swift;
 		};
-		CB0DC0CDF3D8D056150CB1F8 /* XCLocalSwiftPackageReference "/Users/constantine/Documents/work/code/opensrc/swift/lottie-ios" */ = {
+		CB0DC0CDF3D8D056150CB1F8 /* XCLocalSwiftPackageReference "lottie-ios" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = "/Users/constantine/Documents/work/code/opensrc/swift/lottie-ios";
 		};
-		E3F7DE8EA655157F993A7D29 /* XCLocalSwiftPackageReference "Packages/ZhiYuDomain" */ = {
+		E3F7DE8EA655157F993A7D29 /* XCLocalSwiftPackageReference "ZhiYuDomain" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/ZhiYuDomain;
 		};
-		E82C45EAD713EA155022E2EA /* XCLocalSwiftPackageReference "Packages/UFPCore" */ = {
+		E82C45EAD713EA155022E2EA /* XCLocalSwiftPackageReference "UFPCore" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/UFPCore;
 		};

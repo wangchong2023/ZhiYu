@@ -215,6 +215,60 @@ final class PluginRuntimeTests: XCTestCase {
         XCTAssertEqual(runtime.pluginResourceUsage["usage.track"]?.callCount, 1)
     }
 
+    // MARK: - consumeAICallQuota
+
+    func testConsumeAICallQuota_allowsCallsWithinWindowLimit() {
+        let limit = PluginConstants.Sandbox.maxCallsPerWindow
+        for index in 0..<limit {
+            XCTAssertTrue(
+                runtime.consumeAICallQuota(pluginID: "ai.limit.\(index)"),
+                "窗口内未超上限的调用应被允许"
+            )
+        }
+    }
+
+    func testConsumeAICallQuota_deniesCallBeyondWindowLimit() {
+        let limit = PluginConstants.Sandbox.maxCallsPerWindow
+        let pluginID = "ai.over"
+        for _ in 0..<limit {
+            XCTAssertTrue(runtime.consumeAICallQuota(pluginID: pluginID))
+        }
+        XCTAssertFalse(
+            runtime.consumeAICallQuota(pluginID: pluginID),
+            "超过窗口上限后的调用应被拒绝"
+        )
+    }
+
+    func testConsumeAICallQuota_countsAreIsolatedPerPlugin() {
+        let limit = PluginConstants.Sandbox.maxCallsPerWindow
+        let pluginA = "ai.isolated.a"
+        let pluginB = "ai.isolated.b"
+        for _ in 0..<limit {
+            XCTAssertTrue(runtime.consumeAICallQuota(pluginID: pluginA))
+        }
+        XCTAssertFalse(runtime.consumeAICallQuota(pluginID: pluginA))
+        XCTAssertTrue(
+            runtime.consumeAICallQuota(pluginID: pluginB),
+            "不同插件的 AI 调用配额应相互独立"
+        )
+    }
+
+    func testReset_clearsAICallQuotaCounters() {
+        let limit = PluginConstants.Sandbox.maxCallsPerWindow
+        let pluginID = "ai.reset"
+        for _ in 0..<limit {
+            _ = runtime.consumeAICallQuota(pluginID: pluginID)
+        }
+        XCTAssertFalse(runtime.consumeAICallQuota(pluginID: pluginID))
+
+        runtime.reset()
+
+        XCTAssertTrue(
+            runtime.consumeAICallQuota(pluginID: pluginID),
+            "reset 后应清空 AI 调用计数，允许再次调用"
+        )
+    }
+
     // MARK: - reset
 
     func testReset_clearsAllState() {

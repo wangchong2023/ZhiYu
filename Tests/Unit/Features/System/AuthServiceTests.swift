@@ -305,7 +305,7 @@ final class AuthServiceTests: XCTestCase {
             logoutCallCount += 1
             let url = try XCTUnwrap(request.url)
             
-            if request.url?.path == "/api/v1/auth/logout" {
+            if request.url?.path == APIPaths.logoutPath {
                 // 返回 401 模拟 Token 过期
                 let response = try XCTUnwrap(HTTPURLResponse(url: url, statusCode: 401, httpVersion: nil, headerFields: nil))
                 let apiResponse: ApiResponse<EmptyData> = ApiResponse(code: 40101, message: "Unauthorized", data: nil, requestId: "req", timestamp: 123)
@@ -359,7 +359,7 @@ final class AuthServiceTests: XCTestCase {
 
         // 2. 模拟注销接口拦截
         TestMockURLProtocol.requestHandler = { request in
-            XCTAssertEqual(request.url?.path, "/api/v1/auth/logout")
+            XCTAssertEqual(request.url?.path, APIPaths.logoutPath)
             let url = try XCTUnwrap(request.url)
             let response = try XCTUnwrap(HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: nil))
             return (response, nil)
@@ -394,7 +394,7 @@ final class AuthServiceTests: XCTestCase {
         // 2. 拦截并校验登出请求
         let expectation = XCTestExpectation(description: "后端成功收到注销请求")
         TestMockURLProtocol.requestHandler = { request in
-            XCTAssertEqual(request.url?.path, "/api/v1/auth/logout")
+            XCTAssertEqual(request.url?.path, APIPaths.logoutPath)
             XCTAssertEqual(request.httpMethod, "POST")
 
             if let bodyData = request.httpBodyStreamData() ?? request.httpBody,
@@ -440,7 +440,7 @@ final class AuthServiceTests: XCTestCase {
                 headerFields: ["Content-Type": "application/json"]
             ))
 
-            if request.url?.path == "/api/v1/auth/user/profile" {
+            if request.url?.path == APIPaths.userProfilePath {
                 // 后端返回空字符串 email 和 mobile
                 let json: [String: Any] = [
                     "code": 0,
@@ -505,7 +505,7 @@ final class AuthServiceTests: XCTestCase {
                 headerFields: ["Content-Type": "application/json"]
             ))
 
-            if request.url?.path == "/api/v1/auth/user/profile" {
+            if request.url?.path == APIPaths.userProfilePath {
                 let json: [String: Any] = [
                     "code": 0,
                     "message": "success",

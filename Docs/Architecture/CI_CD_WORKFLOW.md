@@ -30,8 +30,8 @@ flowchart LR
 
 ```
 ┌──────────────┐    push / MR     ┌──────────────────────┐    Job Queue   ┌──────────────────────────┐
-│  GitLab CE   │ ───────────────→ │ GitLab CI/CD Engine  │ ─────────────→ │ macOS Shell Runner       │
-│  :8480 (Web) │                  │ (.gitlab-ci.yml)     │                │ tags: macos,shell,xcode  │
+│  GitLab CE   │ ───────────────→ │ GitLab CI/CD Engine  │ ─────────────→ │ macOS Xcode Runner       │
+│  :8480 (Web) │                  │ (.gitlab-ci.yml)     │                │ tags: zhiyu-ios          │
 └──────────────┘                  └──────────────────────┘                └────────────┬─────────────┘
                                                                                        │
                                                                                        ▼
@@ -60,7 +60,7 @@ swift test --package-path Packages/ZhiYuFeatures
 | 组件 | 运行环境 | 访问/标识 | 职责 |
 |------|------|------|------|
 | **GitLab CE** | Docker Compose | `http://127.0.0.1:8480` | 代码托管、MR 管理、CI 控制台 |
-| **GitLab Runner** | macOS launchd 原生服务 | `macos-shell-runner` | 执行 iOS/macOS/watchOS 构建与测试 |
+| **GitLab Runner** | macOS launchd 原生服务 | `macos-xcode-runner`（tags: `zhiyu-ios`） | 执行 iOS/macOS/watchOS 构建与测试 |
 
 ---
 
@@ -369,6 +369,6 @@ Tools/
 | 症状 | 可能原因 | 检查方式 |
 |------|----------|---------|
 | 推送未触发流水线 | GitLab Webhook / CI 触发失效 | `curl http://127.0.0.1:8480/api/v4/projects/constantine%2FZhiYu`（验证 GitLab 可达） |
-| Agent 未接管任务 | 标签不匹配 | 确认 Runner `tags: macos,shell,xcode` 与 `.gitlab-ci.yml` job `tags` 一致 |
+| Agent 未接管任务 | 标签不匹配 | 确认 Runner `tags: zhiyu-ios` 与 `.gitlab-ci.yml` job `tags` 一致 |
 | 端口冲突 | healthcheck 端口被占 | `lsof -i :3001` / `lsof -i :3002` |
 | Woodpecker Server 无响应 | 容器未运行 | `docker ps \| grep woodpecker-server` |

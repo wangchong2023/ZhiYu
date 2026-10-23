@@ -67,8 +67,11 @@ final class PluginRuntime: @unchecked Sendable {
 
     init() {}
 
-    /// 限流计数器
+    /// 拦截管道限流计数器
     private var pluginCallCounts: [String: Int] = [:]
+
+    /// AI 调用限流计数器（requestAIAccess 专用，与拦截管道隔离）
+    private var aiCallCounts: [String: Int] = [:]
 
     // MARK: - 配置常量
 
@@ -254,6 +257,27 @@ final class PluginRuntime: @unchecked Sendable {
         return result
     }
 
+    /// 检查并消耗一次插件 AI 调用配额（令牌桶限流）
+    /// 供 requestAIAccess 接入，对齐 PLUGIN_MARKET_HLD 对 aiAccess 的分钟级滑动窗口约束。
+    /// - Parameter pluginID: 插件 ID
+    /// - Returns: 返回 false 表示超出窗口上限，应拒绝本次调用
+    func consumeAICallQuota(pluginID: String) -> Bool {
+        let count = aiCallCounts[pluginID] ?? 0
+        guard count < maxCallsPerWindow else {
+            Logger.shared.warning(" [Throttling] \(pluginID) AI 调用超限（\(maxCallsPerWindow)/\(Int(throttlingWindow))s），已拒绝")
+            return false
+        }
+        aiCallCounts[pluginID] = count + 1
+        if count == 0 {
+            // 窗口起点调度一次归零，避免计数永久累积
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: UInt64(throttlingWindow * 1_000_000_000))
+                self.aiCallCounts[pluginID] = 0
+            }
+        }
+        return true
+    }
+
     /// 重置运行时状态（仅用于测试）
     func reset() {
         for plugin in registry.plugins {
@@ -269,6 +293,7 @@ final class PluginRuntime: @unchecked Sendable {
         suspendedPluginIDs.removeAll()
         keyStore?.removeObject(forKey: AppConstants.Keys.Storage.suspendedPlugins)
         pluginCallCounts.removeAll()
+        aiCallCounts.removeAll()
         pluginResourceUsage.removeAll()
     }
 
@@ -344,7 +369,14 @@ private struct PluginContextImpl: PluginContext {
             Logger.shared.error(" []" + "  \(manifest.id)" + "  LLM" + " manifest " + " 'llm' ", error: nil)
             return nil
         }
-        return try? await llmService.generate(prompt: prompt, systemPrompt: "")
+        // 安全强化：AI 配额限流（对齐 PLUGIN_MARKET_HLD 对 aiAccess 的分钟级滑动窗口约束）
+        guard registry.runtime.consumeAICallQuota(pluginID: manifest.id) else {
+            Logger.shared.error(" []" + "  \(manifest.id)" + "  AI 调用被限流拒绝", error: nil)
+            return nil
+        }
+        // 安全强化：插件为不可信代码，prompt 应用最高防护（定界符转义 + PII 脱敏）
+        let safePrompt = PromptSecurityGuard.shared.sanitize(prompt)
+        return try? await llmService.generate(prompt: safePrompt, systemPrompt: "")
     }
 
     /// 查询页面
