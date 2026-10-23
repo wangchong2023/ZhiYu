@@ -35,6 +35,11 @@ enum AppConfig {
             /// GitHub OAuth Client ID
             case gitHubOAuthClientId = "github_oauth_client_id"
         }
+
+        enum Security: String {
+            /// 是否信任自签名证书（仅本地开发/联调开启，生产必须关闭）
+            case allowSelfSignedCert = "allow_self_signed_cert"
+        }
         
         enum Performance: String {
             case searchDebounce = "search_debounce_ms"
@@ -71,6 +76,19 @@ enum AppConfig {
     private static func getPerformance<T>(_ key: ConfigKey.Performance, default: T) -> T {
         (configData["performance"] as? [String: Any])?[key.rawValue] as? T ?? `default`
     }
+
+    /// 获取 Network 段布尔值（JSON 值可能为 Bool，兼容字符串）
+    /// - Parameter key: key
+    /// - Parameter default: default
+    /// - Returns: 布尔值
+    private static func getSecurityBool(_ key: ConfigKey.Security, default: Bool) -> Bool {
+        guard let raw = (configData["security"] as? [String: Any])?[key.rawValue] else {
+            return `default`
+        }
+        if let bool = raw as? Bool { return bool }
+        if let str = raw as? String { return str == "true" }
+        return `default`
+    }
     
     /// 获取Storage
     /// - Parameter key: key
@@ -106,6 +124,9 @@ enum AppConfig {
     static var deepseekDefaultURL: String { llmProviderURL(for: CoreConstants.LLMProvider.deepseek) }
     
     static var backendBaseURL: String { getNetwork(.backendBaseURL) }
+    
+    /// 是否信任自签名证书（本地开发/联调用，生产 AppConfig.json 必须为 false）
+    static var allowSelfSignedCert: Bool { getSecurityBool(.allowSelfSignedCert, default: false) }
     
     /// GitHub OAuth Client ID（从 AppConfig.json 读取，为空时 GitHub 登录不可用）
     static var gitHubOAuthClientId: String { getNetwork(.gitHubOAuthClientId) }
