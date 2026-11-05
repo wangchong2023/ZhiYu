@@ -19,7 +19,7 @@ final class WebScraperProcessorTests: XCTestCase {
     
     override func setUp() async throws {
         try await super.setUp()
-        scraper = WebScraperProcessor()
+        scraper = WebScraperProcessor(chainHead: MockScraperHandler(next: nil))
     }
     
     override func tearDown() async throws {
@@ -43,7 +43,7 @@ final class WebScraperProcessorTests: XCTestCase {
     /// 验证当 Jina API 与直连抓取都失败（模拟 Jina 挂掉）时，级联自愈落入 Level 4 兜底备份模板 (TC-ING-03)
     func testCascadeGrabDisasterRecovery() async throws {
         // 使用一个由于域名无法解析必然失败的无效地址
-        let failedURL = "http://\(ProcessorConstants.WebScraper.invalidHostTestDomain)"
+        let failedURL = "http://\(WebScraperMockConstants.invalidHostTestDomain)"
 
         let (markdown, title) = try await scraper.fetchMarkdown(from: failedURL)
         

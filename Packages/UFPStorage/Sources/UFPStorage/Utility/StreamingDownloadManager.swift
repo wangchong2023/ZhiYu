@@ -42,7 +42,8 @@ public actor StreamingDownloadManager {
     /// 任务 ID 到实时下载速率计算器的追踪映射表
     private var speedTrackers: [String: SpeedTrackerState] = [:]
     /// 任务 ID 到其异步流事件通道 (Continuation) 的订阅分发映射表
-    private var continuations: [String: AsyncStream<StreamingDownloadState>.Continuation] = [:]
+    /// 槽位 value 携带订阅身份 token，用于 onTermination 时的身份校验式清理
+    private var continuations: [String: (token: UUID, continuation: AsyncStream<StreamingDownloadState>.Continuation)] = [:]
 
     private struct SpeedTrackerState {
         let lastBytes: Int64
@@ -244,17 +245,20 @@ public actor StreamingDownloadManager {
     /// 监听特定任务的实时状态与进度变化流
     public func observeDownloadState(for taskID: String) async -> AsyncStream<StreamingDownloadState> {
         return AsyncStream { continuation in
-            // 保存当前事件通道
-            continuations[taskID] = continuation
+            // 为本次订阅分配唯一身份 token，供 onTermination 身份校验式清理
+            let token = UUID()
+            // 保存当前事件通道（后订阅者覆盖先订阅者，符合单观察者槽位语义）
+            continuations[taskID] = (token, continuation)
 
             // 首次订阅时推送当前已有状态
             let currentState = states[taskID] ?? .failed(error: "Idle")
             continuation.yield(currentState)
 
-            // 订阅断开时自动清理
+            // 订阅断开时自动清理 — 仅当当前槽位 token 仍与本订阅匹配时才删除，
+            // 避免续流槽位被后订阅者覆盖后，先订阅者终止误删后订阅者的通道
             continuation.onTermination = { [weak self] _ in
                 Task { [weak self] in
-                    await self?.removeContinuation(for: taskID)
+                    await self?.removeContinuation(for: taskID, token: token)
                 }
             }
         }
@@ -275,21 +279,24 @@ public actor StreamingDownloadManager {
     /// 更新下载进度百分比与实时下载速率
     public func updateProgress(for taskID: String, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
         guard totalBytesExpectedToWrite > 0 else { return }
-        let progress = Double(totalBytesWritten) / Double(totalBytesExpectedToWrite)
+        // 防御 Content-Length 不准确 / chunked 响应 / 断点续传累计超限导致的字节越界：
+        // 将已写字节约束在 [0, expected]，进度百分比 clamp 到 [0,1]，避免 UI 显示 >100%
+        let clampedWritten = min(max(totalBytesWritten, 0), totalBytesExpectedToWrite)
+        let progress = Double(clampedWritten) / Double(totalBytesExpectedToWrite)
         let now = Date()
 
         var calculatedSpeed: Double = 0
         if let tracker = speedTrackers[taskID] {
             let timeDiff = now.timeIntervalSince(tracker.lastTime)
             if timeDiff >= StreamingDownloadConstants.speedSampleIntervalSeconds {
-                let bytesDiff = Double(totalBytesWritten - tracker.lastBytes)
+                let bytesDiff = Double(clampedWritten - tracker.lastBytes)
                 calculatedSpeed = max(0, bytesDiff / timeDiff)
-                speedTrackers[taskID] = SpeedTrackerState(lastBytes: totalBytesWritten, lastTime: now, currentSpeed: calculatedSpeed)
+                speedTrackers[taskID] = SpeedTrackerState(lastBytes: clampedWritten, lastTime: now, currentSpeed: calculatedSpeed)
             } else {
                 calculatedSpeed = tracker.currentSpeed
             }
         } else {
-            speedTrackers[taskID] = SpeedTrackerState(lastBytes: totalBytesWritten, lastTime: now, currentSpeed: 0)
+            speedTrackers[taskID] = SpeedTrackerState(lastBytes: clampedWritten, lastTime: now, currentSpeed: 0)
         }
 
         updateState(
@@ -297,7 +304,7 @@ public actor StreamingDownloadManager {
             to: .downloading(
                 progress: progress,
                 bytesPerSecond: calculatedSpeed,
-                downloadedBytes: totalBytesWritten,
+                downloadedBytes: clampedWritten,
                 totalBytes: totalBytesExpectedToWrite
             )
         )
@@ -336,6 +343,8 @@ public actor StreamingDownloadManager {
                 await self.clearActiveTask(for: taskID)
             } catch {
                 await self.updateState(for: taskID, to: .failed(error: "\(sandboxFailurePrefix) \(error.localizedDescription)"))
+                try? FileManager.default.removeItem(at: tempFileURL)
+                await self.clearActiveTask(for: taskID)
             }
         }
     }
@@ -356,6 +365,11 @@ public actor StreamingDownloadManager {
 
     // MARK: - 内部并发辅助工具方法
 
+    /// 只读状态观察点：底层 URLSession 是否已绑定 delegate（防止后台下载由于缺少 delegate 导致进度与完成事件丢失）。
+    public var hasSessionDelegate: Bool {
+        session.delegate != nil
+    }
+
     /// 获取指定任务的 SHA256 校验和
     public func getChecksum(for taskID: String) -> String? {
         return sha256Checksums[taskID]
@@ -371,12 +385,15 @@ public actor StreamingDownloadManager {
         states[taskID] = state
 
         // 瞬间向所有订阅的 AsyncStream 分发最新状态事件
-        if let continuation = continuations[taskID] {
-            continuation.yield(state)
+        if let entry = continuations[taskID] {
+            entry.continuation.yield(state)
         }
     }
 
-    private func removeContinuation(for taskID: String) {
+    /// 身份校验式删除续流：仅当当前槽位 token 仍与本订阅匹配时才清空。
+    /// 防止续流槽位被后订阅者覆盖后，已终止的旧订阅误删新订阅者的通道。
+    private func removeContinuation(for taskID: String, token: UUID) {
+        guard let current = continuations[taskID], current.token == token else { return }
         continuations[taskID] = nil
     }
 

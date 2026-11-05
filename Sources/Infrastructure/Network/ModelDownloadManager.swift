@@ -29,6 +29,13 @@ public actor ModelDownloadManager: ModelDownloadCapabilities {
     /// 沙盒分配失败前缀常量
     public static let sandboxAllocationFailedPrefix: String = "Sandbox storage allocation failed:"
 
+    /// 只读状态观察点：底层 session delegate 是否已正确绑定（防回归）
+    internal var hasSessionDelegate: Bool {
+        get async {
+            await streaming.hasSessionDelegate
+        }
+    }
+
     /// 全局单例注入，便于在 App 顶层会话绑定
     public static let shared = ModelDownloadManager()
 
@@ -40,13 +47,11 @@ public actor ModelDownloadManager: ModelDownloadCapabilities {
     private init() {
         let resumeDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("com.zhiyu.app.download.resume", isDirectory: true)
+        let config = URLSessionConfiguration.background(withIdentifier: "com.zhiyu.app.model.download")
+        config.isDiscretionary = false
+        config.sessionSendsLaunchEvents = true
         streaming = StreamingDownloadManager(
-            sessionFactory: { _ in
-                let config = URLSessionConfiguration.background(withIdentifier: "com.zhiyu.app.model.download")
-                config.isDiscretionary = false
-                config.sessionSendsLaunchEvents = true
-                return URLSession(configuration: config, delegate: nil, delegateQueue: nil)
-            },
+            configuration: config,
             resumeDataDirectory: {
                 try? FileManager.default.createDirectory(at: resumeDirectory, withIntermediateDirectories: true)
                 return resumeDirectory
@@ -124,11 +129,14 @@ public actor ModelDownloadManager: ModelDownloadCapabilities {
     public func observeDownloadState(for modelId: String) async -> AsyncStream<DownloadState> {
         let stream = await streaming.observeDownloadState(for: modelId)
         return AsyncStream { continuation in
-            Task {
+            let task = Task {
                 for await state in stream {
                     continuation.yield(bridge(state))
                 }
                 continuation.finish()
+            }
+            continuation.onTermination = { _ in
+                task.cancel()
             }
         }
     }

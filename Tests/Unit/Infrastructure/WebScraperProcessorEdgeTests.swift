@@ -105,7 +105,7 @@ final class WebScraperProcessorEdgeTests: XCTestCase {
     // MARK: - MockScraperHandler 路由
 
     func testMockHandler_paywallTestURL_returnsMockContent() async throws {
-        let processor = WebScraperProcessor()
+        let processor = WebScraperProcessor(chainHead: MockScraperHandler(next: nil))
         do {
             let result = try await processor.fetchMarkdown(from: "paywall-test.com")
             XCTAssertTrue(result.markdown.contains("mock premium content"))
@@ -117,8 +117,8 @@ final class WebScraperProcessorEdgeTests: XCTestCase {
     }
 
     func testMockHandler_invalidHostDomain_returnsMockRecovery() async throws {
-        let processor = WebScraperProcessor()
-        let result = try await processor.fetchMarkdown(from: ProcessorConstants.WebScraper.invalidHostTestDomain)
+        let processor = WebScraperProcessor(chainHead: MockScraperHandler(next: nil))
+        let result = try await processor.fetchMarkdown(from: WebScraperMockConstants.invalidHostTestDomain)
         XCTAssertTrue(result.markdown.contains("recovered content"))
         XCTAssertEqual(result.title, "Recovered Article Title")
     }
@@ -126,7 +126,7 @@ final class WebScraperProcessorEdgeTests: XCTestCase {
     // MARK: - URL 标准化
 
     func testFetchMarkdown_addsHttpsPrefix() async {
-        let processor = WebScraperProcessor()
+        let processor = WebScraperProcessor(chainHead: MockScraperHandler(next: nil))
         // paywall-test 是 Mock 节点，会拦截，验证 https:// 已被添加
         do {
             _ = try await processor.fetchMarkdown(from: "paywall-test.com")
@@ -139,7 +139,7 @@ final class WebScraperProcessorEdgeTests: XCTestCase {
     }
 
     func testFetchMarkdown_alreadyHasHttpPrefix_notDoubled() async {
-        let processor = WebScraperProcessor()
+        let processor = WebScraperProcessor(chainHead: MockScraperHandler(next: nil))
         do {
             _ = try await processor.fetchMarkdown(from: "http://paywall-test.com")
         } catch {

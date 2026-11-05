@@ -151,10 +151,10 @@ run_check "UFPCore 纯净化审计" \
     "python3 Tools/ios/audit-arch-ufpcore-purity.py" \
     || exit 1
 
-# 1.11 测试耦合反模式检测（非阻断 WARNING——历史遗留需逐步清理）
+# 1.11 测试耦合反模式检测（阻断——生产代码不得内嵌测试专用分支/Mock 类型）
 run_check "测试耦合反模式检测" \
-    "python3 Tools/ios/check-code-test-coupling.py" \
-    "false"
+    "python3 Tools/ios/check-code-test-coupling.py --strict" \
+    || exit 1
 
 # 1.12 快照测试环境注入检查（阻断——@Environment 遗漏注入会导致运行时崩溃）
 run_check "快照测试环境注入检查" \

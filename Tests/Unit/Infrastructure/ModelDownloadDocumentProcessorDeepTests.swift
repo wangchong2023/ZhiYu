@@ -16,6 +16,13 @@ import CommonCrypto
 /// 覆盖 ModelDownloadManager 未测试的 public actor 方法
 final class ModelDownloadManagerDeepTests: XCTestCase {
 
+    /// 验证生产单例 ModelDownloadManager.shared 的底层 URLSession 已绑定 Delegate，
+    /// 杜绝 sessionFactory 遗漏 delegate 导致下载进度与完成回调完全静默丢失的缺陷。
+    func testSharedInstanceHasSessionDelegate() async {
+        let hasDelegate = await ModelDownloadManager.shared.hasSessionDelegate
+        XCTAssertTrue(hasDelegate, "ModelDownloadManager.shared 的底层 session 必须绑定 delegate")
+    }
+
     /// updateState 分发状态到 continuation — 验证 yield 行为
     func testUpdateStateYieldsToContinuation() async {
         let manager = ModelDownloadManager.shared

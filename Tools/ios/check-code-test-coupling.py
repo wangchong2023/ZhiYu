@@ -50,6 +50,17 @@ EXEMPT_PATHS = {
     "Sources/Platforms",                   # 平台适配层
 }
 
+# ── 底层业务目录：不允许出现测试专用 Mock 类型定义 ──
+# 产品演示数据 / UI 文案等 Mock 概念（如 LLMConstants UITesting mock 常量、
+# InitialNotebookGenerator 首启播种、Localization/Features 演示文案）属于合法产品功能，
+# 因此仅对底层（Infrastructure/Domain/Core）做 Mock 类型定义的反模式扫描，
+# 避免误伤 Features/Localization 层的产品级 Mock 概念。
+BOTTOM_LAYER_PREFIXES = (
+    "Sources/Infrastructure/",
+    "Sources/Domain/",
+    "Sources/Core/",
+)
+
 
 
 # ── 测试耦合反模式正则 ──
@@ -114,6 +125,17 @@ PATTERNS = [
         re.compile(r'\b(func|var)\s+\w+ForTesting\b|\bvar\s+test\w*Task\b|\bstatic\s+var\s+forceMock\w+\b'),
         "CR-04: 生产类暴露测试专用后门 API — 破坏封装与并发安全，应使用协议构造注入",
     ),
+    (
+        "mock_test_type_in_bottom_layer",
+        re.compile(
+            r'^\s*(?:public\s+|internal\s+|private\s+|fileprivate\s+)?'
+            r'(?:final\s+)?'
+            r'(struct|class|enum)\s+'
+            r'(\w*[Mm]ock\w*)'
+            r'(\s*:|\s*\{)'
+        ),
+        "CR-05: 底层（Infrastructure/Domain/Core）生产代码定义测试专用 Mock 类型 — 应移入 Tests/Shared/Mocks/ 并经协议注入",
+    ),
 ]
 
 
@@ -148,6 +170,17 @@ def _is_exempt(filepath: Path) -> bool:
     return False
 
 
+def _should_skip_pattern(kind: str, raw_line: str, rel_path: str) -> bool:
+    """判断当前 PATTERN 对该行是否应跳过（合法豁免或超出扫描范围）。"""
+    # 合法豁免：遵循 UFPCore.TestStateResettable 统一契约的标准单例重置方法
+    if kind == "test_backdoor_api" and "resetStateForTesting" in raw_line:
+        return True
+    # CR-05：Mock 类型反模式仅限底层目录生效，避免误报 Features/Localization 产品级 Mock 概念
+    if kind == "mock_test_type_in_bottom_layer" and not rel_path.startswith(BOTTOM_LAYER_PREFIXES):
+        return True
+    return False
+
+
 def scan_file(filepath: Path) -> List[Finding]:
     """扫描单个 Swift 源文件，返回测试耦合反模式发现。
 
@@ -169,9 +202,7 @@ def scan_file(filepath: Path) -> List[Finding]:
         if stripped.startswith("//"):
             continue
         for kind, pattern, detail in PATTERNS:
-
-            # 合法豁免：遵循 UFPCore.TestStateResettable 统一契约的标准单例重置方法
-            if kind == "test_backdoor_api" and "resetStateForTesting" in raw_line:
+            if _should_skip_pattern(kind, raw_line, rel_path):
                 continue
             if pattern.search(raw_line):
                 findings.append(Finding(

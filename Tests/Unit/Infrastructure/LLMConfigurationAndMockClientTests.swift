@@ -212,7 +212,7 @@ final class LLMConfigurationAndMockClientTests: XCTestCase {
     // MARK: - #40 测试域名常量化
 
     func testWebScraperInvalidHostTestDomain() {
-        let domain = ProcessorConstants.WebScraper.invalidHostTestDomain
+        let domain = WebScraperMockConstants.invalidHostTestDomain
         XCTAssertTrue(domain.contains("invalid-host"))
         XCTAssertTrue(domain.contains(".com") || domain.contains(".example"))
     }

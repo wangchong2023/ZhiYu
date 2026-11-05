@@ -67,17 +67,19 @@ final class WebScraperProcessor: Sendable {
 
     private let chain: WebScraperHandler
 
-    init() {
-        // 构建抓取责任链: Mock -> Jina -> Googlebot -> Archive -> DumbExtractor
+    /// 初始化网页抓取处理器。
+    /// - Parameter chainHead: 责任链首节点。默认 nil 构建真实抓取链（Jina → Googlebot → Archive → DumbExtractor）；
+    ///   测试环境可注入测试专用链首（如 MockScraperHandler，定义于 Tests/Shared/Mocks/），避免生产代码内嵌测试逻辑。
+    init(chainHead: WebScraperHandler? = nil) {
+        // 构建抓取责任链: Jina -> Googlebot -> Archive -> DumbExtractor
         let dumbExtractor = DumbExtractorHandler(next: nil)
         let archive = ArchiveScraperHandler(next: dumbExtractor)
         let googlebot = GooglebotScraperHandler(next: archive)
         let jina = JinaScraperHandler(next: googlebot)
-        let mock = MockScraperHandler(next: jina)
-        self.chain = mock
+        self.chain = chainHead ?? jina
     }
 
-    /// 责任链遍历入口：按 Mock → Jina → Googlebot → Archive → DumbExtractor 顺序尝试抓取。
+    /// 责任链遍历入口：按 Jina → Googlebot → Archive → DumbExtractor 顺序尝试抓取。
     /// 自动补全 https:// 前缀，标准化 URL 后交给链首节点处理。
     func fetchMarkdown(from urlString: String) async throws -> (markdown: String, title: String) {
         let startTime = Date()
@@ -101,43 +103,6 @@ final class WebScraperProcessor: Sendable {
 }
 
 // MARK: - Handlers
-
-/// 专用于单元测试和绕过检查的 Mock 节点
-struct MockScraperHandler: WebScraperHandler {
-    var next: WebScraperHandler?
-
-    /// 处理
-    /// /// - Parameter url: url
-    /// /// - Parameter startTime: 启动Time
-    /// /// - Returns: 返回值
-    func handle(url: URL, startTime: Date) async throws -> (markdown: String, title: String) {
-        if url.host == ProcessorConstants.Module.paywallTestDomain || url.absoluteString.contains(ProcessorConstants.Module.paywallTestMarker) {
-            let mockPaywallHTML = MockScraperFixtures.decodeHTML(ProcessorConstants.Module.paywallMockBase64)
-            return DumbExtractorHandler.extractFromHTML(mockPaywallHTML)
-        }
-
-        if url.host == ProcessorConstants.WebScraper.invalidHostTestDomain {
-            let recoveryHTML = MockScraperFixtures.decodeHTML(ProcessorConstants.WebScraper.recoveryMockBase64)
-            return DumbExtractorHandler.extractFromHTML(recoveryHTML)
-        }
-
-        guard let next = next else { throw WebScraperProcessor.ScraperError.chainExhausted }
-        return try await next.handle(url: url, startTime: startTime)
-    }
-}
-
-/// Mock 抓取测试夹具：封装 Base64 解码与 UTF-8 还原的共享辅助，消除 MockScraperHandler 中的重复解码样板。
-private enum MockScraperFixtures {
-    /// 将 Base64 编码的 HTML 字符串解码为 UTF-8 字符串
-    /// - Parameter base64String: Base64 编码的 HTML
-    /// - Returns: 解码后的 HTML 字符串
-    static func decodeHTML(_ base64String: String) -> String {
-        // swiftlint:disable:next force_unwrapping
-        let data = Data(base64Encoded: base64String)!
-        // swiftlint:disable:next force_unwrapping
-        return String(data: data, encoding: .utf8)!
-    }
-}
 
 /// Level 1: 通过 r.jina.ai 获取干净的 Markdown 内容。
 /// Jina Reader 直接返回语义化 Markdown，是首选的高质量抓取方案。
