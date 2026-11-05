@@ -13,6 +13,53 @@
 import SwiftUI
 import UFPDesignSystem
 
+/// 端侧推理加速器后端选项
+public enum InferenceAccelerator: String, CaseIterable, Identifiable, Sendable {
+    case auto
+    case ane
+    case metal
+    case cpu
+
+    public var id: String { rawValue }
+
+    public var displayTitle: String {
+        switch self {
+        case .auto: return L10n.ModelManager.Lab.Config.accelAuto
+        case .ane: return L10n.ModelManager.Lab.Config.accelANE
+        case .metal: return L10n.ModelManager.Lab.Config.accelMetal
+        case .cpu: return L10n.ModelManager.Lab.Config.accelCPU
+        }
+    }
+}
+
+/// 端侧上下文缓存窗口规格选项
+public enum ContextWindowOption: Int, CaseIterable, Identifiable, Sendable {
+    case size2K = 2048
+    case size4K = 4096
+    case size8K = 8192
+    case size32K = 32768
+
+    public var id: Int { rawValue }
+
+    public var displayLabel: String {
+        switch self {
+        case .size2K: return FeatureConstants.ContextWindowConstants.label2K
+        case .size4K: return FeatureConstants.ContextWindowConstants.label4K
+        case .size8K: return FeatureConstants.ContextWindowConstants.label8K
+        case .size32K: return FeatureConstants.ContextWindowConstants.label32K
+        }
+    }
+
+    public var estimatedKVMemoryMB: Int {
+        switch self {
+        case .size2K: return FeatureConstants.ContextWindowConstants.kvMemory2KMB
+        case .size4K: return FeatureConstants.ContextWindowConstants.kvMemory4KMB
+        case .size8K: return FeatureConstants.ContextWindowConstants.kvMemory8KMB
+        case .size32K: return FeatureConstants.ContextWindowConstants.kvMemory32KMB
+        }
+    }
+}
+
 // MARK: - 参数配置 Sheet
 
 extension ModelLabView {
@@ -130,6 +177,8 @@ extension ModelLabView {
 
             acceleratorSelector
 
+            contextWindowSelector
+
             Divider().padding(.vertical, DesignTokens.Spacing.standardPadding)
 
             // 高级开关
@@ -138,38 +187,111 @@ extension ModelLabView {
 
             Toggle(L10n.ModelManager.Lab.enableSpeculativeDecoding, isOn: $enableSpeculativeDecoding)
                 .tint(Color.theme.cyan)
+
+            if enableSpeculativeDecoding {
+                VStack(alignment: .leading, spacing: DesignTokens.SystemSpacing.tiny) {
+                    HStack {
+                        Text(L10n.ModelManager.Lab.Speculative.draftModel)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Text(FeatureConstants.SpeculativeConstants.fallbackDraftModelId)
+                            .font(.caption.monospaced())
+                            .foregroundStyle(Color.theme.cyan)
+                    }
+
+                    HStack(spacing: DesignTokens.Spacing.small) {
+                        HStack(spacing: DesignTokens.SystemSpacing.atomic) {
+                            Text(L10n.ModelManager.Lab.Speculative.acceptanceRate)
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                            Text(L10n.ModelManager.Lab.Speculative.rateFormat(FeatureConstants.SpeculativeConstants.simulatedAcceptanceRatePercent))
+                                .font(.caption2.bold())
+                                .foregroundStyle(Color.theme.green)
+                        }
+
+                        Spacer()
+
+                        HStack(spacing: DesignTokens.SystemSpacing.atomic) {
+                            Text(L10n.ModelManager.Lab.Speculative.speedup)
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                            Text(L10n.ModelManager.Lab.Speculative.speedupFormat(FeatureConstants.SpeculativeConstants.simulatedSpeedupMultiplier))
+                                .font(.caption2.bold())
+                                .foregroundStyle(Color.theme.cyan)
+                        }
+                    }
+                    .padding(.top, DesignTokens.SystemSpacing.atomic)
+                }
+                .padding(DesignTokens.Spacing.small)
+                .background(Color.theme.cyan.opacity(DesignTokens.Opacity.ghost))
+                .cornerRadius(DesignTokens.SystemRadius.small)
+            }
         }
         .padding(.horizontal, DesignTokens.Spacing.medium)
     }
 
-    /// CPU / GPU 加速器选择
+    /// Auto / ANE / Metal 3 / CPU 推理加速器选择
     private var acceleratorSelector: some View {
-        VStack(alignment: .leading, spacing: DesignTokens.Spacing.standardPadding) {
-            // Bug #76 修复：硬编码英文替换为 L10n 强类型访问。
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
             Text(L10n.ModelManager.Lab.accelerator)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
 
-            HStack(spacing: 0) {
-                acceleratorButton(title: L10n.ModelManager.Lab.cpu, isActive: !useGPU) { useGPU = false }
-                acceleratorButton(title: L10n.ModelManager.Lab.gpu, isActive: useGPU) { useGPU = true }
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: DesignTokens.Spacing.small) {
+                ForEach(InferenceAccelerator.allCases) { accel in
+                    let isSelected = selectedAccelerator == accel
+                    Button {
+                        HapticFeedback.shared.trigger(.selection)
+                        selectedAccelerator = accel
+                        useGPU = (accel != .cpu)
+                    } label: {
+                        Text(accel.displayTitle)
+                            .font(.caption.bold())
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, DesignTokens.SystemSpacing.small)
+                            .background(isSelected ? Color.theme.cyan : Color.appCard.opacity(DesignTokens.Opacity.subtle))
+                            .foregroundStyle(isSelected ? .white : Color.secondary)
+                            .cornerRadius(DesignTokens.SystemRadius.small)
+                    }
+                    .buttonStyle(.plain)
+                }
             }
-            .background(Color.appCard.opacity(DesignTokens.Opacity.subtle))
-            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.SystemRadius.small))
         }
     }
 
-    /// CPU/GPU 加速器按钮，消除两个按钮的 frame+padding+background+foregroundStyle 重复
-    private func acceleratorButton(title: String, isActive: Bool, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Text(title)
-                .font(.headline)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, DesignTokens.SystemSpacing.content)
-                .background(isActive ? Color.theme.cyan : Color.clear)
-                .foregroundStyle(isActive ? .white : Color.secondary)
+    /// Context Window 上下文缓存窗口选择器与 KV 显存预估
+    private var contextWindowSelector: some View {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
+            HStack {
+                Text(L10n.ModelManager.Lab.Config.contextWindow)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Text(L10n.ModelManager.Lab.Config.kvCacheFormat(selectedContextWindow.estimatedKVMemoryMB))
+                    .font(.caption2.monospacedDigit())
+                    .foregroundStyle(Color.theme.cyan)
+            }
+
+            HStack(spacing: DesignTokens.Spacing.small) {
+                ForEach(ContextWindowOption.allCases) { option in
+                    let isSelected = selectedContextWindow == option
+                    Button {
+                        HapticFeedback.shared.trigger(.selection)
+                        selectedContextWindow = option
+                    } label: {
+                        Text(option.displayLabel)
+                            .font(.caption.monospaced().bold())
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, DesignTokens.SystemSpacing.small)
+                            .background(isSelected ? Color.theme.cyan : Color.appCard.opacity(DesignTokens.Opacity.subtle))
+                            .foregroundStyle(isSelected ? .white : Color.secondary)
+                            .cornerRadius(DesignTokens.SystemRadius.small)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
         }
-        .buttonStyle(.plain)
     }
 
     // MARK: - System Prompt 分段内容

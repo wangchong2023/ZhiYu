@@ -1,9 +1,9 @@
 # 智宇 (ZhiYu) 代码覆盖率与测试质量报告
 
-**更新日期**: 2026-09-25
-**生成方式**: SonarQube 全语言扫描（`sonar-scanner`）+ `make test-all`
+**更新日期**: 2026-11-02
+**生成方式**: SPM 包用 `coverage-spm.py`（`swift test --enable-code-coverage` + `llvm-cov`）；主 App 用 xcodebuild + `analyze_coverage_gaps.py`
 
-> ⚠️ 本报告为框架性文档，具体覆盖率数值需运行 `make test-all` + SonarQube 扫描后填入。
+> ⚠️ 本报告数值由 `Tools/CI/coverage-spm.py` 实测填充（SPM 6 包语句覆盖），主 App 分支覆盖需先跑 `make test-unit` 生成 xcresult 后用 `analyze_coverage_gaps.py` 分析。
 > 以下标准对齐 AGENTS.md 四大质量红线第 1 条。
 
 ---
@@ -12,15 +12,33 @@
 
 | 指标 | 红线要求 | 当前值 | 状态 |
 | :--- | :--- | :--- | :--- |
-| **语句/行覆盖率 (Line Coverage)** | ≥ 95.0% | _待填入_ | ⏳ |
-| **分支覆盖率 (Branch Coverage)** | ≥ 90.0% | _待填入_ | ⏳ |
-| **代码重复率 (Duplicated Lines %)** | < 3.0% | _待填入_ | ⏳ |
+| **语句/行覆盖率 (Line Coverage)** | ≥ 95.0% | SPM 加权 **70.67%**（4093/5792 行） | ⚠️ 未达标 |
+| **分支覆盖率 (Branch Coverage)** | ≥ 90.0% | **SPM 不可测**（swiftc 不生成 branch mapping，见下注） | ⚠️ 需主 App xccov |
+| **代码重复率 (Duplicated Lines %)** | < 3.0% | _待 SonarQube 扫描_ | ⏳ |
 
-> 触发方式：CI/CD 流水线中 `sonar-scanner -Dsonar.qualitygate.wait=true` 执行卡控与阻断。
+> **⚠️ 工具链约束（重要）**：SwiftPM 的 `swiftc` coverage mapping **不包含 branch 信息**（`coverage-spm.py` 注释明确「Swift 不生成 branch mapping，Branches 列恒为 0/0/-」）。因此 **SPM 6 包只能用 llvm-cov 测语句/行覆盖，无法测分支覆盖**。分支覆盖只能通过主 App（xcodebuild 测试）的 xccov 获得，用 `analyze_coverage_gaps.py` 分析（需先跑 `make test-unit` 生成 xcresult 到 `build/DerivedData-ios`）。
 
 ---
 
-## 2. 测试规模
+## 2. SPM 包语句覆盖率明细（实测，2026-11-02）
+
+> 由 `python3 Tools/CI/coverage-spm.py` 生成（`swift test --enable-code-coverage` + `llvm-cov`）。
+
+| 包名 | 语句覆盖 | 函数覆盖 | 状态 | 低覆盖重点 |
+| :--- | :--- | :--- | :--- | :--- |
+| **UFPCore** | **92.77%** (1591/1715) | 190/217 | ✅ | — |
+| **UFPStorage** | **79.60%** (710/892) | 95/126 | ⚠️ | StreamingDownloadManager 62.35%（URLSession 网络路径居多）、GenericDatabaseManager 89.86% |
+| **UFPDesignSystem** | **45.61%** (1158/2539) | 162/362 | ⚠️ | 大量 SwiftUI View body 渲染 / 静态 Token 常量，纯计算逻辑极少 |
+| **ZhiYuDomain** | **97.94%** (380/388) | 56/58 | ✅ | — |
+| **ZhiYuAICore** | **98.37%** (242/246) | 43/43 | ✅ | — |
+| **ZhiYuFeatures** | **100.00%** (12/12) | 6/6 | ✅ | — |
+| **总体（加权）** | **70.67%** (4093/5792) | 552/812 | ⚠️ | — |
+
+> **说明**：UFPDesignSystem 的 45% 主要由 UI Token / 视图渲染主导（`Cards.swift` 63%、`Inputs.swift` 78%、`Buttons.swift` 80%，其余 `AppEmptyState`/`AppErrorView`/`AppLoading*` 为 0% 的纯 View body）。按「以发现问题为目标、不为凑覆盖率补无意义断言」原则，仅对其可单测的纯逻辑（`Color.init(hex:)` 缺陷 #85、`AppToastType.icon`、Spacing/Radius `.value`、`AppFeedbackL10n`）补测，未对 View body 补空断言。
+
+---
+
+## 3. 测试规模
 
 | 维度 | 数值 | 备注 |
 | :--- | :--- | :--- |
@@ -32,7 +50,7 @@
 
 ---
 
-## 3. 测试结构度量（CI 门禁）
+## 4. 测试结构度量（CI 门禁）
 
 `Tools/CI/audit-test-structure.py` 在 `make audit` 中强制校验 6 项指标：
 
@@ -50,7 +68,7 @@
 
 ---
 
-## 4. 混沌工程与异常模拟
+## 5. 混沌工程与异常模拟
 
 在 `CloudChaosTests` 及 `PromptDefenseTests` 等模块中验证的异常容错：
 
@@ -60,9 +78,38 @@
 
 ---
 
-## 5. 如何生成最新覆盖率数据
+## 5.5 主 App 语句+分支覆盖率实测基线（xcodebuild xccov）
+
+> 数据来源：`make test-unit`（全量，skip 快照/性能类）→ `analyze_coverage_gaps.py`。这是**首次建立的主 App 分支覆盖基线**（SPM 无法测分支，见第 2 节工具链约束）。实测时间 2026-11-02。
+
+| 模块（`Sources/`） | 语句覆盖 | 分支覆盖 |
+| :--- | :---: | :---: |
+| **主 App 合计** | **63.8%** | **61.5%** |
+| Domain | 90.0% | 71.2% |
+| Localization | 97.3% | 64.6% |
+| Infrastructure | 91.3% | 65.4% |
+| Core | 85.5% | 65.2% |
+| Shared | 74.9% | 62.9% |
+| App | 66.2% | 61.0% |
+| Features | 59.6% | 59.3% |
+| Platforms | 46.3% | 51.2% |
+
+> 注：`SnapshotTesting` / `ZIPFoundation` 为第三方依赖源码，已统计但不计入主 App 业务合计。
+> 分支覆盖严重不足主要集中于 Features（UI/状态机）与 Platforms；业务逻辑层（Domain/Infrastructure/Core）分支约 65–71%。
+> 已补测 GraphCommunityProcessor 边界（孤立边/重复边/自环/孤立节点）4 例，分支 68.8%→69.1%，验证算法健壮、未发现缺陷。
+
+---
+
+## 6. 如何生成最新覆盖率数据
 
 ```bash
+# SPM 6 包语句覆盖率（实测本报告数值）
+source Config/.env.local && python3 Tools/CI/coverage-spm.py
+
+# 主 App 语句+分支覆盖率（先跑单测生成 xcresult，再分析缺口）
+make test-unit
+python3 Tools/CI/analyze_coverage_gaps.py   # 需 xcresult 位于 build/DerivedData-ios 下
+
 # 全量 SPM 单测 + 主 App 单元测试
 make test-all
 
@@ -75,7 +122,7 @@ make audit
 
 ---
 
-## 6. 历史数据归档
+## 7. 历史数据归档
 
 > 以下为 2026-05-29 旧版覆盖率数据（基于 xcodebuild coverage / slather），已被 SonarQube 全语言扫描取代，仅作历史参考。
 

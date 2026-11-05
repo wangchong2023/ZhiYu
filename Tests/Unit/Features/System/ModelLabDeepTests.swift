@@ -192,7 +192,7 @@ final class ModelLabDeepTests: XCTestCase {
     }
 
     func testUseCaseType_AllCases_HaveNonEmptyProperties() {
-        XCTAssertEqual(UseCaseType.allCases.count, 7, "ModelLab 必须提供精确 7 种端侧大模型评测用例场景")
+        XCTAssertEqual(UseCaseType.allCases.count, 10, "ModelLab 必须提供精确 10 种端侧大模型评测用例场景")
 
         for useCase in UseCaseType.allCases {
             XCTAssertFalse(useCase.id.isEmpty, "\(useCase.rawValue) id 不能为空")

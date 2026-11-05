@@ -6,14 +6,42 @@
 //  Copyright © 2026 WangChong. All rights reserved.
 //
 //  系统层级：[L3] 表现层
-//  核心职责：本地大模型管理统一入口，集成模型市场、参数调优、服务器配置、智能路由四大核心功能模块。
+//  核心职责：本地大模型管理统一入口 — 采用顶层 Segmented 分栏架构，解耦模型库 (Models) 与任务实验室 (Tasks)。
 //
 
 import SwiftUI
 import UFPDesignSystem
 
+/// 本地大模型管理顶层分栏定义
+public enum ModelManagerTab: String, CaseIterable, Identifiable {
+    case store
+    case lab
+
+    public var id: String { rawValue }
+
+    public var title: String {
+        switch self {
+        case .store: return L10n.ModelManager.tabModels
+        case .lab: return L10n.ModelManager.tabTasks
+        }
+    }
+
+    public var icon: String {
+        switch self {
+        case .store: return DesignTokens.Icons.stackFill
+        case .lab: return DesignTokens.Icons.flaskFill
+        }
+    }
+
+    public var themeColor: Color {
+        switch self {
+        case .store: return Color.theme.cyan
+        case .lab: return Color.theme.purple
+        }
+    }
+}
+
 /// 本地大模型管理统一入口视图
-/// 采用 Tab 切换架构，整合模型市场和参数调优两大核心功能模块
 @MainActor
 public struct LocalModelManagerView: View {
 
@@ -25,69 +53,83 @@ public struct LocalModelManagerView: View {
 
     // MARK: - 状态管理
 
+    @State private var selectedTab: ModelManagerTab = .store
+
     public init() {}
 
     public var body: some View {
-        ScrollView {
-            ScrollViewReader { proxy in
-                VStack(spacing: DesignTokens.Spacing.giant) {
-                    // Section 1: 模型市场
-                    VStack(alignment: .leading, spacing: 0) {
-                        modelSectionHeader(icon: DesignTokens.Icons.stackFill, iconColor: Color.theme.cyan, title: L10n.ModelManager.storeTitle)
-                        
-                        ModelStoreView(embedInScrollView: false) {
-                            withAnimation(.easeInOut) {
-                                proxy.scrollTo("lab_section", anchor: .top)
-                            }
+        VStack(spacing: 0) {
+            // 顶层 Segmented 分栏控制器
+            topSegmentedControl
+                .padding(.horizontal, DesignTokens.Spacing.medium)
+                .padding(.top, DesignTokens.SystemSpacing.small)
+                .padding(.bottom, DesignTokens.SystemSpacing.tiny)
+
+            // 分栏内容切换（避免使用 TabView page 样式造成与父级 Picker 的底层触摸与手势劫持）
+            Group {
+                switch selectedTab {
+                case .store:
+                    ModelStoreView(embedInScrollView: true) {
+                        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                            selectedTab = .lab
                         }
-                        .environment(store)
-                        .environment(router)
                     }
-                    .modifier(ModelSectionCardModifier())
-                    .id("store_section")
-                    
-                    // Section 2: 测试实验室
-                    VStack(alignment: .leading, spacing: 0) {
-                        modelSectionHeader(icon: DesignTokens.Icons.flaskFill, iconColor: Color.theme.purple, title: L10n.ModelManager.laboratoryTitle)
-                        
-                        ModelLabView(embedInScrollView: false) {
-                            withAnimation(.easeInOut) {
-                                proxy.scrollTo("store_section", anchor: .top)
-                            }
+                    .environment(store)
+                    .environment(router)
+                case .lab:
+                    ModelLabView(embedInScrollView: true) {
+                        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                            selectedTab = .store
                         }
-                        .environment(store)
-                        .environment(router)
                     }
-                    .modifier(ModelSectionCardModifier())
-                    .id("lab_section")
+                    .environment(store)
+                    .environment(router)
                 }
-                .padding(.vertical)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .background(themeManager.pageBackground())
+    }
+
+    // MARK: - 顶层分栏控制器
+
+    @ViewBuilder
+    private var topSegmentedControl: some View {
+        HStack(spacing: DesignTokens.SystemSpacing.tiny) {
+            ForEach(ModelManagerTab.allCases) { tab in
+                let isSelected = selectedTab == tab
+                Button(action: {
+                    withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                        selectedTab = tab
+                    }
+                }) {
+                    HStack(spacing: DesignTokens.SystemSpacing.tiny) {
+                        Image(systemName: tab.icon)
+                            .font(.subheadline)
+                        Text(tab.title)
+                            .font(.subheadline.bold())
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, DesignTokens.SystemSpacing.small)
+                    .background(
+                        isSelected ?
+                            tab.themeColor.opacity(DesignTokens.Opacity.prominent) :
+                            Color.clear
+                    )
+                    .foregroundStyle(isSelected ? Color.theme.white : .secondary)
+                    .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius))
+                }
+                .buttonStyle(.plain)
             }
         }
+        .padding(DesignTokens.SystemSpacing.atomic)
+        .background(Color.appCard.opacity(DesignTokens.Opacity.dim))
+        .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.mediumRadius))
+        .overlay(
+            RoundedRectangle(cornerRadius: DesignTokens.Spacing.mediumRadius)
+                .stroke(Color.appBorder.opacity(DesignTokens.Opacity.prominent), lineWidth: DesignTokens.SystemStroke.divider)
+        )
     }
-}
-
-private struct ModelSectionCardModifier: ViewModifier {
-    func body(content: Content) -> some View {
-        content
-            .background(Color.appCard.opacity(DesignTokens.Opacity.dim))
-            .cornerRadius(DesignTokens.Spacing.mediumRadius)
-            .padding(.horizontal)
-    }
-}
-
-/// 模型区块标题，消除 Store/Lab 区块的 HStack+padding 重复
-private func modelSectionHeader(icon: String, iconColor: Color, title: String) -> some View {
-    HStack(spacing: DesignTokens.Spacing.small) {
-        Image(systemName: icon)
-            .foregroundStyle(iconColor)
-            .font(.title3)
-        Text(title)
-            .font(.title3.bold())
-            .foregroundStyle(Color.theme.text)
-    }
-    .padding(.horizontal, DesignTokens.Spacing.medium)
-    .padding(.top, DesignTokens.Spacing.medium)
 }
 
 // MARK: - 预览
@@ -96,14 +138,9 @@ private func modelSectionHeader(icon: String, iconColor: Color, title: String) -
 #Preview {
     NavigationStack {
         ZStack {
-            // 在预览模式下在最外层包裹背景，确保预览效果与真机运行时一致
             ThemeManager().pageBackground()
-                .ignoresSafeArea()
             LocalModelManagerView()
         }
-        .environment(AppStore())
-        .environment(Router())
-        .environment(ThemeManager())
     }
 }
 #endif

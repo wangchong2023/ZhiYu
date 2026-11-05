@@ -306,6 +306,11 @@ extension DesignTokens {
         public static let checkmarkCircleFill = "checkmark.circle.fill"
         /// iPhone 无线电波
         public static let iphoneRadiowaves = "iphone.radiowaves.left.and.right"
+        /// 铃铛与通知
+        public static let bell = "bell"
+        public static let bellFill = "bell.fill"
+        /// 调色板
+        public static let paintpalette = "paintpalette"
         /// 放大镜（与 search 同义，显式命名以匹配 SF Symbol 原名）
         public static let magnifyingglass = "magnifyingglass"
         /// CPU（非填充，对应 SF Symbol "cpu"）

@@ -385,6 +385,24 @@ final class VaultDataIsolationTests: XCTestCase {
         print("✅ 【Success】压力测试节点生成功能及随机关联引用架构验证 100% 顺利通过！")
     }
 
+    /// 缺陷 #83 验证：`generateStressTest` 在 targetCount ≤ 3 时，随机链接数可能超过可用索引数
+    /// （targetCount - 1），导致 `while linkedIndices.count < linkCount` 永远无法填满 Set 而死循环挂起。
+    /// 修复后小规模 targetCount 应快速返回而不挂起。
+    func testDeveloperStressTestDataGeneration_SmallCountDoesNotHang() async throws {
+        // 🚀 物理挂载切换至 笔记本 A
+        try await DatabaseManager.shared.switchDatabase(to: vaultAID, at: dbAURL)
+        StorageModuleRegistrar.register(in: ServiceContainer.shared)
+        let store = ServiceContainer.shared.resolve((any AnyPageStoreCapabilities).self)
+
+        // 缺陷触发：targetCount=1 时可用索引 0 个，原逻辑恒死循环（超时挂起）
+        let targetCount = 1
+        let count = try await InitialNotebookGenerator.generateStressTest(in: store, count: targetCount)
+        XCTAssertEqual(count, targetCount, "小 count 应正常生成并返回，而非死循环挂起")
+
+        let pages = try await store.fetchAllPages()
+        XCTAssertEqual(pages.count, targetCount, "物理库中的页面数应与 targetCount 一致")
+    }
+
     // MARK: - clearAllDataRequested 事件驱动清理测试
 
     /// 验证 ChatService 订阅 clearAllDataRequested 后清除聊天历史

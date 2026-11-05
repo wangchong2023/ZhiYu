@@ -19,7 +19,7 @@ import UFPDesignSystem
 @MainActor
 public struct OnDeviceLLMSettingsView: View {
     /// 独立托管的端侧推理及编译生命周期服务
-    @StateObject private var onDeviceService = OnDeviceLLMService()
+    @ObservedObject private var onDeviceService = OnDeviceLLMService.shared
     
     /// 全局应用级数据 Store
     @Environment(AppStore.self) var store

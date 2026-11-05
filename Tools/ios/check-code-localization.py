@@ -41,6 +41,7 @@ ALLOW_NON_ASCII_FILES = {
     'AIContentEnricher.swift',
     'RAGEvaluationService.swift',  # RAG 评价服务的中文硬编码 Prompt
     'ModelLabManager.swift',       # 大模型测试实验室的模拟推理输出 data 源
+    'LabResponseSynthesizer.swift', # 大模型测试实验室离线语义合成器
     'ThinkingProcessor.swift',     # 思维链解析引擎的中文思考标志与分隔符
     'SynthesisProcessor.swift',    # 知识合成柔性自愈引擎与模板文本
     'AISynthesisService.swift',    # AI 合成服务 System Prompt 与 JSON Schema 模板

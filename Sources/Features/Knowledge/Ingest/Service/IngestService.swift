@@ -18,7 +18,13 @@ actor IngestService: IngestServiceProtocol {
     @Dependency(\.documentExtractionService) private var docExtractor: any DocumentExtractionServiceProtocol
     @Dependency(\.databaseManager) private var dbManager: DatabaseManager
     @ObservationIgnored @Dependency(\.taskCenter) private var taskCenter
-    let scraper = WebScraperProcessor()
+    let scraper: WebScraperProcessor
+
+    /// 初始化 IngestService
+    /// - Parameter scraper: 网页抓取处理器。默认构建生产抓取链；测试可注入带 Mock 责任链的实例。
+    init(scraper: WebScraperProcessor = WebScraperProcessor()) {
+        self.scraper = scraper
+    }
 
     /// 将原始内容摄入知识库：执行安全脱敏、进行 RAG 分块与向量索引、自动抽取并链接已知页面概念。
     /// - Parameters:

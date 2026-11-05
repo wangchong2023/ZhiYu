@@ -48,7 +48,7 @@ final class ModelLabManagerTests: XCTestCase {
             remoteURLString: "https://example.com/multimodal.bin",
             sha256Checksum: "checksum456",
             parameterCount: "4B",
-            supportedTasks: ["chat", "multimodal"],
+            supportedTasks: ["chat", "multimodal", FeatureConstants.TaskName.mediaSearch, FeatureConstants.TaskName.videoSearch],
             description: "A multimodal model for testing.",
             defaultParameters: InferenceParameters()
         )
@@ -75,7 +75,7 @@ final class ModelLabManagerTests: XCTestCase {
         XCTAssertFalse(manager.isModelCompatible(mockChatModel, for: .askImage))
         XCTAssertFalse(manager.isModelCompatible(mockChatModel, for: .audioScribe))
         
-        // 2. 多模态模型同时兼容所有 7 大用例场景类型
+        // 2. 多模态模型同时兼容所有 10 大用例场景类型
         for useCase in UseCaseType.allCases {
             XCTAssertTrue(manager.isModelCompatible(mockMultimodalModel, for: useCase),
                            "多模态模型应该支持全部测试用例：\(useCase.title)")
@@ -186,7 +186,7 @@ final class ModelLabManagerTests: XCTestCase {
         // 验证特化数据已被完美填充
         XCTAssertEqual(manager.extraPanelTitle, L10n.ModelManager.Lab.Extra.objectDetection)
         XCTAssertEqual(manager.confidenceItems.count, 3)
-        XCTAssertEqual(manager.confidenceItems[0].name, "Notebook (笔记本)")
+        XCTAssertEqual(manager.confidenceItems[0].name, FeatureConstants.VisionAnalysisConstants.presetDeskDisplay)
         
         // 停止仿真并清理
         manager.stopSimulation()

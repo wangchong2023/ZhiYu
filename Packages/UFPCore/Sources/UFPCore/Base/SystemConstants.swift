@@ -161,6 +161,22 @@ public enum SystemConstants {
         public static let crlf: String = "\r\n"
     }
 
+    // MARK: - ASCII 字符编码值
+    public enum ASCII {
+        /// 回车符 ASCII 码 (CR, 13)
+        public static let carriageReturn: UInt32 = 13
+        /// 换行符 ASCII 码 (LF, 10)
+        public static let lineFeed: UInt32 = 10
+    }
+
+    // MARK: - 布尔字符串表示
+    public enum BooleanString {
+        /// "true" 字符串表示
+        public static let trueValue: String = "true"
+        /// "false" 字符串表示
+        public static let falseValue: String = "false"
+    }
+
     // MARK: - 时间换算补充 (Time Conversion Supplement)
     public enum Time {
         /// 每秒对应的纳秒数
@@ -201,6 +217,10 @@ public enum SystemConstants {
         public static let json: String = "json"
         /// .mlmodelc（CoreML 编译后模型包）
         public static let mlmodelC: String = "mlmodelc"
+        /// .bin（二进制模型权重）
+        public static let bin: String = "bin"
+        /// .gguf（GGUF 量化模型文件）
+        public static let gguf: String = "gguf"
         /// .mlmodel（CoreML 源模型）
         public static let mlmodel: String = "mlmodel"
         /// .md（Markdown 文档）

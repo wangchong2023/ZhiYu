@@ -178,6 +178,10 @@ struct InitialNotebookGenerator {
     static func generateStressTestNotebooks(in store: any AnyPageStore, count targetCount: Int = defaultStressTestNodeCount) async throws -> Int {
         Logger.shared.info("StressTestData_Starting")
 
+        // 缺陷 #83 修复：targetCount ≤ 3 时链接数可能超过可用索引数导致 while 死循环；
+        // targetCount ≤ 0 时 `0..<targetCount` 构造非法 Range 崩溃。统一在入口防御。
+        guard targetCount > 0 else { return 0 }
+
         try await store.performBatchWrite { db in
             // 按照依赖关系的反向顺序进行物理清理
             try KnowledgePage.deleteAll(db)
@@ -193,7 +197,9 @@ struct InitialNotebookGenerator {
 
                 // 随机选择 1-3 个其他节点建立链接
                 var content = ""
-                let linkCount = Int.random(in: 1...3)
+                // 缺陷 #83 修复：可用链接索引数为 targetCount-1，超过它 Set 永远填不满而死循环
+                let maxLinks = max(0, min(3, targetCount - 1))
+                let linkCount = maxLinks > 0 ? Int.random(in: 1...maxLinks) : 0
                 var linkedIndices = Set<Int>()
                 while linkedIndices.count < linkCount {
                     let randIdx = Int.random(in: 0..<targetCount)

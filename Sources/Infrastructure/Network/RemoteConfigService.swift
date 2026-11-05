@@ -15,6 +15,8 @@ import UFPCore
 /// 远程配置拉取具体实现服务类
 public final class RemoteConfigService: RemoteConfigCapabilities, Sendable {
     
+    public static let shared = RemoteConfigService()
+
     private let session: URLSession
     private let decoder: JSONDecoder
     

@@ -76,6 +76,10 @@ public enum RetryTask {
         interval: TimeInterval,
         condition: @Sendable () async throws -> T?
     ) async throws -> T {
+        // 防御负数/零 maxAttempts：`0..<negative` 会触发 Range 下界>上界致命崩溃
+        guard maxAttempts > 0 else {
+            throw RetryError.pollingExhausted(attempts: max(maxAttempts, 0))
+        }
         for attempt in 0..<maxAttempts {
             if let result = try await condition() {
                 return result

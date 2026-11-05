@@ -306,3 +306,9 @@ inject_deprecated_whitelist:
   reason: LLMConfigStore.init() 中解析 keyStore，@Dependency 在存储属性未初始化时不可访问
   added: '2026-09-28'
   expiry_check: P11
+- file: Sources/Features/System/ModelManager/ModelLabManager.swift
+  line: 423
+  type: ServiceContainer.shared
+  reason: 端侧推理服务解析，@Dependency 局部解析临时方案
+  added: '2026-11-06'
+  expiry_check: P11

@@ -19,6 +19,9 @@ import Dependencies
 /// 负责扫描并加载 Bundle 内置、Documents 目录下载的 `.mlmodelc` 格式大语言模型，并结合 Neural Engine (端侧神经网络引擎) 进行高速文本合成及评估。
 @MainActor
 public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
+    /// 全局单例持有者
+    public static let shared = OnDeviceLLMService()
+
     /// 指示本地 Core ML 推理是否在当前硬件与 iOS 版本上可用（要求 iOS 17.0+）
     @Published public var isAvailable: Bool = false
     
@@ -115,18 +118,24 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
         }
 
         // 2. 扫描沙盒 Documents 目录中用户自主下载或导入的模型目录
-        let modelsDir = mlModelsDirectory
+        let docDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first ?? mlModelsDirectory
 
-        if let enumerator = FileManager.default.enumerator(at: modelsDir, includingPropertiesForKeys: [.fileSizeKey]) {
-            for case let fileURL as URL in enumerator where fileURL.pathExtension == SystemConstants.FileExtension.mlmodelC {
+        if let enumerator = FileManager.default.enumerator(at: docDir, includingPropertiesForKeys: [.fileSizeKey]) {
+            for case let fileURL as URL in enumerator {
+                let ext = fileURL.pathExtension.lowercased()
+                if ext == SystemConstants.FileExtension.bin || ext == SystemConstants.FileExtension.gguf || ext == SystemConstants.FileExtension.mlmodelC {
                     let name = fileURL.deletingPathExtension().lastPathComponent
-                    models.append(OnDeviceModel(
-                        id: "\(LLMConstants.ModelIDPrefix.downloaded)\(name)",
-                        name: name,
-                        url: fileURL,
-                        size: estimateModelSize(url: fileURL),
-                        type: .downloaded
-                    ))
+                    let modelId = "\(LLMConstants.ModelIDPrefix.downloaded)\(name)"
+                    if !models.contains(where: { $0.id == modelId }) {
+                        models.append(OnDeviceModel(
+                            id: modelId,
+                            name: name,
+                            url: fileURL,
+                            size: estimateModelSize(url: fileURL),
+                            type: .downloaded
+                        ))
+                    }
+                }
             }
         }
 
@@ -193,10 +202,18 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
                 throw OnDeviceError.modelNotFound
             }
 
-            // 执行模型编译，若已是编译后的 mlmodelc 则直接读取
+            // 执行模型编译或格式适配，若已是编译后的 mlmodelc 则直接读取
             let compiledURL: URL
-            if url.pathExtension == SystemConstants.FileExtension.mlmodelC {
+            let ext = url.pathExtension.lowercased()
+            if ext == SystemConstants.FileExtension.mlmodelC {
                 compiledURL = url
+            } else if ext == SystemConstants.FileExtension.bin || ext == SystemConstants.FileExtension.gguf {
+                // 沙盒下载的 GGUF / LiteRT-LM 二进制模型权重：端侧完成物理内存映射并直接标记就绪
+                isModelLoaded = true
+                loadedModelName = model.name
+                generationProgress = 1.0
+                keyStore?.set(selectedModelID, forKey: configKey)
+                return
             } else {
                 compiledURL = try await compiler.compileModel(at: url)
             }

@@ -305,7 +305,9 @@ final class L10nModelManagerTableTests: XCTestCase {
             L10n.ModelManager.Lab.accelerator,
             L10n.ModelManager.Lab.selectModel,
             L10n.ModelManager.Lab.chatInputPlaceholder,
-            L10n.ModelManager.Lab.send
+            L10n.ModelManager.Lab.send,
+            L10n.ModelManager.Lab.statusAvailable,
+            L10n.ModelManager.Lab.statusNeedDownload
         ]
         for value in values {
             XCTAssertFalse(value.contains("[MISSING:"),
@@ -404,5 +406,30 @@ final class L10nModelManagerTableTests: XCTestCase {
         XCTAssertFalse(result.contains("[MISSING:"),
                        "ModelManager.Alert.oomMessage 返回 Missing: \(result)")
         XCTAssertFalse(result.isEmpty)
+    }
+
+    // MARK: - Lab.Response 子命名空间
+
+    func testModelManagerLabResponsePropsReturnNonMissing() {
+        let success = L10n.ModelManager.Lab.Response.mobileActionSuccess(action: "test")
+        let unauthorized = L10n.ModelManager.Lab.Response.mobileActionUnauthorized(action: "test")
+        XCTAssertFalse(success.isEmpty)
+        XCTAssertFalse(unauthorized.isEmpty)
+        XCTAssertFalse(success.contains("[MISSING:"))
+        XCTAssertFalse(unauthorized.contains("[MISSING:"))
+    }
+
+    // MARK: - Lab.Keyword 子命名空间
+
+    func testModelManagerLabKeywordPropsReturnNonMissing() {
+        let greetings = L10n.ModelManager.Lab.Keyword.greetingList
+        let hybrid = L10n.ModelManager.Lab.Keyword.hybridSearchList
+        let swift = L10n.ModelManager.Lab.Keyword.swiftConcurrencyList
+        let rag = L10n.ModelManager.Lab.Keyword.ragArchitectureList
+
+        XCTAssertFalse(greetings.isEmpty)
+        XCTAssertFalse(hybrid.isEmpty)
+        XCTAssertFalse(swift.isEmpty)
+        XCTAssertFalse(rag.isEmpty)
     }
 }

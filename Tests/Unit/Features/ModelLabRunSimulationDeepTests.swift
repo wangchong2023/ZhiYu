@@ -195,78 +195,85 @@ final class ModelLabRunSimulationDeepTests: XCTestCase {
 
     // MARK: - runSimulation 各 case 模拟响应
 
-    /// 验证 askImage 用例的模拟响应包含多模态视觉标识。
-    func testRunSimulationAskImageResponseContainsMultimodalMarker() async {
+    /// 验证 askImage 用例在无模型时如实输出端侧视觉分析（像素特征不依赖 LLM）。
+    func testRunSimulationAskImageResponseContainsVisionAnalysisMarker() async {
         let manifest = makeManifest()
         await manager.runSimulation(for: .askImage, model: manifest, prompt: "")
-        XCTAssertTrue(manager.generatedText.contains("多模态视觉模拟") || manager.generatedText.contains("MediaPipe"),
-                      "askImage 模拟响应应包含多模态标识")
+        XCTAssertTrue(manager.generatedText.contains("端侧视觉分析"),
+                      "askImage 无模型时应如实输出端侧视觉分析")
     }
 
-    /// 验证 audioScribe 用例的模拟响应包含语音速记标识。
-    func testRunSimulationAudioScribeResponseContainsVoiceMarker() async {
+/// 验证 audioScribe 用例在无模型时诚实引导未就绪，且消除旧的死板假套话。
+    func testRunSimulationAudioScribeHonestFallbackWhenNotDownloaded() async {
         let manifest = makeManifest()
         await manager.runSimulation(for: .audioScribe, model: manifest, prompt: "")
-        XCTAssertTrue(manager.generatedText.contains("语音速记") || manager.generatedText.contains("RTF"),
-                      "audioScribe 模拟响应应包含语音标识")
+        XCTAssertTrue(manager.generatedText.contains(L10n.ModelManager.Lab.modelNotReadyTitle),
+                      "audioScribe 无模型时应诚实引导未就绪")
+        XCTAssertFalse(manager.generatedText.contains("语音速记流式转录"), "应彻底消除旧的死板假套话")
     }
 
-    /// 验证 aiChat 用例的模拟响应包含模型 displayName。
-    func testRunSimulationAiChatResponseContainsModelName() async {
+    /// 验证 aiChat 用例在无模型时诚实引导未就绪。
+    func testRunSimulationAiChatHonestFallbackWhenNotDownloaded() async {
         let manifest = makeManifest()
         await manager.runSimulation(for: .aiChat, model: manifest, prompt: "问题")
-        XCTAssertTrue(manager.generatedText.contains(manifest.displayName),
-                      "aiChat 模拟响应应包含模型 displayName")
+        XCTAssertTrue(manager.generatedText.contains(L10n.ModelManager.Lab.modelNotReadyTitle),
+                      "aiChat 无模型时应诚实引导未就绪")
     }
 
-    /// 验证 agentSkills 用例的模拟响应包含 Agent Tool Call 标识。
-    func testRunSimulationAgentSkillsResponseContainsAgentMarker() async {
+    /// 验证 agentSkills 用例在无模型时诚实引导未就绪，且消除旧的死板假套话。
+    func testRunSimulationAgentSkillsHonestFallbackWhenNotDownloaded() async {
         let manifest = makeManifest()
         await manager.runSimulation(for: .agentSkills, model: manifest, prompt: "")
-        XCTAssertTrue(manager.generatedText.contains("Agent Tool Call") || manager.generatedText.contains("summarizeActivePage"),
-                      "agentSkills 模拟响应应包含 Agent 标识")
+        XCTAssertTrue(manager.generatedText.contains(L10n.ModelManager.Lab.modelNotReadyTitle),
+                      "agentSkills 无模型时应诚实引导未就绪")
+        XCTAssertFalse(manager.generatedText.contains("Agent Tool Call 模拟"), "应彻底消除旧的死板假套话")
     }
 
-    /// 验证 promptLab 用例的模拟响应包含 Temperature 值。
-    func testRunSimulationPromptLabResponseContainsTemperature() async {
+    /// 验证 promptLab 用例在无模型时诚实引导未就绪，且消除旧的死板假套话。
+    func testRunSimulationPromptLabHonestFallbackWhenNotDownloaded() async {
         let manifest = makeManifest()
         await manager.runSimulation(for: .promptLab, model: manifest, prompt: "")
-        XCTAssertTrue(manager.generatedText.contains("Temperature"),
-                      "promptLab 模拟响应应包含 Temperature")
+        XCTAssertTrue(manager.generatedText.contains(L10n.ModelManager.Lab.modelNotReadyTitle),
+                      "promptLab 无模型时应诚实引导未就绪")
+        XCTAssertFalse(manager.generatedText.contains("基于您指定的超参滑块控制"), "应彻底消除旧的死板假套话")
     }
 
-    /// 验证 promptLab 用例的模拟响应包含 topP 值。
-    func testRunSimulationPromptLabResponseContainsTopP() async {
+    /// 验证 promptLab 用例在无模型时同样不包含 Top-P 旧套话（诚实引导优先）。
+    func testRunSimulationPromptLabNoTopPWhenNotDownloaded() async {
         let manifest = makeManifest()
         await manager.runSimulation(for: .promptLab, model: manifest, prompt: "")
-        XCTAssertTrue(manager.generatedText.contains("Top-P"),
-                      "promptLab 模拟响应应包含 Top-P")
+        XCTAssertTrue(manager.generatedText.contains(L10n.ModelManager.Lab.modelNotReadyTitle),
+                      "promptLab 无模型时应诚实引导未就绪")
+        XCTAssertFalse(manager.generatedText.contains("Temperature"), "应彻底消除旧的死板假套话")
     }
 
-    /// 验证 tinyGarden 用例的模拟响应包含种植标识。
-    func testRunSimulationTinyGardenResponseContainsPlantingMarker() async {
+    /// 验证 tinyGarden 用例在无模型时诚实引导未就绪，且消除旧的死板假套话。
+    func testRunSimulationTinyGardenHonestFallbackWhenNotDownloaded() async {
         let manifest = makeManifest()
         await manager.runSimulation(for: .tinyGarden, model: manifest, prompt: "")
-        XCTAssertTrue(manager.generatedText.contains("小花园") || manager.generatedText.contains("玫瑰"),
-                      "tinyGarden 模拟响应应包含种植标识")
+        XCTAssertTrue(manager.generatedText.contains(L10n.ModelManager.Lab.modelNotReadyTitle),
+                      "tinyGarden 无模型时应诚实引导未就绪")
+        XCTAssertFalse(manager.generatedText.contains("小花园种植指令执行"), "应彻底消除旧的死板假套话")
     }
 
-    /// 验证 mobileActions 用例的模拟响应包含快捷指令标识。
-    func testRunSimulationMobileActionsResponseContainsShortcutsMarker() async {
+    /// 验证 mobileActions 用例在无模型时诚实引导未就绪，且消除旧的死板假套话。
+    func testRunSimulationMobileActionsHonestFallbackWhenNotDownloaded() async {
         let manifest = makeManifest()
         await manager.runSimulation(for: .mobileActions, model: manifest, prompt: "")
-        XCTAssertTrue(manager.generatedText.contains("快捷指令") || manager.generatedText.contains("toggleThemeMode"),
-                      "mobileActions 模拟响应应包含快捷指令标识")
+        XCTAssertTrue(manager.generatedText.contains(L10n.ModelManager.Lab.modelNotReadyTitle),
+                      "mobileActions 无模型时应诚实引导未就绪")
+        XCTAssertFalse(manager.generatedText.contains("快捷指令离线执行"), "应彻底消除旧的死板假套话")
     }
 
     // MARK: - runSimulation prompt 截断
 
-    /// 验证长 prompt（>15 字符）在模拟响应中被截断为前 15 字符 + "..."。
-    func testRunSimulationLongPromptTruncatedToFirst15Chars() async {
+    /// 验证长 prompt 在无模型时同样走诚实引导（不再对 prompt 做离线模拟截断）。
+    func testRunSimulationLongPromptHonestFallbackWhenNotDownloaded() async {
         let manifest = makeManifest()
         let longPrompt = String(repeating: "这是一段很长的测试提示词内容", count: 5)
         await manager.runSimulation(for: .mobileActions, model: manifest, prompt: longPrompt)
-        XCTAssertTrue(manager.generatedText.contains("..."), "长 prompt 应被截断并添加省略号")
+        XCTAssertTrue(manager.generatedText.contains(L10n.ModelManager.Lab.modelNotReadyTitle),
+                      "长 prompt 无模型时应诚实引导未就绪")
     }
 
     /// 验证短 prompt（<=15 字符）在模拟响应中不截断。

@@ -17,7 +17,7 @@ import UFPCore
 import Dependencies
 import UFPDesignSystem
 
-/// 大模型测试实验室的 7 大用例场景类型
+/// 大模型测试实验室的场景类型
 public enum UseCaseType: String, CaseIterable, Identifiable, Sendable {
     case askImage = "ask_image"
     case audioScribe = "audio_scribe"
@@ -26,6 +26,9 @@ public enum UseCaseType: String, CaseIterable, Identifiable, Sendable {
     case promptLab = "prompt_lab"
     case tinyGarden = "tiny_garden"
     case mobileActions = "mobile_actions"
+    case instantMediaSearch = "instant_media_search"
+    case videoMomentSearch = "video_moment_search"
+    case benchmark = "benchmark"
 
     public var id: String { rawValue }
 
@@ -38,6 +41,9 @@ public enum UseCaseType: String, CaseIterable, Identifiable, Sendable {
         case .promptLab: return L10n.ModelManager.Lab.useCasePromptLab
         case .tinyGarden: return L10n.ModelManager.Lab.useCaseTinyGarden
         case .mobileActions: return L10n.ModelManager.Lab.useCaseMobileActions
+        case .instantMediaSearch: return L10n.ModelManager.Lab.useCaseInstantMediaSearch
+        case .videoMomentSearch: return L10n.ModelManager.Lab.useCaseVideoMomentSearch
+        case .benchmark: return L10n.ModelManager.Benchmark.title
         }
     }
 
@@ -50,6 +56,9 @@ public enum UseCaseType: String, CaseIterable, Identifiable, Sendable {
         case .promptLab: return L10n.ModelManager.Lab.descPromptLab
         case .tinyGarden: return L10n.ModelManager.Lab.descTinyGarden
         case .mobileActions: return L10n.ModelManager.Lab.descMobileActions
+        case .instantMediaSearch: return L10n.ModelManager.Lab.descInstantMediaSearch
+        case .videoMomentSearch: return L10n.ModelManager.Lab.descVideoMomentSearch
+        case .benchmark: return L10n.ModelManager.Benchmark.description
         }
     }
 
@@ -62,6 +71,24 @@ public enum UseCaseType: String, CaseIterable, Identifiable, Sendable {
         case .promptLab: return "slider.horizontal.3"
         case .tinyGarden: return "leaf.fill"
         case .mobileActions: return "iphone.radiowaves.left.and.right"
+        case .instantMediaSearch: return "photo.on.rectangle.angled"
+        case .videoMomentSearch: return "video.badge.waveform.fill"
+        case .benchmark: return "speedometer"
+        }
+    }
+
+    public var themeColor: Color {
+        switch self {
+        case .askImage: return Color.theme.blue
+        case .audioScribe: return Color.theme.purple
+        case .aiChat: return Color.theme.cyan
+        case .agentSkills: return Color.theme.purple
+        case .promptLab: return Color.theme.orange
+        case .tinyGarden: return Color.theme.green
+        case .mobileActions: return Color.theme.blue
+        case .instantMediaSearch: return Color.theme.orange
+        case .videoMomentSearch: return Color.theme.green
+        case .benchmark: return Color.theme.purple
         }
     }
     
@@ -70,7 +97,25 @@ public enum UseCaseType: String, CaseIterable, Identifiable, Sendable {
         switch self {
         case .askImage: return "multimodal"
         case .audioScribe: return "multimodal"
+        case .instantMediaSearch: return FeatureConstants.TaskName.mediaSearch
+        case .videoMomentSearch: return FeatureConstants.TaskName.videoSearch
+        case .benchmark: return "benchmark"
         case .aiChat, .agentSkills, .promptLab, .tinyGarden, .mobileActions: return "chat"
+        }
+    }
+
+    /// 初始预设 Prompt 文本
+    public var defaultPresetPrompt: String {
+        switch self {
+        case .askImage: return L10n.ModelManager.Lab.Prompt.askImage
+        case .aiChat: return L10n.ModelManager.Lab.Prompt.chat
+        case .agentSkills: return L10n.ModelManager.Lab.Prompt.agentSkills
+        case .promptLab: return L10n.ModelManager.Lab.Prompt.promptLab
+        case .tinyGarden: return L10n.ModelManager.Lab.Prompt.tinyGarden
+        case .mobileActions: return L10n.ModelManager.Lab.Prompt.mobileActions
+        case .instantMediaSearch: return L10n.ModelManager.Lab.Prompt.instantMediaSearch
+        case .videoMomentSearch: return L10n.ModelManager.Lab.Prompt.videoMomentSearch
+        case .benchmark, .audioScribe: return ""
         }
     }
 }
@@ -138,9 +183,6 @@ public final class ModelLabManager {
 
     // MARK: - 依赖注入
 
-    /// LLM 推理服务（通过 DI 注入，避免直接访问 LLMService.shared 单例）
-    @ObservationIgnored @Dependency(\.llmService) private var llmService: any LLMServiceProtocol
-
     // MARK: - 状态属性
     
     /// 当前选中的测试场景用例，为 nil 时展示格栅式主页
@@ -148,6 +190,9 @@ public final class ModelLabManager {
     
     /// 模拟推理文本输出流
     public var generatedText: String = ""
+    
+    /// 模型载入与统一内存映射预热阶段的提示文本（非空时呈现旋转进度指示器）
+    public var loadingStageText: String = ""
     
     /// 是否正在运行测试推理
     public var isGenerating: Bool = false
@@ -164,6 +209,35 @@ public final class ModelLabManager {
     public var traceSteps: [TraceStep] = []
     public var confidenceItems: [ConfidenceItem] = []
     public var extraPanelTitle: String = ""
+
+    /// 按用例隔离的输出文本缓存，杜绝多用例之间串台污染
+    public var useCaseOutputs: [String: String] = [:]
+    /// 按用例隔离的实时性能评估看板指标，杜绝未测试场景的数据残留
+    public var useCaseStats: [String: PerformanceStats] = [:]
+
+    /// 切换目标用例并恢复对应输出与指标状态
+    public func switchUseCase(to useCase: UseCaseType?) {
+        selectedUseCase = useCase
+        if let useCase {
+            generatedText = useCaseOutputs[useCase.rawValue] ?? ""
+            currentStats = useCaseStats[useCase.rawValue] ?? PerformanceStats(
+                speed: 0.0,
+                prefillLatency: 0,
+                firstTokenLatency: 0,
+                memoryUsage: 0.0
+            )
+        } else {
+            generatedText = ""
+            currentStats = PerformanceStats(
+                speed: 0.0,
+                prefillLatency: 0,
+                firstTokenLatency: 0,
+                memoryUsage: 0.0
+            )
+        }
+        isGenerating = false
+        loadingStageText = ""
+    }
     
     /// 参数特化提示 Tips，避开 View 层的硬编码字符串审计
     public var paramTips: String {
@@ -204,8 +278,20 @@ public final class ModelLabManager {
     ///   - useCase: 实验室用例类型
     /// - Returns: 是否支持该场景
     public func isModelCompatible(_ model: LLMManifest, for useCase: UseCaseType) -> Bool {
+        if useCase == .benchmark {
+            return true
+        }
         let task = useCase.requiredTask.lowercased()
         return model.supportedTasks.contains { $0.lowercased() == task }
+    }
+
+    /// 统计指定测试用例下可用模型的数量
+    /// - Parameters:
+    ///   - useCase: 实验室用例类型
+    ///   - models: 待统计的模型清单
+    /// - Returns: 兼容的模型数量
+    public func availableModelCount(for useCase: UseCaseType, in models: [LLMManifest]) -> Int {
+        models.filter { isModelCompatible($0, for: useCase) }.count
     }
     
     /// 启动所选场景的推理（优先调用真实 LLM 引擎，无配置时回退至离线展演）
@@ -213,7 +299,19 @@ public final class ModelLabManager {
     ///   - useCase: 测试用例
     ///   - model: 激活的模型 Manifest
     ///   - prompt: 用户输入的测试 Prompt / 数据源
-    public func runSimulation(for useCase: UseCaseType, model: LLMManifest, prompt: String) async {
+    ///   - imageData: Ask Image 用例所选的真实图片数据
+    ///   - temperature: 用户通过滑块配置的 Temperature（默认使用模型默认值）
+    ///   - topP: 用户通过滑块配置的 Top-P（默认使用模型默认值）
+    ///   - sampleId: 预置实测样例 ID
+    public func runSimulation(
+        for useCase: UseCaseType,
+        model: LLMManifest,
+        prompt: String,
+        imageData: Data? = nil,
+        temperature: Double? = nil,
+        topP: Double? = nil,
+        sampleId: String? = nil
+    ) async {
         guard !isGenerating else { return }
         
         isGenerating = true
@@ -236,91 +334,164 @@ public final class ModelLabManager {
             memoryUsage: simulatedMemory
         )
         
-        // 2. 尝试调用真实的大模型推理引擎（若 LLM 服务就绪且可用）
-        var realLLMResponse: String?
-        let cleanPrompt = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !cleanPrompt.isEmpty {
-            do {
-                let systemPrompt = "你是端侧大模型 \(model.displayName)。请针对用户的输入提供专业、简洁且切中要害的回答。"
-                let responseText = try await llmService.generate(prompt: cleanPrompt, systemPrompt: systemPrompt)
-                if !responseText.isEmpty {
-                    realLLMResponse = responseText
-                }
-            } catch {
-                Logger.shared.warning("[ModelLabManager] 真实 LLM 推理失败，回退至离线模拟生成: \(error.localizedDescription)")
+        // 2. Ask Image：处理预置图或相册图片的真实端侧视觉特征与标签
+        var visionResult: VisionAnalysisResult?
+        if useCase == .askImage {
+            if let imageData {
+                visionResult = await OnDeviceVisionAnalyzer.shared.analyze(data: imageData)
+                confidenceItems = visionResult?.confidenceItems ?? []
+            } else {
+                let actualSample = sampleId ?? FeatureConstants.LabSynthesisConstants.sampleSmartDesk
+                setupPresetConfidence(sampleId: actualSample)
             }
         }
+
+        let isDownloaded = isModelDownloadedLocally(modelId: model.modelId)
+        if isDownloaded {
+            loadingStageText = L10n.ModelManager.Lab.modelLoadingIndicator
+        }
+
+        // 3. 决定最终输出文本（严格使用已下载的本地大模型，未下载时进行诚实未就绪引导）
+        let cleanPrompt = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
+        let tempVal = temperature ?? model.defaultParameters.temperature
+        let topPVal = topP ?? model.defaultParameters.topP
+        let localModelResponse: String?
+        if useCase == .aiChat {
+            localModelResponse = await requestLocalModelResponse(model: model, prompt: cleanPrompt, vision: visionResult)
+        } else {
+            localModelResponse = nil
+        }
+        loadingStageText = ""
         
-        // 3. 决定最终输出文本（优先真实 LLM 回复，无网络/未配置时降级至离线展演）
-        let finalResponseText = realLLMResponse ?? getMockResponse(for: useCase, model: model, prompt: prompt)
+        let finalResponseText: String
+        if let localModelResponse {
+            finalResponseText = localModelResponse
+        } else {
+            finalResponseText = LabResponseSynthesizer.shared.synthesize(
+                useCase: useCase,
+                prompt: cleanPrompt,
+                model: model,
+                temperature: tempVal,
+                topP: topPVal,
+                visionResult: visionResult,
+                sampleId: sampleId
+            )
+        }
         
         // 模拟首词加载的延迟（展现思考与预填过程）
         try? await Task.sleep(nanoseconds: UInt64(firstTokenLatency * 1_000_000))
-        
-        // 4. 针对中文/多语言文本按 Character 逐字/短 Chunk 递增输出，呈现与 AI 对话一致的流畅打字流
-        let characters = Array(finalResponseText)
+        await streamOutputText(finalResponseText, isE4B: isE4B)
+        useCaseOutputs[useCase.rawValue] = generatedText
+        useCaseStats[useCase.rawValue] = currentStats
+        isGenerating = false
+    }
+
+    /// 针对中文/多语言文本按短 Chunk 递增流式输出，呈现打字机动效
+    private func streamOutputText(_ text: String, isE4B: Bool) async {
+        let characters = Array(text)
         let chunkSize = characters.count > FeatureConstants.ModelLabSimulation.longTextThreshold ? FeatureConstants.ModelLabSimulation.longTextChunkSize : FeatureConstants.ModelLabSimulation.shortTextChunkSize
         var currentIndex = 0
         var currentTokenCount = 0
         let startTime = Date()
-        
+
         while currentIndex < characters.count {
             if !isGenerating { break }
-            
             let endIndex = min(currentIndex + chunkSize, characters.count)
             let chunk = String(characters[currentIndex..<endIndex])
-            
             generatedText += chunk
             currentTokenCount += 1
-            
-            // 动态更新 Tokens/Sec 推理速度
             let elapsed = Date().timeIntervalSince(startTime)
             if elapsed > 0 {
                 let currentSpeed = Double(currentTokenCount * FeatureConstants.ModelLabSimulation.tokenSpeedMultiplier) / elapsed
                 currentStats.speed = min(currentSpeed, isE4B ? 32.5 : 45.8)
             }
-            
             let sleepMs = isE4B ? 45 : 30
             try? await Task.sleep(nanoseconds: UInt64(sleepMs * 1_000_000))
-            
             currentIndex = endIndex
         }
-        
-        isGenerating = false
     }
-    
+
+    /// 针对已下载的端侧本地大模型进行离线推理生成（杜绝调用在线 API，纯端侧执行）
+    private func requestLocalModelResponse(model: LLMManifest, prompt: String, vision: VisionAnalysisResult?) async -> String? {
+        guard !prompt.isEmpty else { return nil }
+        // 严格物理校验：仅当本地沙盒中已下载模型权重时才执行本地推理，绝不走在线云端
+        guard isModelDownloadedLocally(modelId: model.modelId) else {
+            Logger.shared.info("[ModelLabManager] 本地模型 \(model.modelId) 未在本地沙盒下载，遵循纯离线原则不调用任何在线接口")
+            return nil
+        }
+        
+        if let onDevice = ServiceContainer.shared.resolveOptional((any OnDeviceLLMServiceProtocol).self) as? OnDeviceLLMService {
+            if !onDevice.isModelLoaded {
+                let expectedID = "\(LLMConstants.ModelIDPrefix.downloaded)\(model.modelId)"
+                onDevice.selectedModelID = expectedID
+                try? await onDevice.loadModel()
+            }
+
+            if onDevice.isModelLoaded {
+                let userPrompt = vision.map { "\($0.featureDescription)\n\n\(prompt)" } ?? prompt
+                do {
+                    let text = try await onDevice.generate(prompt: userPrompt, maxTokens: OnDeviceLLMService.Config.chatMaxTokens)
+                    return text.isEmpty ? nil : text
+                } catch {
+                    Logger.shared.warning("[ModelLabManager] 端侧本地模型推理失败: \(error.localizedDescription)")
+                }
+            }
+        }
+        return nil
+    }
+
+    /// 检测目标本地大模型在端侧沙盒是否已下载就绪
+    private func isModelDownloadedLocally(modelId: String) -> Bool {
+        if GlobalModelManager.shared.isModelLocalReady(for: modelId) {
+            return true
+        }
+        let fm = FileManager.default
+        if let docURL = fm.urls(for: .documentDirectory, in: .userDomainMask).first {
+            let binURL = docURL.appendingPathComponent("\(modelId).bin")
+            let modelcURL = docURL.appendingPathComponent("MLModels/\(modelId).mlmodelc")
+            if fm.fileExists(atPath: binURL.path) || fm.fileExists(atPath: modelcURL.path) {
+                return true
+            }
+        }
+        return false
+    }
+
     /// 停止当前的测试推理
     public func stopSimulation() {
         isGenerating = false
+        loadingStageText = ""
     }
     
-    // MARK: - 模拟响应数据池
+    // MARK: - 预置样本置信度辅助
     
-    private func getMockResponse(for useCase: UseCaseType, model: LLMManifest, prompt: String) -> String {
-        let cleanPrompt = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
-        let promptSnippet = cleanPrompt.count > FeatureConstants.ModelLabSimulation.promptSnippetLength ? String(cleanPrompt.prefix(FeatureConstants.ModelLabSimulation.promptSnippetLength)) + FeatureConstants.ModelLabSimulation.promptEllipsis : cleanPrompt
-        
-        switch useCase {
-        case .askImage:
-            return "[多模态视觉模拟] 成功加载测试图片。基于端侧端到端 MediaPipe 视觉模型推理：图片中央区域被识别为一个工作台，工作台上放置了纸质笔记本、一支黑色钢笔及亮屏的 iPhone 手机。背景为温暖的漫反射台灯光，适合用于个人智宇知识摄取。模型对于“\(promptSnippet)”的解答是：这非常符合您的 AI 原生知识管理工作流环境。"
-            
-        case .audioScribe:
-            return "[语音速记流式转录] 音频解码成功。RTF (实时率): 0.12。转录文本为：「智宇大模型本地测试实验室今日上线，完美支持 Gemma 4 最新端侧模型。」\n\nAI 优化润色后：「ZhiYu Local LLM Lab went live today, fully supporting Google's latest Gemma 4 on-device model.」"
-            
-        case .aiChat:
-            return "<Thinking>\n通过分析用户输入的 Prompt: \"\(cleanPrompt)\"。我需要调取本地知识库的本地化缓存，并采用 Gemma 4 \(model.displayName) 模型强大的 32K 上下文推理。这需要结合上下文的物理运存隔离以防御多轮对话中的遗忘现象。\n</Thinking>\n\n你好！我是当前在您设备本地脱网运行的 \(model.displayName)。对于您刚才提出的问题，我们完全可以通过智宇的语义嵌入引擎与端侧混合检索来实现。本地推理具有完全的数据隐私安全，所有思考和上下文均不会泄露到云端。"
-            
-        case .agentSkills:
-            return "[Agent Tool Call 模拟] 解析意图：用户需要对知识库中关联的页面进行概括总结。\n➡️ 自动定位本地工具：`ZhiYuSystemPlugin.summarizeActivePage`\n➡️ 调用本地沙盒安全执行结果：成功读取了名为“大模型方案设计”的页面。\n\n[大模型总结]：\n本项目通过 L0-L3 垂直化切片设计，规避了 Features 对 Infra 的直接依赖，完美保障了 Swift 6 严格并发安全性。"
-            
-        case .promptLab:
-            return "[提示词实验生成 - Temperature: \(model.defaultParameters.temperature)] 基于您指定的超参滑块控制，模型输出如下：\n端侧大模型的应用潜力巨大。通过对本地 Prompt 进行微调和滑块超参调节（例如 Top-P \(model.defaultParameters.topP) 与 Temperature），开发人员和用户能在端侧无延迟、低功耗地得到具有差异化的创造性答案。这在网络断开或离线飞行模式下极其有用。"
-            
-        case .tinyGarden:
-            return "[小花园种植指令执行] 识别到种植植物的意图词：玫瑰 (Rose)。\n➡️ 正在分析土壤参数和虚拟阳光强度。\n➡️ 玫瑰种子已成功播种到主界面 UI 的 SwiftUI Garden Canvas 中。\n➡️ 已触发 `GardenRender` 粒子动态动画，您的虚拟花园中盛开了一朵粉色的端侧生成的玫瑰花！"
-            
-        case .mobileActions:
-            return "[快捷指令离线执行] 解析离线用户语音/文本指令：“\(promptSnippet)”。\n➡️ 行为提取：`DeviceSystemController.toggleThemeMode`\n➡️ 指令匹配安全沙盒检测：PASS\n➡️ 离线执行成功：智宇已为您自动切换到全新深邃暗黑毛玻璃主题，并触发了设备触感马达 (Haptic Feedback) 轻微震动反馈。"
+    private func setupPresetConfidence(sampleId: String) {
+        let colors = [
+            FeatureConstants.MockColorName.cyan,
+            FeatureConstants.MockColorName.purple,
+            FeatureConstants.MockColorName.blue
+        ]
+        let consts = FeatureConstants.VisionAnalysisConstants.self
+        switch sampleId {
+        case FeatureConstants.LabSynthesisConstants.sampleSmartDesk:
+            confidenceItems = [
+                ConfidenceItem(name: consts.presetDeskDisplay, score: 0.94, colorName: colors[0]),
+                ConfidenceItem(name: consts.presetDeskKeyboard, score: 0.88, colorName: colors[1]),
+                ConfidenceItem(name: consts.presetDeskPlant, score: 0.82, colorName: colors[2])
+            ]
+        case FeatureConstants.LabSynthesisConstants.sampleArchChart:
+            confidenceItems = [
+                ConfidenceItem(name: consts.presetArchTopology, score: 0.96, colorName: colors[0]),
+                ConfidenceItem(name: consts.presetArchFlow, score: 0.91, colorName: colors[1]),
+                ConfidenceItem(name: consts.presetArchComponents, score: 0.85, colorName: colors[2])
+            ]
+        case FeatureConstants.LabSynthesisConstants.sampleCityNight:
+            confidenceItems = [
+                ConfidenceItem(name: consts.presetNightSkyline, score: 0.95, colorName: colors[0]),
+                ConfidenceItem(name: consts.presetNightWindows, score: 0.89, colorName: colors[1]),
+                ConfidenceItem(name: consts.presetNightMoon, score: 0.84, colorName: colors[2])
+            ]
+        default:
+            break
         }
     }
     
@@ -332,11 +503,7 @@ public final class ModelLabManager {
         switch useCase {
         case .askImage:
             extraPanelTitle = L10n.ModelManager.Lab.Extra.objectDetection
-            confidenceItems = [
-                ConfidenceItem(name: FeatureConstants.LabDemoText.notebookLabel, score: 0.94, colorName: FeatureConstants.MockColorName.cyan),
-                ConfidenceItem(name: FeatureConstants.LabDemoText.penLabel, score: 0.87, colorName: FeatureConstants.MockColorName.purple),
-                ConfidenceItem(name: FeatureConstants.LabDemoText.iphoneScreenLabel, score: 0.81, colorName: FeatureConstants.MockColorName.blue)
-            ]
+            setupPresetConfidence(sampleId: FeatureConstants.LabSynthesisConstants.sampleSmartDesk)
         case .audioScribe:
             extraPanelTitle = L10n.ModelManager.Lab.Extra.speechTranscribing
             traceSteps = [

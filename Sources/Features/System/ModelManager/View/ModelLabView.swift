@@ -11,6 +11,7 @@
 //
 
 import SwiftUI
+import PhotosUI
 import Dependencies
 import UFPDesignSystem
 
@@ -32,6 +33,8 @@ public struct ModelLabView: View {
 
     @FocusState var isPromptFocused: Bool
     @State var testPrompt: String = ""
+    /// 每个用例专属的独立 Prompt 字典，杜绝跨用例串台
+    @State var useCasePrompts: [String: String] = [:]
     /// Bug #73 修复：标记是否已为当前用例设置过默认 prompt，避免 onAppear 重复触发时覆盖用户输入。
     @State var hasSetupPrompt: Set<String> = []
     @State var tempTemperature: Double = FeatureConstants.InferenceParam.defaultTemperature
@@ -42,6 +45,8 @@ public struct ModelLabView: View {
     // 参数配置面板
     @State var showConfigSheet: Bool = false
     @State var useGPU: Bool = false
+    @State var selectedAccelerator: InferenceAccelerator = .auto
+    @State var selectedContextWindow: ContextWindowOption = .size4K
     @State var enableThinking: Bool = false
     @State var enableSpeculativeDecoding: Bool = false
 
@@ -66,10 +71,21 @@ public struct ModelLabView: View {
 
     // 多模态/视觉特定状态
     @State var isImageSelected: Bool = false
+    @State var selectedImageData: Data?
+    @State var selectedImageResolution: String = ""
+    @State var selectedImageSize: String = ""
+    @State var selectedSampleId: String = ""
+    @State var selectedPhotoItem: PhotosPickerItem?
 
     // 语音速记特定状态
+    @StateObject var audioRecorder = LabAudioRecorder.shared
+    @StateObject var audioPlayer = LabAudioPlayer.shared
     @State var isAudioRecording: Bool = false
     @State var isAudioCompleted: Bool = false
+    @State var selectedAudioSampleId: String = ""
+    @State var recordedAudioURL: URL?
+    @State var audioTranscribeRTF: Double = 0.0
+    @State var audioTranscribeWords: Int64 = 0
 
     // 多轮对话特定状态
     @State var chatHistory: [LabChatMessage] = []

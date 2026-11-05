@@ -38,6 +38,7 @@ struct AISettingsView: View {
                 .segmentedPickerStyleIfAvailable()
                 .padding(.horizontal)
                 .padding(.vertical, DesignTokens.Spacing.small)
+                .zIndex(10)
  
                 // 核心状态切换区域，根据 selectedTab 动态渲染对应子模块配置视图
                 Group {

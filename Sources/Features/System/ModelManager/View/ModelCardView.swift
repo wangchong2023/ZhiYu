@@ -45,7 +45,20 @@ struct ModelCardView: View {
                 // 头部：标题与状态标签
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
-                        HStack(spacing: DesignTokens.Spacing.small) {
+                        HStack(spacing: DesignTokens.Spacing.tiny) {
+                            Image(systemName: manifest.vendor.lowercased().contains(FeatureConstants.ModelSpecConstants.vendorGoogle) ? DesignTokens.Icons.sparkles : DesignTokens.Icons.cpu)
+                                .font(.caption.bold())
+                                .foregroundStyle(Color.theme.cyan)
+                                .padding(DesignTokens.SystemSpacing.tiny)
+                                .background(
+                                    LinearGradient(
+                                        colors: [Color.theme.cyan.opacity(DesignTokens.Opacity.subtle), Color.theme.purple.opacity(DesignTokens.Opacity.subtle)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .clipShape(Circle())
+
                             Text(manifest.displayName)
                                 .font(.headline)
                                 .foregroundStyle(eligibility == .restricted ? .appSecondary : .appText)
@@ -57,6 +70,22 @@ struct ModelCardView: View {
                                 .background(Color.appAccent.opacity(DesignTokens.Opacity.glass))
                                 .clipShape(Capsule())
                                 .foregroundStyle(.appAccent)
+
+                            Text(manifest.quantizationBadge)
+                                .font(.system(size: DesignTokens.SystemFontSize.nano, weight: .semibold, design: .monospaced))
+                                .padding(.horizontal, DesignTokens.SystemSpacing.small)
+                                .padding(.vertical, DesignTokens.SystemSpacing.atomic)
+                                .background(Color.theme.purple.opacity(DesignTokens.Opacity.subtle))
+                                .clipShape(Capsule())
+                                .foregroundStyle(Color.theme.purple)
+
+                            Text(manifest.runtimeEngineBadge)
+                                .font(.system(size: DesignTokens.SystemFontSize.nano, weight: .semibold, design: .monospaced))
+                                .padding(.horizontal, DesignTokens.SystemSpacing.small)
+                                .padding(.vertical, DesignTokens.SystemSpacing.atomic)
+                                .background(Color.theme.cyan.opacity(DesignTokens.Opacity.subtle))
+                                .clipShape(Capsule())
+                                .foregroundStyle(Color.theme.cyan)
                         }
 
                         Text(manifest.vendor)
@@ -228,10 +257,16 @@ struct ModelCardView: View {
                 .font(.subheadline).foregroundStyle(.appText).fixedSize(horizontal: false, vertical: true)
 
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: DesignTokens.Spacing.small) {
-                specItem(icon: "cpu", label: L10n.ModelManager.Spec.memory, value: String(format: "%.0f GB", manifest.minDeviceMemoryInGb))
-                specItem(icon: "arrow.down.doc", label: L10n.ModelManager.Spec.downloadSize, value: formattedSize(manifest.fileSizeInBytes))
-                specItem(icon: "square.3.layers.3d", label: L10n.ModelManager.Spec.parameters, value: manifest.parameterCount)
-                specItem(icon: "number", label: L10n.ModelManager.Spec.checksum, value: String(manifest.sha256Checksum.prefix(FeatureConstants.ModelCard.checksumPrefixLength)) + "...")
+                specItem(icon: DesignTokens.Icons.cpu, label: L10n.ModelManager.Spec.memory, value: String(format: "%.0f GB", manifest.minDeviceMemoryInGb))
+                specItem(icon: DesignTokens.Icons.arrowDownDoc, label: L10n.ModelManager.Spec.downloadSize, value: formattedSize(manifest.fileSizeInBytes))
+                specItem(icon: DesignTokens.Icons.stackFill, label: L10n.ModelManager.Spec.parameters, value: manifest.parameterCount)
+                specItem(icon: DesignTokens.Icons.cubeTransparent, label: L10n.ModelManager.Spec.quantization, value: manifest.quantizationBadge)
+                specItem(icon: DesignTokens.Icons.bolt, label: L10n.ModelManager.Spec.runtimeEngine, value: manifest.runtimeEngineBadge)
+                specItem(icon: DesignTokens.Icons.folderFill, label: L10n.ModelManager.Spec.sandboxPath, value: manifest.localSandboxRelativePath)
+            }
+
+            if modelManager.isModelLocalReady(for: manifest.modelId) {
+                specActionButtons(for: manifest)
             }
 
             if !manifest.displayTasks.isEmpty {
@@ -239,9 +274,8 @@ struct ModelCardView: View {
                     Text(L10n.ModelManager.Spec.tasks).font(.caption).foregroundStyle(.appSecondary)
                     ForEach(manifest.displayTasks, id: \.self) { t in
                         HStack(spacing: DesignTokens.SystemSpacing.tight) {
-                            // 胶囊引入微型功能图标，增强视觉可读性
                             Image(systemName: taskIcon(for: t))
-                                .font(.system(size: DesignTokens.SystemFontSize.nano)) // Dynamic Type
+                                .font(.system(size: DesignTokens.SystemFontSize.nano))
                             Text(taskLabel(for: t))
                                 .font(.caption2)
                         }
@@ -257,6 +291,48 @@ struct ModelCardView: View {
         .background(specBg)
         .clipShape(RoundedRectangle(cornerRadius: DesignTokens.SystemRadius.small))
         .transition(.opacity.combined(with: .scale(scale: 0.95)))
+    }
+
+    @ViewBuilder
+    private func specActionButtons(for manifest: LLMManifest) -> some View {
+        HStack(spacing: DesignTokens.Spacing.small) {
+            Button {
+                HapticFeedback.shared.trigger(.selection)
+                Task { await modelManager.reload() }
+            } label: {
+                HStack(spacing: DesignTokens.SystemSpacing.tiny) {
+                    Image(systemName: DesignTokens.Icons.arrowClockwise)
+                    Text(L10n.ModelManager.Spec.reloadModel)
+                }
+                .font(.caption.bold())
+                .foregroundStyle(Color.theme.cyan)
+                .padding(.horizontal, DesignTokens.Spacing.standardPadding)
+                .padding(.vertical, DesignTokens.SystemSpacing.tiny)
+                .background(Color.theme.cyan.opacity(DesignTokens.Opacity.subtle))
+                .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+
+            Button {
+                HapticFeedback.shared.trigger(.warning)
+                modelManager.clearModelCache(for: manifest.modelId)
+            } label: {
+                HStack(spacing: DesignTokens.SystemSpacing.tiny) {
+                    Image(systemName: DesignTokens.Icons.delete)
+                    Text(L10n.ModelManager.Spec.clearCache)
+                }
+                .font(.caption.bold())
+                .foregroundStyle(Color.theme.red)
+                .padding(.horizontal, DesignTokens.Spacing.standardPadding)
+                .padding(.vertical, DesignTokens.SystemSpacing.tiny)
+                .background(Color.theme.red.opacity(DesignTokens.Opacity.subtle))
+                .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+
+            Spacer()
+        }
+        .padding(.top, DesignTokens.SystemSpacing.tiny)
     }
 
     private func specItem(icon: String, label: String, value: String) -> some View {
@@ -325,6 +401,8 @@ struct ModelCardView: View {
         case FeatureConstants.TaskName.code: return L10n.ModelManager.Task.code
         case FeatureConstants.TaskName.rag: return L10n.ModelManager.Task.rag
         case FeatureConstants.TaskName.translation: return L10n.ModelManager.Task.translation
+        case FeatureConstants.TaskName.mediaSearch: return L10n.ModelManager.Task.mediaSearch
+        case FeatureConstants.TaskName.videoSearch: return L10n.ModelManager.Task.videoSearch
         default: return task
         }
     }
@@ -337,6 +415,8 @@ struct ModelCardView: View {
         case FeatureConstants.TaskName.code: return Color.theme.orange
         case FeatureConstants.TaskName.rag: return Color.theme.pink
         case FeatureConstants.TaskName.translation: return Color.theme.teal
+        case FeatureConstants.TaskName.mediaSearch: return Color.theme.yellow
+        case FeatureConstants.TaskName.videoSearch: return Color.theme.red
         default: return .appSecondary
         }
     }
@@ -350,6 +430,8 @@ struct ModelCardView: View {
         case FeatureConstants.TaskName.code: return DesignTokens.Icons.chevronCode
         case FeatureConstants.TaskName.rag: return DesignTokens.Icons.docMagnify
         case FeatureConstants.TaskName.translation: return DesignTokens.Icons.characterBook
+        case FeatureConstants.TaskName.mediaSearch: return DesignTokens.Icons.photoOnRectangle
+        case FeatureConstants.TaskName.videoSearch: return DesignTokens.Icons.playRectangleFill
         default: return DesignTokens.Icons.sparkles
         }
     }

@@ -61,9 +61,9 @@ final class ModelLabUseCaseMetadataDeepTests: XCTestCase {
 
     // MARK: - UseCaseType 元数据映射
 
-    /// 验证 UseCaseType 共 7 个 case，与 CaseIterable 一致。
-    func testUseCaseTypeHasSevenCases() {
-        XCTAssertEqual(UseCaseType.allCases.count, 7, "UseCaseType 应有 7 个 case")
+    /// 验证 UseCaseType 共 10 个 case，与 CaseIterable 一致。
+    func testUseCaseTypeHasTenCases() {
+        XCTAssertEqual(UseCaseType.allCases.count, 10, "UseCaseType 应有 10 个 case")
     }
 
     /// 验证 askImage 的 title 非空且来自 L10n。
@@ -267,19 +267,20 @@ final class ModelLabUseCaseMetadataDeepTests: XCTestCase {
         XCTAssertTrue(manager.isModelCompatible(manifest, for: .audioScribe))
     }
 
-    /// 验证模型同时支持 chat 和 multimodal 时，所有用例兼容。
+    /// 验证模型同时支持 chat/multimodal/media_search/video_search 时，所有用例兼容。
     func testIsModelCompatibleSupportsChatAndMultimodalAllUseCasesCompatible() {
-        let manifest = makeManifest(supportedTasks: ["chat", "multimodal"])
+        let manifest = makeManifest(supportedTasks: ["chat", "multimodal", FeatureConstants.TaskName.mediaSearch, FeatureConstants.TaskName.videoSearch])
         for useCase in UseCaseType.allCases {
             XCTAssertTrue(manager.isModelCompatible(manifest, for: useCase), "\(useCase) 应兼容")
         }
     }
 
-    /// 验证空 supportedTasks 时所有用例不兼容。
+    /// 验证空 supportedTasks 时，除 benchmark（性能压测不依赖具体任务能力）外所有用例不兼容。
     func testIsModelCompatibleEmptySupportedTasksAllUseCasesIncompatible() {
         let manifest = makeManifest(supportedTasks: [])
-        for useCase in UseCaseType.allCases {
+        for useCase in UseCaseType.allCases where useCase != .benchmark {
             XCTAssertFalse(manager.isModelCompatible(manifest, for: useCase), "\(useCase) 不应兼容")
         }
+        XCTAssertTrue(manager.isModelCompatible(manifest, for: .benchmark), "benchmark 不依赖具体任务能力，应恒兼容")
     }
 }

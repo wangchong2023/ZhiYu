@@ -59,10 +59,20 @@ struct ModelDownloadStatusBar: View {
             let effectiveTotalBytes: Int64 = stateTotalBytes > 0 ? stateTotalBytes : manifest.fileSizeInBytes
             let effectiveDownloadedBytes: Int64 = stateDownloadedBytes > 0 ? stateDownloadedBytes : Int64(Double(effectiveTotalBytes) * progress)
             let progressText = ByteFormatter.formatProgress(downloadedBytes: effectiveDownloadedBytes, totalBytes: effectiveTotalBytes)
-            let speedText = bytesLabelWithSpeed(progressText: progressText, speed: speed)
-            Text(speedText)
-                .font(.caption.bold())
-                .foregroundStyle(.appAccent)
+            let remainingBytes = max(0, effectiveTotalBytes - effectiveDownloadedBytes)
+            let speedText = bytesLabelWithSpeed(
+                progressText: progressText,
+                speed: speed,
+                remainingBytes: remainingBytes
+            )
+            VStack(alignment: .leading, spacing: DesignTokens.SystemSpacing.atomic) {
+                Text(speedText)
+                    .font(.caption.bold())
+                    .foregroundStyle(.appAccent)
+                Text(modelManager.isChinaRegion ? FeatureConstants.ModelSpecConstants.sourceModelScope : FeatureConstants.ModelSpecConstants.sourceHuggingFace)
+                    .font(.system(size: DesignTokens.SystemFontSize.nano, design: .monospaced))
+                    .foregroundStyle(.appSecondary)
+            }
         case .paused:
             Text(L10n.ModelManager.Status.paused)
                 .font(.caption)
@@ -80,12 +90,49 @@ struct ModelDownloadStatusBar: View {
         }
     }
 
-    private func bytesLabelWithSpeed(progressText: String, speed: Double) -> String {
+    private func bytesLabelWithSpeed(progressText: String, speed: Double, remainingBytes: Int64) -> String {
         if speed > 0 {
             let speedStr = ByteFormatter.formatSpeed(speed)
+            let remainingSec = Int(Double(remainingBytes) / speed)
+            if remainingSec > 0 {
+                let mins = remainingSec / FeatureConstants.ModelSpecConstants.secondsPerMinute
+                let secs = remainingSec % FeatureConstants.ModelSpecConstants.secondsPerMinute
+                let etaRaw = mins > 0 ? "\(mins)m \(secs)s" : "\(secs)s"
+                let etaText = L10n.ModelManager.Card.etaFormat(etaRaw)
+                return "\(progressText) · \(speedStr) · \(etaText)"
+            }
             return "\(progressText)  ·  \(speedStr)"
         }
         return progressText
+    }
+}
+
+// MARK: - 模型清单规格扩展
+
+extension LLMManifest {
+    /// 模型量化精度规格标签
+    public var quantizationBadge: String {
+        let urlLower = remoteURLString.lowercased()
+        if urlLower.contains(FeatureConstants.ModelSpecConstants.q4kmKeyword) {
+            return FeatureConstants.ModelSpecConstants.quantInt4Q4KM
+        } else if urlLower.contains(FeatureConstants.ModelSpecConstants.int8Keyword) {
+            return FeatureConstants.ModelSpecConstants.quantInt8
+        }
+        return FeatureConstants.ModelSpecConstants.quantInt4AWQ
+    }
+
+    /// 模型运行时推理引擎格式标签
+    public var runtimeEngineBadge: String {
+        let urlLower = remoteURLString.lowercased()
+        if urlLower.contains(FeatureConstants.ModelSpecConstants.ggufExtension) {
+            return FeatureConstants.ModelSpecConstants.engineGGUF
+        }
+        return FeatureConstants.ModelSpecConstants.engineLiteRT
+    }
+
+    /// 本地沙盒相对路径显示文案
+    public var localSandboxRelativePath: String {
+        FeatureConstants.ModelSpecConstants.sandboxDocumentsPrefix + modelId + FeatureConstants.ModelSpecConstants.modelBinExtension
     }
 }
 

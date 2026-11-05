@@ -45,9 +45,17 @@ extension ModelLabView {
         ScrollViewReader { proxy in
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
+                    if chatHistory.isEmpty && !labManager.isGenerating {
+                        chatQuickSuggestionsView
+                    }
+
                     ForEach(chatHistory) { msg in
-                        AIChatBubbleView(text: msg.text, isUser: msg.isUser)
-                            .id(msg.id)
+                        AIChatBubbleView(
+                            text: msg.text,
+                            isUser: msg.isUser,
+                            metricsBadgeText: msg.metricsBadgeText
+                        )
+                        .id(msg.id)
                     }
 
                     // 正在流式生成时的临时显示占位符（使用共享 AI 思考中与打字气泡）
@@ -77,12 +85,67 @@ extension ModelLabView {
     }
 
     @ViewBuilder
+    private var chatQuickSuggestionsView: some View {
+        let suggestions = [
+            L10n.ModelManager.Lab.Chat.suggestSwift,
+            L10n.ModelManager.Lab.Chat.suggestRAG,
+            L10n.ModelManager.Lab.Chat.suggestSummary
+        ]
+
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
+            HStack(spacing: DesignTokens.SystemSpacing.tiny) {
+                Image(systemName: DesignTokens.Icons.sparkles)
+                    .font(.caption)
+                    .foregroundStyle(Color.theme.cyan)
+                Text(L10n.ModelManager.Lab.Chat.suggestionsTitle)
+                    .font(.caption.bold())
+                    .foregroundStyle(.secondary)
+            }
+
+            ForEach(suggestions, id: \.self) { suggestion in
+                Button {
+                    HapticFeedback.shared.trigger(.selection)
+                    chatInputText = suggestion
+                    sendChatMessage()
+                } label: {
+                    HStack {
+                        Text(suggestion)
+                            .font(.caption)
+                            .foregroundStyle(.appText)
+                            .multilineTextAlignment(.leading)
+                        Spacer()
+                        Image(systemName: DesignTokens.Icons.arrowUpRight)
+                            .font(.caption2)
+                            .foregroundStyle(Color.theme.cyan)
+                    }
+                    .padding(DesignTokens.Spacing.standardPadding)
+                    .background(Color.appCard.opacity(DesignTokens.Opacity.dim))
+                    .cornerRadius(DesignTokens.SystemRadius.small)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: DesignTokens.SystemRadius.small)
+                            .stroke(Color.theme.cyan.opacity(DesignTokens.Opacity.subtle), lineWidth: DesignTokens.SystemStroke.divider)
+                    )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.vertical, DesignTokens.Spacing.small)
+    }
+
+    @ViewBuilder
     private var generatingPlaceholderView: some View {
+        let liveBadge = labManager.currentStats.speed > 0
+            ? L10n.ModelManager.Lab.Chat.metricsBadgeFormat(labManager.currentStats.firstTokenLatency, labManager.currentStats.speed)
+            : nil
         HStack {
             if labManager.generatedText.isEmpty {
-                AIThinkingBubbleView()
+                AIThinkingBubbleView(customText: labManager.loadingStageText.isEmpty ? nil : labManager.loadingStageText)
             } else {
-                AIChatBubbleView(text: labManager.generatedText, isUser: false)
+                AIChatBubbleView(
+                    text: labManager.generatedText,
+                    isUser: false,
+                    metricsBadgeText: liveBadge
+                )
             }
         }
         .id("generating_anchor")
@@ -159,7 +222,12 @@ extension ModelLabView {
             await labManager.runSimulation(for: .aiChat, model: model, prompt: text)
 
             // 推理结束后，把流式生成的文本转入历史对话消息，并清空生成缓冲区
-            let aiMsg = LabChatMessage(isUser: false, text: labManager.generatedText)
+            let aiMsg = LabChatMessage(
+                isUser: false,
+                text: labManager.generatedText,
+                firstTokenLatencyMs: labManager.currentStats.firstTokenLatency,
+                tokensPerSecond: labManager.currentStats.speed
+            )
             chatHistory.append(aiMsg)
             labManager.generatedText = ""
         }

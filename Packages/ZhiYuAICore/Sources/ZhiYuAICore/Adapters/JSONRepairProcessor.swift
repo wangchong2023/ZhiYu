@@ -78,16 +78,77 @@ public enum JSONRepairProcessor {
     // MARK: - 私有辅助
 
     /// 补齐 JSON 对象中未加引号的裸 key
-    /// 仅处理 `keyName:` 形式，其中 keyName 由字母/下划线/数字组成且不以数字开头
+    /// 仅处理 `keyName:` 形式，其中 keyName 由 ASCII 字母/下划线/数字组成且不以数字开头。
+    /// 使用字符串感知的状态机而非正则：字符串字面量内部（含转义）整体跳过，
+    /// 仅在字符串外对 `{`/`,` 后紧跟的裸 key 补引号，
+    /// 避免误伤合法 JSON 的字符串值（如 `{"text": "use, foo: bar"}`）。
     private static func quoteUnquotedKeys(_ text: String) -> String {
-        // 正则匹配：在 `{` 或 `,` 之后（允许空白），捕获未加引号的 key 名，后跟 `:`
-        // 替换为 `"key":`
-        let pattern = #"(?<=\{)(\s*)([A-Za-z_][A-Za-z0-9_]*)(\s*):"#
-        let pattern2 = #"(?<=,)(\s*)([A-Za-z_][A-Za-z0-9_]*)(\s*):"#
-        var result = text
-        result = result.replacingOccurrences(of: pattern, with: #"$1"$2"$3:"#, options: .regularExpression)
-        result = result.replacingOccurrences(of: pattern2, with: #"$1"$2"$3:"#, options: .regularExpression)
-        return result
+        let chars = Array(text)
+        var output = ""
+        var inString = false
+        var escape = false
+        var i = 0
+        let count = chars.count
+
+        while i < count {
+            let c = chars[i]
+            if inString {
+                output.append(c)
+                if escape {
+                    escape = false
+                } else if c == "\\" {
+                    escape = true
+                } else if c == "\"" {
+                    inString = false
+                }
+                i += 1
+                continue
+            }
+            if c == "\"" {
+                inString = true
+                output.append(c)
+                i += 1
+                continue
+            }
+            // 字符串外：尝试识别 `{`/`,` 后紧跟的裸 key（`key:`，key 后允许空白再冒号）
+            if c == "{" || c == "," {
+                var j = i + 1
+                while j < count && isWhitespace(chars[j]) { j += 1 }
+                if j < count, isIdentifierStart(chars[j]) {
+                    var k = j
+                    while k < count && isIdentifierChar(chars[k]) { k += 1 }
+                    var m = k
+                    while m < count && isWhitespace(chars[m]) { m += 1 }
+                    if m < count, chars[m] == ":" {
+                        output.append(c)
+                        output.append(contentsOf: chars[(i + 1)..<j])
+                        output.append("\"")
+                        output.append(contentsOf: chars[j..<k])
+                        output.append("\"")
+                        i = k
+                        continue
+                    }
+                }
+            }
+            output.append(c)
+            i += 1
+        }
+        return output
+    }
+
+    /// 是否为 JSON 裸 key 起始字符（ASCII 字母或下划线）
+    private static func isIdentifierStart(_ c: Character) -> Bool {
+        c.isASCII && (c.isLetter || c == "_")
+    }
+
+    /// 是否为 JSON 裸 key 组成字符（ASCII 字母/数字/下划线）
+    private static func isIdentifierChar(_ c: Character) -> Bool {
+        c.isASCII && (c.isLetter || c.isNumber || c == "_")
+    }
+
+    /// 是否为 JSON 空白字符
+    private static func isWhitespace(_ c: Character) -> Bool {
+        c == " " || c == "\t" || c == "\n" || c == "\r"
     }
 
     /// 使用 PartialJSON 将不完整 JSON 解析并序列化为合规字符串

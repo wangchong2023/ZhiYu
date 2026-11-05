@@ -95,4 +95,45 @@ final class JSONRepairProcessorBasicTests: XCTestCase {
         XCTAssertTrue(repaired.hasSuffix("}]}"), "应自动补齐未闭合的集合与对象括号")
         XCTAssertNotNil(try? JSONSerialization.jsonObject(with: Data(repaired.utf8)), "修复后应为合法 JSON")
     }
+
+    // MARK: - 缺陷导向：字符串值内的 `, word:` / `{word:` 不应被误当作裸 key
+
+    /// 缺陷验证：`quoteUnquotedKeys` 用正则 `(?<=,)(\s*)[A-Za-z_][A-Za-z0-9_]*(\s*):`
+    /// 与 `(?<=\{)(\s*)[A-Za-z_][A-Za-z0-9_]*(\s*):` 全局替换，不区分字符串字面量上下文，
+    /// 会把合法 JSON 字符串值内的 `, foo:` 误改写为 `, "foo":`，破坏原本合法的 JSON。
+    /// 修复后字符串值内容应原样保留，且输出仍是合法 JSON。
+    func testValidJson_stringValueWithCommaKeyColon_notCorrupted() {
+        let input = #"{"text": "use, foo: bar"}"#
+        let result = JSONRepairProcessor.repair(input)
+        XCTAssertTrue(result.contains(#""use, foo: bar""#),
+            "字符串值 `, foo:` 不应被误当作裸 key 改写，实际输出：\(result)")
+        XCTAssertNotNil(try? JSONSerialization.jsonObject(with: Data(result.utf8)),
+            "输出应为合法 JSON，实际：\(result)")
+    }
+
+    /// 字符串值内 `{key: val}` 模式（花括号 + 裸 key 形）不应被误改写
+    func testValidJson_stringValueWithBraceKeyColon_notCorrupted() {
+        let input = #"{"msg": "prefix{key: val} suffix"}"#
+        let result = JSONRepairProcessor.repair(input)
+        XCTAssertTrue(result.contains(#""prefix{key: val} suffix""#),
+            "字符串值 `{key: val}` 不应被误改写，实际输出：\(result)")
+        XCTAssertNotNil(try? JSONSerialization.jsonObject(with: Data(result.utf8)),
+            "输出应为合法 JSON，实际：\(result)")
+    }
+
+    /// 字符串值内含转义引号时仍不应被误改写（状态机需正确处理 `\"`）
+    func testValidJson_stringValueWithEscapedQuoteAndColon_notCorrupted() {
+        let input = #"{"text": "he said \"hi, name: x\" ok"}"#
+        let result = JSONRepairProcessor.repair(input)
+        XCTAssertNotNil(try? JSONSerialization.jsonObject(with: Data(result.utf8)),
+            "含转义引号的字符串值不应被破坏，实际：\(result)")
+    }
+
+    /// 真实裸 key 仍应被正确补齐引号（回归：状态机保留原正则能力）
+    func testUnquotedKeyInObjectWithNested_stillQuoted() {
+        let input = #"{"outer": {inner: "value"}}"#
+        let result = JSONRepairProcessor.repair(input)
+        XCTAssertTrue(result.contains(#""inner""#), "嵌套对象内的裸 key `inner` 应被补引号，实际：\(result)")
+        XCTAssertNotNil(try? JSONSerialization.jsonObject(with: Data(result.utf8)))
+    }
 }

@@ -95,6 +95,8 @@ public struct LLMManifest: Codable, Sendable, Identifiable, Equatable {
             case "code": localizedText = L10n.ModelManager.Task.code
             case "rag": localizedText = L10n.ModelManager.Task.rag
             case "translation": localizedText = L10n.ModelManager.Task.translation
+            case "media_search": localizedText = L10n.ModelManager.Task.mediaSearch
+            case "video_search": localizedText = L10n.ModelManager.Task.videoSearch
             default: localizedText = task.capitalized
             }
             

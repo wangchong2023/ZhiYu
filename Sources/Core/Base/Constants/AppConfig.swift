@@ -86,7 +86,7 @@ enum AppConfig {
             return `default`
         }
         if let bool = raw as? Bool { return bool }
-        if let str = raw as? String { return str == "true" }
+        if let str = raw as? String { return str == SystemConstants.BooleanString.trueValue }
         return `default`
     }
     

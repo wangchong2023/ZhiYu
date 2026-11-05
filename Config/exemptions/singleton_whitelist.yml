@@ -228,3 +228,46 @@ singleton_whitelist:
     reason: P2 阶段迁移（Sources/ 零外部引用，疑似死代码）
     added: 2026-08-12
     expiry_check: P2
+
+  # === ModelLab 多模态能力（2026-11-06 补充）===
+  - file: Sources/Features/System/ModelManager/Utility/LabVisualSampleProvider.swift
+    class: LabVisualSampleProvider
+    reason: P2 阶段迁移（ModelLab 视觉示例提供器）
+    added: 2026-11-06
+    expiry_check: P2
+
+  - file: Sources/Features/System/ModelManager/Utility/LabAudioSampleProvider.swift
+    class: LabAudioSampleProvider
+    reason: P2 阶段迁移（ModelLab 音频示例提供器）
+    added: 2026-11-06
+    expiry_check: P2
+
+  - file: Sources/Features/System/ModelManager/Utility/LabAudioSampleProvider.swift
+    class: LabAudioPlayer
+    reason: P2 阶段迁移（ModelLab 音频播放器）
+    added: 2026-11-06
+    expiry_check: P2
+
+  - file: Sources/Features/System/ModelManager/Utility/LabAudioRecorder.swift
+    class: LabAudioRecorder
+    reason: P2 阶段迁移（ModelLab 音频录音器）
+    added: 2026-11-06
+    expiry_check: P2
+
+  - file: Sources/Features/System/ModelManager/View/Sections/ModelBenchmarkPanel.swift
+    class: ModelBenchmarkState
+    reason: P2 阶段迁移（ModelLab 基准面板状态）
+    added: 2026-11-06
+    expiry_check: P2
+
+  - file: Sources/Features/System/ModelManager/Utility/LabResponseSynthesizer.swift
+    class: LabResponseSynthesizer
+    reason: P2 阶段迁移（ModelLab 响应合成器）
+    added: 2026-11-06
+    expiry_check: P2
+
+  - file: Sources/Features/System/ModelManager/Utility/OnDeviceVisionAnalyzer.swift
+    class: OnDeviceVisionAnalyzer
+    reason: P2 阶段迁移（ModelLab 端侧视觉分析器）
+    added: 2026-11-06
+    expiry_check: P2

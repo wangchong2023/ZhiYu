@@ -122,17 +122,32 @@ def run_swift_test_with_coverage(pkg_name: str) -> tuple[bool, Optional[str]]:
         return False, "swift 命令未找到"
 
 def find_binary_and_profdata(pkg_name: str) -> tuple[Optional[str], Optional[str]]:
-    """定位 SPM 包的测试二进制和 profdata 文件"""
-    build_dir = os.path.join(PACKAGES_DIR, pkg_name, ".build", "arm64-apple-macosx", "debug")
-    profdata = os.path.join(build_dir, "codecov", "default.profdata")
+    """定位 SPM 包的测试二进制和 profdata 文件
 
-    # 测试二进制路径：{pkg}PackageTests.xctest/Contents/MacOS/{pkg}PackageTests
-    binary = os.path.join(build_dir, f"{pkg_name}PackageTests.xctest",
-                          "Contents", "MacOS", f"{pkg_name}PackageTests")
+    兼容两种 SwiftPM 构建布局与两种产物命名：
+      布局 A（旧）：.build/arm64-apple-macosx/debug/
+      布局 B（新）：.build/out/Products/Debug/
+      命名：{pkg}Tests.xctest 与 {pkg}PackageTests.xctest
+    优先选择二进制与 profdata 均存在、且 mtime 最新的产物。
+    """
+    candidates = []
+    for build_dir in (
+        os.path.join(PACKAGES_DIR, pkg_name, ".build", "arm64-apple-macosx", "debug"),
+        os.path.join(PACKAGES_DIR, pkg_name, ".build", "out", "Products", "Debug"),
+    ):
+        for stem in (f"{pkg_name}Tests", f"{pkg_name}PackageTests"):
+            binary = os.path.join(build_dir, f"{stem}.xctest",
+                                  "Contents", "MacOS", stem)
+            profdata = os.path.join(build_dir, "codecov", "default.profdata")
+            if os.path.isfile(binary) and os.path.isfile(profdata):
+                candidates.append((binary, profdata, os.path.getmtime(binary)))
 
-    if os.path.isfile(binary) and os.path.isfile(profdata):
-        return binary, profdata
-    return None, None
+    if not candidates:
+        return None, None
+
+    # 返回最新产物，避免统计到过时构建
+    candidates.sort(key=lambda c: c[2], reverse=True)
+    return candidates[0][0], candidates[0][1]
 
 def parse_llvm_cov_report(binary: str, profdata: str, pkg_name: str) -> tuple[list[FileCoverage], FileCoverage]:
     """解析 llvm-cov report 输出，返回 (文件列表, 汇总行)

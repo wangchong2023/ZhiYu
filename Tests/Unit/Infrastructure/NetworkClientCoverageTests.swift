@@ -7,6 +7,7 @@
 //
 
 import XCTest
+import UFPCore
 @testable import ZhiYu
 
 // MARK: - NetworkClient 单元测试
@@ -17,6 +18,16 @@ final class NetworkClientCoverageTests: XCTestCase {
 
     override func setUp() async throws {
         await NetworkClient.shared.setTestSession(makeMockSession())
+        // 注册 KeyStoreProtocol 降级回退：模拟器无 Keychain entitlements 时，
+        // store/retrieve 走 UserDefaults 缓存，否则 token 静默丢失导致测试误报
+        guard let testDefaults = UserDefaults(suiteName: "NetworkClientCoverageTests-\(UUID().uuidString)") else {
+            XCTFail("无法创建测试用 UserDefaults")
+            return
+        }
+        ServiceContainer.shared.register(
+            UserDefaultsKeyStore(defaults: testDefaults) as any KeyStoreProtocol,
+            for: (any KeyStoreProtocol).self
+        )
         // 清理 Keychain 残留
         try? KeychainService.shared.delete(key: AppConstants.Network.jwtTokenKey)
         try? KeychainService.shared.delete(key: "refresh_token")

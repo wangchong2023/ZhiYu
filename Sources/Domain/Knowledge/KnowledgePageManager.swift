@@ -185,6 +185,9 @@ public final class KnowledgePageManager {
     public func deletePage(_ page: KnowledgePage, currentPages: [KnowledgePage]) async throws {
         undoService?.pushSnapshot(currentPages)
         try await pageStore.deletePage(page)
+        // 缺陷 #84 修复：删除也是数据变更，与 create/update/rename 一致标记备份脏位，
+        // 否则备份/崩溃恢复系统不感知删除这一变更
+        backupService.markDirty()
         AppEventBus.shared.publish(.pageDeleted(id: page.id))
         pluginRegistry.emitEvent("onPageDelete", data: page.id.uuidString)
     }

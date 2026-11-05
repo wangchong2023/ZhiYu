@@ -29,11 +29,18 @@ extension ModelLabView {
                 VStack(spacing: DesignTokens.Spacing.medium) {
                     if useCase == .aiChat {
                         aiChatSandboxView
+                    } else if useCase == .instantMediaSearch {
+                        instantMediaSearchSandboxView
+                    } else if useCase == .videoMomentSearch {
+                        videoMomentSearchSandboxView
+                    } else if useCase == .benchmark {
+                        benchmarkSandboxView
                     } else {
                         // 使用 ScrollView 包裹标准交互沙盒，防止多参数导致内容溢出挤压安全区
                         ScrollView(.vertical, showsIndicators: false) {
                             standardSandboxView(for: useCase)
-                                .padding(.vertical, DesignTokens.SystemSpacing.atomic)
+                                .padding(.top, DesignTokens.Spacing.small)
+                                .padding(.bottom, DesignTokens.SystemSpacing.element)
                         }
                     }
                 }
@@ -49,7 +56,7 @@ extension ModelLabView {
                         simulationTask?.cancel()
                         simulationTask = nil
                         labManager.stopSimulation()
-                        labManager.selectedUseCase = nil
+                        labManager.switchUseCase(to: nil)
                     }
                     .bold()
                 }
@@ -97,38 +104,34 @@ extension ModelLabView {
         }
     }
 
-    /// 设置特定用例场景的初始预设 prompt
+    /// 设置特定用例场景的初始预设 prompt，实现用例间输入与输出彻底隔离
     func setupDefaultPrompt(for useCase: UseCaseType) {
-        // Bug #73 修复：仅首次为该用例设置默认 prompt，避免 onAppear 重复触发时覆盖用户输入。
-        guard !hasSetupPrompt.contains(useCase.rawValue) else { return }
-        hasSetupPrompt.insert(useCase.rawValue)
-        switch useCase {
-        case .askImage:
-            testPrompt = L10n.ModelManager.Lab.Prompt.askImage
-        case .aiChat:
-            testPrompt = L10n.ModelManager.Lab.Prompt.chat
-        case .agentSkills:
-            testPrompt = L10n.ModelManager.Lab.Prompt.agentSkills
-        case .promptLab:
-            testPrompt = L10n.ModelManager.Lab.Prompt.promptLab
-        case .tinyGarden:
-            testPrompt = L10n.ModelManager.Lab.Prompt.tinyGarden
-        case .mobileActions:
-            testPrompt = L10n.ModelManager.Lab.Prompt.mobileActions
-        case .audioScribe:
-            // 音频速记用例不使用文本 prompt，保持空字符串
-            testPrompt = ""
+        if let savedPrompt = useCasePrompts[useCase.rawValue] {
+            testPrompt = savedPrompt
+        } else {
+            let initial = useCase.defaultPresetPrompt
+            useCasePrompts[useCase.rawValue] = initial
+            testPrompt = initial
         }
+        hasSetupPrompt.insert(useCase.rawValue)
+        labManager.switchUseCase(to: useCase)
     }
 
     /// 通用 Prompt 文本域（如适用）
     @ViewBuilder
     func promptEditorView(for useCase: UseCaseType) -> some View {
         if useCase != .audioScribe {
-            TextEditor(text: $testPrompt)
+            TextEditor(text: Binding(
+                get: { testPrompt },
+                set: {
+                    testPrompt = $0
+                    useCasePrompts[useCase.rawValue] = $0
+                }
+            ))
+                .scrollContentBackground(.hidden)
                 .focused($isPromptFocused)
                 .padding(DesignTokens.Spacing.standardPadding)
-                .frame(height: DesignTokens.ComponentSpacing.colossal)
+                .frame(minHeight: DesignTokens.ComponentSpacing.colossal, maxHeight: DesignTokens.Metrics.boxHeight)
                 .background(Color.theme.white.opacity(DesignTokens.Opacity.ghost))
                 .cornerRadius(DesignTokens.SystemRadius.small)
                 .overlay(
@@ -161,44 +164,80 @@ extension ModelLabView {
     @ViewBuilder
     func controlButton(for useCase: UseCaseType) -> some View {
         if labManager.isGenerating {
-            Button(action: {
-                simulationTask?.cancel()
-                simulationTask = nil
-                labManager.stopSimulation()
-            }) {
-                Text(L10n.ModelManager.Lab.stopInference)
-                    .padding(.horizontal, DesignTokens.SystemSpacing.small)
-                    .padding(.vertical, DesignTokens.SystemSpacing.content)
-                    .background(Color.theme.red.opacity(DesignTokens.Opacity.shadow))
-                    .foregroundStyle(Color.theme.red)
-                    .cornerRadius(DesignTokens.SystemRadius.small)
-            }
+            stopButtonView
         } else {
-            Button(action: {
-                simulationTask = Task {
-                    guard let model = getActiveModel() else { return }
-                    HapticFeedback.shared.trigger(.selection)
-                    await labManager.runSimulation(for: useCase, model: model, prompt: testPrompt)
-                    simulationTask = nil
-                }
-            }) {
-                Text(L10n.ModelManager.Lab.runTest)
-                    .bold()
-                    .padding(.horizontal, DesignTokens.SystemSpacing.element)
-                    .padding(.vertical, DesignTokens.SystemSpacing.content)
-                    .background(
-                        LinearGradient(
-                            colors: [Color.theme.cyan, Color.theme.blue],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
+            runTestButtonView(for: useCase)
+        }
+    }
+
+    private var stopButtonView: some View {
+        Button(action: {
+            simulationTask?.cancel()
+            simulationTask = nil
+            labManager.stopSimulation()
+        }) {
+            Text(L10n.ModelManager.Lab.stopInference)
+                .padding(.horizontal, DesignTokens.SystemSpacing.small)
+                .padding(.vertical, DesignTokens.SystemSpacing.content)
+                .background(Color.theme.red.opacity(DesignTokens.Opacity.shadow))
+                .foregroundStyle(Color.theme.red)
+                .cornerRadius(DesignTokens.SystemRadius.small)
+        }
+    }
+
+    private func runTestButtonView(for useCase: UseCaseType) -> some View {
+        Button(action: {
+            guard let model = getActiveModel() else { return }
+            startSimulationTask(for: useCase, model: model)
+        }) {
+            Text(L10n.ModelManager.Lab.runTest)
+                .bold()
+                .padding(.horizontal, DesignTokens.SystemSpacing.element)
+                .padding(.vertical, DesignTokens.SystemSpacing.content)
+                .background(
+                    LinearGradient(
+                        colors: [Color.theme.cyan, Color.theme.blue],
+                        startPoint: .leading,
+                        endPoint: .trailing
                     )
-                    .foregroundStyle(Color.theme.white)
-                    .cornerRadius(DesignTokens.SystemRadius.small)
-                    .shadow(color: Color.theme.cyan.opacity(DesignTokens.Opacity.shadow), radius: DesignTokens.Spacing.shadowRadius)
+                )
+                .foregroundStyle(Color.theme.white)
+                .cornerRadius(DesignTokens.SystemRadius.small)
+                .shadow(color: Color.theme.cyan.opacity(DesignTokens.Opacity.shadow), radius: DesignTokens.Spacing.shadowRadius)
+        }
+        .disabled(testPrompt.isEmpty && useCase != .audioScribe)
+        .opacity((testPrompt.isEmpty && useCase != .audioScribe) ? DesignTokens.Opacity.soft : DesignTokens.Opacity.solid)
+    }
+
+    private func startSimulationTask(for useCase: UseCaseType, model: LLMManifest) {
+        simulationTask = Task {
+            HapticFeedback.shared.trigger(.selection)
+            if useCase == .askImage && !isImageSelected {
+                if let firstSample = LabVisualSampleProvider.shared.presetSamples.first {
+                    loadVisualSample(firstSample)
+                }
             }
-            .disabled(testPrompt.isEmpty && useCase != .audioScribe)
-            .opacity((testPrompt.isEmpty && useCase != .audioScribe) ? DesignTokens.Opacity.soft : DesignTokens.Opacity.solid)
+            if useCase == .audioScribe && !isAudioCompleted {
+                if let firstAudio = LabAudioSampleProvider.shared.presetSamples.first {
+                    loadAudioSample(firstAudio)
+                }
+            }
+            if useCase == .mobileActions {
+                if let action = MobileActionExecutor.shared.parseIntent(from: testPrompt) {
+                    await MobileActionExecutor.shared.execute(action: action)
+                }
+            }
+            useCasePrompts[useCase.rawValue] = testPrompt
+            await labManager.runSimulation(
+                for: useCase,
+                model: model,
+                prompt: testPrompt,
+                imageData: useCase == .askImage ? selectedImageData : nil,
+                temperature: tempTemperature,
+                topP: tempTopP,
+                sampleId: selectedSampleId
+            )
+            simulationTask = nil
         }
     }
 
@@ -232,6 +271,7 @@ extension ModelLabView {
         VStack(spacing: DesignTokens.Spacing.medium) {
             // 大模型选择与参数配置栏
             modelAndConfigControlBar(for: useCase)
+                .padding(.top, DesignTokens.SystemSpacing.tight)
 
             // 实时性能评估看板
             metricsMonitorBoard
@@ -250,6 +290,8 @@ extension ModelLabView {
                     audioScribeInputs
                 case .promptLab:
                     promptLabSliders
+                case .mobileActions:
+                    mobileActionsInputs
                 default:
                     EmptyView()
                 }

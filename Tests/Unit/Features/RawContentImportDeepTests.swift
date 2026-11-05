@@ -38,7 +38,7 @@ final class RawContentImportDeepTests: XCTestCase {
             for: (any DocumentExtractionServiceProtocol).self
         )
         coordinator = IngestCoordinator()
-        service = IngestService()
+        service = IngestService(scraper: WebScraperProcessor(chainHead: MockScraperHandler(next: nil)))
         pageStore = ServiceContainer.shared.resolveOptional((any AnyPageStore).self)
         ingestStore = IngestStore()
         tempDir = URL(fileURLWithPath: NSTemporaryDirectory())

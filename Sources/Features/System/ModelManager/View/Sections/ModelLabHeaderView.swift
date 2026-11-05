@@ -31,70 +31,148 @@ extension ModelLabView {
     }
 
     /// 用例格栅单卡
+    @ViewBuilder
     func useCaseCard(for useCase: UseCaseType) -> some View {
         let activeModel = getActiveModel()
-        let isCompatible = activeModel.map { labManager.isModelCompatible($0, for: useCase) } ?? false
+        let readyModels = modelManager.remoteManifests.filter {
+            modelManager.isModelLocalReady(for: $0.modelId) && labManager.isModelCompatible($0, for: useCase)
+        }
+        let allModels = modelManager.remoteManifests.filter {
+            labManager.isModelCompatible($0, for: useCase)
+        }
+        let modelCount = allModels.count
+        let readyCount = readyModels.count
+        let isCompatible = modelCount > 0
 
-        return Button {
+        Button {
             if isCompatible {
-                HapticFeedback.shared.trigger(.selection)
-                labManager.selectedUseCase = useCase
-                // 同步初始化默认超参
-                if let model = activeModel {
-                    loadParametersForModel(model.modelId)
-                }
+                handleUseCaseSelection(for: useCase, activeModel: activeModel, readyModels: readyModels, allModels: allModels)
             }
         } label: {
-            VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
-                // 用例图标与兼容状态
-                HStack {
-                    Image(systemName: useCase.icon)
-                        .font(.title2)
-                        .foregroundStyle(isCompatible ? Color.theme.cyan : .secondary)
-
-                    Spacer()
-
-                    if !isCompatible {
-                        Text(L10n.ModelManager.Lab.unsupported)
-                            .font(.system(size: DesignTokens.SystemFontSize.micro))
-                            .padding(.horizontal, DesignTokens.Spacing.standardPadding)
-                            .padding(.vertical, DesignTokens.SystemSpacing.tiny)
-                            .background(Color.theme.red.opacity(DesignTokens.Opacity.medium))
-                            .foregroundStyle(Color.theme.red)
-                            .clipShape(Capsule())
-                    }
-                }
-                .padding(.bottom, DesignTokens.Spacing.standardPadding)
-
-                Text(useCase.title)
-                    .font(.headline)
-                    .foregroundStyle(isCompatible ? .appText : .secondary)
-
-                Text(useCase.description)
-                    .font(.caption)
-                    .foregroundStyle(isCompatible ? .appText.opacity(DesignTokens.Colors.subtleOpacity) : .secondary)
-                    .lineLimit(3)
-                    .multilineTextAlignment(.leading)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            .padding(DesignTokens.Spacing.medium)
-            .frame(minHeight: DesignTokens.Metrics.sourceCardHeight + DesignTokens.Spacing.large, alignment: .topLeading)
-            // 暗黑毛玻璃态 (Glassmorphism)
-            .background(.ultraThinMaterial.opacity(isCompatible ? DesignTokens.Opacity.shadow : DesignTokens.Opacity.glass))
-            .cornerRadius(DesignTokens.Spacing.mediumRadius)
-            .overlay(
-                RoundedRectangle(cornerRadius: DesignTokens.Spacing.mediumRadius)
-                    .stroke(
-                        LinearGradient(
-                            colors: isCompatible ? [.cyan.opacity(DesignTokens.Opacity.disabled), .purple.opacity(DesignTokens.Opacity.subtle)] : [.gray.opacity(DesignTokens.Opacity.subtle)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: DesignTokens.SystemStroke.divider
-                    )
-            )
-            .shadow(color: isCompatible ? .cyan.opacity(DesignTokens.Opacity.light) : .clear, radius: DesignTokens.Spacing.shadowRadius, x: 0, y: DesignTokens.Spacing.shadowY)
+            useCaseCardContent(for: useCase, isCompatible: isCompatible, readyCount: readyCount)
         }
         .buttonStyle(.plain)
+    }
+
+    /// 用例卡片内容视图
+    @ViewBuilder
+    private func useCaseCardContent(for useCase: UseCaseType, isCompatible: Bool, readyCount: Int) -> some View {
+        let bgOpacity = isCompatible ? DesignTokens.Opacity.shadow : DesignTokens.Opacity.glass
+        let shadowColor = isCompatible ? useCase.themeColor.opacity(DesignTokens.Opacity.light) : Color.clear
+
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
+            useCaseCardHeader(for: useCase, isCompatible: isCompatible, readyCount: readyCount)
+
+            Text(useCase.title)
+                .font(.headline)
+                .foregroundStyle(isCompatible ? Color.appText : Color.secondary)
+
+            Text(useCase.description)
+                .font(.caption)
+                .foregroundStyle(isCompatible ? Color.appText.opacity(DesignTokens.Colors.subtleOpacity) : Color.secondary)
+                .lineLimit(3)
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, minHeight: FeatureConstants.ModelLabSimulation.useCaseCardDescriptionHeight, alignment: .topLeading)
+
+            Spacer(minLength: 0)
+        }
+        .padding(DesignTokens.Spacing.medium)
+        .frame(maxWidth: .infinity, minHeight: FeatureConstants.ModelLabSimulation.useCaseCardMinHeight, alignment: .topLeading)
+        .background(.ultraThinMaterial.opacity(bgOpacity))
+        .cornerRadius(DesignTokens.Spacing.mediumRadius)
+        .overlay(cardBorderOverlay(for: useCase, isCompatible: isCompatible))
+        .shadow(color: shadowColor, radius: DesignTokens.Spacing.shadowRadius, x: 0, y: DesignTokens.Spacing.shadowY)
+    }
+
+    /// 用例卡片渐变边框遮罩
+    private func cardBorderOverlay(for useCase: UseCaseType, isCompatible: Bool) -> some View {
+        let colors: [Color] = isCompatible ?
+            [useCase.themeColor.opacity(DesignTokens.Opacity.disabled), Color.theme.purple.opacity(DesignTokens.Opacity.subtle)] :
+            [Color.theme.gray.opacity(DesignTokens.Opacity.subtle)]
+
+        return RoundedRectangle(cornerRadius: DesignTokens.Spacing.mediumRadius)
+            .stroke(
+                LinearGradient(colors: colors, startPoint: .topLeading, endPoint: .bottomTrailing),
+                lineWidth: DesignTokens.SystemStroke.divider
+            )
+    }
+
+    /// 用例卡片顶部图标与模型计数栏
+    @ViewBuilder
+    private func useCaseCardHeader(for useCase: UseCaseType, isCompatible: Bool, readyCount: Int) -> some View {
+        HStack {
+            useCaseIcon(for: useCase)
+            Spacer()
+            useCaseBadge(isCompatible: isCompatible, readyCount: readyCount)
+        }
+        .padding(.bottom, DesignTokens.Spacing.standardPadding)
+    }
+
+    /// 用例圆形彩色图标
+    @ViewBuilder
+    private func useCaseIcon(for useCase: UseCaseType) -> some View {
+        ZStack {
+            Circle()
+                .fill(useCase.themeColor.opacity(DesignTokens.Opacity.disabled))
+                .frame(width: DesignTokens.Spacing.Gallery.iconSize, height: DesignTokens.Spacing.Gallery.iconSize)
+
+            Image(systemName: useCase.icon)
+                .font(.title3)
+                .foregroundStyle(useCase.themeColor)
+        }
+    }
+
+    /// 用例可用状态或模型数量徽章
+    @ViewBuilder
+    private func useCaseBadge(isCompatible: Bool, readyCount: Int) -> some View {
+        if isCompatible {
+            if readyCount > 0 {
+                Text(L10n.ModelManager.Lab.statusAvailable)
+                    .font(.system(size: DesignTokens.SystemFontSize.micro, weight: .semibold))
+                    .padding(.horizontal, DesignTokens.Spacing.standardPadding)
+                    .padding(.vertical, DesignTokens.SystemSpacing.tiny)
+                    .background(Color.theme.green.opacity(DesignTokens.Opacity.subtle))
+                    .foregroundStyle(Color.theme.green)
+                    .clipShape(Capsule())
+            } else {
+                Text(L10n.ModelManager.Lab.statusNeedDownload)
+                    .font(.system(size: DesignTokens.SystemFontSize.micro, weight: .medium))
+                    .padding(.horizontal, DesignTokens.Spacing.standardPadding)
+                    .padding(.vertical, DesignTokens.SystemSpacing.tiny)
+                    .background(Color.appCard.opacity(DesignTokens.Opacity.dim))
+                    .foregroundStyle(Color.secondary)
+                    .clipShape(Capsule())
+            }
+        } else {
+            Text(L10n.ModelManager.Lab.unsupported)
+                .font(.system(size: DesignTokens.SystemFontSize.micro, weight: .medium))
+                .padding(.horizontal, DesignTokens.Spacing.standardPadding)
+                .padding(.vertical, DesignTokens.SystemSpacing.tiny)
+                .background(Color.theme.red.opacity(DesignTokens.Opacity.medium))
+                .foregroundStyle(Color.theme.red)
+                .clipShape(Capsule())
+        }
+    }
+
+    /// 处理用例选择与兼容模型激活
+    private func handleUseCaseSelection(
+        for useCase: UseCaseType,
+        activeModel: LLMManifest?,
+        readyModels: [LLMManifest],
+        allModels: [LLMManifest]
+    ) {
+        HapticFeedback.shared.trigger(.selection)
+        labManager.selectedUseCase = useCase
+        if let active = activeModel, !labManager.isModelCompatible(active, for: useCase) {
+            if let firstReady = readyModels.first {
+                modelManager.activeModelId = firstReady.modelId
+                loadParametersForModel(firstReady.modelId)
+            } else if let firstCompatible = allModels.first {
+                modelManager.activeModelId = firstCompatible.modelId
+                loadParametersForModel(firstCompatible.modelId)
+            }
+        } else if let model = activeModel {
+            loadParametersForModel(model.modelId)
+        }
     }
 }

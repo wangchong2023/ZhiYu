@@ -31,7 +31,6 @@ extension FeatureConstants {
     enum DefaultValue {
         static let multipleTags = "Multiple Tags"
         static let notDownloaded = "Not Downloaded"
-        static let workspaceBenchFileName: String = "workspace_bench.jpg"
         static let freePlanName: String = "Free"
         static let github = "github"
         static let wifi = "WiFi"
@@ -41,8 +40,6 @@ extension FeatureConstants {
     // MARK: - 实验室演示文本 (Lab Demo Text)
     enum LabDemoText {
         static let notebookLabel = L10n.ModelManager.Lab.Mock.notebookLabel
-        static let penLabel = L10n.ModelManager.Lab.Mock.penLabel
-        static let iphoneScreenLabel = L10n.ModelManager.Lab.Mock.iphoneScreenLabel
         static let traceStep1Title = "00:01 - 00:03"
         static let traceStep1Desc = L10n.ModelManager.Lab.Mock.traceStep1Desc
         static let traceStep2Title = "00:04 - 00:08"

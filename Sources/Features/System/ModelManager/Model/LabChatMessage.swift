@@ -16,10 +16,31 @@ public struct LabChatMessage: Identifiable, Equatable, Sendable {
     public let id: UUID
     public let isUser: Bool
     public let text: String
+    public let firstTokenLatencyMs: Int?
+    public let tokensPerSecond: Double?
 
-    public init(id: UUID = UUID(), isUser: Bool, text: String) {
+    public init(
+        id: UUID = UUID(),
+        isUser: Bool,
+        text: String,
+        firstTokenLatencyMs: Int? = nil,
+        tokensPerSecond: Double? = nil
+    ) {
         self.id = id
         self.isUser = isUser
         self.text = text
+        self.firstTokenLatencyMs = firstTokenLatencyMs
+        self.tokensPerSecond = tokensPerSecond
+    }
+
+    /// 格式化气泡底部实时性能角标文案
+    public var metricsBadgeText: String? {
+        guard !isUser,
+              let ttft = firstTokenLatencyMs,
+              let tps = tokensPerSecond,
+              tps > 0 else {
+            return nil
+        }
+        return L10n.ModelManager.Lab.Chat.metricsBadgeFormat(ttft, tps)
     }
 }

@@ -138,6 +138,30 @@ final class TextChunkerProcessorEdgeTests: XCTestCase {
         }
     }
 
+    // MARK: - 缺陷导向：负数 chunkOverlap 崩溃
+
+    /// 缺陷验证：`flushChunkOnOverflow` 的重叠窗口只 clamp 上限（min 到旧文本长度），
+    /// 未 clamp 下限。负数 `chunkOverlap` 使 `overlapAmount` 为负，
+    /// `index(endIndex, offsetBy: -negative)` 越过字符串末尾，触发
+    /// `String index is out of bounds` 致命崩溃。
+    /// 修复后负数 chunkOverlap 应钳制为 0（无重叠），正常分块不崩溃。
+    func testSplit_negativeChunkOverlap_doesNotCrashAndProducesChunks() {
+        let config = TextChunkerProcessor.Config(
+            chunkSize: 10,
+            chunkOverlap: -5,
+            separators: ["\n", " ", ""]
+        )
+        // 首行超过 chunkSize 触发 overflow flush，且旧 chunk 长度(11) 远超 |负数重叠|
+        let text = "abcdefghij\nklmnopqrst\nuvwxyz"
+        let chunks = chunker.split(text: text, config: config)
+        XCTAssertFalse(chunks.isEmpty, "负数 chunkOverlap 不应崩溃，应正常产生分块")
+        for chunk in chunks {
+            XCTAssertFalse(chunk.text.isEmpty, "分块文本不应为空")
+            XCTAssertGreaterThan(chunk.startIndex, -1, "startIndex 不应为负")
+        }
+        XCTAssertGreaterThan(chunks.count, 1, "长文本应产生多个分块")
+    }
+
     // MARK: - contextualText 上下文注入
 
     func testChunk_contextualText_withBreadcrumb_includesContextPrefix() {

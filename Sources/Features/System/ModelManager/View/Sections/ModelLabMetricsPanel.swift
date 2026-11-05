@@ -28,28 +28,29 @@ extension ModelLabView {
             }
             .padding(.horizontal, DesignTokens.SystemSpacing.tiny)
 
+            let isTested = labManager.currentStats.prefillLatency > 0 || labManager.currentStats.speed > 0
             HStack(spacing: DesignTokens.Spacing.small) {
                 metricItemCard(
                     title: L10n.ModelManager.Lab.speed,
-                    value: String(format: "%.1f", labManager.currentStats.speed),
+                    value: isTested ? String(format: "%.1f", labManager.currentStats.speed) : FeatureConstants.Benchmark.placeholderValue,
                     unit: FeatureConstants.UnitName.tokPerSec,
                     glowColor: Color.theme.cyan
                 )
                 metricItemCard(
                     title: L10n.ModelManager.Lab.prefillLatency,
-                    value: "\(labManager.currentStats.prefillLatency)",
+                    value: isTested ? "\(labManager.currentStats.prefillLatency)" : FeatureConstants.Benchmark.placeholderValue,
                     unit: FeatureConstants.UnitName.millisecond,
                     glowColor: Color.theme.purple
                 )
                 metricItemCard(
                     title: L10n.ModelManager.Lab.firstTokenLatency,
-                    value: "\(labManager.currentStats.firstTokenLatency)",
+                    value: isTested ? "\(labManager.currentStats.firstTokenLatency)" : FeatureConstants.Benchmark.placeholderValue,
                     unit: FeatureConstants.UnitName.millisecond,
                     glowColor: Color.theme.blue
                 )
                 metricItemCard(
                     title: L10n.ModelManager.Lab.memoryUsage,
-                    value: String(format: "%.0f", labManager.currentStats.memoryUsage),
+                    value: isTested ? String(format: "%.0f", labManager.currentStats.memoryUsage) : FeatureConstants.Benchmark.placeholderValue,
                     unit: FeatureConstants.UnitName.megabyte,
                     glowColor: Color.theme.teal
                 )
@@ -232,12 +233,21 @@ extension ModelLabView {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
+                    let parsed = ThinkingContentParser.parse(rawText: labManager.generatedText)
+
+                    // 如果包含深度思考过程，渲染优雅的可折叠思考卡片
+                    if let thought = parsed.thinkingText {
+                        ThinkingCollapsibleView(thinkingText: thought, isStreaming: labManager.isGenerating)
+                    }
+
                     // 主推理文本流
-                    Text(labManager.generatedText)
-                        .font(.system(.body, design: .monospaced))
-                        .foregroundStyle(.appText)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .multilineTextAlignment(.leading)
+                    if !parsed.answerText.isEmpty || parsed.thinkingText == nil {
+                        Text(parsed.answerText.isEmpty ? labManager.generatedText : parsed.answerText)
+                            .font(.system(.body, design: .monospaced))
+                            .foregroundStyle(.appText)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .multilineTextAlignment(.leading)
+                    }
                     
                     // 当有数据时展示特化面板
                     if !labManager.generatedText.isEmpty, !labManager.extraPanelTitle.isEmpty {

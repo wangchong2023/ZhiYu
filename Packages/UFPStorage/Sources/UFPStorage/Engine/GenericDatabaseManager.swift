@@ -267,8 +267,17 @@ public final class GenericDatabaseManager: TestStateResettable, @unchecked Senda
         guard let vaultMigrator else {
             fatalError("[GenericDatabaseManager] vaultMigrator 未注入")
         }
-        let dbPool = try createAndMigrateDatabase(at: url, migrator: vaultMigrator)
-        self.dbWriter = dbPool
+        // 缺陷 #82 修复：新库创建/迁移失败时降级到内存模式并重抛，避免留下
+        // 「dbURL 已指向新库但 dbWriter == nil」的半开不一致状态（旧连接已关闭不可回滚）。
+        do {
+            let dbPool = try createAndMigrateDatabase(at: url, migrator: vaultMigrator)
+            self.dbWriter = dbPool
+        } catch {
+            MinimalLogger.shared.error(" [GenericDatabaseManager] Database hot-swap failed, degrading to in-memory: \(error.localizedDescription)")
+            self.state = .corrupted(error.localizedDescription)
+            degradeToInMemory(error: error)
+            throw error
+        }
 
         MinimalLogger.shared.info(" [GenericDatabaseManager] Exclusive physical database successfully switched and remounted => \(url.lastPathComponent)")
 

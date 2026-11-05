@@ -106,7 +106,7 @@ struct SmallCardBorderModifier: ViewModifier {
     let cornerRadius: CGFloat
     let strokeOpacity: Double
 
-    func body(content: Content) -> some View {
+    nonisolated func body(content: Content) -> some View {
         content
             .cornerRadius(cornerRadius)
             .overlay(
@@ -118,7 +118,7 @@ struct SmallCardBorderModifier: ViewModifier {
 
 extension View {
     /// 应用小卡片边框样式（默认 DesignTokens.SystemRadius.small + Opacity.subtle）
-    func smallCardBorder(cornerRadius: CGFloat = DesignTokens.SystemRadius.small, strokeOpacity: Double = DesignTokens.Opacity.subtle) -> some View {
+    nonisolated func smallCardBorder(cornerRadius: CGFloat = DesignTokens.SystemRadius.small, strokeOpacity: Double = DesignTokens.Opacity.subtle) -> some View {
         modifier(SmallCardBorderModifier(cornerRadius: cornerRadius, strokeOpacity: strokeOpacity))
     }
 }

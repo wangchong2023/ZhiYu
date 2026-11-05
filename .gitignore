@@ -84,3 +84,6 @@ Config/.env.local
 project.yml
 .exemption_cache/
 sonar-coverage.xml
+
+# 独立的嵌套创新项目（与 ZhiYu 主工程无关，不纳入仓库）
+cip-innovation/

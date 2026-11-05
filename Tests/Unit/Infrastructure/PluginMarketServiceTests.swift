@@ -549,4 +549,62 @@ final class PluginMarketServiceTests: XCTestCase {
         let folderExists = fileManager.fileExists(atPath: destFolder.path)
         XCTAssertFalse(folderExists, "卸载后应该自动在物理层删除该插件以简短 ID 命名的子文件夹，实际目录仍存在: \(destFolder.path)")
     }
+
+    // MARK: - ApiResponse 包装格式解析
+
+    /// 验证后端 ApiResponse 包装格式（code/message/data）能正确解析为插件列表
+    func testFetchPlugins_ApiResponseWrappedFormat() async throws {
+        let jsonString = """
+        {
+            "code": 0,
+            "message": "ok",
+            "data": [
+                {
+                    "id": "api-wrapped-plugin",
+                    "version": "2.0.0",
+                    "author": "ZhiYu API",
+                    "downloads": "42",
+                    "rating": 4.5,
+                    "icon": "wrench",
+                    "downloadURL": "https://example.com/plugins/api-wrapped-plugin",
+                    "names": { "en": "API Wrapped Plugin", "zh-Hans": "API 包装插件" },
+                    "descriptions": { "en": "Wrapped desc" }
+                }
+            ],
+            "requestId": "req-1",
+            "timestamp": 0
+        }
+        """
+        PluginMarketMockURLProtocol.requestHandler = { request in
+            // swiftlint:disable:next force_unwrapping
+            let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+            return (response, Data(jsonString.utf8))
+        }
+
+        await service.fetchPlugins()
+
+        XCTAssertEqual(service.availablePlugins.count, 1, "ApiResponse 包装格式应解析出 1 个插件")
+        XCTAssertEqual(service.availablePlugins.first?.id, "api-wrapped-plugin")
+        XCTAssertEqual(service.availablePlugins.first?.version, "2.0.0")
+        XCTAssertNil(service.errorMessage)
+    }
+
+    // MARK: - 无法解析的无效载荷
+
+    /// 验证当返回的载荷无法以任何已知格式（CommunityPluginEntry / ApiResponse / MarketPlugin）解析时，
+    /// 应返回失败、清空列表并设置连接错误提示（不崩溃）
+    func testFetchPlugins_unparseablePayload_setsError() async throws {
+        // 返回既非合法 JSON 数组也非 ApiResponse 的原始文本
+        PluginMarketMockURLProtocol.requestHandler = { request in
+            // swiftlint:disable:next force_unwrapping
+            let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+            return (response, Data("not-a-valid-json-payload".utf8))
+        }
+
+        await service.fetchPlugins()
+
+        XCTAssertTrue(service.availablePlugins.isEmpty, "无法解析的载荷应使插件列表为空")
+        XCTAssertNotNil(service.errorMessage, "无法解析的载荷应设置连接错误提示")
+        XCTAssertFalse(service.isLoading, "解析失败后 isLoading 应复位")
+    }
 }

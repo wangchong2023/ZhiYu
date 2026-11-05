@@ -103,7 +103,7 @@ public actor NetworkClient {
         requiresAuth: Bool = true
     ) async throws -> String {
         // Bug #40 修复：校验 fileName 不含 CRLF，防止 HTTP header 注入
-        guard !fileName.contains("\r") && !fileName.contains("\n") else {
+        guard !fileName.unicodeScalars.contains(where: { $0.value == SystemConstants.ASCII.carriageReturn || $0.value == SystemConstants.ASCII.lineFeed }) else {
             throw NetworkError.invalidFileName
         }
         let url = try makeBackendURL(path: path)

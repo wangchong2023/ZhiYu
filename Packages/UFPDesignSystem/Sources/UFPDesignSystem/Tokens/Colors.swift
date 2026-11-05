@@ -183,11 +183,20 @@ extension Color {
 
     // MARK: - 十六进制初始化逻辑
 
-    /// 十六进制颜色初始化 (支持 6 位或 8 位)
+    /// 十六进制颜色初始化 (支持 6 位 RGB 或 8 位 ARGB)
     public init(hex: String) {
-        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        // 缺陷 #85 修复：严格校验 6/8 位纯 hex 字符。
+        // 原实现用 `alphanumerics.inverted` 裁剪，会保留 G-Z/g-z 等非法 hex 字符（Latin 字母均属 alphanumeric），
+        // 且 `scanHexInt64` 返回值被忽略——`"fffGGG"`(6 字符) 被误判为 case 6，扫描只消费前 3 位，
+        // 解析出看似合理但完全错误的颜色；此处改为 `isHexDigit` 全量校验，非法输入一律走 fallback。
+        let cleaned = hex.trimmingCharacters(in: .whitespacesAndNewlines)
+        let cleanHex = cleaned.hasPrefix("#") ? String(cleaned.dropFirst()) : cleaned
+        let isValidHex = (cleanHex.count == 6 || cleanHex.count == 8) && cleanHex.allSatisfy { $0.isHexDigit }
+
         var int: UInt64 = 0
-        Scanner(string: hex).scanHexInt64(&int)
+        if isValidHex {
+            Scanner(string: cleanHex).scanHexInt64(&int)
+        }
 
         let a, r, g, b: UInt64
         let mask: UInt64 = 0xFF
@@ -197,12 +206,12 @@ extension Color {
         let shift16: UInt64 = 16
         let shift8: UInt64 = 8
 
-        switch hex.count {
-        case 6: // RGB (24-bit)
+        switch cleanHex.count {
+        case 6 where isValidHex: // RGB (24-bit)
             (a, r, g, b) = (UInt64(maxRGB), int >> shift16, int >> shift8 & mask, int & mask)
-        case 8: // ARGB (32-bit)
+        case 8 where isValidHex: // ARGB (32-bit)
             (a, r, g, b) = (int >> shift24, int >> shift16 & mask, int >> shift8 & mask, int & mask)
-        default:
+        default: // 非法输入统一回退到默认强调色，避免解析出错误颜色
             (a, r, g, b) = (UInt64(maxRGB), 0, 122, UInt64(maxRGB))
         }
 

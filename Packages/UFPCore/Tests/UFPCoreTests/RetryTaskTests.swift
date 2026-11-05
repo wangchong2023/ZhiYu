@@ -307,6 +307,27 @@ final class RetryTaskTests: XCTestCase {
         }
     }
 
+    // MARK: - 缺陷导向：负数 maxAttempts 崩溃
+
+    /// 缺陷验证：`poll` 对负数 maxAttempts 无防御，`0..<negative` 会触发
+    /// `Range requires lowerBound <= upperBound` 致命崩溃。
+    /// 修复后负数应抛 `pollingExhausted` 而非崩溃。
+    func testPoll_NegativeMaxAttempts_ThrowsInsteadOfCrashing() async throws {
+        let counter = TestCounter()
+        do {
+            let _: String = try await RetryTask.poll(maxAttempts: -1, interval: 0.001) {
+                _ = await counter.incrementAndGet()
+                return "SHOULD_NOT_CALL"
+            }
+            XCTFail("负数 maxAttempts 应抛出 RetryError")
+        } catch RetryError.pollingExhausted(let attempts) {
+            XCTAssertEqual(attempts, 0, "负数 maxAttempts 应报告钳制后的 0 次尝试")
+            let finalCount = await counter.value; XCTAssertEqual(finalCount, 0, "负数 maxAttempts 不应调用条件闭包")
+        } catch {
+            XCTFail("负数 maxAttempts 应抛出 RetryError.pollingExhausted，实际：\(error)")
+        }
+    }
+
     // MARK: - RetryError
 
     /// RetryError 的 errorDescription 应正确描述轮询耗尽

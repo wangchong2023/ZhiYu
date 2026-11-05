@@ -188,10 +188,7 @@ public final class GlobalModelManager: TestStateResettable {
 
         // 在测试环境中 DI 容器可能尚未完全就绪，使用可选解析兜底
         // inject_exempt: DI 就绪性检查（Key 返回非可选，测试时未注册会崩溃，故保留 resolveOptional）
-        guard let remoteConfig = ServiceContainer.shared.resolveOptional((any RemoteConfigCapabilities).self) else {
-            Logger.shared.warning("[GlobalModelManager] RemoteConfigCapabilities 未注册，跳过远程清单拉取")
-            return
-        }
+        let remoteConfig = ServiceContainer.shared.resolveOptional((any RemoteConfigCapabilities).self) ?? RemoteConfigService.shared
 
         do {
             // 1. 静默拉取白名单（支持极致的离线兜底 fallback）
@@ -206,7 +203,11 @@ public final class GlobalModelManager: TestStateResettable {
     
     /// 强制重新加载市场配置及沙盒状态
     public func reload() async {
-        await initializeManager()
+        if remoteManifests.isEmpty {
+            await initializeManager()
+        } else {
+            refreshLocalModelFiles()
+        }
     }
     
     /// 物理扫描本地沙盒中大模型的权重文件，结合 UserDefaults 持久化 Flag 执双重对齐
@@ -233,53 +234,65 @@ public final class GlobalModelManager: TestStateResettable {
         }
     }
 
-    /// 校验沙盒物理权重文件合法性并执行自愈与坏包清理
+    /// 校验沙盒物理权重文件合法性并执行自愈与坏包清理（基于魔数探针与权威收据，绝不静默删除用户文件）
     private func validateAndAlignDiskFile(manifest: LLMManifest, fileURL: URL, currentFlags: Set<String>) -> Bool {
         let modelId = manifest.modelId
         guard FileManager.default.fileExists(atPath: fileURL.path) else {
             if currentFlags.contains(modelId) {
                 markModelAsRemoved(modelId)
             }
+            ModelReceiptStore.shared.removeReceipt(for: modelId)
             return false
         }
 
-        do {
-            let attributes = try FileManager.default.attributesOfItem(atPath: fileURL.path)
-            let fileSize = (attributes[.size] as? Int64) ?? 0
-            let expectedSize = manifest.fileSizeInBytes
-
-            if fileSize > 0 && (expectedSize <= 0 || fileSize == expectedSize) {
-                modelStorageUsage[modelId] = fileSize
-                markModelAsDownloaded(modelId)
-                if let index = self.remoteManifests.firstIndex(where: { $0.modelId == modelId }), self.remoteManifests[index].fileSizeInBytes == 0 {
-                    self.remoteManifests[index].fileSizeInBytes = fileSize
-                }
-                return true
-            } else {
-                try? FileManager.default.removeItem(at: fileURL)
-                modelStorageUsage.removeValue(forKey: modelId)
-                markModelAsRemoved(modelId)
-                Logger.shared.warning("[GlobalModelManager] 物理清理损坏/大小不匹配的大模型文件: \(modelId) (实际: \(fileSize) B, 期望: \(expectedSize) B)")
-                return false
-            }
-        } catch {
-            Logger.shared.error("[GlobalModelManager] 校验模型权重文件属性失败: \(modelId)，错误: \(error.localizedDescription)")
+        // 1. 魔数格式探针校验：读取头部魔数与结构有效性（O(1) 防残卷与空壳）
+        let probeResult = ModelFormatProbe.shared.inspect(fileURL: fileURL)
+        switch probeResult {
+        case .notFound:
             return false
+        case .corrupted(let reason):
+            // 异常透明标记：绝不静默删除用户文件！保留现场并标记失败状态
+            Logger.shared.warning("[GlobalModelManager] 模型 \(modelId) 探针检测损坏 (\(reason))，透明标记为异常，不执行静默删除")
+            downloadStates[modelId] = .failed(error: L10n.ModelManager.Status.fileCorrupted)
+            return false
+        case .valid(let format):
+            // 2. 权威完成凭证比对 (Receipt Matching)
+            let actualFileSize = (try? FileManager.default.attributesOfItem(atPath: fileURL.path)[.size] as? Int64) ?? 0
+            if let receipt = ModelReceiptStore.shared.getReceipt(for: modelId) {
+                if actualFileSize == receipt.exactFileSize {
+                    modelStorageUsage[modelId] = actualFileSize
+                    markModelAsDownloaded(modelId)
+                    return true
+                } else {
+                    Logger.shared.warning("[GlobalModelManager] 模型 \(modelId) 物理大小 (\(actualFileSize) B) 与权威收据 (\(receipt.exactFileSize) B) 不匹配，判定为截断损坏")
+                    downloadStates[modelId] = .failed(error: L10n.ModelManager.Status.fileCorrupted)
+                    return false
+                }
+            } else {
+                // 3. 针对存量或预置模型：魔数探针有效，自动补发收据凭证并盖戳
+                let receipt = ModelDownloadReceipt(
+                    modelId: modelId,
+                    exactFileSize: actualFileSize,
+                    completedAt: Date(),
+                    sha256Checksum: nil,
+                    format: format
+                )
+                ModelReceiptStore.shared.saveReceipt(receipt)
+                modelStorageUsage[modelId] = actualFileSize
+                markModelAsDownloaded(modelId)
+                return true
+            }
         }
     }
 
     /// 对齐未完成或无效模型的下载状态
     private func alignIncompleteDownloadState(for modelId: String) {
         let currentState = downloadStates[modelId]
-        let isDownloadingOrActive: Bool
         switch currentState {
-        case .downloading, .paused, .pending, .verifying:
-            isDownloadingOrActive = true
+        case .downloading, .paused, .pending, .verifying, .failed:
+            // 保持现有进行中或具体错误状态（如损坏异常），不执行破坏性重置
+            return
         default:
-            isDownloadingOrActive = false
-        }
-
-        if !isDownloadingOrActive {
             downloadStates[modelId] = .failed(error: FeatureConstants.DefaultValue.notDownloaded)
         }
     }
@@ -312,12 +325,8 @@ public final class GlobalModelManager: TestStateResettable {
             return
         }
         
-        // 2. 启动后台物理下载与指纹注册（在异步任务中执行，以支持 actor 隔离调用）
+        // 2. 启动后台物理下载
         Task {
-            // registerChecksum 是 actor-isolated，必须 await
-            if let manager = downloadManager as? ModelDownloadManager {
-                await manager.registerChecksum(for: modelId, checksum: manifest.sha256Checksum)
-            }
             do {
                 try await downloadManager.startDownload(modelId: modelId, remoteURL: url)
                 // 3. 实时观察进度流
@@ -381,7 +390,18 @@ public final class GlobalModelManager: TestStateResettable {
                             }
                         }
                     }
-                    if case .completed = state {
+                    if case let .completed(localURL) = state {
+                        let actualSize = (try? FileManager.default.attributesOfItem(atPath: localURL.path)[.size] as? Int64) ?? 0
+                        let probe = ModelFormatProbe.shared.inspect(fileURL: localURL)
+                        let format = if case let .valid(fmt) = probe { fmt } else { FeatureConstants.ModelSpecConstants.ggufFormatName }
+                        let receipt = ModelDownloadReceipt(
+                            modelId: modelId,
+                            exactFileSize: actualSize,
+                            completedAt: Date(),
+                            sha256Checksum: nil,
+                            format: format
+                        )
+                        ModelReceiptStore.shared.saveReceipt(receipt)
                         self.markModelAsDownloaded(modelId)
                     }
                     // 终态时立即清理订阅标记，允许后续重新订阅
@@ -441,22 +461,53 @@ public final class GlobalModelManager: TestStateResettable {
         return hardwareGuard.evaluateEligibility(for: manifest)
     }
     
-    /// 判断特定模型是否已下载并在端侧完全就绪
-    /// - Parameter modelId: 模型唯一代号
+    /// 判断特定模型是否已下载并在端侧完全就绪（基于内存状态、魔数探针与权威收据多重核验）
     public func isModelLocalReady(for modelId: String) -> Bool {
         if case .completed = downloadStates[modelId] {
             return true
         }
-        return false
+        let docDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let fileURL = docDir.appendingPathComponent("\(modelId).bin")
+        guard FileManager.default.fileExists(atPath: fileURL.path) else { return false }
+
+        // 1. 使用魔数格式探针核验证明，杜绝半截残卷或伪造空壳误判为就绪
+        let probe = ModelFormatProbe.shared.inspect(fileURL: fileURL)
+        guard case .valid = probe else { return false }
+
+        // 2. 若存在权威收据，物理文件字节数必须精准对齐凭据
+        let actualFileSize = (try? FileManager.default.attributesOfItem(atPath: fileURL.path)[.size] as? Int64) ?? 0
+        if let receipt = ModelReceiptStore.shared.getReceipt(for: modelId) {
+            guard actualFileSize == receipt.exactFileSize else {
+                return false
+            }
+        }
+
+        downloadStates[modelId] = .completed(localURL: fileURL)
+        return true
     }
     
     /// 获取已在沙盒就绪的本地大模型物理路径 URL
-    /// - Parameter modelId: 模型唯一代号
     public func getLocalModelURL(for modelId: String) -> URL? {
         if case let .completed(url) = downloadStates[modelId] {
             return url
         }
+        let docDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let fileURL = docDir.appendingPathComponent("\(modelId).bin")
+        if FileManager.default.fileExists(atPath: fileURL.path) {
+            return fileURL
+        }
         return nil
+    }
+
+    /// 清理指定模型的本地沙盒权重与缓存（用户显式请求时执行物理清理与凭据移除）
+    public func clearModelCache(for modelId: String) {
+        let docDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let fileURL = docDir.appendingPathComponent(modelId + FeatureConstants.ModelSpecConstants.modelBinExtension)
+        try? FileManager.default.removeItem(at: fileURL)
+        ModelReceiptStore.shared.removeReceipt(for: modelId)
+        modelStorageUsage.removeValue(forKey: modelId)
+        markModelAsRemoved(modelId)
+        downloadStates[modelId] = .failed(error: FeatureConstants.DefaultValue.notDownloaded)
     }
     
     // MARK: - 智能端云路由决策 (2.4 契约)

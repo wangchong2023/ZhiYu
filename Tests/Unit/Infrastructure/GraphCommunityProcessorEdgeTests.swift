@@ -123,4 +123,83 @@ final class GraphCommunityProcessorEdgeTests: XCTestCase {
         let p2 = EdgePair(min(id1, id2), max(id1, id2))
         XCTAssertEqual(p1, p2)
     }
+
+    // MARK: - 孤立边（边的端点不存在于节点集合）
+
+    func testDetectCommunities_danglingEdge_ignored() {
+        let idA = UUID()
+        let idB = UUID()
+        let danglingSource = UUID()
+        let danglingTarget = UUID()
+        let nodes = [
+            GraphNode(id: idA, title: "A", pageType: .concept, position: .zero),
+            GraphNode(id: idB, title: "B", pageType: .concept, position: .zero)
+        ]
+        let edges = [
+            GraphEdge(source: danglingSource, target: danglingTarget),
+            GraphEdge(source: idA, target: idB)
+        ]
+        let result = GraphLayoutProcessor.detectCommunities(nodes: nodes, edges: edges)
+        XCTAssertEqual(result.count, 2)
+        XCTAssertEqual(Set(result.compactMap { $0.communityID }).count, 1, "孤立边不应影响仅由 A-B 构成的有效边")
+    }
+
+    // MARK: - 重复边去重（A-B 与 B-A 应视为同一条无向边）
+
+    func testDetectCommunities_duplicateEdges_deduplicated() {
+        let idA = UUID()
+        let idB = UUID()
+        let nodes = [
+            GraphNode(id: idA, title: "A", pageType: .concept, position: .zero),
+            GraphNode(id: idB, title: "B", pageType: .concept, position: .zero)
+        ]
+        let edges = [
+            GraphEdge(source: idA, target: idB),
+            GraphEdge(source: idB, target: idA)
+        ]
+        let result = GraphLayoutProcessor.detectCommunities(nodes: nodes, edges: edges)
+        XCTAssertEqual(result.count, 2)
+        XCTAssertNotNil(result.first { $0.id == idA }?.communityID)
+        XCTAssertNotNil(result.first { $0.id == idB }?.communityID)
+        XCTAssertEqual(result.first { $0.id == idA }?.communityID, result.first { $0.id == idB }?.communityID, "去重后的单条边应使两节点同社区")
+    }
+
+    // MARK: - 自环边（source == target）
+
+    func testDetectCommunities_selfLoop_noCrash() {
+        let idA = UUID()
+        let idB = UUID()
+        let nodes = [
+            GraphNode(id: idA, title: "A", pageType: .concept, position: .zero),
+            GraphNode(id: idB, title: "B", pageType: .concept, position: .zero)
+        ]
+        let edges = [
+            GraphEdge(source: idA, target: idA),
+            GraphEdge(source: idA, target: idB)
+        ]
+        let result = GraphLayoutProcessor.detectCommunities(nodes: nodes, edges: edges)
+        XCTAssertEqual(result.count, 2)
+        XCTAssertEqual(result.first { $0.id == idA }?.communityID, result.first { $0.id == idB }?.communityID, "自环边不应破坏 A-B 的社区归属")
+    }
+
+    // MARK: - 孤立节点（无边连接）
+
+    func testDetectCommunities_isolatedNode_ownCommunity() {
+        let idA = UUID()
+        let idB = UUID()
+        let idC = UUID()
+        let nodes = [
+            GraphNode(id: idA, title: "A", pageType: .concept, position: .zero),
+            GraphNode(id: idB, title: "B", pageType: .concept, position: .zero),
+            GraphNode(id: idC, title: "C", pageType: .concept, position: .zero)
+        ]
+        let edges = [
+            GraphEdge(source: idA, target: idB)
+        ]
+        let result = GraphLayoutProcessor.detectCommunities(nodes: nodes, edges: edges)
+        XCTAssertEqual(result.count, 3)
+        let commC = result.first { $0.id == idC }?.communityID
+        XCTAssertNotNil(commC, "孤立节点应被分配社区 ID")
+        XCTAssertEqual(result.first { $0.id == idA }?.communityID, result.first { $0.id == idB }?.communityID)
+    }
 }

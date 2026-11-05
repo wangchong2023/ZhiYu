@@ -90,6 +90,10 @@ extension L10n {
             public static var learnMore: String {
                 ModelManager.tr("model_manager.card.learnMore")
             }
+
+            public static func etaFormat(_ eta: String) -> String {
+                ModelManager.trf("model_manager.card.eta_format", eta)
+            }
         }
 
         // MARK: - 顶部摘要
@@ -108,6 +112,8 @@ extension L10n {
             public static var rag: String { ModelManager.tr("model_manager.task.rag") }
             public static var translation: String { ModelManager.tr("model_manager.task.translation") }
             public static var multimodal: String { ModelManager.tr("model_manager.task.multimodal") }
+            public static var mediaSearch: String { ModelManager.tr("model_manager.task.media_search") }
+            public static var videoSearch: String { ModelManager.tr("model_manager.task.video_search") }
         }
 
         // MARK: - 规格详表（Model Spec Sheet）
@@ -118,6 +124,13 @@ extension L10n {
             public static var parameters: String { ModelManager.tr("model_manager.spec.parameters") }
             public static var checksum: String { ModelManager.tr("model_manager.spec.checksum") }
             public static var tasks: String { ModelManager.tr("model_manager.spec.tasks") }
+            public static var quantization: String { ModelManager.tr("model_manager.spec.quantization") }
+            public static var runtimeEngine: String { ModelManager.tr("model_manager.spec.runtime_engine") }
+            public static var sandboxPath: String { ModelManager.tr("model_manager.spec.sandbox_path") }
+            public static var reloadModel: String { ModelManager.tr("model_manager.spec.reload_model") }
+            public static var clearCache: String { ModelManager.tr("model_manager.spec.clear_cache") }
+            public static var reloadSuccess: String { ModelManager.tr("model_manager.spec.reload_success") }
+            public static var cacheCleared: String { ModelManager.tr("model_manager.spec.cache_cleared") }
         }
 
         // MARK: - 参数调节
@@ -501,6 +514,10 @@ extension L10n {
                 ModelManager.tr("model_manager.status.paused")
             }
 
+            public static var fileCorrupted: String {
+                ModelManager.tr("model_manager.status.file_corrupted")
+            }
+
             public static var verificationFailed: String {
                 ModelManager.tr("model_manager.status.verification_failed")
             }
@@ -551,12 +568,71 @@ extension L10n {
         }
 
         public enum Lab {
+            public static var modelNotReadyTitle: String { ModelManager.tr("model_manager.lab.model_not_ready_title") }
+            public static var modelNotReadyDesc: String { ModelManager.tr("model_manager.lab.model_not_ready_desc") }
+            public static var modelLoadingTitle: String { ModelManager.tr("model_manager.lab.model_loading_title") }
+            public static var modelLoadingDesc: String { ModelManager.tr("model_manager.lab.model_loading_desc") }
+            public static var modelLoadingIndicator: String { ModelManager.tr("model_manager.lab.model_loading_indicator") }
             public static var noActiveModelTitle: String { ModelManager.tr("model_manager.lab.no_active_model.title") }
             public static var noActiveModelSubtitle: String { ModelManager.tr("model_manager.lab.no_active_model.subtitle") }
             public static var goToStore: String { ModelManager.tr("model_manager.lab.go_to_store") }
             public static var unsupportedUseCase: String { ModelManager.tr("model_manager.lab.unsupported_use_case") }
+
+            public enum Response {
+                public static var swiftActorExample: String { ModelManager.tr("model_manager.lab.response.swift_actor_example") }
+                public static var ragArchitectureExample: String { ModelManager.tr("model_manager.lab.response.rag_architecture_example") }
+                public static var hybridSearchExplanation: String { ModelManager.tr("model_manager.lab.response.hybrid_search_explanation") }
+                public static func generalOnDevice(model: String, prompt: String) -> String {
+                    ModelManager.trf("model_manager.lab.response.general_on_device_format", model, prompt)
+                }
+                public static func mobileActionSuccess(action: String) -> String {
+                    ModelManager.trf("model_manager.lab.response.mobile_action_success_format", action)
+                }
+                public static func mobileActionUnauthorized(action: String) -> String {
+                    ModelManager.trf("model_manager.lab.response.mobile_action_unauthorized_format", action)
+                }
+                public static func mobileActionComplex(target: String) -> String {
+                    ModelManager.trf("model_manager.lab.response.mobile_action_complex_format", target)
+                }
+                public static func promptLabCreative(temp: String, topP: String, prompt: String) -> String {
+                    ModelManager.trf("model_manager.lab.response.prompt_lab_creative_format", temp, topP, prompt)
+                }
+                public static func promptLabDeterministic(temp: String, topP: String, prompt: String) -> String {
+                    ModelManager.trf("model_manager.lab.response.prompt_lab_deterministic_format", temp, topP, prompt)
+                }
+                public static var agentReactKnowledgeSummary: String {
+                    ModelManager.tr("model_manager.lab.response.agent_react_knowledge_summary")
+                }
+                public static var chatGreeting: String {
+                    ModelManager.tr("model_manager.lab.response.chat_greeting")
+                }
+                public static func tinyGardenStatus(plant: String) -> String {
+                    ModelManager.trf("model_manager.lab.response.tiny_garden_status_format", plant)
+                }
+                public static func audioScribeResult(duration: String) -> String {
+                    ModelManager.trf("model_manager.lab.response.audio_scribe_result_format", duration)
+                }
+            }
+
+            // MARK: - 意图识别多语言词集
+            public enum Keyword {
+                public static var greetingList: [String] {
+                    ModelManager.tr("model_manager.lab.keyword.greeting").components(separatedBy: ",")
+                }
+                public static var hybridSearchList: [String] {
+                    ModelManager.tr("model_manager.lab.keyword.hybrid_search").components(separatedBy: ",")
+                }
+                public static var swiftConcurrencyList: [String] {
+                    ModelManager.tr("model_manager.lab.keyword.swift_concurrency").components(separatedBy: ",")
+                }
+                public static var ragArchitectureList: [String] {
+                    ModelManager.tr("model_manager.lab.keyword.rag_architecture").components(separatedBy: ",")
+                }
+            }
             
             // 用例名称
+            public static var useCaseInstantMediaSearch: String { ModelManager.tr("model_manager.lab.use_case.instant_media_search") }
+            public static var useCaseVideoMomentSearch: String { ModelManager.tr("model_manager.lab.use_case.video_moment_search") }
             public static var useCaseAskImage: String { ModelManager.tr("model_manager.lab.use_case.ask_image") }
             public static var useCaseAudioScribe: String { ModelManager.tr("model_manager.lab.use_case.audio_scribe") }
             public static var useCaseChat: String { ModelManager.tr("model_manager.lab.use_case.chat") }
@@ -566,6 +642,8 @@ extension L10n {
             public static var useCaseMobileActions: String { ModelManager.tr("model_manager.lab.use_case.mobile_actions") }
 
             // 用例副标题描述
+            public static var descInstantMediaSearch: String { ModelManager.tr("model_manager.lab.desc.instant_media_search") }
+            public static var descVideoMomentSearch: String { ModelManager.tr("model_manager.lab.desc.video_moment_search") }
             public static var descAskImage: String { ModelManager.tr("model_manager.lab.desc.ask_image") }
             public static var descAudioScribe: String { ModelManager.tr("model_manager.lab.desc.audio_scribe") }
             public static var descChat: String { ModelManager.tr("model_manager.lab.desc.chat") }
@@ -573,6 +651,21 @@ extension L10n {
             public static var descPromptLab: String { ModelManager.tr("model_manager.lab.desc.prompt_lab") }
             public static var descTinyGarden: String { ModelManager.tr("model_manager.lab.desc.tiny_garden") }
             public static var descMobileActions: String { ModelManager.tr("model_manager.lab.desc.mobile_actions") }
+
+            /// 格式化可用模型数量
+            public static func modelCountFormat(_ count: Int) -> String {
+                ModelManager.trf("model_manager.lab.model_count_format", count)
+            }
+
+            /// 格式化就绪/总模型数量
+            public static func readyModelCountFormat(_ ready: Int, _ total: Int) -> String {
+                ModelManager.trf("model_manager.lab.ready_model_count_format", ready, total)
+            }
+
+            /// 状态：可体验
+            public static var statusAvailable: String { ModelManager.tr("model_manager.lab.status.available") }
+            /// 状态：需下载模型
+            public static var statusNeedDownload: String { ModelManager.tr("model_manager.lab.status.need_download") }
 
             // 性能指标与监控
             public static var performanceMetrics: String { ModelManager.tr("model_manager.lab.metrics.title") }
@@ -621,6 +714,82 @@ extension L10n {
                 public static var promptLab: String { ModelManager.tr("model_manager.lab.prompt.prompt_lab") }
                 public static var tinyGarden: String { ModelManager.tr("model_manager.lab.prompt.tiny_garden") }
                 public static var mobileActions: String { ModelManager.tr("model_manager.lab.prompt.mobile_actions") }
+                public static var instantMediaSearch: String { ModelManager.tr("model_manager.lab.prompt.instant_media_search") }
+                public static var videoMomentSearch: String { ModelManager.tr("model_manager.lab.prompt.video_moment_search") }
+            }
+
+            public enum MediaSearch {
+                public static var importImage: String { ModelManager.tr("model_manager.lab.media_search.import_image") }
+                public static var emptyHint: String { ModelManager.tr("model_manager.lab.media_search.empty_hint") }
+                public static var searchPlaceholder: String { ModelManager.tr("model_manager.lab.media_search.search_placeholder") }
+                public static var thresholdLabel: String { ModelManager.tr("model_manager.lab.media_search.threshold_label") }
+                public static func thresholdFormat(_ percent: Double) -> String {
+                    ModelManager.trf("model_manager.lab.media_search.threshold_format", percent)
+                }
+            }
+
+            public enum AskImage {
+                public static var selectPhoto: String { ModelManager.tr("model_manager.lab.ask_image.select_photo") }
+                public static var presetTitle: String { ModelManager.tr("model_manager.lab.ask_image.preset_title") }
+                public static var sampleSmartDesk: String { ModelManager.tr("model_manager.lab.ask_image.sample.smart_desk") }
+                public static var sampleArchChart: String { ModelManager.tr("model_manager.lab.ask_image.sample.arch_chart") }
+                public static var sampleCityNight: String { ModelManager.tr("model_manager.lab.ask_image.sample.city_night") }
+                public static var removeImage: String { ModelManager.tr("model_manager.lab.ask_image.remove_image") }
+                public static func metaFormat(_ res: String, _ size: String) -> String {
+                    ModelManager.trf("model_manager.lab.ask_image.meta_format", res, size)
+                }
+            }
+
+            public enum Audio {
+                public static var startRecording: String { ModelManager.tr("model_manager.lab.audio.start_recording") }
+                public static var stopRecording: String { ModelManager.tr("model_manager.lab.audio.stop_recording") }
+                public static var sampling: String { ModelManager.tr("model_manager.lab.audio.sampling") }
+                public static var presetTitle: String { ModelManager.tr("model_manager.lab.audio.preset_title") }
+                public static var sampleMeeting: String { ModelManager.tr("model_manager.lab.audio.sample.meeting") }
+                public static var sampleSchedule: String { ModelManager.tr("model_manager.lab.audio.sample.schedule") }
+                public static var sampleTech: String { ModelManager.tr("model_manager.lab.audio.sample.tech") }
+                public static var sampleMeetingText: String { ModelManager.tr("model_manager.lab.audio.sample.meeting_text") }
+                public static var sampleScheduleText: String { ModelManager.tr("model_manager.lab.audio.sample.schedule_text") }
+                public static var sampleTechText: String { ModelManager.tr("model_manager.lab.audio.sample.tech_text") }
+                public static func durationFormat(_ dur: String) -> String {
+                    ModelManager.trf("model_manager.lab.audio.duration_format", dur)
+                }
+                public static func rtfFormat(_ rtf: String, _ words: Int64) -> String {
+                    ModelManager.trf("model_manager.lab.audio.rtf_format", rtf, words)
+                }
+                public static var copyText: String { ModelManager.tr("model_manager.lab.audio.copy_text") }
+                public static var micDenied: String { ModelManager.tr("model_manager.lab.audio.mic_denied") }
+                public static var playSample: String { ModelManager.tr("model_manager.lab.audio.play_sample") }
+                public static var pauseSample: String { ModelManager.tr("model_manager.lab.audio.pause_sample") }
+            }
+
+            public enum VideoSearch {
+                public static var importVideo: String { ModelManager.tr("model_manager.lab.video_search.import_video") }
+                public static var emptyHint: String { ModelManager.tr("model_manager.lab.video_search.empty_hint") }
+                public static var searchPlaceholder: String { ModelManager.tr("model_manager.lab.video_search.search_placeholder") }
+                public static var indexing: String { ModelManager.tr("model_manager.lab.video_search.indexing") }
+                public static func framesCount(_ count: Int) -> String { ModelManager.trf("model_manager.lab.video_search.frames_count", count) }
+                public static var filmstripTitle: String { ModelManager.tr("model_manager.lab.video_search.filmstrip_title") }
+            }
+
+            public static func similarityScore(_ score: Float) -> String { ModelManager.trf("model_manager.lab.similarity_score", score) }
+            public static func timestampLabel(_ time: String) -> String { ModelManager.trf("model_manager.lab.timestamp_label", time) }
+            public static var clearIndex: String { ModelManager.tr("model_manager.lab.clear_index") }
+            public static var loadDemoImages: String { ModelManager.tr("model_manager.lab.load_demo_images") }
+            public static var loadDemoVideo: String { ModelManager.tr("model_manager.lab.load_demo_video") }
+            public static var searchSimilarImage: String { ModelManager.tr("model_manager.lab.search_similar_image") }
+
+            public enum Chip {
+                public static var plants: String { ModelManager.tr("model_manager.lab.demo_chip_plants") }
+                public static var ocean: String { ModelManager.tr("model_manager.lab.demo_chip_ocean") }
+                public static var sunset: String { ModelManager.tr("model_manager.lab.demo_chip_sunset") }
+                public static var intro: String { ModelManager.tr("model_manager.lab.demo_chip_intro") }
+                public static var highlight: String { ModelManager.tr("model_manager.lab.demo_chip_highlight") }
+                public static var nature: String { ModelManager.tr("model_manager.lab.demo_chip_nature") }
+            }
+
+            public static func demoImageTitle(_ name: String) -> String {
+                ModelManager.trf("model_manager.lab.demo_image_title_format", name)
             }
 
             public static var tipsMultimodal: String { ModelManager.tr("model_manager.lab.tips_multimodal") }
@@ -667,6 +836,82 @@ extension L10n {
                 public static var sandboxReadDesc: String { ModelManager.tr("model_manager.lab.mock.sandbox_read_desc") }
                 public static var contextSummaryDesc: String { ModelManager.tr("model_manager.lab.mock.context_summary_desc") }
             }
+
+            // MARK: - 端侧行为沙盒 (Mobile Actions)
+            public enum Mobile {
+                public static var quickActionsTitle: String { ModelManager.tr("model_manager.lab.mobile.quick_actions_title") }
+                public static var cmdTorchOn: String { ModelManager.tr("model_manager.lab.mobile.cmd_torch_on") }
+                public static var cmdTorchOff: String { ModelManager.tr("model_manager.lab.mobile.cmd_torch_off") }
+                public static var cmdHaptic: String { ModelManager.tr("model_manager.lab.mobile.cmd_haptic") }
+                public static var cmdNotify: String { ModelManager.tr("model_manager.lab.mobile.cmd_notify") }
+                public static var cmdDarkMode: String { ModelManager.tr("model_manager.lab.mobile.cmd_dark_mode") }
+                public static var statusTitle: String { ModelManager.tr("model_manager.lab.mobile.status_title") }
+                public static var torchState: String { ModelManager.tr("model_manager.lab.mobile.torch_state") }
+                public static var hapticState: String { ModelManager.tr("model_manager.lab.mobile.haptic_state") }
+                public static var themeState: String { ModelManager.tr("model_manager.lab.mobile.theme_state") }
+                public static var notificationState: String { ModelManager.tr("model_manager.lab.mobile.notification_state") }
+                public static var stateOn: String { ModelManager.tr("model_manager.lab.mobile.state_on") }
+                public static var stateOff: String { ModelManager.tr("model_manager.lab.mobile.state_off") }
+                public static var stateReady: String { ModelManager.tr("model_manager.lab.mobile.state_ready") }
+                public static var recentLogs: String { ModelManager.tr("model_manager.lab.mobile.recent_logs") }
+                public static var noLogs: String { ModelManager.tr("model_manager.lab.mobile.no_logs") }
+            }
+
+            // MARK: - 投机采样 (Speculative Decoding)
+            public enum Speculative {
+                public static var enableSpeculativeDecoding: String { ModelManager.tr("model_manager.lab.enable_speculative_decoding") }
+                public static var draftModel: String { ModelManager.tr("model_manager.lab.speculative.draft_model") }
+                public static var acceptanceRate: String { ModelManager.tr("model_manager.lab.speculative.acceptance_rate") }
+                public static var speedup: String { ModelManager.tr("model_manager.lab.speculative.speedup") }
+                public static func rateFormat(_ rate: Double) -> String { ModelManager.trf("model_manager.lab.speculative.rate_format", rate) }
+                public static func speedupFormat(_ speedup: Double) -> String { ModelManager.trf("model_manager.lab.speculative.speedup_format", speedup) }
+            }
+
+            // MARK: - 端侧真实视觉分析 (Vision)
+            public enum Vision {
+                public static var reportTitle: String { ModelManager.tr("model_manager.lab.vision.report_title") }
+                public static func labelsFormat(_ labels: String) -> String { ModelManager.trf("model_manager.lab.vision.labels_format", labels) }
+                public static var noLabels: String { ModelManager.tr("model_manager.lab.vision.no_labels") }
+                public static func ocrFormat(_ text: String) -> String { ModelManager.trf("model_manager.lab.vision.ocr_format", text) }
+                public static func featuresFormat(_ res: String, _ luma: String, _ sat: String) -> String {
+                    ModelManager.trf("model_manager.lab.vision.features_format", res, luma, sat)
+                }
+                public static func questionFormat(_ question: String) -> String { ModelManager.trf("model_manager.lab.vision.question_format", question) }
+                public static var llmSystem: String { ModelManager.tr("model_manager.lab.vision.llm_system") }
+                public static var customPrompt: String { ModelManager.tr("model_manager.lab.vision.custom_prompt") }
+            }
+
+            // MARK: - 深度思考过程 (Thinking Process)
+            public enum Thinking {
+                public static var enableThinking: String { ModelManager.tr("model_manager.lab.enable_thinking") }
+                public static var inProgress: String { ModelManager.tr("model_manager.lab.thinking.in_progress") }
+                public static func completedFormat(_ duration: String) -> String { ModelManager.trf("model_manager.lab.thinking.completed_format", duration) }
+                public static var collapse: String { ModelManager.tr("model_manager.lab.thinking.collapse") }
+                public static var expand: String { ModelManager.tr("model_manager.lab.thinking.expand") }
+            }
+
+            // MARK: - 多轮对话沙盒增强 (Chat Sandbox)
+            public enum Chat {
+                public static func metricsBadgeFormat(_ ttftMs: Int, _ tps: Double) -> String {
+                    ModelManager.trf("model_manager.lab.chat.metrics_badge_format", ttftMs, tps)
+                }
+                public static var suggestionsTitle: String { ModelManager.tr("model_manager.lab.chat.suggestions_title") }
+                public static var suggestSwift: String { ModelManager.tr("model_manager.lab.chat.suggest_swift") }
+                public static var suggestRAG: String { ModelManager.tr("model_manager.lab.chat.suggest_rag") }
+                public static var suggestSummary: String { ModelManager.tr("model_manager.lab.chat.suggest_summary") }
+            }
+
+            // MARK: - 配置抽屉加速器与窗口 (Config Sheet)
+            public enum Config {
+                public static var accelAuto: String { ModelManager.tr("model_manager.lab.config.accel_auto") }
+                public static var accelANE: String { ModelManager.tr("model_manager.lab.config.accel_ane") }
+                public static var accelMetal: String { ModelManager.tr("model_manager.lab.config.accel_metal") }
+                public static var accelCPU: String { ModelManager.tr("model_manager.lab.config.accel_cpu") }
+                public static var contextWindow: String { ModelManager.tr("model_manager.lab.config.context_window") }
+                public static func kvCacheFormat(_ mb: Int) -> String {
+                    ModelManager.trf("model_manager.lab.config.kv_cache_format", mb)
+                }
+            }
         }
 
         public enum Alert {
@@ -675,6 +920,58 @@ extension L10n {
                 ModelManager.trf("model_manager.alert.oom_message", displayName, requiredGb, currentGb)
             }
         }
+
+        // MARK: - 顶层导航与分栏
+        public static var tabModels: String { ModelManager.tr("tab_models") }
+        public static var tabTasks: String { ModelManager.tr("tab_tasks") }
+        public static var tryModelInLab: String { ModelManager.tr("try_model_in_lab") }
+
+        // MARK: - 硬件算力看板
+        public enum Hardware {
+            public static func chipFormat(_ chip: String) -> String {
+                ModelManager.trf("hardware_soc_chip_format", chip)
+            }
+            public static func memoryFormat(_ available: String, _ total: String, _ percent: Double) -> String {
+                ModelManager.trf("hardware_memory_format", available, total, percent)
+            }
+            public static var acceleratorReady: String { ModelManager.tr("hardware_accelerator_ready") }
+            public static var neuralEngine: String { ModelManager.tr("hardware_neural_engine") }
+            public static var metalGPU: String { ModelManager.tr("hardware_metal_gpu") }
+        }
+
+        // MARK: - 任务类型筛选胶囊
+        public enum Filter {
+            public static var all: String { ModelManager.tr("filter_all") }
+            public static var chat: String { ModelManager.tr("filter_chat") }
+            public static var vision: String { ModelManager.tr("filter_vision") }
+            public static var search: String { ModelManager.tr("filter_search") }
+            public static var audio: String { ModelManager.tr("filter_audio") }
+        }
+
+        // MARK: - 性能基准测试
+        public enum Benchmark {
+            public static var title: String { ModelManager.tr("use_case_benchmark") }
+            public static var description: String { ModelManager.tr("use_case_benchmark_desc") }
+            public static var ttft: String { ModelManager.tr("benchmark_ttft") }
+            public static var tps: String { ModelManager.tr("benchmark_tps") }
+            public static var ram: String { ModelManager.tr("benchmark_ram") }
+            public static var start: String { ModelManager.tr("benchmark_start") }
+            public static var running: String { ModelManager.tr("benchmark_running") }
+            public static var gradeExcellent: String { ModelManager.tr("benchmark_grade_excellent") }
+            public static var gradeGood: String { ModelManager.tr("benchmark_grade_good") }
+            public static var gradeWarning: String { ModelManager.tr("benchmark_grade_warning") }
+            public static func roundsFormat(_ current: Int, _ total: Int) -> String {
+                ModelManager.trf("benchmark_rounds_format", current, total)
+            }
+            public static func ttftFormat(_ ms: Double) -> String {
+                ModelManager.trf("benchmark_ttft_format", ms)
+            }
+            public static func ramFormat(_ mb: Double) -> String {
+                ModelManager.trf("benchmark_ram_format", mb)
+            }
+            public static func tpsFormat(_ tps: Double) -> String {
+                ModelManager.trf("benchmark_tps_format", tps)
+            }
+        }
     }
 }
-

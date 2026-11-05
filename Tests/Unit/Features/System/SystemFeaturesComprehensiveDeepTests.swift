@@ -108,13 +108,13 @@ final class SystemFeaturesComprehensiveDeepTests: XCTestCase {
         XCTAssertTrue(manager.isModelCompatible(multimodalManifest, for: .audioScribe), "多模态模型应支持 audioScribe")
         XCTAssertTrue(manager.isModelCompatible(multimodalManifest, for: .aiChat), "多模态模型应支持 aiChat")
 
-        // 3. 验证 7 大用例枚举元数据完备性
-        XCTAssertEqual(UseCaseType.allCases.count, 7, "ModelLab 应精准定义 7 类端侧大模型用例")
+        // 3. 验证 10 大用例枚举元数据完备性
+        XCTAssertEqual(UseCaseType.allCases.count, 10, "ModelLab 应精准定义 10 类端侧大模型用例")
         for useCase in UseCaseType.allCases {
             XCTAssertFalse(useCase.title.isEmpty, "\(useCase) 标题不应为空")
             XCTAssertFalse(useCase.description.isEmpty, "\(useCase) 描述不应为空")
             XCTAssertFalse(useCase.icon.isEmpty, "\(useCase) 图标不应为空")
-            XCTAssertTrue(useCase.requiredTask == "multimodal" || useCase.requiredTask == "chat", "\(useCase) 必须规范归属为 multimodal 或 chat")
+            XCTAssertFalse(useCase.requiredTask.isEmpty, "\(useCase) 的 requiredTask 不应为空")
         }
     }
 

@@ -1,4 +1,5 @@
 import XCTest
+import UFPCore
 @testable import ZhiYu
 
 /// KnowledgePage processor 协议测试（不依赖 DI）
@@ -46,6 +47,35 @@ final class KnowledgePageProcessorTests: XCTestCase {
         XCTAssertEqual(p2.id, "b")
         XCTAssertEqual(p2.name, "Beta")
         XCTAssertNotEqual(p1.id, p2.id)
+    }
+}
+
+// MARK: - deletePage 备份脏位标记 (缺陷 #84)
+
+final class KnowledgePageDeleteMarkDirtyTests: XCTestCase {
+
+    /// 删除页面是数据变更，应与 create/update/rename 一致标记备份脏位 (缺陷 #84)。
+    @MainActor
+    func testDeletePage_marksBackupDirty() async throws {
+        setupFullMockEnvironment()
+
+        let tempDir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ZhiYuTest-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: tempDir) }
+
+        ServiceContainer.shared.register(BackupService(baseDirectory: tempDir), for: BackupService.self)
+
+        let manager = KnowledgePageManager()
+        let page = KnowledgePage(title: "缺陷84测试", pageType: .concept, content: "内容")
+
+        try await manager.deletePage(page, currentPages: [])
+
+        let dirtyFlag = tempDir.appendingPathComponent(".knowledge-management_dirty")
+        XCTAssertTrue(
+            FileManager.default.fileExists(atPath: dirtyFlag.path),
+            "删除页面是数据变更，应与 create/update/rename 一致标记备份脏位 (缺陷 #84)"
+        )
     }
 }
 

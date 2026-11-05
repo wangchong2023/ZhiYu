@@ -185,8 +185,9 @@ public struct TextChunkerProcessor: Sendable {
         state.appendChunk(text: trimmedText)
 
         // Bug #134 修复：重叠窗口 clamp，避免短 chunk 时塌缩到 startIndex
+        // Bug #80 修复：重叠窗口同时钳制下限，负数 chunkOverlap 会导致 `index(offsetBy:)` 越过末尾致命崩溃
         let oldChunkTextCount = state.currentChunkText.count
-        let overlapAmount = min(config.chunkOverlap, oldChunkTextCount)
+        let overlapAmount = max(0, min(config.chunkOverlap, oldChunkTextCount))
         let overlapIndex = state.currentChunkText.index(state.currentChunkText.endIndex, offsetBy: -overlapAmount)
         state.currentChunkText = String(state.currentChunkText[overlapIndex...]) + lineWithNewline
         // startIndex 偏移 = 旧 chunk 文本长度 - 重叠窗口大小

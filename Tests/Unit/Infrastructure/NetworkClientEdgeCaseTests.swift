@@ -7,6 +7,7 @@
 //
 
 import XCTest
+import UFPCore
 @testable import ZhiYu
 
 // MARK: - NetworkClient 边界分支测试
@@ -17,6 +18,17 @@ final class NetworkClientEdgeCaseTests: XCTestCase {
 
     override func setUp() async throws {
         await NetworkClient.shared.setTestSession(makeMockSession())
+        // 注册 KeyStoreProtocol 降级回退：模拟器无 Keychain entitlements 时，
+        // store/retrieve 走 UserDefaults 缓存（errSecMissingEntitlement -34018 回退），
+        // 否则 refreshToken 静默丢失导致测试误报 missingRefreshToken
+        guard let testDefaults = UserDefaults(suiteName: "NetworkClientEdgeCaseTests-\(UUID().uuidString)") else {
+            XCTFail("无法创建测试用 UserDefaults")
+            return
+        }
+        ServiceContainer.shared.register(
+            UserDefaultsKeyStore(defaults: testDefaults) as any KeyStoreProtocol,
+            for: (any KeyStoreProtocol).self
+        )
         try? KeychainService.shared.delete(key: AppConstants.Network.jwtTokenKey)
         try? KeychainService.shared.delete(key: AppConstants.Network.refreshTokenKey)
     }
@@ -245,6 +257,104 @@ final class NetworkClientEdgeCaseTests: XCTestCase {
         XCTAssertEqual(newAccess, "new-jwt", "access token 应已更新")
     }
 
+    // MARK: - uploadFile CRLF 注入防护（Bug #40）
+
+    /// 验证 uploadFile 对含 CRLF 换行符的 fileName 直接拒绝，防止 HTTP header 注入
+    func testUploadFile_rejectsCRLFInjection() async throws {
+        let maliciousFileName = "test.txt\u{000D}\u{000A}X-Injected: evil"
+        XCTAssertTrue(
+            maliciousFileName.unicodeScalars.contains { $0.value == 13 || $0.value == 10 },
+            "测试夹具应包含真实 CR/LF 字节"
+        )
+
+        do {
+            _ = try await NetworkClient.shared.uploadFile(
+                path: "/api/v1/upload",
+                fileData: Data("hello".utf8),
+                fileName: maliciousFileName,
+                mimeType: "text/plain"
+            )
+            XCTFail("含 CRLF 的 fileName 应抛出 invalidFileName 而非发起请求")
+        } catch NetworkError.invalidFileName {
+            // 预期：CRLF 注入被拒绝
+        }
+    }
+
+    // MARK: - 刷新接口自身解码失败（错误链兜底）
+
+    /// 验证刷新接口返回无法解码的载荷时，错误链应传播失败而不崩溃、不死循环、不误判为成功
+    func testTokenRefreshDecodeFailure_propagatesError() async throws {
+        struct Item: Codable { let name: String }
+        try KeychainService.shared.store(key: AppConstants.Network.refreshTokenKey, value: "valid-refresh")
+
+        // 第一次 40101 → 触发刷新 → 刷新接口返回非法 JSON（解码失败）
+        NetworkClientEdgeMockURLProtocol.responseSequence = [
+            makeSequenceEntry(code: 40101, message: "token expired", data: NSNull()),
+            (Data("not-a-valid-json".utf8), 200)
+        ]
+
+        do {
+            let _: Item = try await NetworkClient.shared.request(path: "/api/v1/protected", requiresAuth: true)
+            XCTFail("刷新接口解码失败应抛出错误")
+        } catch is DecodingError {
+            // 预期：刷新接口解码失败应传播 DecodingError，而非误判成功/死循环
+        } catch let error as NetworkError {
+            XCTFail("刷新接口解码失败应抛 DecodingError，却抛 NetworkError: \(error)")
+        } catch {
+            XCTFail("刷新接口解码失败应抛 DecodingError，却抛其他错误: \(error)")
+        }
+    }
+
+    // MARK: - 并发刷新复用测试
+
+    /// 验证刷新进行中，第二个请求复用同一 refreshTask 而非重复触发刷新
+    func testConcurrentRequestReusesInFlightRefresh() async throws {
+        struct Item: Codable, Equatable { let value: String }
+        try KeychainService.shared.store(key: AppConstants.Network.refreshTokenKey, value: "valid-refresh")
+
+        let refreshStarted = DispatchSemaphore(value: 0)
+        let refreshRelease = DispatchSemaphore(value: 0)
+        ConcurrentRefreshMockURLProtocol.resetState()
+        ConcurrentRefreshMockURLProtocol.refreshStarted = refreshStarted
+        ConcurrentRefreshMockURLProtocol.refreshRelease = refreshRelease
+        ConcurrentRefreshMockURLProtocol.newAccessToken = "new-jwt"
+
+        await NetworkClient.shared.setTestSession(makeConcurrentSession())
+
+        // 请求 A：触发刷新（刷新请求阻塞在 refreshRelease 上，模拟慢刷新）
+        let taskA = Task { () -> Item in
+            try await NetworkClient.shared.request(path: "/api/v1/protected", requiresAuth: true)
+        }
+
+        // 等待刷新请求真正开始（此时 isRefreshing=true、refreshTask 已赋值）
+        XCTAssertEqual(
+            refreshStarted.wait(timeout: .now() + 5),
+            .success,
+            "刷新请求应已开始"
+        )
+
+        // 请求 B：刷新进行中到达，应走 waitForTokenRefreshIfNeeded 等待同一 refreshTask
+        let taskB = Task { () -> Item in
+            try await NetworkClient.shared.request(path: "/api/v1/protected", requiresAuth: true)
+        }
+
+        // 稍等让 B 进入并发等待路径，再放行刷新
+        try await Task.sleep(nanoseconds: 300_000_000)
+        refreshRelease.signal()
+
+        let valueA = try await taskA.value
+        let valueB = try await taskB.value
+        XCTAssertEqual(valueA.value, "ok", "请求 A 应刷新后重试成功")
+        XCTAssertEqual(valueB.value, "ok", "请求 B 应复用刷新后成功")
+
+        // 核心断言：刷新接口只被调用一次（B 复用 A 的刷新，未重复触发）
+        XCTAssertEqual(
+            ConcurrentRefreshMockURLProtocol.refreshCallCount,
+            1,
+            "并发刷新应只触发一次，而非每个请求各自刷新"
+        )
+    }
+
     // MARK: - 辅助方法
 
     private func makeSequenceEntry(code: Int, message: String, data: Any) -> (Data, Int) {
@@ -282,6 +392,12 @@ final class NetworkClientEdgeCaseTests: XCTestCase {
             "timestamp": Int64(Date().timeIntervalSince1970 * 1000)
         ]
         return (jsonData(from: body), 200)
+    }
+
+    private func makeConcurrentSession() -> URLSession {
+        let config = URLSessionConfiguration.default
+        config.protocolClasses = [ConcurrentRefreshMockURLProtocol.self]
+        return URLSession(configuration: config)
     }
 }
 
@@ -341,6 +457,88 @@ final class NetworkClientEdgeMockURLProtocol: URLProtocol {
         }
         client?.urlProtocol(self, didLoad: body)
         client?.urlProtocolDidFinishLoading(self)
+    }
+
+    override func stopLoading() {}
+}
+
+// MARK: - NetworkClient 并发刷新 Mock URLProtocol
+//
+// path-aware mock：refresh 请求可被信号量挂起，用于验证刷新进行中第二个请求
+// 复用同一 refreshTask（不重复触发刷新）。非 refresh 请求：携带新 access token
+// （即刷新后的重试）返回成功，否则返回 40101 触发刷新。
+
+final class ConcurrentRefreshMockURLProtocol: URLProtocol {
+    nonisolated(unsafe) static var refreshStarted: DispatchSemaphore?
+    nonisolated(unsafe) static var refreshRelease: DispatchSemaphore?
+    nonisolated(unsafe) static var newAccessToken: String = "new-jwt"
+    nonisolated(unsafe) static var refreshCallCount = 0
+
+    static func resetState() {
+        refreshStarted = nil
+        refreshRelease = nil
+        newAccessToken = "new-jwt"
+        refreshCallCount = 0
+    }
+
+    override class func canInit(with request: URLRequest) -> Bool {
+        return true
+    }
+
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest {
+        return request
+    }
+
+    override func startLoading() {
+        guard let url = request.url else {
+            client?.urlProtocolDidFinishLoading(self)
+            return
+        }
+
+        if url.absoluteString.contains("subscriber/refresh") {
+            // 刷新请求：计数 + 通知已开始 + 阻塞直到测试放行（超时兜底防死锁）
+            Self.refreshCallCount += 1
+            Self.refreshStarted?.signal()
+            _ = Self.refreshRelease?.wait(timeout: .now() + 5)
+            let body = Self.jsonBody(code: 0, data: ["accessToken": Self.newAccessToken, "refreshToken": "new-refresh"])
+            Self.respond(self, url: url, body: body, status: 200)
+            return
+        }
+
+        // 非刷新请求：携带新 access token（刷新后的重试）→ 成功；否则 → 40101 触发刷新
+        let auth = request.value(forHTTPHeaderField: "Authorization")
+        if let auth, auth.contains(Self.newAccessToken) {
+            let body = Self.jsonBody(code: 0, data: ["value": "ok"])
+            Self.respond(self, url: url, body: body, status: 200)
+        } else {
+            let body = Self.jsonBody(code: 40101, message: "token expired", data: NSNull())
+            Self.respond(self, url: url, body: body, status: 200)
+        }
+    }
+
+    private static func jsonBody(code: Int, message: String = "ok", data: Any) -> Data {
+        let dict: [String: Any] = [
+            "code": code,
+            "message": message,
+            "data": data,
+            "requestId": "req-\(UUID().uuidString.prefix(8))",
+            "timestamp": Int64(Date().timeIntervalSince1970 * 1000)
+        ]
+        return (try? JSONSerialization.data(withJSONObject: dict)) ?? Data()
+    }
+
+    private static func respond(_ protocolSelf: URLProtocol, url: URL, body: Data, status: Int) {
+        let response = HTTPURLResponse(
+            url: url,
+            statusCode: status,
+            httpVersion: "HTTP/1.1",
+            headerFields: ["Content-Type": "application/json"]
+        )
+        if let response = response {
+            protocolSelf.client?.urlProtocol(protocolSelf, didReceive: response, cacheStoragePolicy: .notAllowed)
+        }
+        protocolSelf.client?.urlProtocol(protocolSelf, didLoad: body)
+        protocolSelf.client?.urlProtocolDidFinishLoading(protocolSelf)
     }
 
     override func stopLoading() {}

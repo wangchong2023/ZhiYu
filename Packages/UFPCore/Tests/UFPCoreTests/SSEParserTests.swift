@@ -242,6 +242,44 @@ final class SSEParserTests: XCTestCase {
         XCTAssertEqual(chunks, ["深度推理分析中..."], "当 content 为空字符串时，应成功降级提取 reasoning_content 而不是丢失")
     }
 
+    // MARK: - 带诊断 logger 的分支覆盖
+
+    /// 验证传入非 nil logger 时，正常流结束会记录结束日志（覆盖 logger 非空分支）
+    func testParse_WithLogger_LogsStreamEnd() async throws {
+        let logger = CapturingLogger()
+        let sse = "data: {\"choices\":[{\"delta\":{\"content\":\"A\"}}]}\n\ndata: [DONE]\n\n"
+        var chunks: [String] = []
+        for try await chunk in SSEParser.parse(bytes: try await makeBytes(from: sse), logger: logger) {
+            chunks.append(chunk)
+        }
+        XCTAssertEqual(chunks, ["A"])
+        XCTAssertTrue(logger.debugMessages.contains { $0.contains("流结束") }, "应记录流结束诊断日志")
+    }
+
+    /// 验证 logger 非空且前 15 行内时记录原始行（覆盖 logDiagnosticLine 非空分支）
+    func testParse_WithLogger_RecordsRawLinesWithinLimit() async throws {
+        let logger = CapturingLogger()
+        let sse = "data: {\"choices\":[{\"delta\":{\"content\":\"A\"}}]}\n\ndata: [DONE]\n\n"
+        var chunks: [String] = []
+        for try await chunk in SSEParser.parse(bytes: try await makeBytes(from: sse), logger: logger) {
+            chunks.append(chunk)
+        }
+        XCTAssertEqual(chunks, ["A"])
+        XCTAssertTrue(logger.debugMessages.contains { $0.contains("[SSE] L") }, "应记录前 15 行原始行诊断")
+    }
+
+    /// 验证 logger 非空时非 JSON 数据行被记录（覆盖 parseJSONLine 内 logger 分支）
+    func testParse_WithLogger_LogsNonJSONLine() async throws {
+        let logger = CapturingLogger()
+        let sse = "data: not json\n\ndata: [DONE]\n\n"
+        var chunks: [String] = []
+        for try await chunk in SSEParser.parse(bytes: try await makeBytes(from: sse), logger: logger) {
+            chunks.append(chunk)
+        }
+        XCTAssertTrue(chunks.isEmpty)
+        XCTAssertTrue(logger.debugMessages.contains { $0.contains("跳过非 JSON 行") }, "应记录非 JSON 行诊断")
+    }
+
     // MARK: - 辅助方法
 
     private func collectChunks(from sseText: String) async throws -> [String] {
@@ -251,6 +289,30 @@ final class SSEParserTests: XCTestCase {
             chunks.append(chunk)
         }
         return chunks
+    }
+}
+
+// MARK: - 诊断日志捕获替身（测试专用）
+
+/// 捕获 debug/error 消息的 UFPLogging 替身，验证 SSEParser 诊断分支。
+private final class CapturingLogger: UFPLogging, @unchecked Sendable {
+    private(set) var debugMessages: [String] = []
+    private(set) var errorMessages: [String] = []
+
+    func debug(_ message: String, file: String, function: String, line: Int) {
+        debugMessages.append(message)
+    }
+
+    func info(_ message: String, file: String, function: String, line: Int) {
+        // 不关心 info
+    }
+
+    func warning(_ message: String, file: String, function: String, line: Int) {
+        // 不关心 warning
+    }
+
+    func error(_ message: String, error: Error?, file: String, function: String, line: Int) {
+        errorMessages.append(message)
     }
 }
 

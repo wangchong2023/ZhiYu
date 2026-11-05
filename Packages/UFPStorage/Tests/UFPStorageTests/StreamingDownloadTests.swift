@@ -29,6 +29,21 @@ final class StreamingDownloadTests: XCTestCase {
         )
     }
 
+    /// 测试用下载器：目标文件父目录不存在（使 moveItem 必然抛错），用于验证失败路径清理。
+    private func makeManagerWithNonexistentDestination() -> StreamingDownloadManager {
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        tempDirectory = dir
+        return StreamingDownloadManager(
+            sessionFactory: { _ in URLSession(configuration: .ephemeral) },
+            resumeDataDirectory: { dir },
+            destinationURL: { taskID in
+                // 父目录 "no-such-dir" 不存在，moveItem 到此必然抛错
+                dir.appendingPathComponent("no-such-dir", isDirectory: true).appendingPathComponent("\(taskID).bin")
+            }
+        )
+    }
+
     override func setUp() {
         super.setUp()
         tempDirectory = nil
@@ -60,6 +75,24 @@ final class StreamingDownloadTests: XCTestCase {
             return state
         }
         return nil
+    }
+
+    /// 用独立 Task 收集流事件到数组，主测试 sleep 后 cancel 并返回已收集事件。
+    /// 规避缺陷场景下 `iterator.next()` 永久挂起导致测试套件卡死的问题。
+    private func collectStream(
+        _ stream: AsyncStream<StreamingDownloadState>,
+        for duration: Duration
+    ) async -> [StreamingDownloadState] {
+        let collector = Task {
+            var got: [StreamingDownloadState] = []
+            for await state in stream {
+                got.append(state)
+            }
+            return got
+        }
+        try? await Task.sleep(for: duration)
+        collector.cancel()
+        return await collector.value
     }
 
     // MARK: - 1. SHA256 流式校验边界
@@ -218,6 +251,28 @@ final class StreamingDownloadTests: XCTestCase {
         }
     }
 
+    // MARK: - 缺陷导向：进度百分比越界
+
+    /// 缺陷验证：`updateProgress` 未将 progress clamp 到 [0,1]。
+    /// 当 `totalBytesWritten > totalBytesExpectedToWrite`（Content-Length 不准确、
+    /// chunked 响应、断点续传累计字节超限）时，进度会超过 100%。
+    func testUpdateProgress_WrittenExceedsExpected_ProgressStaysWithinBounds() async {
+        let manager = makeManager()
+        let taskID = "test-progress-exceed-\(UUID().uuidString)"
+
+        await manager.updateProgress(for: taskID, totalBytesWritten: 1500, totalBytesExpectedToWrite: 1000)
+
+        let stream = await manager.observeDownloadState(for: taskID)
+        let state = await firstState(from: stream)
+        if case .downloading(let progress, _, let downloadedBytes, let totalBytes) = state {
+            XCTAssertLessThanOrEqual(progress, 1.0, "进度百分比不应超过 100%")
+            XCTAssertGreaterThanOrEqual(progress, 0.0, "进度百分比不应为负")
+            XCTAssertLessThanOrEqual(downloadedBytes, totalBytes, "已下载字节不应超过期望总字节")
+        } else {
+            XCTFail("应为 .downloading，实际: \(String(describing: state))")
+        }
+    }
+
     // MARK: - 4. Checksum 注册
 
     func testRegisterChecksumAndGet() async {
@@ -235,5 +290,348 @@ final class StreamingDownloadTests: XCTestCase {
         let taskID = "test-nochecksum-\(UUID().uuidString)"
         let retrieved = await manager.getChecksum(for: taskID)
         XCTAssertNil(retrieved)
+    }
+
+    // MARK: - 5. 下载生命周期（状态转换，无真实网络）
+
+    /// 验证 startDownload 对已存在的 downloading 状态直接拦截。
+    func testStartDownload_WhenAlreadyDownloading_IsIgnored() async throws {
+        // Given — 手动置为 downloading 状态
+        let manager = makeManager()
+        let taskID = "test-already-\(UUID().uuidString)"
+        await manager.updateState(for: taskID, to: .downloading(progress: 0.5))
+
+        // When — 尝试再次启动
+        try await manager.startDownload(taskID: taskID, remoteURL: URL(string: "https://example.com/file")!)
+
+        // Then — 状态仍为 downloading（未被覆盖为 pending）
+        let stream = await manager.observeDownloadState(for: taskID)
+        let state = await firstState(from: stream)
+        if case .downloading(let progress, _, _, _) = state {
+            XCTAssertEqual(progress, 0.5, accuracy: 0.001, "已下载中的任务不应被重新启动覆盖")
+        } else {
+            XCTFail("已下载中任务应保持 downloading，实际: \(String(describing: state))")
+        }
+    }
+
+    /// 验证 pauseDownload 对不存在的任务静默返回。
+    func testPauseDownload_WhenNoActiveTask_DoesNothing() async throws {
+        // Given
+        let manager = makeManager()
+        let taskID = "test-pause-none-\(UUID().uuidString)"
+
+        // When — 无活动任务
+        try await manager.pauseDownload(taskID: taskID)
+
+        // Then — 不崩溃，状态保持 Idle 语义
+        let stream = await manager.observeDownloadState(for: taskID)
+        let state = await firstState(from: stream)
+        if case .failed(let message) = state {
+            XCTAssertTrue(message.contains("Idle"), "无活动任务 pause 不应改变状态")
+        } else {
+            XCTFail("无活动任务时应保持 Idle，实际: \(String(describing: state))")
+        }
+    }
+
+    /// 验证 resumeDownload 在无断点数据时进入 failed("no resume data")。
+    func testResumeDownload_WhenNoResumeData_Fails() async throws {
+        // Given
+        let manager = makeManager()
+        let taskID = "test-resume-none-\(UUID().uuidString)"
+
+        // When — 无断点续传文件
+        try await manager.resumeDownload(taskID: taskID)
+
+        // Then
+        let stream = await manager.observeDownloadState(for: taskID)
+        let state = await firstState(from: stream)
+        if case .failed(let message) = state {
+            XCTAssertTrue(message.contains("no resume data"), "无断点数据应报 failed(\"no resume data\")")
+        } else {
+            XCTFail("无断点数据应进入 failed，实际: \(String(describing: state))")
+        }
+    }
+
+    /// 验证 cancelDownload 清理活动任务并将状态置为 cancelled。
+    func testCancelDownload_SetsCancelledState() async throws {
+        // Given — 创建一个真实的下载任务
+        let manager = makeManager()
+        let taskID = "test-cancel-\(UUID().uuidString)"
+        let remoteURL = URL(string: "https://example.com/cancel.bin")!
+        try await manager.startDownload(taskID: taskID, remoteURL: remoteURL)
+
+        // When
+        try await manager.cancelDownload(taskID: taskID)
+
+        // Then
+        let stream = await manager.observeDownloadState(for: taskID)
+        let state = await firstState(from: stream)
+        if case .cancelled = state {
+            // 预期 cancelled
+        } else {
+            XCTFail("cancel 后状态应为 cancelled，实际: \(String(describing: state))")
+        }
+    }
+
+    /// 验证 completeDownload 在 SHA256 校验失败时清理临时文件并进入 failed。
+    func testCompleteDownload_WhenVerificationFails_FailsAndCleansTemp() async {
+        // Given — 注册一个必然不匹配的 checksum
+        let manager = makeManager()
+        let taskID = "test-complete-fail-\(UUID().uuidString)"
+        await manager.registerChecksum(for: taskID, checksum: String(repeating: "a", count: 64))
+        let tempFile = tempDirectory!.appendingPathComponent("temp.bin")
+        try? Data("payload".utf8).write(to: tempFile)
+
+        // When
+        await manager.completeDownload(for: taskID, tempFileURL: tempFile, verificationFailedMessage: "verification failed")
+        await pollUntilNot(idle: taskID, in: manager)
+
+        // Then — 校验失败：进入 failed 且临时文件被清理
+        let stream = await manager.observeDownloadState(for: taskID)
+        let state = await firstState(from: stream)
+        if case .failed(let message) = state {
+            XCTAssertTrue(message.contains("verification failed"), "校验失败应携带原因，实际: \(message)")
+        } else {
+            XCTFail("校验失败应进入 failed，实际: \(String(describing: state))")
+        }
+        XCTAssertFalse(FileManager.default.fileExists(atPath: tempFile.path), "校验失败后临时文件应被清理")
+    }
+
+    /// 验证 completeDownload 在校验通过时将文件移入目标目录并置为 completed。
+    func testCompleteDownload_WhenVerified_MovesToDestination() async {
+        // Given — 注册正确 checksum
+        let manager = makeManager()
+        let taskID = "test-complete-ok-\(UUID().uuidString)"
+        let content = "verified-content"
+        let tempFile = tempDirectory!.appendingPathComponent("temp-ok.bin")
+        try? Data(content.utf8).write(to: tempFile)
+        await manager.registerChecksum(for: taskID, checksum: sha256Hex(of: Data(content.utf8)))
+
+        // When
+        await manager.completeDownload(for: taskID, tempFileURL: tempFile, verificationFailedMessage: "verification failed")
+        await pollUntilNot(idle: taskID, in: manager)
+
+        // Then — 文件移入目标目录，状态为 completed
+        let destURL = tempDirectory!.appendingPathComponent("\(taskID).bin")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: destURL.path), "校验通过后文件应移入目标目录")
+        XCTAssertFalse(FileManager.default.fileExists(atPath: tempFile.path), "临时文件应被移走")
+
+        let stream = await manager.observeDownloadState(for: taskID)
+        let state = await firstState(from: stream)
+        if case .completed(let localURL) = state {
+            XCTAssertEqual(localURL.path, destURL.path, "completed 应携带目标 URL")
+        } else {
+            XCTFail("校验通过应进入 completed，实际: \(String(describing: state))")
+        }
+    }
+
+    /// 验证 completeDownload 在目标文件已存在时会先覆盖再移入。
+    func testCompleteDownload_WhenDestinationExists_Overwrites() async {
+        // Given — 目标文件已存在
+        let manager = makeManager()
+        let taskID = "test-complete-overwrite-\(UUID().uuidString)"
+        let content = "new-content"
+        let tempFile = tempDirectory!.appendingPathComponent("temp-overwrite.bin")
+        try? Data(content.utf8).write(to: tempFile)
+        await manager.registerChecksum(for: taskID, checksum: sha256Hex(of: Data(content.utf8)))
+
+        let destURL = tempDirectory!.appendingPathComponent("\(taskID).bin")
+        try? Data("old-stale".utf8).write(to: destURL)
+
+        // When
+        await manager.completeDownload(for: taskID, tempFileURL: tempFile, verificationFailedMessage: "verification failed")
+        await pollUntilNot(idle: taskID, in: manager)
+
+        // Then — 目标被新内容覆盖
+        let destContent = (try? Data(contentsOf: destURL)).map { String(data: $0, encoding: .utf8) }
+        XCTAssertEqual(destContent, content, "目标文件应被新内容覆盖")
+    }
+
+    // MARK: - 缺陷导向：moveItem 失败路径的资源清理
+
+    /// 缺陷验证：`completeDownload` 移入目标目录失败（catch 分支）时，
+    /// 应进入 failed 并清理临时文件。
+    /// 修复前 catch 分支缺失 `clearActiveTask`（与校验失败、成功分支不对称），
+    /// 失败任务的 task 残留在 activeTasks；虽实际影响有限（后续 startDownload 会覆盖残留），
+    /// 但资源清理不对称，已补 `clearActiveTask` 与临时文件清理。
+    func testCompleteDownload_MoveItemFails_EntersFailedAndCleansTemp() async throws {
+        // Given — 目标目录父路径不存在，使 moveItem 必然抛错；先 startDownload 建立活动任务
+        let manager = makeManagerWithNonexistentDestination()
+        let taskID = "test-moveitem-fail-\(UUID().uuidString)"
+        let remoteURL = URL(string: "https://example.com/move-fail.bin")!
+        try await manager.startDownload(taskID: taskID, remoteURL: remoteURL)
+
+        let content = "move-item-fail-content"
+        let tempFile = tempDirectory!.appendingPathComponent("temp-movefail.bin")
+        try? Data(content.utf8).write(to: tempFile)
+        await manager.registerChecksum(for: taskID, checksum: sha256Hex(of: Data(content.utf8)))
+
+        // When — completeDownload 校验通过但 moveItem 失败
+        await manager.completeDownload(for: taskID, tempFileURL: tempFile, verificationFailedMessage: "verification failed")
+        await pollUntilNot(idle: taskID, in: manager)
+
+        // Then — 状态进入 failed，临时文件被清理
+        let stream = await manager.observeDownloadState(for: taskID)
+        let state = await firstState(from: stream)
+        if case .failed = state {
+            // 预期 failed
+        } else {
+            XCTFail("moveItem 失败应进入 failed，实际: \(String(describing: state))")
+        }
+        XCTAssertFalse(FileManager.default.fileExists(atPath: tempFile.path), "moveItem 失败后临时文件应被清理")
+    }
+
+    /// 验证 handleDownloadError 在错误不含 resumeData 时进入 failed。
+    func testHandleDownloadError_WithoutResumeData_Fails() async {
+        let manager = makeManager()
+        let taskID = "test-handle-error-\(UUID().uuidString)"
+        let error = NSError(domain: "network", code: -1001)
+
+        await manager.handleDownloadError(for: taskID, error: error)
+
+        let stream = await manager.observeDownloadState(for: taskID)
+        let state = await firstState(from: stream)
+        if case .failed(let message) = state {
+            XCTAssertFalse(message.isEmpty, "失败状态应记录错误消息")
+        } else {
+            XCTFail("网络错误应进入 failed，实际: \(String(describing: state))")
+        }
+    }
+
+    /// 缺陷导向：网络错误附带 resumeData 时，应持久化断点续传文件并进入 paused。
+    /// 覆盖 `handleDownloadError` 的含 resumeData 分支与 `persistResumeData` 成功分支。
+    func testHandleDownloadError_WithResumeData_PersistsAndPauses() async {
+        // Given — 错误附带 NSURLSessionDownloadTaskResumeData 用户信息
+        let manager = makeManager()
+        let taskID = "test-handle-resume-\(UUID().uuidString)"
+        let resumeData = Data("resume-payload-\(UUID().uuidString)".utf8)
+        let error = NSError(
+            domain: NSURLErrorDomain,
+            code: NSURLErrorNetworkConnectionLost,
+            userInfo: [NSURLSessionDownloadTaskResumeData: resumeData]
+        )
+
+        // When — 触发网络错误拦截
+        await manager.handleDownloadError(for: taskID, error: error)
+
+        // Then — 状态应为 paused 且断点续传文件已原子写入
+        let stream = await manager.observeDownloadState(for: taskID)
+        let state = await firstState(from: stream)
+        guard case .paused = state else {
+            return XCTFail("含 resumeData 的网络错误应持久化并进入 paused，实际: \(String(describing: state))")
+        }
+        let resumeURL = tempDirectory.appendingPathComponent("\(taskID).resume")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: resumeURL.path), "resumeData 应被写入断点续传目录")
+        let persisted = try? Data(contentsOf: resumeURL)
+        XCTAssertEqual(persisted, resumeData, "持久化的 resumeData 应与传入一致")
+    }
+
+    /// 缺陷导向：含 resumeData 但写入断点续传文件失败时，应降级为 failed（而非误报 paused）。
+    /// 覆盖 `persistResumeData` 的失败分支。
+    func testHandleDownloadError_WithResumeData_WhenPersistFails_Fails() async {
+        // Given — resumeDataDirectory 指向不存在的父目录，写入必然失败
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let resumeDir = dir.appendingPathComponent("no-such-parent", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let manager = StreamingDownloadManager(
+            sessionFactory: { _ in URLSession(configuration: .ephemeral) },
+            resumeDataDirectory: { resumeDir },
+            destinationURL: { tid in dir.appendingPathComponent("\(tid).bin") }
+        )
+        let taskID = "test-handle-resume-fail-\(UUID().uuidString)"
+        let error = NSError(
+            domain: NSURLErrorDomain,
+            code: NSURLErrorNetworkConnectionLost,
+            userInfo: [NSURLSessionDownloadTaskResumeData: Data("x".utf8)]
+        )
+
+        // When — 触发网络错误拦截，persistResumeData 写文件失败
+        await manager.handleDownloadError(for: taskID, error: error)
+
+        // Then — 降级为 failed 且带沙盒分配失败前缀
+        let stream = await manager.observeDownloadState(for: taskID)
+        let state = await firstState(from: stream)
+        guard case .failed(let message) = state else {
+            return XCTFail("resumeData 写失败应降级为 failed，实际: \(String(describing: state))")
+        }
+        XCTAssertTrue(message.contains("Sandbox storage allocation failed"), "failed 消息应带沙盒分配前缀；实际: \(message)")
+    }
+
+    /// 验证 observeDownloadState 在订阅终止后清理续流通道。
+    func testObserveDownloadState_OnTermination_CleansContinuation() async {
+        let manager = makeManager()
+        let taskID = "test-observe-terminate-\(UUID().uuidString)"
+
+        // When — 启动一个流后立即结束
+        let stream = await manager.observeDownloadState(for: taskID)
+        var iterator = stream.makeAsyncIterator()
+        _ = await iterator.next()
+
+        // 结束流（迭代器释放触发 onTermination）
+        await Task.yield()
+
+        // Then — 不崩溃且再次订阅仍可用
+        let stream2 = await manager.observeDownloadState(for: taskID)
+        let state = await firstState(from: stream2)
+        XCTAssertNotNil(state, "订阅终止清理后再次订阅应可用")
+    }
+
+    // MARK: - 缺陷导向：多观察者订阅管理
+
+    /// 缺陷验证：同一 taskID 有多个观察者时，覆盖逻辑会破坏新观察者。
+    ///
+    /// `observeDownloadState` 用 `continuations[taskID] = continuation` 直接覆盖旧续流，
+    /// 且旧续流的 `onTermination` 无条件执行 `removeContinuation(for:)`。
+    /// 当观察者 A 终止时，会把当前 key（观察者 B 的续流）一并删除，
+    /// 导致 B 在 A 终止后收不到任何后续状态更新。
+    func testObserve_MultipleSubscribers_OneTerminationDoesNotBreakOther() async {
+        // Given — 同一 taskID 两个观察者 A、B
+        let manager = makeManager()
+        let taskID = "test-multi-observe-\(UUID().uuidString)"
+
+        let streamA = await manager.observeDownloadState(for: taskID)
+        let taskA = Task {
+            for await _ in streamA {}
+        }
+        await Task.yield()
+
+        let streamB = await manager.observeDownloadState(for: taskID)
+
+        // When — 观察者 A 终止，触发 onTermination → removeContinuation
+        taskA.cancel()
+        _ = await taskA.value
+        try? await Task.sleep(for: .milliseconds(50))
+
+        // Then — B 应仍能收到后续状态更新
+        await manager.updateState(for: taskID, to: .downloading(progress: 0.5))
+        let received = await collectStream(streamB, for: .milliseconds(300))
+
+        let hasDownloading = received.contains { state in
+            if case .downloading = state { return true }
+            return false
+        }
+        XCTAssertTrue(hasDownloading, "A 终止后 B 应仍能收到 downloading 更新；实际收到: \(received)")
+    }
+
+    // MARK: - 辅助：等待 detached 任务完成
+
+    /// 判断是否为稳定终态（completed/failed/cancelled）。
+    private func isTerminal(_ state: StreamingDownloadState) -> Bool {
+        switch state {
+        case .completed, .failed, .cancelled: return true
+        case .pending, .downloading, .paused, .verifying: return false
+        }
+    }
+
+    /// 轮询等待指定任务进入稳定终态（completeDownload 内部 Task.detached 异步执行）。
+    private func pollUntilNot(idle taskID: String, in manager: StreamingDownloadManager) async {
+        for _ in 0..<100 {
+            let stream = await manager.observeDownloadState(for: taskID)
+            let state = await firstState(from: stream)
+            if let state, isTerminal(state) {
+                return
+            }
+            try? await Task.sleep(for: .milliseconds(20))
+        }
     }
 }

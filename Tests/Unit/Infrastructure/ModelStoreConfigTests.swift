@@ -268,7 +268,9 @@ final class ModelStoreConfigTests: XCTestCase {
             XCTAssertNil(manifest.displayNames, "Manifest \(manifest.modelId) 的 displayNames 应该已经被移除")
             XCTAssertNil(manifest.descriptions, "Manifest \(manifest.modelId) 的 descriptions 应该已经被移除")
             XCTAssertNil(manifest.supportedTasksLocalized, "Manifest \(manifest.modelId) 的 supportedTasksLocalized 对英文版应该为 nil（无冗余）")
-            XCTAssertTrue(manifest.displayTasks.contains("Chat"), "英文支持任务展示没有自动格式化首字母大写")
+            if manifest.supportedTasks.contains(where: { $0.lowercased() == "chat" }) {
+                XCTAssertTrue(manifest.displayTasks.contains("Chat"), "英文支持任务展示没有自动格式化首字母大写")
+            }
         }
         
         // 2. 验证中文特化版本
@@ -316,7 +318,9 @@ final class ModelStoreConfigTests: XCTestCase {
             XCTAssertNil(manifest.displayNames, "Manifest \(manifest.modelId) 的 displayNames 应该已经被移除")
             XCTAssertNil(manifest.descriptions, "Manifest \(manifest.modelId) 的 descriptions 应该已经被移除")
             XCTAssertNil(manifest.supportedTasksLocalized, "Manifest \(manifest.modelId) 的 supportedTasksLocalized 对中文版应该为 nil（无冗余）")
-            XCTAssertTrue(manifest.displayTasks.contains("对话") || manifest.displayTasks.contains("Chat"), "中文支持任务展示不正确")
+            if manifest.supportedTasks.contains(where: { $0.lowercased() == "chat" }) {
+                XCTAssertTrue(manifest.displayTasks.contains("对话") || manifest.displayTasks.contains("Chat"), "中文支持任务展示不正确")
+            }
         }
     }
 
@@ -485,9 +489,10 @@ final class ModelStoreConfigTests: XCTestCase {
     // MARK: - 9. 测试 GlobalModelManager 对 0 字节损坏残留权重文件的物理清理与状态降级
     
     /// 当本地 Documents 目录中存在大小为 0 字节的损坏大模型残留文件时，
-    /// GlobalModelManager 必须能通过物理大小强校验判定为未就绪，将其物理删除清理，并将状态正确重置降级为 Not Downloaded
+    /// GlobalModelManager 应保留现场（绝不静默删除用户文件），通过物理大小强校验判定为未就绪，
+    /// 并将状态透明标记为损坏失败 (fileCorrupted)
     @MainActor
-    func testGlobalModelManagerCleansZeroByteModelFilesAndDowngradesState() async throws {
+    func testGlobalModelManagerKeepsZeroByteCorruptedFileAndMarksFailed() async throws {
         let manager = GlobalModelManager.shared
         
         // 构造一个测试 Manifest 并注册到 manager
@@ -524,23 +529,23 @@ final class ModelStoreConfigTests: XCTestCase {
         // 2. 物理刷新状态，触发 0 字节文件清理与降级校验
         manager.refreshLocalModelFiles()
         
-        // 3. 断言：0 字节残留文件必须已经被物理删除
-        XCTAssertFalse(FileManager.default.fileExists(atPath: fileURL.path), "0字节权重包应当被物理清理删除")
-        
-        // 4. 断言：状态应当被设为 Not Downloaded (.failed)
+        // 3. 断言：0 字节残留文件被透明保留（绝不静默删除用户文件）
+        XCTAssertTrue(FileManager.default.fileExists(atPath: fileURL.path), "0字节破损文件应保留现场而非静默删除")
+
+        // 4. 断言：状态被透明标记为损坏失败 (fileCorrupted)
         let isReady = manager.isModelLocalReady(for: modelId)
         XCTAssertFalse(isReady, "0字节破损包存在时，模型本地不能显示为就绪状态")
-        
+
         if case let .failed(error) = manager.downloadStates[modelId] {
-            XCTAssertEqual(error, "Not Downloaded")
+            XCTAssertEqual(error, L10n.ModelManager.Status.fileCorrupted)
         } else {
-            XCTFail("状态应降级为 failed 且提示为 Not Downloaded，当前状态是: \(String(describing: manager.downloadStates[modelId]))")
+            XCTFail("状态应标记为 failed(fileCorrupted)，当前状态是: \(String(describing: manager.downloadStates[modelId]))")
         }
     }
     
-    // MARK: - 验证大小不匹配（例如测试遗留 100 字节残留文件）也被视为损坏并执行物理清理
+    // MARK: - 验证大小不匹配（例如测试遗留 100 字节残留文件）也被视为损坏并保留现场
     @MainActor
-    func testIncorrectSizeLocalFileCleanup() async throws {
+    func testIncorrectSizeCorruptedFileKeptAndNotReady() async throws {
         let manager = GlobalModelManager.shared
         let modelId = "incorrect-size-test-model"
         
@@ -576,9 +581,9 @@ final class ModelStoreConfigTests: XCTestCase {
         // 2. 物理刷新状态，触发大小比对及物理清理
         manager.refreshLocalModelFiles()
         
-        // 3. 断言：大小不匹配的残留文件必须已经被物理删除
-        XCTAssertFalse(FileManager.default.fileExists(atPath: fileURL.path), "不匹配大小的权重包应当被物理清理删除")
-        
+        // 3. 断言：大小不匹配的残留文件被透明保留（绝不静默删除用户文件）
+        XCTAssertTrue(FileManager.default.fileExists(atPath: fileURL.path), "大小不匹配文件应保留现场而非静默删除")
+
         // 4. 断言：模型本地不显示为就绪状态
         let isReady = manager.isModelLocalReady(for: modelId)
         XCTAssertFalse(isReady, "大小不匹配的包存在时，模型本地不能显示为就绪状态")

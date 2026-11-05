@@ -54,6 +54,27 @@ final class ServiceContainerResolveFailureTests: XCTestCase {
                      "typeErasedResolve 未注册服务必须返回 nil")
     }
 
+    /// unregister 注销服务后 resolveOptional 返回 nil（覆盖 unregister 移除逻辑）
+    func testUnregister_RemovesRegisteredService() {
+        let container = ServiceContainer.shared
+        let impl = ResolveFailureImpl()
+        container.register(impl, for: ResolveFailureImpl.self)
+        XCTAssertNotNil(container.resolveOptional(ResolveFailureImpl.self),
+                        "注册后应可解析")
+
+        container.unregister(ResolveFailureImpl.self)
+        XCTAssertNil(container.resolveOptional(ResolveFailureImpl.self),
+                     "unregister 后服务应被移除，resolveOptional 返回 nil")
+    }
+
+    /// 对未注册服务执行 unregister 不应崩溃（幂等）
+    func testUnregister_UnregisteredService_IsNoOp() {
+        let container = ServiceContainer.shared
+        container.unregister(ResolveFailureImpl.self)
+        XCTAssertNil(container.resolveOptional(ResolveFailureImpl.self),
+                     "对未注册服务 unregister 应静默成功")
+    }
+
     /// resolve 已注册服务返回正确实例
     func testResolveRegisteredReturnsInstance() {
         let container = ServiceContainer.shared

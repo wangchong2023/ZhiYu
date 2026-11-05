@@ -98,7 +98,9 @@ public enum FrontmatterParser {
     /// ---json 标志分隔符
     private static let jsonDelimiter: String = "---json"
 
-    /// 简易的 YAML-to-JSON 转换器，支持 key: value、数组、嵌套 object 映射
+    /// 简易的 YAML-to-JSON 转换器，支持 key: value 顶层键值与数组项对象。
+    /// 注意：暂不支持真正的嵌套 dict（如 `author:\n  name: x` 会被扁平化为独立顶层对象，
+    /// 而非挂到父键 `author` 下）；如确有嵌套 frontmatter 需求，需引入嵌套栈解析器。
     private static func convertYamlToJson(_ yaml: String) -> String {
         let lines = yaml.components(separatedBy: .newlines)
         var dict: [String: Any] = [:]

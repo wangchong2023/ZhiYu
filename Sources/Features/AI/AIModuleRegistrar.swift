@@ -37,6 +37,11 @@ struct AIModuleRegistrar {
         container.register(downloadManager as any ModelDownloadCapabilities, for: (any ModelDownloadCapabilities).self)
         container.register(downloadManager, for: ModelDownloadManager.self)
 
+        // 注册端侧本地大模型推理服务
+        let onDeviceLLM = OnDeviceLLMService.shared
+        container.register(onDeviceLLM as any OnDeviceLLMServiceProtocol, for: (any OnDeviceLLMServiceProtocol).self)
+        container.register(onDeviceLLM, for: OnDeviceLLMService.self)
+
         // LLM 协议实现
         container.register(ChatRunner(), for: (any LLMChatServiceProtocol).self)
         container.register(IngestProcessor(), for: (any LLMKnowledgeServiceProtocol).self)
