@@ -25,8 +25,11 @@ while IFS= read -r file; do
         target="ZhiYuTests"
     fi
 
-    # 从文件名推断类名
-    class_name=$(basename "$file" .swift)
+    # 从文件内容提取类名（测试类名可能与文件名不一致，
+    # 如 InfrastructureFaultInjectionAndStorageDeepTests.swift 中类名为 InfraFaultAndStorageDeepTests）
+    class_name=$(grep -oE '(final class|class) [A-Za-z0-9_]+' "$file" | head -1 | awk '{print $NF}')
+    # 若未找到类定义（如纯 extension 文件），回退到文件名
+    [ -z "$class_name" ] && class_name=$(basename "$file" .swift)
 
     # 从文件中提取 @flaky 标记的测试方法（取 @flaky 行后紧跟的 func test 行）
     while IFS= read -r func_name; do
