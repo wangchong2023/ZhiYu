@@ -21,6 +21,9 @@ SIM_NAME=$(find_simulator)
 DESTINATION="platform=iOS Simulator,name=${SIM_NAME}"
 
 # ── 2. 从 @flaky 注释自动收集不稳定测试 ─────────────────────────────
+# 确保 build/ 已存在（run-test-flaky-report.sh 需写 build/.flaky_tests；
+# 直接调用本脚本时不依赖 run-test-with-coverage.sh 的 mkdir -p build）
+mkdir -p build
 echo "🔍 收集 @flaky 标记的不稳定测试..."
 FLAKY_ARGS=()
 HAS_FLAKY=false
