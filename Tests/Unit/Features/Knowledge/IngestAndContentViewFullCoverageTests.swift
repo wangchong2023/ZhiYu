@@ -46,6 +46,7 @@ final class IngestAndContentViewFullCoverageTests: XCTestCase {
     }
     // MARK: - 2. IngestCoordinator 动作与表单状态测试
 
+    // @flaky: CI 环境 setUp 类级挂起（@MainActor + setupFullMockEnvironment + Router.shared 稳定卡，本地通过，无法本地复现）
     func testIngestCoordinatorActions() {
         let coordinator = IngestCoordinator()
 
