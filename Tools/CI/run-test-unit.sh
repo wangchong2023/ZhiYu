@@ -63,6 +63,9 @@ XCODEBUILD_ARGS=(
     "${PARALLEL_DESTINATIONS[@]}"
     -derivedDataPath "${DERIVED_DATA_PATH}"
     -enableCodeCoverage YES
+    # 临时诊断：启用测试超时，避免单个测试无限挂起拖垮整个 CI（卡住测试会超时失败并在日志暴露测试名）
+    -test-timeouts-enabled YES
+    -default-test-execution-time-allowance 90
     # 不启用线程级并行（-parallel-testing-enabled NO 为默认值），
     # 改用进程级并行：多 -destination 标志让 xcodebuild 将测试分布到多个模拟器实例。
     # 每个模拟器是独立 OS 进程，拥有独立的 MainActor，完全避免
