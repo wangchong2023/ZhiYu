@@ -40,12 +40,11 @@ fi
 # ── 3.5 动态并行度调度 ─────────────────────────────────────────
 # 进程级并行：xcodebuild 自动克隆并 round-robin 分配测试至各模拟器实例
 # 区别于线程级并行 (-parallel-testing-enabled)，每个模拟器是独立 OS 进程，完全避免 actor 冲突。
-# 在 CI 环境下使用 1 个实例（进程级并行 ×1）：
-#   - 此前 ×2 在覆盖率 + @MainActor 测试下偶发 XCTest @MainActor 假死（卡住类本地同条件复现均通过，根因是 CI 环境竞态）；
-#   - 降为 ×1 串行可根除该假死，同时保留代码覆盖率。测试时间约翻倍（全量约 90 分钟，在 CI 时限内）。
+# 在 CI 环境下（CPU 和内存资源受限）使用 2 个实例，防止 4 实例导致 CPU 饥饿引发测试超时；
 # 在本地开发模式下默认保留 4 个实例，充分发挥本地高性能多核主机的优势。
+# 注：此前尝试 CI 降为 ×1 串行根除 @MainActor 假死无效（关覆盖率才是真正根因，见 -enableCodeCoverage 处说明）。
 if [ "${CI_MODE}" = "true" ]; then
-    PARALLEL_COUNT=1
+    PARALLEL_COUNT=2
 else
     PARALLEL_COUNT=4
 fi
@@ -64,7 +63,9 @@ XCODEBUILD_ARGS=(
     -only-testing:ZhiYuTests
     "${PARALLEL_DESTINATIONS[@]}"
     -derivedDataPath "${DERIVED_DATA_PATH}"
-    -enableCodeCoverage YES
+    # 覆盖率关闭（根因修复）：-enableCodeCoverage 的覆盖率 instrumentation 触发 XCTest @MainActor 主线程假死，
+    # 导致 @MainActor 测试类在 CI 稳定挂起且超时定时器一并失效（本地同条件复现均通过，属 CI 环境问题）。
+    # 覆盖率门禁当前关闭，故关覆盖率以根除假死。
     # 临时诊断：启用测试超时，避免单个测试无限挂起拖垮整个 CI（卡住测试会超时失败并在日志暴露测试名）
     -test-timeouts-enabled YES
     -default-test-execution-time-allowance 90
@@ -129,15 +130,14 @@ echo "📱 模拟器已重置"
 
 # 构造编译参数（build-for-testing 只需单个 destination，不需 -only-testing）
 # 添加 clean 确保全量编译，避免增量编译跳过告警检测
-# 添加 -enableCodeCoverage YES 确保编译产物包含覆盖率 instrumentation，
-# 否则 test-without-building 生成的 xcresult 不含覆盖率归档（Metadata.plist 缺失）
+# 覆盖率已关闭（根因修复）：build-for-testing 不再追加 -enableCodeCoverage（见 test-without-building 处注释：
+# 覆盖率 instrumentation 触发 XCTest @MainActor 主线程假死，导致 @MainActor 测试类在 CI 稳定挂起）
 BUILD_ARGS=(
     clean build-for-testing
     -project "${PROJECT}"
     -scheme "${SCHEME}"
     -destination "platform=iOS Simulator,name=${SIM_NAME}"
     -derivedDataPath "${DERIVED_DATA_PATH}"
-    -enableCodeCoverage YES
     CODE_SIGNING_ALLOWED=NO
     CODE_SIGNING_REQUIRED=NO
 )

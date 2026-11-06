@@ -136,15 +136,10 @@ test-and-coverage:
     - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/'
   script:
     - export PATH="/opt/homebrew/opt/ruby/bin:/opt/homebrew/lib/ruby/gems/4.0.0/bin:$PATH"
-    - bash Tools/CI/run-test-with-coverage.sh
-    - echo "===> 运行 xccov 本地覆盖率报告（门禁暂时关闭，待覆盖率达标后恢复）"
-    - python3 Tools/CI/check_xccov_coverage.py --xml build/coverage/sonarqube-generic-coverage.xml --report-only
-  coverage: '/Coverage: \d+\.\d+%/'
-  artifacts:
-    when: always
-    paths:
-      - build/coverage/
-    expire_in: 7 days
+    - bash Tools/CI/run-test-unit.sh --ci
+  # 覆盖率关闭（根因修复）：-enableCodeCoverage 的覆盖率 instrumentation 触发 XCTest @MainActor 主线程假死，
+  # 导致 @MainActor 测试类在 CI 稳定挂起（本地同条件复现均通过，属 CI 环境问题；覆盖率门禁当前关闭）。
+  # 故 test 阶段仅执行单元测试（跳过 run-test-with-coverage.sh 的覆盖率门禁与产物导出），以根除假死。
 
 # ════════════════════════════════════════════════════════════
 # sonar — SonarQube 代码质量分析（Tools 脚本 Python/Shell/YAML）+ Quality Gate
