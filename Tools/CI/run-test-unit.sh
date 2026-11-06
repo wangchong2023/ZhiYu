@@ -40,10 +40,12 @@ fi
 # ── 3.5 动态并行度调度 ─────────────────────────────────────────
 # 进程级并行：xcodebuild 自动克隆并 round-robin 分配测试至各模拟器实例
 # 区别于线程级并行 (-parallel-testing-enabled)，每个模拟器是独立 OS 进程，完全避免 actor 冲突。
-# 在 CI 环境下（CPU 和内存资源受限）使用 2 个实例，防止 4 实例导致 CPU 饥饿引发测试超时；
+# 在 CI 环境下使用 1 个实例（进程级并行 ×1）：
+#   - 此前 ×2 在覆盖率 + @MainActor 测试下偶发 XCTest @MainActor 假死（卡住类本地同条件复现均通过，根因是 CI 环境竞态）；
+#   - 降为 ×1 串行可根除该假死，同时保留代码覆盖率。测试时间约翻倍（全量约 90 分钟，在 CI 时限内）。
 # 在本地开发模式下默认保留 4 个实例，充分发挥本地高性能多核主机的优势。
 if [ "${CI_MODE}" = "true" ]; then
-    PARALLEL_COUNT=2
+    PARALLEL_COUNT=1
 else
     PARALLEL_COUNT=4
 fi
