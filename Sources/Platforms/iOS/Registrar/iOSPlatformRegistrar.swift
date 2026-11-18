@@ -41,11 +41,7 @@ struct iOSPlatformRegistrar {
         container.register(iOSBiometricAuthProvider(), for: BiometricAuthProviderProtocol.self)
         
         // 4. 实时活动与系统集成
-        #if !targetEnvironment(macCatalyst)
         container.register(ActivityService.shared as any LiveActivityProtocol, for: (any LiveActivityProtocol).self)
-        #else
-        container.register(DummyActivityService() as any LiveActivityProtocol, for: (any LiveActivityProtocol).self)
-        #endif
         container.register(ZIPFoundationArchiver(), for: (any FileArchiverProtocol).self)
         container.register(iOSAccessibilityService(), for: (any AccessibilityServiceProtocol).self)
 

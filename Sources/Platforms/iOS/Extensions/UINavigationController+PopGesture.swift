@@ -8,6 +8,7 @@
 //  系统层级：[Shared] 平台适配层
 //  核心职责：iOS 平台实现：后台任务、Widget、文件归档、Spotlight 索引。
 //
+#if os(iOS)
 import UIKit
 
 // MARK: - 全局手势支持
@@ -33,3 +34,4 @@ extension UINavigationController: @retroactive UIGestureRecognizerDelegate {
         return true
     }
 }
+#endif

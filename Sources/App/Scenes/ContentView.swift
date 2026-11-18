@@ -167,15 +167,7 @@ struct ContentView: View {
                 }
             }
             
-            #if targetEnvironment(macCatalyst)
-            for scene in UIApplication.shared.connectedScenes {
-                if let windowScene = scene as? UIWindowScene {
-                    windowScene.titlebar?.titleVisibility = .hidden
-                    windowScene.titlebar?.toolbar = nil
-                }
             }
-            #endif
-        }
     }
     
     // MARK: - Sub-layers
@@ -264,10 +256,6 @@ extension View {
             self
         } else {
             // iPad 与 Mac 大屏下，差异化控制尺寸，为双栏左右分栏提供完美的自适应呈现空间
-            #if targetEnvironment(macCatalyst)
-            // Mac Catalyst 运行模式下，指定适合 macOS 系统的固定宽屏尺寸
-            self.frame(width: DesignTokens.Metrics.minWindowWidth, height: DesignTokens.Metrics.minWindowHeight)
-            #else
             // iPad 设备运行模式下：防止强设 minWidth 导致系统默认的 sheet 内容发生截断。
             if #available(iOS 18.0, *) {
                 // iOS 18+ 利用 .page 级别的大宽度撑开 sheet，使其直接展开为双栏，消除多一级菜单的体验
@@ -278,7 +266,6 @@ extension View {
                     .frame(minHeight: 650)
                     .presentationDetents([.large])
             }
-            #endif
         }
     }
 

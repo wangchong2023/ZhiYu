@@ -9,7 +9,7 @@
 //  核心职责：属于 Platforms 模块，提供 macOS 原生平台下的无障碍 VoiceOver 宣告。
 //
 
-#if os(macOS) && !targetEnvironment(macCatalyst)
+#if os(macOS)
 import AppKit
 
 /// macOS 原生平台特化的 VoiceOver 语音宣告服务实现类。

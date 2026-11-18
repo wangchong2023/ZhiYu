@@ -11,173 +11,6 @@
 import SwiftUI
 import UFPDesignSystem
 
-#if targetEnvironment(macCatalyst)
-import UIKit
-import UFPCore
-
-/// Mac Catalyst 悬浮菜单窗口管理器
-/// 使用独立 UIWindow 替代 UIPopoverPresentationController，避免 UIKit 转场冲突
-@MainActor
-final class CatalystFloatingMenuManager: NSObject {
-    static let shared = CatalystFloatingMenuManager()
-
-    private enum CatalystFloatingConstants {
-        static let animationDuration: TimeInterval = 0.2
-        static let framePollingInterval: TimeInterval = 0.25
-    }
-
-    private var overlayWindow: UIWindow?
-    private var windowFrameTimer: Timer?
-
-    fileprivate func show(
-        onAction: @escaping (UserProfileMenu.MenuAction) -> Void,
-        onDismiss: @escaping () -> Void,
-        authService: AuthService,
-        store: AppStore,
-        router: Router,
-        themeManager: ThemeManager,
-        onboardingService: OnboardingService
-    ) {
-        dismiss {}
-
-        guard let windowScene = UIApplication.shared.connectedScenes
-            .compactMap({ $0 as? UIWindowScene }).first
-        else { return }
-
-        // 捕获 app 主窗口 frame（屏幕坐标系），用于将 popover 对齐 app 窗口右上角
-        // 必须在创建 overlay window 之前获取，否则 keyWindow 可能指向 overlay 自身
-        let appWindow = Self.normalWindow(in: windowScene)
-        let appWindowFrame = appWindow?.frame ?? windowScene.screen.bounds
-        let screenBounds = windowScene.screen.bounds
-
-        let content = CatalystMenuContent(
-            onAction: { action in
-                self.dismiss {
-                    DispatchQueue.main.async {
-                        onAction(action)
-                    }
-                }
-            },
-            authService: authService,
-            store: store,
-            router: router,
-            themeManager: themeManager,
-            onboardingService: onboardingService,
-            appWindowFrame: appWindowFrame,
-            screenBounds: screenBounds
-        )
-
-        let hosting = UIHostingController(rootView: content.ignoresSafeArea())
-        hosting.view.backgroundColor = .clear
-
-        let window = UIWindow(windowScene: windowScene)
-        window.windowLevel = .alert + 1
-        window.rootViewController = hosting
-        window.backgroundColor = .clear
-        // 全屏 overlay 保留用于点击外部关闭
-        window.frame = screenBounds
-        window.makeKeyAndVisible()
-
-        window.alpha = 0
-        UIView.animate(withDuration: CatalystFloatingConstants.animationDuration) { window.alpha = 1 }
-
-        overlayWindow = window
-
-        // 监听 app 窗口 frame 变化：用户拖拽/缩放窗口时自动关闭菜单
-        let capturedFrame = appWindowFrame
-        windowFrameTimer = Timer.scheduledTimer(withTimeInterval: CatalystFloatingConstants.framePollingInterval, repeats: true) { [weak self] _ in
-            guard let self = self else { return }
-            runOnMainSync {
-                let currentFrame = Self.normalWindow(in: UIApplication.shared.connectedScenes
-                    .compactMap({ $0 as? UIWindowScene }).first)?.frame ?? .zero
-                if currentFrame != capturedFrame {
-                    self.dismiss {}
-                }
-            }
-        }
-    }
-
-    /// 查找场景中的正常窗口（消除重复的 windows.first(where:) 链）
-    private static func normalWindow(in scene: UIWindowScene?) -> UIWindow? {
-        // iOS 15+ 废弃 UIWindowScene.windows，使用 keyWindow 替代
-        let key = scene?.keyWindow
-        guard let key, !key.isHidden, key.windowLevel == .normal else {
-            return nil
-        }
-        return key
-    }
-
-    func dismiss(_ completion: @escaping () -> Void = {}) {
-        windowFrameTimer?.invalidate()
-        windowFrameTimer = nil
-
-        guard let window = overlayWindow else {
-            completion()
-            return
-        }
-        UIView.animate(withDuration: 0.15, animations: {
-            window.alpha = 0
-        }, completion: { _ in
-            window.isHidden = true
-            self.overlayWindow = nil
-            completion()
-        })
-    }
-}
-
-private struct CatalystMenuContent: View {
-    let onAction: (UserProfileMenu.MenuAction) -> Void
-    let authService: AuthService
-    let store: AppStore
-    let router: Router
-    let themeManager: ThemeManager
-    let onboardingService: OnboardingService
-    let appWindowFrame: CGRect
-    let screenBounds: CGRect
-
-    var body: some View {
-        let menuWidth: CGFloat = CustomProfilePopover.Constants.menuWidth
-        // 工具栏区域：titlebar（~28pt）+ 工具栏（~44pt），取 60pt 使菜单出现在工具栏下方
-        let toolbarVerticalOffset: CGFloat = 60
-
-        // 动态计算 padding：将 popover 从屏幕右上角偏移到 app 窗口右上角
-        // trailingPadding = 屏幕右边缘到 app 窗口右边缘的距离 + 安全间距
-        let trailingPadding = max(
-            DesignTokens.Spacing.small,
-            screenBounds.maxX - appWindowFrame.maxX + DesignTokens.Spacing.small
-        )
-        // topPadding = app 窗口顶部到屏幕顶部的距离 + 工具栏区域偏移
-        let topPadding = max(
-            DesignTokens.Spacing.small,
-            appWindowFrame.minY + toolbarVerticalOffset
-        )
-
-        ZStack(alignment: .topTrailing) {
-            // 全屏透明背景用于点击外部关闭
-            Color.clear
-                .contentShape(Rectangle())
-                .onTapGesture { CatalystFloatingMenuManager.shared.dismiss {} }
-
-            CustomProfilePopover(
-                showMenuPopover: Binding(
-                    get: { true },
-                    set: { if !$0 { CatalystFloatingMenuManager.shared.dismiss {} } }
-                ),
-                onAction: { action in onAction(action) }
-            )
-            .environment(authService)
-            .environment(store)
-            .environment(router)
-            .environment(themeManager)
-            .environmentObject(onboardingService)
-            .frame(width: menuWidth)
-            .padding(.top, topPadding)
-            .padding(.trailing, trailingPadding)
-        }
-    }
-}
-#endif
-
 struct UserProfileMenu: View {
     @Environment(AuthService.self) var authService
     @Environment(AppStore.self) var store
@@ -229,32 +62,6 @@ struct UserProfileMenu: View {
             NavigationStack {
                 Text(L10n.Common.settings)
                     .navigationTitle(L10n.Common.settings)
-            }
-        }
-        #else
-        #if targetEnvironment(macCatalyst)
-        // Mac Catalyst: 使用 UIWindow 悬浮覆盖层，避开 UIPopoverPresentationController 的转场崩溃
-        Button(action: {
-            HapticFeedback.shared.trigger(.selection)
-            CatalystFloatingMenuManager.shared.show(
-                onAction: { action in pendingMenuAction = action },
-                onDismiss: {},
-                authService: authService,
-                store: store,
-                router: router,
-                themeManager: themeManager,
-                onboardingService: onboardingService
-            )
-        }) {
-            profileLabel
-        }
-        .buttonStyle(.plain)
-        .accessibilityIdentifier("userProfileMenuButton")
-        .onChange(of: pendingMenuAction) { _, newValue in
-            guard let action = newValue else { return }
-            pendingMenuAction = nil
-            DispatchQueue.main.async {
-                executeMenuAction(action)
             }
         }
         #else
@@ -313,7 +120,6 @@ struct UserProfileMenu: View {
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("userProfileMenuButton")
-        #endif
         #endif
     }
 
@@ -407,10 +213,7 @@ struct CustomProfilePopover: View {
     
     @MainActor
     fileprivate enum Constants {
-        #if targetEnvironment(macCatalyst)
-        /// Mac Catalyst 大屏：菜单宽度 320pt，充分利用桌面空间
-        static let menuWidth: CGFloat = 320
-        #elseif os(iOS)
+        #if os(iOS)
         /// iPad 大屏：菜单宽度 300pt
         static let menuWidth: CGFloat = UIDevice.current.userInterfaceIdiom == .pad ? 300 : 280
         #else

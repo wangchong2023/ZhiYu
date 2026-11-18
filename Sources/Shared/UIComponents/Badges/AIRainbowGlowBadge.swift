@@ -239,9 +239,7 @@ public struct AIRainbowGlowBadge: View {
 
     /// AI 控制中枢弹窗宽度，按照不同平台与屏幕尺寸自适应
     private var controlCenterWidth: CGFloat {
-        #if targetEnvironment(macCatalyst)
-        return 360
-        #elseif os(iOS)
+        #if os(iOS)
         return UIDevice.current.userInterfaceIdiom == .pad ? 320 : 300
         #else
         return 300

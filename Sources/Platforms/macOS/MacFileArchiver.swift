@@ -8,7 +8,7 @@
 //  系统层级：[Shared] 平台适配层
 //  核心职责：macOS 平台实现：菜单栏、文件归档、辅助功能。
 //
-#if os(macOS) && !targetEnvironment(macCatalyst)
+#if os(macOS)
 import Foundation
 
 /// macOS 原生归档实现

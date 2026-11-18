@@ -37,13 +37,9 @@ internal struct InterfaceIdiomKey: EnvironmentKey {
         #elseif os(macOS)
         return .mac
         #else
-        #if targetEnvironment(macCatalyst)
-        return .macCatalyst
-        #else
         return runOnMainSync {
             UIDevice.current.userInterfaceIdiom == .pad ? .iPad : .iPhone
         }
-        #endif
         #endif
     }()
 }
