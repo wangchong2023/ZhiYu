@@ -57,11 +57,11 @@ extension EnvironmentValues {
 /// Tab 导航偏好 Trait Key
 ///
 /// - Note: iPad 旋转屏幕时 `horizontalSizeClass` 变化，该值需自动更新。
-///   - iOS/macOS：用 `UITraitBridgedEnvironmentKey` 从 `UITraitCollection` 读取，
-///     仅 iOS 17+ / macOS 14+ 可用（ZhiYu 部署目标满足）。
+///   - iOS：用 `UITraitBridgedEnvironmentKey` 从 `UITraitCollection` 读取（仅 iOS 可用）。
+///   - macOS：原生 macOS 无横竖屏旋转概念，退化为静态 `EnvironmentKey`，默认值 `false`。
 ///   - watchOS：`UITraitBridgedEnvironmentKey` 不可用，且 watch 无横竖屏旋转概念，
 ///     退化为静态 `EnvironmentKey`，默认值 `false`。
-#if os(iOS) || os(macOS)
+#if os(iOS)
 internal struct PrefersTabNavigationKey: UITraitBridgedEnvironmentKey {
     static let defaultValue: Bool = false
 

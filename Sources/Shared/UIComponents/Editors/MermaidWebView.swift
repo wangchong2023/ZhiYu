@@ -229,22 +229,6 @@ struct MermaidWKWebView: UIViewRepresentable {
     }
 }
 
-struct ActivityView: UIViewControllerRepresentable {
-    let activityItems: [Any]
-
-    /// 创建UIViewController
-    /// - Parameter context: context
-    /// - Returns: 返回值
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
-    }
-
-    /// 更新UIViewController
-    /// - Parameter uiViewController: uiViewController
-    /// - Parameter context: context
-    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
-}
-
 #elseif os(macOS)
 struct MermaidWKWebViewMac: NSViewRepresentable {
     let mermaidCode: String

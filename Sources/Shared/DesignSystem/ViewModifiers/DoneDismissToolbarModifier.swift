@@ -18,7 +18,7 @@ struct DoneDismissToolbarModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .navigationBarTitleDisplayMode(.inline)
+            .appNavigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(L10n.Common.done) {

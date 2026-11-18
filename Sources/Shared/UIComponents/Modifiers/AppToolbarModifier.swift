@@ -30,7 +30,7 @@ struct AppTabToolbarModifier<Trailing: View>: ViewModifier {
     func body(content: Content) -> some View {
         content
             .navigationTitle(title)
-            .navigationBarTitleDisplayMode(.inline)
+            .appNavigationBarTitleDisplayMode(.inline)
             .toolbar {
                 #if os(watchOS)
                 if showVaultBadge {
@@ -46,11 +46,17 @@ struct AppTabToolbarModifier<Trailing: View>: ViewModifier {
                 }
                 #endif
                 
+                #if os(macOS)
+                ToolbarItem(placement: .primaryAction) {
+                    trailingToolbarContent(trailingItems)
+                }
+                #else
                 ToolbarItem(placement: .topBarTrailing) {
                     trailingToolbarContent(trailingItems)
                 }
+                #endif
             }
-            .toolbarBackground(.hidden, for: .navigationBar)
+            .appToolbarBackgroundHidden()
     }
 }
 
@@ -72,7 +78,7 @@ struct AppSubPageToolbarModifier<Trailing: View>: ViewModifier {
     /// - Returns: 返回值
     func body(content: Content) -> some View {
         content
-            .navigationBarTitleDisplayMode(.inline)
+            .appNavigationBarTitleDisplayMode(.inline)
             .toolbar {
                 #if os(watchOS)
                 ToolbarItem(placement: .topBarLeading) {
@@ -96,9 +102,15 @@ struct AppSubPageToolbarModifier<Trailing: View>: ViewModifier {
                 }
                 #endif
                 
+                #if os(macOS)
+                ToolbarItem(placement: .primaryAction) {
+                    trailingToolbarContent(trailingItems)
+                }
+                #else
                 ToolbarItem(placement: .topBarTrailing) {
                     trailingToolbarContent(trailingItems)
                 }
+                #endif
             }
     }
 }

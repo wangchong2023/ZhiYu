@@ -132,9 +132,175 @@ public extension View {
     
     @ViewBuilder
     /// 跨平台 NavigationBarTitleDisplayMode 修饰符，自动在不支持的平台降级屏蔽
-    func appNavigationBarTitleDisplayMode(_ mode: NavigationBarItem.TitleDisplayMode) -> some View {
+    func appNavigationBarTitleDisplayMode(_ mode: AppNavigationBarTitleDisplayMode) -> some View {
         #if os(iOS)
-        self.navigationBarTitleDisplayMode(mode)
+        let displayMode: NavigationBarItem.TitleDisplayMode = {
+            switch mode {
+            case .automatic: return .automatic
+            case .inline: return .inline
+            case .large: return .large
+            }
+        }()
+        self.navigationBarTitleDisplayMode(displayMode)
+        #else
+        self
+        #endif
+    }
+
+    /// 跨平台 Toolbar 左侧（leading）Item 放置：iOS 用 navigationBarLeading，macOS 用 navigation
+    @ToolbarContentBuilder
+    func appToolbarLeading<Content: View>(@ViewBuilder content: () -> Content) -> some ToolbarContent {
+        #if os(iOS)
+        ToolbarItem(placement: .navigationBarLeading) { content() }
+        #elseif os(macOS)
+        ToolbarItem(placement: .navigation) { content() }
+        #else
+        ToolbarItem(placement: .automatic) { content() }
+        #endif
+    }
+
+    /// 跨平台 Toolbar 右侧（trailing）Item 放置：iOS 用 topBarTrailing，macOS 用 primaryAction
+    @ToolbarContentBuilder
+    func appToolbarTrailing<Content: View>(@ViewBuilder content: () -> Content) -> some ToolbarContent {
+        #if os(iOS)
+        ToolbarItem(placement: .topBarTrailing) { content() }
+        #elseif os(macOS)
+        ToolbarItem(placement: .primaryAction) { content() }
+        #else
+        ToolbarItem(placement: .automatic) { content() }
+        #endif
+    }
+
+    /// 跨平台 Toolbar 右侧（trailing）ItemGroup 放置：iOS 用 topBarTrailing，macOS 用 primaryAction
+    @ToolbarContentBuilder
+    func appToolbarTrailingGroup<Content: View>(@ViewBuilder content: () -> Content) -> some ToolbarContent {
+        #if os(iOS)
+        ToolbarItemGroup(placement: .topBarTrailing) { content() }
+        #elseif os(macOS)
+        ToolbarItemGroup(placement: .primaryAction) { content() }
+        #else
+        ToolbarItemGroup(placement: .automatic) { content() }
+        #endif
+    }
+
+    /// 跨平台隐藏 Toolbar 背景：iOS 用 navigationBar，macOS 用 windowToolbar
+    @ViewBuilder
+    func appToolbarBackgroundHidden() -> some View {
+        #if os(iOS)
+        self.toolbarBackground(.hidden, for: .navigationBar)
+        #elseif os(macOS)
+        self.toolbarBackground(.hidden, for: .windowToolbar)
+        #else
+        self
+        #endif
+    }
+
+    /// 跨平台显示 Toolbar 背景：iOS 用 navigationBar，macOS 用 windowToolbar
+    @ViewBuilder
+    func appToolbarBackgroundVisible() -> some View {
+        #if os(iOS)
+        self.toolbarBackground(.visible, for: .navigationBar)
+        #elseif os(macOS)
+        self.toolbarBackground(.visible, for: .windowToolbar)
+        #else
+        self
+        #endif
+    }
+
+    /// 跨平台设置 Toolbar 背景材质：iOS 用 navigationBar，macOS 用 windowToolbar
+    @ViewBuilder
+    func appToolbarBackgroundMaterial(_ material: Material) -> some View {
+        #if os(iOS)
+        self.toolbarBackground(material, for: .navigationBar)
+        #elseif os(macOS)
+        self.toolbarBackground(material, for: .windowToolbar)
+        #else
+        self
+        #endif
+    }
+
+    /// 跨平台分页 TabView 样式：仅 iOS 应用 .page，macOS/watchOS 无此样式时降级为无操作
+    @ViewBuilder
+    func appPageTabViewStyle() -> some View {
+        #if os(iOS)
+        self.tabViewStyle(.page(indexDisplayMode: .never))
+        #else
+        self
+        #endif
+    }
+
+    /// 跨平台全屏覆盖（isPresented 版本）：iOS 用 fullScreenCover，macOS 用 sheet
+    @ViewBuilder
+    func appFullScreenCover<Content: View>(
+        isPresented: Binding<Bool>,
+        onDismiss: (() -> Void)? = nil,
+        @ViewBuilder content: @escaping () -> Content
+    ) -> some View {
+        #if os(iOS)
+        self.fullScreenCover(isPresented: isPresented, onDismiss: onDismiss, content: content)
+        #else
+        self.sheet(isPresented: isPresented, onDismiss: onDismiss, content: content)
+        #endif
+    }
+
+    /// 跨平台全屏覆盖（item 版本）：iOS 用 fullScreenCover，macOS 用 sheet
+    @ViewBuilder
+    func appFullScreenCover<Item, Content: View>(
+        item: Binding<Item?>,
+        onDismiss: (() -> Void)? = nil,
+        @ViewBuilder content: @escaping (Item) -> Content
+    ) -> some View where Item: Identifiable {
+        #if os(iOS)
+        self.fullScreenCover(item: item, onDismiss: onDismiss, content: content)
+        #else
+        self.sheet(item: item, onDismiss: onDismiss, content: content)
+        #endif
+    }
+}
+
+// MARK: - 跨平台输入配置（键盘类型 / 自动大写）
+
+/// 跨平台键盘类型，iOS 映射到 UIKeyboardType，其他平台忽略
+public enum AppKeyboardType {
+    /// URL 键盘
+    case url
+}
+
+/// 跨平台 NavigationBar 标题展示模式（iOS 映射到 NavigationBarItem.TitleDisplayMode）
+public enum AppNavigationBarTitleDisplayMode {
+    /// 自动
+    case automatic
+    /// 内联
+    case inline
+    /// 大标题
+    case large
+}
+
+public extension View {
+    /// 跨平台 keyboardType：iOS 应用指定键盘，macOS/watchOS 无此概念时降级为无操作
+    @ViewBuilder
+    func appKeyboardType(_ type: AppKeyboardType?) -> some View {
+        #if os(iOS)
+        if let type {
+            let uiType: UIKeyboardType = {
+                switch type {
+                case .url: return .URL
+                }
+            }()
+            self.keyboardType(uiType)
+        } else {
+            self
+        }
+        #else
+        self
+        #endif
+    }
+
+    /// 跨平台禁用自动大写：iOS 应用 autocapitalization(.none)，其他平台降级为无操作
+    @ViewBuilder
+    func appAutocapitalizationDisabled() -> some View {
+        #if os(iOS)
+        self.autocapitalization(.none)
         #else
         self
         #endif

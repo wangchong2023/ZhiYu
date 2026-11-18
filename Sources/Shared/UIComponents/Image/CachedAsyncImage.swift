@@ -42,8 +42,8 @@ public struct CachedAsyncImage<Content: View>: View {
         // 1. 优先使用缓存策略构建 Request 检查 URLCache 缓存
         let request = URLRequest(url: url, cachePolicy: .returnCacheDataElseLoad, timeoutInterval: 15.0)
         if let cachedResponse = URLCache.shared.cachedResponse(for: request),
-           let image = UIImage(data: cachedResponse.data) {
-            phase = .success(Image(uiImage: image))
+           let image = AppImage(data: cachedResponse.data) {
+            phase = .success(Image(appImage: image))
             return
         }
 
@@ -57,8 +57,8 @@ public struct CachedAsyncImage<Content: View>: View {
             let cachedResponse = CachedURLResponse(response: response, data: data)
             URLCache.shared.storeCachedResponse(cachedResponse, for: request)
 
-            if let image = UIImage(data: data) {
-                phase = .success(Image(uiImage: image))
+            if let image = AppImage(data: data) {
+                phase = .success(Image(appImage: image))
             } else {
                 phase = .failure(URLError(.cannotDecodeContentData))
             }

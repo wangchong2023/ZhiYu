@@ -217,10 +217,10 @@ public extension View {
 
     // MARK: - 全屏模式适配
 
-    /// 全屏沉浸模式：仅在非 watchOS 平台控制状态栏与 TabBar 可见性
+    /// 全屏沉浸模式：仅在 iOS 控制状态栏与 TabBar 可见性（macOS 无状态栏/TabBar，Watch 无该概念）
     @ViewBuilder
     func adaptiveFullScreenImmersive(_ hidden: Bool) -> some View {
-        #if !os(watchOS)
+        #if os(iOS)
         self.statusBarHidden(hidden)
             .toolbar(hidden ? .hidden : .visible, for: .tabBar)
         #else
