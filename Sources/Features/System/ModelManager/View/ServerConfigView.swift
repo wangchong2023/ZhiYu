@@ -243,10 +243,10 @@ struct ServerEditSheet: View {
                     Section {
                         TextField(L10n.ModelManager.Server.formNameLabel, text: $name)
                         TextField(L10n.ModelManager.Server.formURLLabel, text: $baseURL)
-                            .textInputAutocapitalization(.never)
-                            .keyboardType(.URL)
+                            .appAutocapitalizationDisabled()
+                            .appKeyboardType(.url)
                         TextField(L10n.ModelManager.Server.formAPIKeyLabel, text: $apiKey)
-                            .textInputAutocapitalization(.never)
+                            .appAutocapitalizationDisabled()
                     }
                     .appListRowBackground()
 
@@ -277,7 +277,7 @@ struct ServerEditSheet: View {
                 .scrollContentBackground(.hidden)
             }
             .navigationTitle(server == nil ? L10n.ModelManager.Server.formAddTitle : L10n.ModelManager.Server.formEditTitle)
-            .navigationBarTitleDisplayMode(.inline)
+            .appNavigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(L10n.ModelManager.Server.formCancel) {

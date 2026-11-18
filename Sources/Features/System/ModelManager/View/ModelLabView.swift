@@ -119,7 +119,7 @@ public struct ModelLabView: View {
         .sheet(isPresented: $showConfigSheet) {
             configurationSheet
         }
-        .fullScreenCover(item: $labManager.selectedUseCase) { useCase in
+        .appFullScreenCover(item: $labManager.selectedUseCase) { useCase in
             useCaseDetailPanel(for: useCase)
         }
         .onChange(of: tempTemperature) { _, _ in autoSave() }

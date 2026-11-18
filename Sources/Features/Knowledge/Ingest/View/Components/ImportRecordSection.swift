@@ -87,9 +87,9 @@ struct ImportRecordSection: View {
                 }
             }
             .navigationTitle(previewRecord?.category == FeatureConstants.SourceType.ocr ? (previewRecord?.title ?? L10n.Ingest.ocrScan) : L10n.Ingest.rawContentTitle)
-            .navigationBarTitleDisplayMode(.inline)
+            .appNavigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                appToolbarTrailing {
                     Button(L10n.Common.close) { showTextPreview = false }
                 }
             }

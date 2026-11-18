@@ -173,7 +173,7 @@ struct Graph3DView: View {
     
     private func buildScene() {
         let newScene = SCNScene()
-        newScene.background.contents = isFullScreen ? UIColor.theme.black : nil
+        newScene.background.contents = isFullScreen ? AppColorBridge.from(Color.theme.black) : nil
         addStarfield(to: newScene)
         setupLighting(scene: newScene)
         setupCamera(scene: newScene)
@@ -205,8 +205,8 @@ struct Graph3DView: View {
     private func addStarfield(to scene: SCNScene) {
         let starCount = GraphConstants.ThreeD.starCount
         let starGeometry = SCNSphere(radius: DesignSystem.Graph.ThreeD.starRadius)
-        starGeometry.firstMaterial?.emission.contents = UIColor(Color.appAccent).withAlphaComponent(DesignTokens.Colors.Opacity.surfaceOpacity)
-        starGeometry.firstMaterial?.diffuse.contents = UIColor(Color.appAccent).withAlphaComponent(DesignTokens.SystemOpacity.faint)
+        starGeometry.firstMaterial?.emission.contents = AppColorBridge.from(Color.appAccent).withAlphaComponent(DesignTokens.Colors.Opacity.surfaceOpacity)
+        starGeometry.firstMaterial?.diffuse.contents = AppColorBridge.from(Color.appAccent).withAlphaComponent(DesignTokens.SystemOpacity.faint)
         
         for _ in 0..<starCount {
             let node = SCNNode(geometry: starGeometry)
@@ -227,13 +227,13 @@ struct Graph3DView: View {
         let ambientLight = SCNNode()
         ambientLight.light = SCNLight()
         ambientLight.light?.type = .ambient
-        ambientLight.light?.color = UIColor.theme.black
+        ambientLight.light?.color = AppColorBridge.from(Color.theme.black)
         scene.rootNode.addChildNode(ambientLight)
 
         let omniLight = SCNNode()
         omniLight.light = SCNLight()
         omniLight.light?.type = .omni
-        omniLight.light?.color = UIColor.theme.white
+        omniLight.light?.color = AppColorBridge.from(Color.theme.white)
         omniLight.position = SCNVector3(GraphConstants.ThreeD.lightPositionX, GraphConstants.ThreeD.lightPositionY, GraphConstants.ThreeD.lightPositionZ)
         scene.rootNode.addChildNode(omniLight)
     }
@@ -272,11 +272,11 @@ struct Graph3DView: View {
             let isNeighbor = neighborIDs.contains(page.id)
             let isDimmed = selectedNodeID != nil && !isSelected && !isNeighbor
             
-            let uiColor = UIColor(Color.fromModelColorName(page.pageType.colorName))
+            let uiColor = AppColorBridge.from(Color.fromModelColorName(page.pageType.colorName))
             let opacity: CGFloat = isDimmed ? DesignTokens.Colors.Opacity.dimmedOpacity : DesignTokens.Colors.Opacity.fullOpacity
             
             geometry.firstMaterial?.diffuse.contents = uiColor.withAlphaComponent(opacity)
-            geometry.firstMaterial?.specular.contents = UIColor.theme.white.withAlphaComponent(opacity)
+            geometry.firstMaterial?.specular.contents = AppColorBridge.from(Color.theme.white).withAlphaComponent(opacity)
             geometry.firstMaterial?.emission.contents = isDimmed ? uiColor.withAlphaComponent(DesignTokens.SystemOpacity.faint) : uiColor.withAlphaComponent(DesignTokens.SystemOpacity.faint)
 
             let node = SCNNode(geometry: geometry)
@@ -334,7 +334,7 @@ struct Graph3DView: View {
             safeTitle = title
         }
         let text = SCNText(string: safeTitle, extrusionDepth: CGFloat(GraphConstants.ThreeD.labelExtrusionDepth))
-        text.font = UIFont.boldSystemFont(ofSize: CGFloat(GraphConstants.ThreeD.labelFontSize))
+        text.font = AppFontBridge.boldSystemFont(ofSize: CGFloat(GraphConstants.ThreeD.labelFontSize))
         text.flatness = CGFloat(GraphConstants.ThreeD.labelFlatness)
         text.isWrapped = false
 
@@ -342,8 +342,8 @@ struct Graph3DView: View {
         textNode.position = SCNVector3(Float(nodeSize + CGFloat(DesignSystem.Graph.ThreeD.labelOffset)), 0, 0)
         let labelScale = DesignSystem.Graph.ThreeD.labelScale
         textNode.scale = SCNVector3(labelScale, labelScale, labelScale)
-        textNode.geometry?.firstMaterial?.diffuse.contents = UIColor.theme.white
-        textNode.geometry?.firstMaterial?.emission.contents = UIColor.theme.white.withAlphaComponent(CGFloat(GraphConstants.ThreeD.labelEmissionIntensity))
+        textNode.geometry?.firstMaterial?.diffuse.contents = AppColorBridge.from(Color.theme.white)
+        textNode.geometry?.firstMaterial?.emission.contents = AppColorBridge.from(Color.theme.white).withAlphaComponent(CGFloat(GraphConstants.ThreeD.labelEmissionIntensity))
 
         let billboard = SCNBillboardConstraint()
         billboard.freeAxes = .all
@@ -441,7 +441,7 @@ struct Graph3DView: View {
         let isHighlighted = selectedNodeID == sourceID || selectedNodeID == targetID
         let radius: CGFloat = isHighlighted ? DesignSystem.Graph.ThreeD.edgeRadiusHighlighted : DesignSystem.Graph.ThreeD.edgeRadius
         let cylinder = SCNCylinder(radius: radius, height: CGFloat(length))
-        let baseColor = UIColor(Color.appAccent)
+        let baseColor = AppColorBridge.from(Color.appAccent)
         let opacity: CGFloat = isHighlighted ? CGFloat(GraphConstants.ThreeD.edgeHighlightedOpacity) : CGFloat(GraphConstants.ThreeD.edgeDefaultOpacity)
         cylinder.firstMaterial?.diffuse.contents = baseColor.withAlphaComponent(opacity)
         cylinder.firstMaterial?.emission.contents = isHighlighted ? baseColor.withAlphaComponent(CGFloat(GraphConstants.ThreeD.edgeHighlightedEmission)) : baseColor.withAlphaComponent(CGFloat(GraphConstants.ThreeD.edgeDefaultEmission))
@@ -453,7 +453,7 @@ struct Graph3DView: View {
         let cross = SCNVector3(up.y * direction.z - up.z * direction.y, up.z * direction.x - up.x * direction.z, up.x * direction.y - up.y * direction.x)
         let dot = up.x * direction.x + up.y * direction.y + up.z * direction.z
         let crossLength = sqrt(cross.x * cross.x + cross.y * cross.y + cross.z * cross.z)
-        if crossLength > Float(GraphConstants.ThreeD.rotationEpsilon) {
+        if Double(crossLength) > GraphConstants.ThreeD.rotationEpsilon {
             node.rotation = SCNVector4(cross.x / crossLength, cross.y / crossLength, cross.z / crossLength, acos(dot))
         }
         return node
@@ -478,7 +478,7 @@ struct Graph3DView: View {
         }
         let element = SCNGeometryElement(indices: indices, primitiveType: .line)
         let geometry = SCNGeometry(sources: [source], elements: [element])
-        geometry.firstMaterial?.diffuse.contents = UIColor(Color.appAccent).withAlphaComponent(CGFloat(GraphConstants.ThreeD.gridOpacity))
+        geometry.firstMaterial?.diffuse.contents = AppColorBridge.from(Color.appAccent).withAlphaComponent(CGFloat(GraphConstants.ThreeD.gridOpacity))
         return SCNNode(geometry: geometry)
     }
     
@@ -525,7 +525,7 @@ struct Graph3DView: View {
                 SCNTransaction.animationDuration = GraphConstants.ThreeD.nodeTapAnimationDuration
                 SCNTransaction.animationTimingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
                 let pos = targetNode.position
-                let direction = SCNVector3(pos.x, pos.y + GraphConstants.ThreeD.nodeTapCameraOffsetY, pos.z + GraphConstants.ThreeD.nodeTapCameraOffsetZ)
+                let direction = AppSceneKitVector3.adding(dy: GraphConstants.ThreeD.nodeTapCameraOffsetY, dz: GraphConstants.ThreeD.nodeTapCameraOffsetZ, to: pos)
                 camera.position = direction
                 camera.look(at: pos)
                 SCNTransaction.commit()

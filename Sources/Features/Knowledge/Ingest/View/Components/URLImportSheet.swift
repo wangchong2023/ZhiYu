@@ -125,7 +125,7 @@ struct URLImportSheet: View {
             }
             .accessibilityIdentifier("urlImportSheet") // 添加弹窗主面板测试标识符
             .navigationTitle(L10n.Ingest.batchURLTitle)
-            .navigationBarTitleDisplayMode(.inline)
+            .appNavigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .automatic) {
                     Button(L10n.Common.cancel) { dismiss() }

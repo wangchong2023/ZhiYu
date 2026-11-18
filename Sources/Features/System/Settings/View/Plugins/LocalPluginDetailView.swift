@@ -21,7 +21,7 @@ struct LocalPluginDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @Dependency(\.pluginRegistry) var registry
     @State private var showUninstallConfirm = false
-    @State private var localIcon: UIImage?
+    @State private var localIcon: AppImage?
     @State private var localReadme: String?
 
     private var isInstalled: Bool {
@@ -41,7 +41,7 @@ struct LocalPluginDetailView: View {
                 HStack(spacing: DesignTokens.Spacing.wide) {
                     // 优先显示本地 icon.png，fallback SF Symbol
                     if let image = localIcon {
-                        Image(uiImage: image)
+                        Image(appImage: image)
                             .pluginLocalIconBase()
                             .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.largeRadius))
                     } else {
@@ -117,7 +117,7 @@ struct LocalPluginDetailView: View {
         }
         .background(PageBackgroundView(accentColor: .appAccent))
         .task {
-            if let url = registry.iconURL(for: manifest.id), let data = try? Data(contentsOf: url) { localIcon = UIImage(data: data) }
+            if let url = registry.iconURL(for: manifest.id), let data = try? Data(contentsOf: url) { localIcon = AppImage(data: data) }
             localReadme = registry.localizedReadme(for: manifest.id)
         }
         .navigationTitle(manifest.name)

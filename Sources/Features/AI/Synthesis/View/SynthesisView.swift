@@ -60,7 +60,7 @@ struct SynthesisView: View {
                 
                 mainList
             }
-            .toolbarBackground(.hidden, for: .navigationBar)
+            .appToolbarBackgroundHidden()
             .appTabToolbar(title: L10n.AI.Synthesis.title)
             .synthesisViewPresentations(
                 showOutput: $showOutput,
@@ -331,12 +331,12 @@ struct SynthesisView: View {
                 }
             }
             .navigationTitle("")
-            .navigationBarTitleDisplayMode(.inline)
+            .appNavigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
+                appToolbarLeading {
                     Button(L10n.Common.done) { showOutput = false }
                 }
-                ToolbarItem(placement: .topBarTrailing) {
+                appToolbarTrailing {
                     HStack(spacing: DesignTokens.Typography.headlineFontSize) {
                         Button {
                             if let doc = selectedDoc {
@@ -552,7 +552,7 @@ private extension View {
     func inlineNavBarWithCancel(title: String, cancelTitle: String, onCancel: @escaping () -> Void) -> some View {
         self
             .navigationTitle(title)
-            .navigationBarTitleDisplayMode(.inline)
+            .appNavigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(cancelTitle) { onCancel() }

@@ -22,7 +22,7 @@ struct PluginDetailView: View {
 
     @Environment(\.dismiss) var dismiss
     @State var isInstalling = false
-    @State var localIcon: UIImage?
+    @State var localIcon: AppImage?
     @State var localReadme: String?
     @State var remoteReadme: String?
     @State var isReadmeLoading = false
@@ -87,7 +87,7 @@ struct PluginDetailView: View {
             let targetID = resolveTargetID()
 
             if let url = registry.iconURL(for: targetID) {
-                localIcon = UIImage(data: (try? Data(contentsOf: url)) ?? Data())
+                localIcon = AppImage(data: (try? Data(contentsOf: url)) ?? Data())
             }
             localReadme = registry.localizedReadme(for: targetID)
 

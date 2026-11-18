@@ -86,7 +86,7 @@ extension ModelLabView {
                 }
             }
             .navigationTitle(L10n.ModelManager.Lab.configurations)
-            .navigationBarTitleDisplayMode(.large)
+            .appNavigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(L10n.ModelManager.Parameters.save) {

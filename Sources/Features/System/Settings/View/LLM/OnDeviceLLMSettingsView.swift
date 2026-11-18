@@ -30,9 +30,6 @@ public struct OnDeviceLLMSettingsView: View {
     /// 兼容引入全局云端 LLM 服务，便于后续做端云混合调度
     @EnvironmentObject var llmService: LLMService
     
-    /// Haptic 触感生成器
-    @State private var feedbackGenerator = UINotificationFeedbackGenerator()
-    
     /// 对话测试沙盒 Prompt
     @State private var testPrompt = ""
     
@@ -99,7 +96,7 @@ public struct OnDeviceLLMSettingsView: View {
             .insetGroupedListStyleIfIOS()
             .scrollContentBackground(.hidden) // 隐藏 Form 默认的白色背景，实现高端毛玻璃穿透
         }
-        .toolbarBackground(.hidden, for: .navigationBar)
+        .appToolbarBackgroundHidden()
         .navigationTitle(L10n.Settings.onDeviceLLM)
 .appNavigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showTestSheet) {
@@ -195,7 +192,7 @@ public struct OnDeviceLLMSettingsView: View {
                         isSelected: onDeviceService.selectedModelID == model.id,
                         onSelect: {
                             onDeviceService.selectedModelID = model.id
-                            feedbackGenerator.notificationOccurred(.success)
+                            HapticFeedback.shared.trigger(.success)
                         }
                     )
                 }
@@ -225,7 +222,7 @@ public struct OnDeviceLLMSettingsView: View {
                     
                     Button(action: {
                         onDeviceService.unloadModel()
-                        feedbackGenerator.notificationOccurred(.warning)
+                        HapticFeedback.shared.trigger(.warning)
                     }) {
                         Text(L10n.AI.OnDevice.unload)
                             .font(.caption.weight(.semibold))
@@ -279,11 +276,11 @@ public struct OnDeviceLLMSettingsView: View {
                         Task {
                             do {
                                 try await onDeviceService.importModel(from: url)
-                                feedbackGenerator.notificationOccurred(.success)
+                                HapticFeedback.shared.trigger(.success)
                             } catch {
                                 errorMessage = error.localizedDescription
                                 showError = true
-                                feedbackGenerator.notificationOccurred(.error)
+                                HapticFeedback.shared.trigger(.error)
                             }
                         }
                     }
@@ -305,7 +302,7 @@ public struct OnDeviceLLMSettingsView: View {
                 isDisabled: !onDeviceService.isModelLoaded,
                 action: {
                     showTestSheet = true
-                    feedbackGenerator.notificationOccurred(.success)
+                    HapticFeedback.shared.trigger(.success)
                 }
             )
             
@@ -358,15 +355,14 @@ public struct OnDeviceLLMSettingsView: View {
     
     // MARK: - 异步加载模型动作
     private func loadModel() {
-        feedbackGenerator.prepare()
-        Task {
+                Task {
             do {
                 try await onDeviceService.loadModel()
-                feedbackGenerator.notificationOccurred(.success)
+                HapticFeedback.shared.trigger(.success)
             } catch {
                 errorMessage = error.localizedDescription
                 showError = true
-                feedbackGenerator.notificationOccurred(.error)
+                HapticFeedback.shared.trigger(.error)
             }
         }
     }

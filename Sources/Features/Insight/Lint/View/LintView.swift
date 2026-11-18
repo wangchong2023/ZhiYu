@@ -87,7 +87,7 @@ struct LintViewContent: View {
                 .frame(maxHeight: .infinity)
             }
         }
-        .toolbarBackground(.hidden, for: .navigationBar)
+        .appToolbarBackgroundHidden()
         .appSubPageToolbar(title: selectedTab == 0 ? L10n.Lint.title : L10n.Lint.aiSuggestions) {
             Button(action: {
                 HapticFeedback.shared.trigger(.selection)

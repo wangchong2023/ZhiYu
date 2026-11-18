@@ -84,10 +84,10 @@ private func applyZoomScale(
 ) {
     if isChanged {
         let newZ = cameraZ / factor
-        // 约束限制防极端穿透飞出
-        cameraNode.position.z = max(Graph3DUIConstants.cameraZMin, min(newZ, Graph3DSceneConfig.cameraZMax))
+        // 约束限制防极端穿透飞出（iOS 相机分量为 Float，macOS 为 CGFloat，走跨平台桥接）
+        cameraNode.position = AppSceneKitVector3.withZ(max(Graph3DUIConstants.cameraZMin, min(newZ, Graph3DSceneConfig.cameraZMax)), in: cameraNode.position)
     } else if isEnded {
-        cameraZ = cameraNode.position.z
+        cameraZ = AppSceneKitVector3.z(cameraNode.position)
     }
 }
 /// 消除 iOS/macOS handlePan 的重复逻辑，接收原始 translation 与状态标志
@@ -106,12 +106,12 @@ private func applyPanRotation(
         let deltaY = Float(translationX) * dampening
         let deltaX = Float(translationY) * dampening
 
-        // 将位移积分转换为相机的 Euler 空间旋转
-        cameraNode.eulerAngles.y = currentAngleY - deltaY
-        cameraNode.eulerAngles.x = currentAngleX - deltaX
+        // 将位移积分转换为相机的 Euler 空间旋转（iOS 分量为 Float，macOS 为 CGFloat，走跨平台桥接）
+        cameraNode.eulerAngles = AppSceneKitVector3.withY(currentAngleY - deltaY, in: cameraNode.eulerAngles)
+        cameraNode.eulerAngles = AppSceneKitVector3.withX(currentAngleX - deltaX, in: cameraNode.eulerAngles)
     } else if isEnded {
-        currentAngleY = cameraNode.eulerAngles.y
-        currentAngleX = cameraNode.eulerAngles.x
+        currentAngleY = AppSceneKitVector3.y(cameraNode.eulerAngles)
+        currentAngleX = AppSceneKitVector3.x(cameraNode.eulerAngles)
     }
 }
 
@@ -132,9 +132,9 @@ class Graph3DCoordinatorBase: NSObject {
 
     /// 同步当前物理相机的几何空间参数
     func syncCameraState(from cameraNode: SCNNode) {
-        currentAngleX = cameraNode.eulerAngles.x
-        currentAngleY = cameraNode.eulerAngles.y
-        cameraZ = cameraNode.position.z
+        currentAngleX = AppSceneKitVector3.x(cameraNode.eulerAngles)
+        currentAngleY = AppSceneKitVector3.y(cameraNode.eulerAngles)
+        cameraZ = AppSceneKitVector3.z(cameraNode.position)
     }
 
     /// 提取相机节点，消除 handlePan/handlePinch/handleMagnify 的重复 guard

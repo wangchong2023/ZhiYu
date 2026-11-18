@@ -314,26 +314,23 @@ struct PDFDocumentRow: View {
 // MARK: - PDF Preview Wrapper
 /// PDF 预览包装器组件
 /// 负责在 SwiftUI 中嵌入原生 PDFView 渲染引擎，支持文档加载与自动缩放
-struct PDFPreviewWrapper: UIViewRepresentable {
+struct PDFPreviewWrapper: View {
     let url: URL
-    
-    /// 创建UIView
-    /// - Parameter context: context
-    /// - Returns: 返回值
-    func makeUIView(context: Context) -> PDFView {
-        let pdfView = PDFView()
-        pdfView.document = PDFKit.PDFDocument(url: url)
-        pdfView.autoScales = true
-        return pdfView
-    }
-    
-    /// 更新UIView
-    /// - Parameter uiView: uiView
-    /// - Parameter context: context
-    func updateUIView(_ uiView: PDFView, context: Context) {
-        if uiView.document?.documentURL != url {
-            uiView.document = PDFKit.PDFDocument(url: url)
-        }
+
+    var body: some View {
+        PlatformViewBridge(
+            make: { () -> PDFKit.PDFView in
+                let pdfView = PDFKit.PDFView()
+                pdfView.document = PDFKit.PDFDocument(url: url)
+                pdfView.autoScales = true
+                return pdfView
+            },
+            update: { (pdfView: PDFKit.PDFView) in
+                if pdfView.document?.documentURL != url {
+                    pdfView.document = PDFKit.PDFDocument(url: url)
+                }
+            }
+        )
     }
 }
 #endif

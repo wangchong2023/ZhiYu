@@ -63,13 +63,13 @@ public struct NotebookHubView: View {
         }
 
         .navigationTitle(L10n.Vault.homeTitle)
-        .navigationBarTitleDisplayMode(.inline)
+        .appNavigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
-        .toolbarBackground(.visible, for: .navigationBar)
-        .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
+        .appToolbarBackgroundVisible()
+        .appToolbarBackgroundMaterial(.ultraThinMaterial)
         .toolbar {
             // 使用 ToolbarItemGroup 替代 ToolbarItem + HStack，解决 SwiftUI 在大屏/分栏下 HStack 拦截点击、导致菜单及头像按钮点击无响应的交互缺陷。
-            ToolbarItemGroup(placement: .topBarTrailing) {
+            appToolbarTrailingGroup {
                 sparklesButton
                 if idiom != .watch {
                     sortMenu

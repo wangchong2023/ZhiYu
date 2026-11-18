@@ -48,7 +48,7 @@ extension ModelLabView {
                 .padding(.bottom, DesignTokens.SystemSpacing.element)
             }
             .navigationTitle(useCase.title)
-            .navigationBarTitleDisplayMode(.inline)
+            .appNavigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(L10n.Common.done) {

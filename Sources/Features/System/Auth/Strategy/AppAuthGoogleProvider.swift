@@ -85,7 +85,7 @@ public struct AppAuthGoogleProvider: GoogleSignInProviding {
         request: OIDAuthorizationRequest,
         anchor: ASPresentationAnchor
     ) async throws -> (idToken: String, userID: String?) {
-        try await withCheckedThrowingContinuation { continuation in
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<(idToken: String, userID: String?), Error>) in
             // 强持有会话直至回调触发，避免授权流程因提前释放而中断
             var session: (any OIDExternalUserAgentSession)?
             let finish: (OIDAuthState?, Error?) -> Void = { authState, error in
@@ -128,7 +128,7 @@ public struct AppAuthGoogleProvider: GoogleSignInProviding {
             }
             session = OIDAuthState.authState(
                 byPresenting: request,
-                presentingWindow: window,
+                presenting: window,
                 callback: finish
             )
             #endif

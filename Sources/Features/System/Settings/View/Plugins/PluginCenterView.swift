@@ -366,7 +366,7 @@ struct PluginCard: View {
     }
 
     @Dependency(\.pluginRegistry) var registry
-    @State private var localIcon: UIImage?
+    @State private var localIcon: AppImage?
 
     /// 自适应计算插件的展示版本号，已安装则优先显示真实本地版本号
     private var displayVersion: String {
@@ -379,8 +379,8 @@ struct PluginCard: View {
     var body: some View {
         HStack(spacing: DesignTokens.Spacing.standardPadding) {
             // 优先显示本地 icon.png，fallback SF Symbol
-            if let uiImage = localIcon {
-                Image(uiImage: uiImage)
+            if let appImage = localIcon {
+                Image(appImage: appImage)
                     .renderingMode(.original)
                     .resizable().scaledToFit()
                     .frame(width: DesignSystem.Action.minTouchTarget, height: DesignSystem.Action.minTouchTarget)
@@ -472,7 +472,7 @@ struct PluginCard: View {
                 if let url = registry.iconURL(for: targetID) {
                     // 使用后台异步线程在非 UI 线程中读取物理图片数据，避免直接读取 I/O 导致 UI 卡顿
                     Task.detached(priority: .background) {
-                        if let data = try? Data(contentsOf: url), let image = UIImage(data: data) {
+                        if let data = try? Data(contentsOf: url), let image = AppImage(data: data) {
                             await MainActor.run {
                                 self.localIcon = image
                             }

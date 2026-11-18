@@ -162,7 +162,7 @@ struct GraphContainerView: View {
             }
         }
         .appTabToolbar(title: L10n.Graph.title)
-        .toolbarBackground(.hidden, for: .navigationBar)
+        .appToolbarBackgroundHidden()
         .onChange(of: store.pages.count) { _, _ in layoutGraph() }
         // Bug #68 修复：filterType 变化时刷新边过滤缓存，无需重新布局。
         .onChange(of: viewModel.filterType) { _, _ in refreshFilteredEdgesCache() }
@@ -176,7 +176,7 @@ struct GraphContainerView: View {
             insightsPanel
                 .presentationDetents([.large])
         }
-        .fullScreenCover(isPresented: $viewModel.show3D) {
+        .appFullScreenCover(isPresented: $viewModel.show3D) {
             NavigationStack {
                 Graph3DView(selectedNodeID: $viewModel.selectedNodeID, isFullScreen: $viewModel.show3D)
             }
@@ -418,7 +418,7 @@ struct GraphContainerView: View {
                 }
             )
             .navigationTitle(L10n.Graph.insights)
-            .navigationBarTitleDisplayMode(.inline)
+            .appNavigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(L10n.Common.done) { viewModel.showInsights = false }

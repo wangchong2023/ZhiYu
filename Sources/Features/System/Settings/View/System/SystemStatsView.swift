@@ -87,7 +87,7 @@ struct SystemStatsView: View {
             }
             .background(PageBackgroundView(accentColor: .appAccent))
         }
-        .toolbarBackground(.hidden, for: .navigationBar)
+        .appToolbarBackgroundHidden()
         .navigationTitle(L10n.Dashboard.stats.navigationTitleMonitor)
         .doneDismissToolbar()
         .task {

@@ -73,7 +73,7 @@ struct PluginExtensionsDetailView: View {
                     PluginExtensionsSection()
                         .appListRowBackground()
                 }
-                .listStyle(.insetGrouped)
+                .adaptiveListStyle()
                 .scrollContentBackground(.hidden)
             }
         }

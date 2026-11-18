@@ -32,7 +32,7 @@ struct PolicySheetContent: View {
                 }
             }
             .navigationTitle(title)
-            .navigationBarTitleDisplayMode(.inline)
+            .appNavigationBarTitleDisplayMode(.inline)
             .environment(\.locale, Localized.currentLocale)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {

@@ -27,9 +27,6 @@ public struct OnDeviceTestView: View {
     
     /// 推理输出的完整文本（含错误信息，独立于 service.generatedText）
     @State private var result = ""
-    
-    /// 触发 Haptic 触感反馈的局部状态
-    @State private var feedbackGenerator = UINotificationFeedbackGenerator()
 
     public init(onDeviceService: OnDeviceLLMService) {
         self.onDeviceService = onDeviceService
@@ -139,7 +136,7 @@ public struct OnDeviceTestView: View {
                     
                     Button(action: {
                         AppPasteboard.string = result
-                        feedbackGenerator.notificationOccurred(.success)
+                        HapticFeedback.shared.trigger(.success)
                     }) {
                         Label(L10n.Common.copy, systemImage: DesignTokens.Icons.docOnDocFill)
                             .font(.caption2.weight(.medium))
@@ -171,7 +168,6 @@ public struct OnDeviceTestView: View {
         guard !prompt.isEmpty else { return }
         
         result = ""
-        feedbackGenerator.prepare()
         
         Task {
             do {

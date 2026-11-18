@@ -36,12 +36,12 @@ public struct DeviceHardwareBar: View {
 
     /// 估算可用内存（单位：GB）
     private var availableMemoryGB: Double {
-        #if canImport(Darwin)
-        let availableBytes = Double(os_proc_available_memory())
-        return max(availableBytes / SystemConstants.bytesPerGB, FeatureConstants.Hardware.minAvailableMemoryGB)
-        #else
+        // 收敛到跨平台内存桥接（iOS 用 os_proc_available_memory，macOS 用 host_statistics64）
+        let availableBytes = AppMemoryBridge.availableBytes()
+        if availableBytes > 0 {
+            return max(availableBytes / SystemConstants.bytesPerGB, FeatureConstants.Hardware.minAvailableMemoryGB)
+        }
         return max(totalMemoryGB * FeatureConstants.Hardware.fallbackRatio, FeatureConstants.Hardware.minAvailableMemoryGB)
-        #endif
     }
 
     /// 可用内存比例（百分比）

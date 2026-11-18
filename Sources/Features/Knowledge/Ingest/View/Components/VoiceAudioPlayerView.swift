@@ -49,8 +49,8 @@ private enum VoiceTimestampDelimiter {
 /// 跨实例共享的 AVAudioSession 播放模式配置，消除 VoiceAudioPlayerView 与 VoiceSpeechState 的重复
 private func configureVoicePlaybackSession(idiom: InterfaceIdiom) {
     guard idiom == .iPhone || idiom == .iPad else { return }
-    try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
-    try? AVAudioSession.sharedInstance().setActive(true)
+    // 收敛到跨平台音频会话桥接（iOS 配置播放模式，macOS/watchOS 为无操作）
+    AppAudioSessionBridge.configurePlaybackSession()
 }
 
 struct VoiceAudioPlayerView: View {

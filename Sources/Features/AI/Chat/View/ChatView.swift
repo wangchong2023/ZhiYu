@@ -98,7 +98,7 @@ struct ChatViewContent: View {
                 await coordinator.sendMessage(pages: store.pages)
             }
         }
-        .toolbarBackground(.hidden, for: .navigationBar)
+        .appToolbarBackgroundHidden()
     }
     
     @ViewBuilder

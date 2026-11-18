@@ -61,6 +61,7 @@ extension FeatureConstants {
         static let tagStore = "TagStore"
         static let googleAuthStrategy = "GoogleAuthStrategy"
         static let weChatAuthStrategy = "WeChatAuthStrategy"
+        static let carrierAuthStrategy = "CarrierAuthStrategy"
         static let aiWorkflowStore = "AIWorkflowStore"
         static let ingestService = "IngestService"
         static let dashboard = "Dashboard"

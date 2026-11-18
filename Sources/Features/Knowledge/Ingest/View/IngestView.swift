@@ -106,7 +106,7 @@ struct IngestView: View {
         .sheet(isPresented: $coordinator.showURLImport) { URLImportSheet(urlText: $coordinator.newURL, onImport: { urls in coordinator.handleBatchURLImport(urls) }) }
         .sheet(isPresented: $coordinator.showManualForm) { manualFormSheet }
         .onReceive(NotificationCenter.default.publisher(for: .importFromClipboard)) { _ in coordinator.performClipboardImport() }
-        .toolbarBackground(.hidden, for: .navigationBar)
+        .appToolbarBackgroundHidden()
         .background(PageBackgroundView(accentColor: .appSource))
     }
 
@@ -269,7 +269,7 @@ struct IngestView: View {
                     }.frame(minHeight: ingestPanelMinHeight)
                 }
             }
-            .scrollContentBackground(.hidden).background(themeManager.pageBackground()).navigationTitle(coordinator.manualFormTitle).navigationBarTitleDisplayMode(.inline)
+            .scrollContentBackground(.hidden).background(themeManager.pageBackground()).navigationTitle(coordinator.manualFormTitle).appNavigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button(L10n.Common.cancel) { coordinator.showManualForm = false }.buttonStyle(.plain) }
                 ToolbarItem(placement: .confirmationAction) { Button(L10n.Common.Misc.import) { coordinator.performIngest() }.disabled(coordinator.newTitle.isEmpty || coordinator.newContent.isEmpty || coordinator.isIngesting).buttonStyle(.plain) }

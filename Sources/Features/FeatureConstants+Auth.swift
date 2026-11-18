@@ -134,6 +134,7 @@ extension FeatureConstants {
         static let githubCallbackError = "GitHub Callback Error"
         static let githubStateMismatch = "GitHub State Mismatch"
         static let weChatSDKNotConfigured = "WeChat SDK Not Configured"
+        static let watchOSNotSupported = "Not supported on this platform"
     }
 
     // MARK: - 认证翻转动效 (Auth Flip Animation)

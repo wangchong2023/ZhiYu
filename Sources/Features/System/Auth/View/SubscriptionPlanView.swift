@@ -128,9 +128,9 @@ public struct SubscriptionPlanView: View {
             }
         }
         .navigationTitle(L10n.Auth.subscription)
-        .navigationBarTitleDisplayMode(.inline)
+        .appNavigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
+            appToolbarLeading {
                 Button(action: { isQuotaExpanded.toggle() }) {
                     Image(systemName: DesignTokens.Icons.chartBarDoc)
                         .font(.body.bold())

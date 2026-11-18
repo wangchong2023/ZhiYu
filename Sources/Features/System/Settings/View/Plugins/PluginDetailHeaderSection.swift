@@ -21,8 +21,8 @@ extension PluginDetailView {
     var headerSection: some View {
         HStack(alignment: .top, spacing: DesignTokens.Spacing.wide) {
             // 插件大图标 — 优先显示已缓存的本地 icon.png，使用 App Store 经典的 Squircle 平滑圆角
-            if let uiImage = localIcon {
-                Image(uiImage: uiImage)
+            if let appImage = localIcon {
+                Image(appImage: appImage)
                     .pluginLocalIconBase()
                     .iconClipShadow(cornerRadius: DesignTokens.SystemRadius.chip, strokeOpacity: DesignTokens.SystemOpacity.glass)
             } else if let iconURL = URL(string: plugin.icon), iconURL.scheme?.hasPrefix(SystemConstants.URLScheme.httpLiteral) == true {

@@ -105,7 +105,7 @@ struct SettingsView: View {
         @Bindable var router = router
         
         Group {
-            if idiom == .macCatalyst {
+            if idiom == .macCatalyst || idiom == .mac {
                 HStack(spacing: 0) {
                     sidebarColumn
                         .frame(width: DesignTokens.Metrics.settingsSidebarWidth)
@@ -205,7 +205,7 @@ struct SettingsView: View {
             aboutSection
                 .appListRowBackground()
         }
-        .listStyle(.insetGrouped)
+        .adaptiveListStyle()
         .scrollContentBackground(.hidden)
     }
 
@@ -269,7 +269,7 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle(section.displayName)
-            .navigationBarTitleDisplayMode(.inline)
+            .appNavigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     doneButton(router: router)
@@ -500,7 +500,7 @@ struct SettingsView: View {
                 EmptyView()
             }
         }
-        .listStyle(.insetGrouped)
+        .adaptiveListStyle()
         .scrollContentBackground(.hidden)
     }
     

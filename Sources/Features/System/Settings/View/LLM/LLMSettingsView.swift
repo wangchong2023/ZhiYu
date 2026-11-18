@@ -271,7 +271,7 @@ struct LLMSettingsView: View {
                     Text(L10n.AI.LLM.apiAddress)
                         .font(.caption.weight(.medium))
                         .foregroundStyle(.appSecondary)
-                    monospacedTextField(FeatureConstants.Placeholder.apiBaseURL, text: $config.baseURL, keyboardType: .URL)
+                    monospacedTextField(FeatureConstants.Placeholder.apiBaseURL, text: $config.baseURL, keyboardType: .url)
                 }
             }
             
@@ -327,16 +327,14 @@ struct LLMSettingsView: View {
 
     /// 等宽字体 TextField + borderedCardStyle，消除 baseURL 与 model 输入框的重复
     @ViewBuilder
-    private func monospacedTextField(_ placeholder: String, text: Binding<String>, keyboardType: UIKeyboardType?) -> some View {
+    private func monospacedTextField(_ placeholder: String, text: Binding<String>, keyboardType: AppKeyboardType?) -> some View {
         TextField(placeholder, text: text)
             .textFieldStyle(.plain)
             .font(.system(.body, design: .monospaced))
             .foregroundStyle(.appText)
             .borderedCardStyle(horizontalPadding: DesignTokens.Spacing.standardPadding, verticalPadding: DesignTokens.Spacing.standardPadding, backgroundOpacity: DesignTokens.Opacity.prominent, cornerRadius: DesignTokens.SystemRadius.small)
-            .skipOnWatch {
-                $0.autocapitalization(.none)
-                if let keyboardType { $0.keyboardType(keyboardType) }
-            }
+            .appAutocapitalizationDisabled()
+            .appKeyboardType(keyboardType)
     }
 
     func testConnection() {

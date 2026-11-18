@@ -55,7 +55,7 @@ struct SynthesisControlSheet: View {
             .scrollContentBackground(.hidden)
             .background(Color.appBackground)
             .navigationTitle(L10n.AI.Synthesis.Control.title)
-            .navigationBarTitleDisplayMode(.inline)
+            .appNavigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(L10n.AI.Synthesis.Control.startSynthesis) {

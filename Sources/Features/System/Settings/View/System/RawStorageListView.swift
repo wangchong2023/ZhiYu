@@ -292,7 +292,7 @@ struct RawStorageListView: View {
             .background(PageBackgroundView(accentColor: .appAccent))
         }
         .navigationTitle(L10n.Dashboard.stats.rawStorageTitle)
-        .navigationBarTitleDisplayMode(.inline)
+        .appNavigationBarTitleDisplayMode(.inline)
         .onChange(of: searchText) { newValue, _ in
             if !newValue.isEmpty {
                 // 自动展开包含匹配项的父级分类目录
@@ -378,7 +378,7 @@ struct RawPageDetailView: View {
             .background(PageBackgroundView(accentColor: .appAccent))
         }
         .navigationTitle(L10n.Dashboard.stats.rawPageDetailTitle)
-        .navigationBarTitleDisplayMode(.inline)
+        .appNavigationBarTitleDisplayMode(.inline)
     }
     
     /// 头部元数据渲染卡片

@@ -101,7 +101,7 @@ public struct UserProfileView: View {
             .transition(.opacity)
         }
         .navigationTitle(L10n.Auth.profileAndQuota)
-        .navigationBarTitleDisplayMode(.inline)
+        .appNavigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
                 Button(L10n.Common.cancel) {

@@ -65,7 +65,7 @@ struct OCRScanView: View {
                                 title: L10n.Ingest.OCR.confirmAndEdit,
                                 icon: DesignTokens.Icons.squareAndPencil,
                                 action: {
-                                    let imageData = selectedImage?.jpegData(compressionQuality: 0.9)
+                                    let imageData = AppImageBridge.jpegData(from: selectedImage, compressionQuality: 0.9)
                                     onFinish?(targetTitle, recognizedText, imageData)
                                     dismiss()
                                 }

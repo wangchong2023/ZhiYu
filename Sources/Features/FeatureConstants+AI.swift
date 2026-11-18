@@ -289,6 +289,8 @@ extension FeatureConstants {
         static let lowMemoryWarningPercent: Double = 20.0
         static let fallbackChipName: String = "Apple Silicon"
         static let minAvailableMemoryGB: Double = 0.5
+        /// 无法获取可用内存时按物理内存总量估算的占比
+        static let fallbackRatio: Double = 0.7
     }
 
     // MARK: - 模型任务标签常量 (Model Task Tags)

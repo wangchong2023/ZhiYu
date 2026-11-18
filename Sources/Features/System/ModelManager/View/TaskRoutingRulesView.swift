@@ -43,7 +43,7 @@ public struct TaskRoutingRulesView: View {
         }
         .background(themeManager.pageBackground().ignoresSafeArea())
         .navigationTitle(L10n.ModelManager.Routing.taskRules)
-        .navigationBarTitleDisplayMode(.inline)
+        .appNavigationBarTitleDisplayMode(.inline)
     }
 
     private func routingRuleRow(icon: String, iconColor: Color, task: String, rule: String) -> some View {

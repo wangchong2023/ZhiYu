@@ -168,8 +168,8 @@ struct PluginStatsSection: View {
     private func pluginIconView(for pluginID: String) -> some View {
         if let iconURL = registry.iconURL(for: pluginID),
            let data = try? Data(contentsOf: iconURL),
-           let uiImage = UIImage(data: data) {
-            Image(uiImage: uiImage)
+           let appImage = AppImage(data: data) {
+            Image(appImage: appImage)
                 .resizable()
                 .scaledToFit()
                 .frame(width: DesignTokens.IconSize.large, height: DesignTokens.IconSize.large)

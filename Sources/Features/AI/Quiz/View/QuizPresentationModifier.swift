@@ -35,7 +35,7 @@ struct QuizPresentationModifier: ViewModifier {
         } else {
             if idiom == .iPhone || idiom == .iPad {
                 content
-                    .fullScreenCover(item: $activeQuiz) { quiz in
+                    .appFullScreenCover(item: $activeQuiz) { quiz in
                         QuizView(quiz: quiz)
                     }
             } else {

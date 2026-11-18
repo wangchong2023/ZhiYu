@@ -141,7 +141,7 @@ private struct SlideTabViewStyleModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         if idiom == .iPhone || idiom == .iPad {
-            content.tabViewStyle(.page(indexDisplayMode: .never))
+            content.appPageTabViewStyle()
         } else {
             content
         }
