@@ -29,7 +29,7 @@ EXIT_CODE_SUCCESS = 0
 FUNC_KEYWORD_LEN = 5
 
 # 排除目录与特定路径
-EXCLUDE_DIRS = {'.git', 'build', 'DerivedData', '.build', 'Frameworks', 'Tests', 'env'}
+EXCLUDE_DIRS = {'.git', 'build', 'DerivedData', '.build', 'Frameworks', 'Tests', 'env', 'Generated'}
 EXCLUDE_PATH_KEYWORD = "Localization"
 
 # 匹配 Swift 函数声明的正则
