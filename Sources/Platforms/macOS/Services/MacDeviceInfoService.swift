@@ -27,6 +27,16 @@ final class MacDeviceInfoService: DeviceInfoProtocol, Sendable {
         Host.current().localizedName ?? "Mac"
     }
 
+    var deviceId: String {
+        let key = "com.zhiyu.mac.deviceId"
+        if let existing = UserDefaults.standard.string(forKey: key), !existing.isEmpty {
+            return existing
+        }
+        let newID = UUID().uuidString
+        UserDefaults.standard.set(newID, forKey: key)
+        return newID
+    }
+
     var screenHeight: CGFloat {
         NSScreen.main?.frame.height ?? 900
     }

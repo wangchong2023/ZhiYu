@@ -10,8 +10,10 @@
 //
 #if !os(watchOS)
 import Foundation
+import SwiftUI
 import PDFKit
 import Dependencies
+import UFPDesignSystem
 
 /// iOS/macOS PDF 处理实现
 final class iOSPDFService: PDFServiceProtocol {
@@ -171,15 +173,24 @@ final class iOSPDFService: PDFServiceProtocol {
             let scale = AppConstants.Keys.ImportLimits.pdfRenderScale
             let size = CGSize(width: rect.width * scale, height: rect.height * scale)
 
-            let renderer = UIGraphicsImageRenderer(size: size)
-            let image = renderer.image { ctx in
-                UIColor.theme.white.setFill()
-                ctx.fill(CGRect(origin: .zero, size: size))
-                ctx.cgContext.scaleBy(x: scale, y: scale)
-                page.draw(with: .mediaBox, to: ctx.cgContext)
-            }
+            // 用 CGContext 跨平台渲染 PDF 页面为位图（iOS/macOS 通用，替代 UIGraphicsImageRenderer）
+            guard let context = CGContext(
+                data: nil,
+                width: max(1, Int(size.width)),
+                height: max(1, Int(size.height)),
+                bitsPerComponent: 8,
+                bytesPerRow: 0,
+                space: CGColorSpaceCreateDeviceRGB(),
+                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+            ) else { continue }
 
-            if let jpegData = image.jpegData(compressionQuality: AppConstants.Keys.ImportLimits.imageJPEGQuality),
+            context.setFillColor(AppColorBridge.from(Color.theme.white).cgColor)
+            context.fill(CGRect(origin: .zero, size: size))
+            context.scaleBy(x: scale, y: scale)
+            page.draw(with: .mediaBox, to: context)
+            guard let image = context.makeImage() else { continue }
+
+            if let jpegData = AppImageBridge.jpegData(from: image, compressionQuality: AppConstants.Keys.ImportLimits.imageJPEGQuality),
                jpegData.count <= AppConstants.Keys.ImportLimits.maxImageSizeBytes {
                 images.append(jpegData)
             }
