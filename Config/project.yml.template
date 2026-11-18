@@ -144,6 +144,7 @@ targets:
           - "Platforms/watchOS/**"
           - "Platforms/iOS/Widgets/**"
           - "MacInfo.plist"
+          - "Domain/Contracts/Generated/**"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: top.izhiyu.app
@@ -183,6 +184,7 @@ targets:
           - "Info.plist"
           - "Base.lproj/**"
           - "LaunchScreen.storyboard"
+          - "Domain/Contracts/Generated/**"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: top.izhiyu.app.mac

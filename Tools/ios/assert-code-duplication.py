@@ -241,8 +241,19 @@ def try_pmd_cpd():
 
     print("\n[Code Duplication] Detected 'PMD' in system. Running PMD-CPD scan...")
     import tempfile
+    # 显式生成文件清单：排除 Generated 契约产物（gen.sh 按需再生、.gitignore 忽略、不入库），
+    # 避免 protoc 生成的 .pb.swift 结构性重复污染 PMD-CPD 统计。
     with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f:
-        f.write("Sources\n")
+        # 遍历 Sources 生成 .swift 文件清单，跳过 Generated 契约产物与已知排除目录
+        generated_marker = os.path.join("Sources", "Domain", "Contracts", "Generated")
+        for root, dirs, files in os.walk("Sources"):
+            if root.startswith(generated_marker):
+                dirs[:] = []
+                continue
+            dirs[:] = [d for d in dirs if d not in EXCLUDE_DIRS]
+            for name in files:
+                if name.endswith(".swift"):
+                    f.write(os.path.join(root, name) + "\n")
         file_list_path = f.name
     res = subprocess.run([
         pmd_bin, "cpd",

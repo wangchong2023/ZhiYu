@@ -510,26 +510,26 @@ ZhiYu-Android/
 
 > **阶段调整说明**：原 Phase 2（macOS 原生升级）提前为 **Phase 1**，作为 Phase 0 完成后的独立小迭代。原因：代码评估发现 `MacPlatformRegistrar`（15 个 macOS 服务已注册）、`MacAppEnvironment`、`ZhiYuApp.swift` 菜单栏扩展（`#if os(macOS)`）等基础设施已就位。**⚠️ 2026 修订**：经工程审查新增认证阻塞项——GoogleSignIn-iOS 不支持原生 macOS，确定**统一 A：全平台 AppAuth** 替代（见 §6.3 任务 0），周期由原 2-3 周上调为 3-4 周，风险由低上调为中。原 Android/Windows/鸿蒙顺延为 Phase 2/3/4。
 
-### 6.2 Phase 0：IDL 契约层 + Skip POC（4-6 周）
+### 6.2 Phase 0：IDL 契约层 + Skip POC（✅ 已完成 2026-11-18，经工程审查收缩范围）
+
+> **2026-11-18 收缩说明（ADR-015）**：原计划"提取 40+ 协议、协议对齐 `*Contract`、toProto() 接线 SwiftProtobuf runtime"经审查收缩。原因：① `toProto()`/协议对齐依赖 SwiftProtobuf runtime，需克隆 opensrc + 接入 project.yml + 生成代码入 target，工作量与离线治理成本高；② Skip.tools 全面转译不可行（GRDB/AppAuth 不可转译 + UIKit 残留），静态评估已判定不采用。**最终交付：IDL 契约层止于 proto 契约文件 + gen.sh 生成脚本（生成代码不入库，按需再生）；Skip 不采用，Phase 2 改用 KMP/手写重写 + IDL 契约复用。**
 
 **目标**：
-- 建立 IDL 契约层，iOS 改造完成
-- 验证 Skip.tools 转译可行性
+- 建立 IDL 契约层（proto 契约 + 生成脚本），为多平台提供语言无关接口基准
+- 评估 Skip.tools 转译可行性 → **结论：不采用**
 
-**任务**：
-1. 提取 40+ Swift 协议为 Protobuf IDL（2-3 周）
-2. iOS Swift 协议对齐 IDL，重命名为 `*Contract`（1 周）
-3. 现有实现改协议名（1 周）
-4. 搭建 Skip POC：拿 UFPCore 或一个小 Feature 模块试转译（1-2 周）
-5. 评估 Skip 转译质量，决定是否全面采用
+**任务（已按收缩执行）**：
+1. 建立 protobuf 契约骨架（common/auth/knowledge.proto）✅
+2. 编写 gen.sh 生成脚本（protoc → .pb.swift，生成产物 gitignore 不入库）✅
+3. Skip POC 静态评估 → 不采用 Skip 全面转译 ✅
 
 **交付物**：
-- `Docs/Contracts/*.proto`（10+ 契约文件）
-- `Sources/Domain/Contracts/`（Swift 对齐协议）
-- `Tools/contracts/`（生成脚本）
-- Skip POC 报告（转译质量、覆盖率、问题清单）
+- `Docs/Contracts/zhiyu/domain/*.proto`（common/auth/knowledge 首批契约）
+- `Docs/Contracts/README.md`
+- `Docs/Contracts/skip-poc-report.md`（静态评估，结论不采用 Skip）
+- `Tools/contracts/gen.sh`（生成脚本）
 
-**决策门**：Phase 0 结束时评估 Skip POC 结果，决定 Phase 2 是否全面采用 Skip。
+**决策门**：Skip POC 静态评估完成，**Skip 不全面采用**（GRDB/AppAuth 不可转译 + UIKit 残留），Phase 2 采用 KMP/手写重写 + IDL 契约复用。
 
 ### 6.3 Phase 1：macOS 原生升级（3-4 周，独立小迭代）
 

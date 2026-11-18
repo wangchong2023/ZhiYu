@@ -20,6 +20,7 @@
 | ADR-012 | 2026-08-04 | SecurityManager 密钥存储失败改 assertionFailure + 临时密钥降级 | 已实施 |
 | ADR-013 | 2026-10-11 | UFPStorage 下沉采用引擎层 + 业务装配层拆分 + DatabaseManager 二次拆分，业务协议不物理下沉 | 设计中 |
 | ADR-014 | 2026-11-18 | Google 认证统一采用全平台 AppAuth（替代 GIDSignIn，解除原生 macOS 阻塞项） | 已实施 |
+| ADR-015 | 2026-11-18 | Phase 0 IDL 契约层收缩交付 + Skip 转译不采用（Phase 2 改 KMP/手写重写） | 已实施 |
 
 ---
 
@@ -138,3 +139,12 @@
 **决策**: 采用**「统一 A：全平台 AppAuth」**——iOS 与 macOS 统一改用 **AppAuth-iOS** v3.0.0（`OIDAuthorizationService` + PKCE）实现 Google OIDC 登录，替代 `GIDSignInProvider`。本地 opensrc 已克隆 AppAuth-iOS（`platforms` 含 `.macOS(.v12)`，原生支持 AppKit）。`GoogleSignInProviding` 协议签名改为跨平台锚点 `ASPresentationAnchor`（iOS=UIWindow / macOS=NSWindow）；新增 `AppAuthGoogleProvider`，iOS 取 `UIWindow.rootViewController`、macOS 传 `NSWindow` 呈现，自动生成 state/nonce/PKCE(S256)，产出与 GIDSignIn 一致的 `idToken`（后端多 audience 验签契约不变）。
 **影响**: `Config/project.yml.template` 的 `GoogleSignIn` 改为 `AppAuth`；`Config/opensource_dependencies.yml` 移除 GoogleSignIn 及其 8 个传递依赖（app-check/GoogleUtilities/gtm-session-fetcher/GTMAppAuth/interop/ocmock/promises），AppAuth-iOS 升级为直接依赖；`AppWindowSceneDelegate` 移除 GIDSignIn 回调转发（AppAuth 经 ASWebAuthenticationSession 自动处理回跳）；新增 `AppAuthGoogleProvider.swift`、扩展 `FeatureConstants.GoogleConfig`（OIDC 端点/scope 常量）、`CrossPlatform.swift` 增加 macOS 锚点分支。
 **后果**: iOS/macOS/watchOS 三平台编译通过，GoogleAuthStrategyTests 全绿；解除原生 macOS 升级的认证阻塞项；安全审计白名单新增 `accounts.google.com`/`oauth2.googleapis.com` 公开 OIDC 端点。详见 `Docs/Architecture/CROSS_PLATFORM_EXPANSION.md` §6.3 任务 0。
+
+## ADR-015: Phase 0 IDL 契约层收缩交付 + Skip 转译不采用
+
+**日期**: 2026-11-18
+**状态**: 已实施
+**背景**: 跨平台扩展 Phase 0（IDL 契约层 + Skip POC）原计划"提取 40+ Swift 协议为 Protobuf IDL、iOS 协议对齐为 `*Contract`、`toProto()` 接线 SwiftProtobuf runtime、Skip POC 实转译"（4-6 周）。审查发现两处高成本/高风险点：① 协议对齐与 `toProto()` 依赖 SwiftProtobuf runtime，需克隆 swift-protobuf 到 opensrc + 接入 project.yml + 生成代码入 target，且生成代码依赖 `@MainActor AuthStrategy` 改造，成本与离线治理负担大；② Skip.tools 全面转译需 Android SDK（当前机缺失 adb/JAVA_HOME 失效），且 Skip 对 GRDB（SQLite C 桥接）与 AppAuth（Objective-C/AppKit）**不可转译**，须 Android 侧替换，抵消"一份代码转多平台"收益。
+**决策**: **收缩 Phase 0 交付范围**——IDL 契约层止于 **proto 契约文件 + gen.sh 生成脚本**（生成代码 gitignore 不入库、不接线 runtime、不协议对齐）；**Skip.tools 不全面采用**，Phase 2（Android）改用 **KMP/手写重写 + IDL 契约复用**。
+**影响**: 新增 `Docs/Contracts/zhiyu/domain/{common,auth,knowledge}.proto`、`Docs/Contracts/README.md`、`Docs/Contracts/skip-poc-report.md`、`Tools/contracts/gen.sh`；`Config/opensource_dependencies.yml` 登记 swift-protobuf（integration: brew，protoc 生成插件）；`.gitignore` 忽略 `Sources/Domain/Contracts/Generated/`；从 git 移除任务 1 初版提交的 3 个 `.pb.swift`（未接线、不可编译的死文件）。
+**后果**: Phase 0 交付物为语言无关的 proto 契约 + 生成脚本（按需 `bash Tools/contracts/gen.sh` 再生 `.pb.swift`）；Skip 评估结论记录于 skip-poc-report.md；Phase 1（macOS 原生升级）前置条件中"Phase 0 完成"以收缩版为准（契约层就位，不阻塞 macOS 升级）。swift-protobuf 与 Skip 选型经 USER 确认。

@@ -44,6 +44,7 @@ excluded:
   - Pods
   - build                     # 过滤掉编译日志和临时生成缓存
   - Sources/Localization/Extensions # 排除自动生成的本地化强类型扩展，避免复杂的嵌套命名误报
+  - Sources/Domain/Contracts/Generated # 排除 protoc 生成的契约代码（gen.sh 按需再生，不入库）
 
 # 3. 错误红线配置
 force_cast: error             # 强转 Cast 直接升级为编译错误
