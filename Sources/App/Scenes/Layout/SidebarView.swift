@@ -128,7 +128,7 @@ struct SidebarToolbarModifier: ViewModifier {
             // UserProfileMenu 已在内容区顶部工具栏（AppSubPageToolbarModifier）中自动追加，无需重复放置
             content
                 .navigationTitle(title)
-                .navigationBarTitleDisplayMode(.inline)
+                .appNavigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     #if os(watchOS)
                     ToolbarItem(placement: .automatic) {

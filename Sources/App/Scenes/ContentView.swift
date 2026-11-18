@@ -89,7 +89,7 @@ struct ContentView: View {
                     .zIndex(DesignTokens.ZIndex.lockOverlay)
             }
         }
-        .fullScreenCover(isPresented: $router.isShowingSettingsSheet) {
+        .appFullScreenCover(isPresented: $router.isShowingSettingsSheet) {
             SettingsView()
                 .environment(store)
                 .environment(router)
@@ -100,7 +100,7 @@ struct ContentView: View {
                 .environment(\.locale, router.currentLocale)
                 .preferredColorScheme(themeManager.colorSchemeMode.preferredColorScheme)
         }
-        .fullScreenCover(isPresented: $router.isShowingAISettingsSheet) {
+        .appFullScreenCover(isPresented: $router.isShowingAISettingsSheet) {
             NavigationStack {
                 AISettingsView()
             }
@@ -111,7 +111,7 @@ struct ContentView: View {
             .applyPagePresentationSizing()
         }
 
-        .fullScreenCover(isPresented: $router.isShowingProfileSheet) {
+        .appFullScreenCover(isPresented: $router.isShowingProfileSheet) {
             NavigationStack {
                 UserProfileView()
             }
@@ -119,7 +119,7 @@ struct ContentView: View {
             .globalSheetTheme()
             .applyPresentationSizing()
         }
-        .fullScreenCover(isPresented: $router.isShowingPlanSheet) {
+        .appFullScreenCover(isPresented: $router.isShowingPlanSheet) {
             NavigationStack {
                 SubscriptionPlanView()
             }
@@ -127,7 +127,7 @@ struct ContentView: View {
             .globalSheetTheme()
             .applyPagePresentationSizing()
         }
-        .fullScreenCover(isPresented: $router.isShowingPluginsSheet) {
+        .appFullScreenCover(isPresented: $router.isShowingPluginsSheet) {
             NavigationStack {
                 PluginCenterView()
             }
@@ -136,7 +136,7 @@ struct ContentView: View {
             .globalSheetTheme()
             .applyPagePresentationSizing()
         }
-        .fullScreenCover(isPresented: $router.isShowingAboutSheet) {
+        .appFullScreenCover(isPresented: $router.isShowingAboutSheet) {
             NavigationStack {
                 AboutView()
             }

@@ -85,7 +85,7 @@ struct AboutView: View {
         }
         .background(PageBackgroundView(accentColor: .appAccent))
         .navigationTitle(L10n.Settings.Section.about)
-        .navigationBarTitleDisplayMode(.inline)
+        .appNavigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(false)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
