@@ -6,7 +6,7 @@
 > **作者**：USER + CodeFree-O 协作
 > **关联文档**：`PLATFORM_PROTOCOL_ARCHITECTURE.md`、`LAYERING_L0_L3.md`、`HIGH_LEVEL_DESIGN.md`
 
-> **⚠️ v1.1 修订说明（2026-11）**：针对 Phase 1（macOS 原生升级）经工程审查修正。新增认证阻塞项（GoogleSignIn 不支持原生 macOS）并确定**统一 A：全平台 AppAuth 方案**、修正部署目标版本体系（macOS 27 而非 14）、修正 `MacPlatformRegistrar` 服务数（15 而非 20+）、修正 `.commands` 行号、修正 `AppWindowSceneDelegate` 处置（删除而非改造）、修正 `LSApplicationCategoryType` 存在性、更新 Catalyst 分支清单。详见 §6.3。
+> **⚠️ v1.1 修订说明（2026-11）**：针对 Phase 1（macOS 原生升级）经工程审查修正。新增认证阻塞项（GoogleSignIn 不支持原生 macOS）并确定**统一 A：全平台 AppAuth 方案**、修正部署目标版本体系（macOS 27 而非 14）、修正 `MacPlatformRegistrar` 服务数（15 而非 20+）、修正 `.commands` 行号、修正 AppWindowSceneDelegate 处置（删除而非改造，任务 2 已完成）、修正 `LSApplicationCategoryType` 存在性、更新 Catalyst 分支清单。详见 §6.3。
 
 ---
 
@@ -545,15 +545,15 @@ ZhiYu-Android/
 - `MacPlatformRegistrar` 已注册 **15 个** macOS 服务（Pasteboard/PDF/Storage/ML/OCR/Speech/Biometric/Environment/Accessibility/Haptic/Archiver/DeviceInfo/URLOpener/ShareSheet 等），用 `#if os(macOS)` 隔离
 - `MacAppEnvironment` 已实现桌面环境（`screenClass/.expansive`、`interactionStyle/.pointer`）
 - `ZhiYuApp.swift:139-148` 的 `.commands` 菜单栏扩展已是 `#if os(macOS)`（原文档误标 :71），原生 macOS 直接生效
-- 全仓 `targetEnvironment(macCatalyst)` 引用 **21 处**（原文档误标 ~20 处），集中在 `ContentView`/`UserProfileMenu`/`AppWindowSceneDelegate`/`iOSPlatformRegistrar`/`ActivityService`/`PlatformTraits` 等
+- 全仓 `targetEnvironment(macCatalyst)` 引用 **21 处**（原文档误标 ~20 处），集中在 `ContentView`/`UserProfileMenu`/`iOSPlatformRegistrar`/`ActivityService`/`PlatformTraits` 等
 - `MacInfo.plist` 已含 `LSApplicationCategoryType`（原文档误标需"新增"）
 - CI 门禁已禁止 Features/Domain 层用 `#if os()`，Shared 层 UIKit 用法已通过 PlatformContext/`DesignSystem` 抽象隔离
-- **✅ Google 认证已由 AppAuth 统一**（2026-11-18）：`project.yml` 的 `BaseAppTemplate` 依赖已由 `GoogleSignIn` 改为 `AppAuth`，`GoogleAuthStrategy`/`AppWindowSceneDelegate` 不再 `import GoogleSignIn`（见任务 0）
+- **✅ Google 认证已由 AppAuth 统一**（2026-11-18）：`project.yml` 的 `BaseAppTemplate` 依赖已由 `GoogleSignIn` 改为 `AppAuth`，`GoogleAuthStrategy` 不再 `import GoogleSignIn`（原 AppWindowSceneDelegate 已删除，见任务 0）
 
 **任务**：
-0. **✅ 全平台 AppAuth 迁移（已完成 2026-11-18）**：采用**「统一 A」**方案，iOS 与 macOS 统一改用 **AppAuth-iOS**（`OIDAuthorizationService` + PKCE）实现 Google OIDC 登录，替代 `GIDSignInProvider`。依据：GoogleSignIn-iOS xcframework 仅支持 iOS/macCatalyst/tvOS，不支持原生 macOS（AppKit），且 `GoogleAuthStrategy.signIn(presenting: UIViewController)` 依赖 UIKit（原生 macOS 无 `UIViewController`）；而本地 opensrc 已克隆 **AppAuth-iOS v3.0.0**（`platforms` 含 `.macOS(.v12)`，原生支持 AppKit），是 Google 官方文档推荐的 iOS/macOS OIDC 客户端，后端契约（客户端产出 `idToken` 由后端验签，多 audience）与 GIDSignIn 一致，AppAuth 通过 authorization code 交换同样产出 `idToken`。实施结果：新增 `AppAuthGoogleProvider`（iOS 取 `UIWindow.rootViewController`、macOS 用 `NSWindow`，自动生成 state/nonce/PKCE），协议签名改为跨平台锚点 `ASPresentationAnchor`，上层 `GoogleSignInProviding` 协议与后端契约**完全不变**；从 `project.yml` 移除 `GoogleSignIn`/`GTMAppAuth`/`GoogleUtilities`/`app-check`/`gtm-session-fetcher`/`interop-ios-for-google-sdks`/`ocmock`/`promises` 依赖（`Config/opensource_dependencies.yml` 同步清理），`AppWindowSceneDelegate` 移除 GIDSignIn 回调转发。iOS/macOS/watchOS 三平台编译通过，GoogleAuthStrategyTests 全绿
+0. **✅ 全平台 AppAuth 迁移（已完成 2026-11-18）**：采用**「统一 A」**方案，iOS 与 macOS 统一改用 **AppAuth-iOS**（`OIDAuthorizationService` + PKCE）实现 Google OIDC 登录，替代 `GIDSignInProvider`。依据：GoogleSignIn-iOS xcframework 仅支持 iOS/macCatalyst/tvOS，不支持原生 macOS（AppKit），且 `GoogleAuthStrategy.signIn(presenting: UIViewController)` 依赖 UIKit（原生 macOS 无 `UIViewController`）；而本地 opensrc 已克隆 **AppAuth-iOS v3.0.0**（`platforms` 含 `.macOS(.v12)`，原生支持 AppKit），是 Google 官方文档推荐的 iOS/macOS OIDC 客户端，后端契约（客户端产出 `idToken` 由后端验签，多 audience）与 GIDSignIn 一致，AppAuth 通过 authorization code 交换同样产出 `idToken`。实施结果：新增 `AppAuthGoogleProvider`（iOS 取 `UIWindow.rootViewController`、macOS 用 `NSWindow`，自动生成 state/nonce/PKCE），协议签名改为跨平台锚点 `ASPresentationAnchor`，上层 `GoogleSignInProviding` 协议与后端契约**完全不变**；从 `project.yml` 移除 `GoogleSignIn`/`GTMAppAuth`/`GoogleUtilities`/`app-check`/`gtm-session-fetcher`/`interop-ios-for-google-sdks`/`ocmock`/`promises` 依赖（`Config/opensource_dependencies.yml` 同步清理），移除 AppWindowSceneDelegate 中的 GIDSignIn 回调转发（该文件已随任务 2 删除）。iOS/macOS/watchOS 三平台编译通过，GoogleAuthStrategyTests 全绿
 1. **target 配置改造**（0.5 天）：`project.yml` 中 `ZhiYuMac` 的 `platform: iOS` → `macOS`；删除 `SUPPORTS_MACCATALYST`/`SDKROOT: iphoneos`/`TARGETED_DEVICE_FAMILY: 2`；deploymentTarget 对齐现有版本体系 **macOS 27.0**（原文档误标 macOS 14；`project.yml` 全局 `deploymentTarget.macOS` 已为 `27.0`）
-2. **🆕 删除未接入的 `AppWindowSceneDelegate`**（0.5 天）：原文档误标为"改 Catalyst 分支"。实测该 delegate 用 `UIWindow`+`UIHostingController` 手动建窗，但 `MacInfo.plist` 的 `UIApplicationSceneManifest` **未配置 delegateClassName** → 是**未接入死代码**；真正的窗口由 `ZhiYuApp`（纯 SwiftUI App + `WindowGroup`）创建。原生 macOS 下 UIKit scene 生命周期不编译，应**整文件删除**（或 `#if os(iOS)` 隔离），而非改造
+2. **✅ 删除未接入的 AppWindowSceneDelegate（已完成 2026-11-18）**（0.5 天）：原文档误标为"改 Catalyst 分支"。实测该 delegate 用 `UIWindow`+`UIHostingController` 手动建窗，但 `MacInfo.plist` 的 `UIApplicationSceneManifest` **未配置 delegateClassName** → 是**未接入死代码**；真正的窗口由 `ZhiYuApp`（纯 SwiftUI App + `WindowGroup`）创建。原生 macOS 下 UIKit scene 生命周期不编译，实际已**整文件删除**
 3. **Catalyst 分支清理**（1-2 天）：`ContentView.swift:170/267`、`UserProfileMenu.swift:14/235/410`、`iOSPlatformRegistrar.swift:44`、`ActivityService.swift`、`PlatformTraits.swift:40` 中的 `#if targetEnvironment(macCatalyst)` 分支：原生 macOS 下 `os(iOS)` 为假自动排除，多数**直接删除**而非改写；`iOSAccessibilityService.swift:12` 的 `os(iOS) || targetEnvironment(macCatalyst)` 需拆分
 4. **UIKit API 替换**（3-5 天）：Catalyst 允许的 `UIKit` 在原生 macOS 需换 `AppKit` 或跨平台 API（`UIColor`→`NSColor`、`UIImage`→`NSImage`、`UIView`→`NSView`、`UIPasteboard`→`NSPasteboard`）。重点排查 Shared/Features 层残留（`AIRainbowGlowBadge.swift:242` 等非平台目录）
 5. **Info.plist & Entitlements**（0.5 天）：`MacInfo.plist` **删除 UIKit 专属键**（`UIApplicationSceneManifest`/`UILaunchScreen`/`UIUserInterfaceStyle`/`NSSupportsLiveActivities`）；`LSApplicationCategoryType` 已存在无需新增；sandbox/network/entitlements 按原生 macOS 配置
@@ -566,7 +566,7 @@ ZhiYu-Android/
 - 第三方 `.xcframework`（Wechat/ATAuth）可能缺 macOS slice
 - 风险等级：**中**（认证迁移为确定性阻塞 + UIKit 残留不确定性）
 
-**优势**：复用现有 Swift 核心逻辑与 `MacPlatformRegistrar` 基础设施；AppWindowSceneDelegate 为死代码可安全删除，实际 UIKit 改造成本低于文档预估。
+**优势**：复用现有 Swift 核心逻辑与 `MacPlatformRegistrar` 基础设施；AppWindowSceneDelegate 为死代码已安全删除（任务 2），实际 UIKit 改造成本低于文档预估。
 
 **交付物**：
 - 原生 macOS target（`platform: macOS`，deploymentTarget 27.0）

@@ -108,7 +108,7 @@ Sources/
 - iOS 用 `Info.plist` 标准键 GIDClientID + 反向 URL scheme（`com.googleusercontent.apps.<client-id>`）。
 - 后端 `iosClientId` 按 iOS、macOS 桌面顺序以逗号分隔存储，验签 id_token 的 `audience` 走多端匹配。
 
-**回调接线**：AppAuth 内部经 `ASWebAuthenticationSession`（iOS 12+/macOS 10.15+）自动处理授权回跳，无需 App 层手动 URL 转发；`AppWindowSceneDelegate` 不再承载 GoogleSignIn 回调。
+**回调接线**：AppAuth 内部经 `ASWebAuthenticationSession`（iOS 12+/macOS 10.15+）自动处理授权回跳，无需 App 层手动 URL 转发；原 AppWindowSceneDelegate 场景委托已于 Phase 1 任务 2 删除，不再承载 GoogleSignIn 回调。
 
 **前后端契约**：客户端只产出 `idToken`，验签全部由后端完成（多 audience 校验）；客户端不持有后端内部实现细节。
 

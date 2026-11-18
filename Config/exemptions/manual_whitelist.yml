@@ -569,6 +569,12 @@ project_targets:
   expiry_check: true
   category:
   - doc-drift
+- symbol: BaseAppTemplate
+  reason: project.yml 模板名（ZhiYuMac 等 target 复用的依赖/设置模板），非 Swift 类型
+  added: 2026-11-18
+  expiry_check: true
+  category:
+  - doc-drift
 build_variables:
 - symbol: BUILD_TIMESTAMP
   reason: 构建时间戳环境变量
@@ -1028,6 +1034,18 @@ swiftui_uikit_supplement:
   expiry_check: false
   category:
   - doc-drift
+- symbol: UIViewController
+  reason: UIKit 视图控制器基类（ADR-014 迁移历史记录中的合法引用）
+  added: 2026-11-18
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: UIHostingController
+  reason: UIKit 托管 SwiftUI 视图控制器（历史引用，随 AppWindowSceneDelegate 删除）
+  added: 2026-11-18
+  expiry_check: true
+  category:
+  - doc-drift
 foundation_c_symbols:
 - symbol: CFAbsoluteTime
   reason: CoreFoundation 时间类型
@@ -1062,6 +1080,30 @@ foundation_c_symbols:
 - symbol: Signpost
   reason: os.signpost 概念词
   added: 2026-08-04
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: UIApplicationSceneManifest
+  reason: MacInfo.plist 配置键（仍存在，Phase1 任务 5 待移除），非 Swift 符号
+  added: 2026-11-18
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: UILaunchScreen
+  reason: MacInfo.plist 配置键（仍存在，Phase1 任务 5 待移除），非 Swift 符号
+  added: 2026-11-18
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: UIUserInterfaceStyle
+  reason: MacInfo.plist 配置键（仍存在，Phase1 任务 5 待移除），非 Swift 符号
+  added: 2026-11-18
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: NSSupportsLiveActivities
+  reason: MacInfo.plist 配置键（仍存在，Phase1 任务 5 待移除），非 Swift 符号
+  added: 2026-11-18
   expiry_check: false
   category:
   - doc-drift
@@ -1148,6 +1190,42 @@ third_party_libraries:
   reason: swift-partial-json 库（JSONRepairProcessor 依赖）
   added: 2026-08-04
   expiry_check: true
+  category:
+  - doc-drift
+- symbol: AppAuth
+  reason: AppAuth-iOS OIDC 认证 SDK（ADR-014 迁移历史记录中的合法引用）
+  added: 2026-11-18
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: OIDAuthorizationService
+  reason: AppAuth SDK 授权服务类（ADR-014 迁移历史记录中的合法引用）
+  added: 2026-11-18
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: GIDSignInProvider
+  reason: GoogleSignIn 迁移前协议（已随 ADR-014 移除，历史记录引用）
+  added: 2026-11-18
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: GoogleSignIn
+  reason: GoogleSignIn-iOS SDK（已迁移至 AppAuth，历史记录引用）
+  added: 2026-11-18
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: GTMAppAuth
+  reason: Google 认证传递库（已随 ADR-014 移除，历史记录引用）
+  added: 2026-11-18
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: GoogleUtilities
+  reason: Google 工具库（已随 ADR-014 移除，历史记录引用）
+  added: 2026-11-18
+  expiry_check: false
   category:
   - doc-drift
 apple_framework_modules:
@@ -1813,6 +1891,12 @@ planned_types:
 - symbol: TextChunker
   reason: 占位协议（符号图未收录），文档引用有据
   added: 2026-10-17
+  expiry_check: false
+  category:
+  - doc-drift
+- symbol: OAuthCredential
+  reason: protobuf 契约 message 名（auth.proto 契约设计），非 Swift 代码符号
+  added: 2026-11-18
   expiry_check: false
   category:
   - doc-drift
