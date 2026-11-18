@@ -174,7 +174,7 @@ targets:
     templates:
       - BaseAppTemplate
     type: application
-    platform: iOS
+    platform: macOS
     deploymentTarget: "27.0"
     sources:
       - path: Sources
@@ -190,9 +190,6 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: top.izhiyu.app.mac
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon-iOS
         INFOPLIST_FILE: Sources/MacInfo.plist
-        SUPPORTS_MACCATALYST: "YES"
-        SDKROOT: iphoneos
-        TARGETED_DEVICE_FAMILY: "2"
         ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS: NO
         SWIFT_OBJC_BRIDGING_HEADER: Sources/App/ZhiYu-Bridging-Header.h
       configs:
