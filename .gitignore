@@ -87,3 +87,7 @@ sonar-coverage.xml
 
 # 独立的嵌套创新项目（与 ZhiYu 主工程无关，不纳入仓库）
 cip-innovation/
+
+# IDL 契约层生成产物（Phase 0 收缩：契约止于 proto+gen.sh，生成代码不提交）
+# 运行 Tools/contracts/gen.sh 时按需再生成
+Sources/Domain/Contracts/Generated/
