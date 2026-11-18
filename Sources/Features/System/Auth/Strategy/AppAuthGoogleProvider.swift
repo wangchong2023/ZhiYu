@@ -101,7 +101,7 @@ public struct AppAuthGoogleProvider: GoogleSignInProviding {
                 }
                 session?.cancel()
             }
-            #if canImport(UIKit) && !os(watchOS)
+            #if canImport(UIKit)
             // ASPresentationAnchor 在 iOS/Catalyst 下即 UIWindow
             guard let rootVC = anchor.rootViewController else {
                 continuation.resume(throwing: AppError.auth(

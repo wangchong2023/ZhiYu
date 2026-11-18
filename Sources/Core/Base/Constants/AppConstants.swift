@@ -104,6 +104,14 @@ public struct AppConstants {
         }
     }
     
+    // MARK: - 外部 OAuth 端点 URL
+    public struct URLs {
+        /// Google OIDC 授权端点
+        public static let googleAuthorizationEndpoint: String = "https://accounts.google.com/o/oauth2/v2/auth"
+        /// Google OIDC 令牌端点
+        public static let googleTokenEndpoint: String = "https://oauth2.googleapis.com/token"
+    }
+    
     // MARK: - 存储与基础配置
     public struct Storage {
         /// 数据库文件名 (向下兼容)
@@ -454,9 +462,9 @@ extension AppConstants {
         /// 引用 SystemConstants.Version.defaultSemVer 作为默认值
         public static let semVer: String = SystemConstants.Version.defaultSemVer
         /// Git 短提交哈希（构建时自动注入）
-        public static let gitShortHash = "885dcc3f"
+        public static let gitShortHash = "9b05a564"
         /// 构建时间戳 ISO 8601（构建时自动注入）
-        public static let buildTimestamp = "2026-11-18T12:17:57Z"
+        public static let buildTimestamp = "2026-11-18T15:45:40Z"
     }
 
     /// 通用格式化常量

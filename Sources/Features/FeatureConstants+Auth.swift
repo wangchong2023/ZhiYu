@@ -55,9 +55,9 @@ extension FeatureConstants {
         /// Google OAuth 占位凭据（Google 登录依靠 extraInfo["idToken"]，credential 字段填充非空占位以满足后端 @NotBlank 校验）
         static let oidcCredentialPlaceholder = "google_oidc_token"
         /// Google OIDC 授权端点
-        static let authorizationEndpoint = "https://accounts.google.com/o/oauth2/v2/auth"
+        static let authorizationEndpoint = AppConstants.URLs.googleAuthorizationEndpoint
         /// Google OIDC 令牌端点
-        static let tokenEndpoint = "https://oauth2.googleapis.com/token"
+        static let tokenEndpoint = AppConstants.URLs.googleTokenEndpoint
         /// Google OIDC 请求 scope
         static let oidcScopes = [OIDCScope.openid, OIDCScope.profile, OIDCScope.email]
         /// 反向 URL scheme 前缀（完整 redirectURI = schemePrefix + clientID + 路径后缀）
