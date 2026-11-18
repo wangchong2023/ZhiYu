@@ -174,27 +174,13 @@ struct InstantMediaSearchContentView: View {
             L10n.ModelManager.Lab.Chip.sunset
         ]
 
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: DesignTokens.SystemSpacing.tiny) {
-                ForEach(sampleQueries, id: \.self) { sample in
-                    Button(action: {
-                        state.query = sample
-                        Task { await state.executeSearch() }
-                    }) {
-                        Text(sample)
-                            .font(.caption2.bold())
-                            .foregroundStyle(state.query == sample ? Color.theme.white : Color.theme.orange)
-                            .padding(.horizontal, DesignTokens.SystemSpacing.small)
-                            .padding(.vertical, DesignTokens.SystemSpacing.tiny)
-                            .background(
-                                state.query == sample ? Color.theme.orange : Color.theme.orange.opacity(DesignTokens.Opacity.disabled)
-                            )
-                            .clipShape(Capsule())
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-            .padding(.horizontal, DesignTokens.SystemSpacing.atomic)
+        SampleChipBar(
+            items: sampleQueries,
+            selectedID: state.query,
+            accentColor: Color.theme.orange
+        ) { sample in
+            state.query = sample
+            Task { await state.executeSearch() }
         }
     }
 
@@ -203,47 +189,20 @@ struct InstantMediaSearchContentView: View {
     @ViewBuilder
     private var searchAndActionBar: some View {
         VStack(spacing: DesignTokens.Spacing.small) {
-            HStack(spacing: DesignTokens.Spacing.small) {
-                Image(systemName: DesignTokens.Icons.magnifyingglass)
-                    .foregroundStyle(Color.theme.orange)
-
-                TextField(
-                    L10n.ModelManager.Lab.MediaSearch.searchPlaceholder,
-                    text: $state.query
-                )
-                .textFieldStyle(.plain)
-                .foregroundStyle(Color.theme.text)
-                .onSubmit {
+            SearchPanelSection(
+                query: $state.query,
+                placeholder: L10n.ModelManager.Lab.MediaSearch.searchPlaceholder,
+                sendTitle: L10n.ModelManager.Lab.send,
+                accentColor: Color.theme.orange,
+                isSearchDisabled: false,
+                onSearch: {
                     Task { await state.executeSearch() }
+                },
+                onClear: {
+                    state.query = ""
+                    state.results = []
                 }
-
-                if !state.query.isEmpty {
-                    Button(action: {
-                        state.query = ""
-                        state.results = []
-                    }) {
-                        Image(systemName: DesignTokens.Icons.xmarkCircle)
-                            .foregroundStyle(.secondary)
-                    }
-                    .buttonStyle(.plain)
-                }
-
-                Button(action: {
-                    Task { await state.executeSearch() }
-                }) {
-                    Text(L10n.ModelManager.Lab.send)
-                        .font(.subheadline.bold())
-                        .foregroundStyle(Color.theme.white)
-                        .padding(.horizontal, DesignTokens.SystemSpacing.content)
-                        .padding(.vertical, DesignTokens.SystemSpacing.tiny)
-                        .background(Color.theme.orange)
-                        .clipShape(Capsule())
-                }
-                .buttonStyle(.plain)
-            }
-            .padding(DesignTokens.Spacing.standardPadding)
-            .background(Color.appCard.opacity(DesignTokens.Opacity.dim))
-            .cornerRadius(DesignTokens.Spacing.mediumRadius)
+            )
 
             // 操作按键组
             HStack(spacing: DesignTokens.SystemSpacing.small) {

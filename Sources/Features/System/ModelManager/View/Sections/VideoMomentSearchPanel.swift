@@ -194,27 +194,16 @@ struct VideoMomentSearchContentView: View {
     @ViewBuilder
     private var quickChipsBar: some View {
         let sampleQueries = [L10n.ModelManager.Lab.Chip.intro, L10n.ModelManager.Lab.Chip.nature, L10n.ModelManager.Lab.Chip.highlight]
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: DesignTokens.SystemSpacing.tiny) {
-                ForEach(sampleQueries, id: \.self) { sample in
-                    Button(action: {
-                        state.query = sample
-                        Task { await state.executeSearch() }
-                    }) {
-                        Text(sample)
-                            .font(.caption2.bold())
-                            .foregroundStyle(state.query == sample ? Color.theme.white : Color.theme.green)
-                            .padding(.horizontal, DesignTokens.SystemSpacing.small)
-                            .padding(.vertical, DesignTokens.SystemSpacing.tiny)
-                            .background(state.query == sample ? Color.theme.green : Color.theme.green.opacity(DesignTokens.Opacity.disabled))
-                            .clipShape(Capsule())
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(state.selectedVideoURL == nil || state.isIndexing)
-                    .opacity((state.selectedVideoURL == nil || state.isIndexing) ? DesignTokens.Opacity.disabled : DesignTokens.Opacity.solid)
-                }
-            }
-            .padding(.horizontal, DesignTokens.SystemSpacing.atomic)
+        let isChipsDisabled = state.selectedVideoURL == nil || state.isIndexing
+
+        SampleChipBar(
+            items: sampleQueries,
+            selectedID: state.query,
+            accentColor: Color.theme.green,
+            isDisabled: isChipsDisabled
+        ) { sample in
+            state.query = sample
+            Task { await state.executeSearch() }
         }
     }
 
@@ -287,37 +276,20 @@ struct VideoMomentSearchContentView: View {
     @ViewBuilder
     private var searchAndActionBar: some View {
         VStack(spacing: DesignTokens.Spacing.small) {
-            HStack(spacing: DesignTokens.Spacing.small) {
-                Image(systemName: DesignTokens.Icons.magnifyingglass)
-                    .foregroundStyle(Color.theme.green)
-                TextField(L10n.ModelManager.Lab.VideoSearch.searchPlaceholder, text: $state.query)
-                    .textFieldStyle(.plain)
-                    .foregroundStyle(Color.theme.text)
-                    .onSubmit { Task { await state.executeSearch() } }
-
-                if !state.query.isEmpty {
-                    Button(action: { state.query = ""; state.momentResults = [] }) {
-                        Image(systemName: DesignTokens.Icons.xmarkCircle).foregroundStyle(.secondary)
-                    }
-                    .buttonStyle(.plain)
+            SearchPanelSection(
+                query: $state.query,
+                placeholder: L10n.ModelManager.Lab.VideoSearch.searchPlaceholder,
+                sendTitle: L10n.ModelManager.Lab.send,
+                accentColor: Color.theme.green,
+                isSearchDisabled: state.selectedVideoURL == nil || state.isIndexing,
+                onSearch: {
+                    Task { await state.executeSearch() }
+                },
+                onClear: {
+                    state.query = ""
+                    state.momentResults = []
                 }
-
-                Button(action: { Task { await state.executeSearch() } }) {
-                    Text(L10n.ModelManager.Lab.send)
-                        .font(.subheadline.bold())
-                        .foregroundStyle(Color.theme.white)
-                        .padding(.horizontal, DesignTokens.SystemSpacing.content)
-                        .padding(.vertical, DesignTokens.SystemSpacing.tiny)
-                        .background(Color.theme.green)
-                        .clipShape(Capsule())
-                }
-                .buttonStyle(.plain)
-                .disabled(state.selectedVideoURL == nil || state.isIndexing)
-                .opacity((state.selectedVideoURL == nil || state.isIndexing) ? DesignTokens.Opacity.disabled : DesignTokens.Opacity.solid)
-            }
-            .padding(DesignTokens.Spacing.standardPadding)
-            .background(Color.appCard.opacity(DesignTokens.Opacity.dim))
-            .cornerRadius(DesignTokens.Spacing.mediumRadius)
+            )
 
             HStack(spacing: DesignTokens.SystemSpacing.small) {
                 if state.indexedFramesCount > 0 {
