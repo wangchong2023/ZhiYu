@@ -60,21 +60,5 @@
 	<string>ZhiYu needs speech recognition to transcribe your voice notes.</string>
 	<key>NSSpotlightUsageDescription</key>
 	<string>ZhiYu will index your knowledge vault so you can find pages directly via system search.</string>
-	<key>NSSupportsLiveActivities</key>
-	<true/>
-	<key>UIApplicationSceneManifest</key>
-	<dict>
-		<key>UIApplicationSupportsIndirectInputEvents</key>
-		<true/>
-		<key>UIApplicationSupportsMultipleScenes</key>
-		<true/>
-	</dict>
-	<key>UILaunchScreen</key>
-	<dict>
-		<key>UIColorName</key>
-		<string>LaunchBackground</string>
-	</dict>
-	<key>UIUserInterfaceStyle</key>
-	<string>Automatic</string>
 </dict>
 </plist>
