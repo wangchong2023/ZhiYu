@@ -30,7 +30,7 @@ TEMPLATE_THRESHOLD = 3
 LAYER_PATTERN = re.compile(r'系统层级\s*[：:]\s*\[([^\]]+)\]')
 RESPONSIBILITY_PATTERN = re.compile(r'核心职责\s*[：:]\s*(.+)')
 # 排除目录（不要求文件头）
-EXCLUDE_DIRS = {"Sources/Localization/"}
+EXCLUDE_DIRS = {"Sources/Localization/", "Sources/Domain/Contracts/Generated/"}
 
 
 def check_file(filepath: Path) -> list[str]:

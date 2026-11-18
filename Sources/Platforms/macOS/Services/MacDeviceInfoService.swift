@@ -11,9 +11,12 @@
 #if os(macOS)
 import AppKit
 import Foundation
+import Dependencies
 
 /// macOS 设备信息服务
-final class MacDeviceInfoService: DeviceInfoProtocol, Sendable {
+final class MacDeviceInfoService: DeviceInfoProtocol, @unchecked Sendable {
+    @Dependency(\.keyStore) private var keyStore: (any KeyStoreProtocol)?
+
     var systemVersion: String {
         let osv = ProcessInfo.processInfo.operatingSystemVersion
         return "\(osv.majorVersion).\(osv.minorVersion).\(osv.patchVersion)"
@@ -29,11 +32,11 @@ final class MacDeviceInfoService: DeviceInfoProtocol, Sendable {
 
     var deviceId: String {
         let key = "com.zhiyu.mac.deviceId"
-        if let existing = UserDefaults.standard.string(forKey: key), !existing.isEmpty {
+        if let existing = keyStore?.string(forKey: key), !existing.isEmpty {
             return existing
         }
         let newID = UUID().uuidString
-        UserDefaults.standard.set(newID, forKey: key)
+        keyStore?.set(newID, forKey: key)
         return newID
     }
 

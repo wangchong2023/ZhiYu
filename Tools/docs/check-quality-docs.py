@@ -39,7 +39,8 @@ CORE_INDEX_FILES = [
 
 EXCLUDE_DOC_FILES = [
     "Tools/Plugins/README_TEMPLATE.md",
-    "Tools/Plugins/PLUGIN_DEVELOPMENT_GUIDE.md"
+    "Tools/Plugins/PLUGIN_DEVELOPMENT_GUIDE.md",
+    "Docs/Architecture/STANDARDS_GOVERNANCE_MATRIX.md"
 ]
 
 DIRTY_SUFFIXES = (".tmp", ".bak", "xcuserdata")

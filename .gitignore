@@ -91,3 +91,6 @@ cip-innovation/
 # IDL 契约层生成产物（Phase 0 收缩：契约止于 proto+gen.sh，生成代码不提交）
 # 运行 Tools/contracts/gen.sh 时按需再生成
 Sources/Domain/Contracts/Generated/
+
+# 误提交的编译产物二进制（原为工具构建输出，非项目源码）
+/main
