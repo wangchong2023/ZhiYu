@@ -106,4 +106,25 @@ public enum PlatformPresentationAnchor {
         preconditionFailure("PlatformPresentationAnchor.keyWindow: No UIWindowScene available")
     }
 }
+#elseif canImport(AppKit)
+import AppKit
+
+/// 跨平台呈现锚点工具，用于 ASWebAuthenticationSession（macOS 原生）
+public enum PlatformPresentationAnchor {
+    /// 当前活跃的 keyWindow；无 keyWindow 时回退到任意可见主窗口
+    @MainActor
+    public static var keyWindow: NSWindow {
+        if let key = NSApplication.shared.keyWindow {
+            return key
+        }
+        if let main = NSApplication.shared.mainWindow {
+            return main
+        }
+        if let visible = NSApplication.shared.windows.first(where: { $0.isVisible }) {
+            return visible
+        }
+        // 极端边界：无任何窗口（理论上 App 完全启动后不可达）
+        preconditionFailure("PlatformPresentationAnchor.keyWindow: No NSWindow available")
+    }
+}
 #endif

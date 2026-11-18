@@ -19,6 +19,7 @@
 | ADR-011 | 2026-08-04 | inject_exempt/arch_exempt 豁免机制规范化 | 已实施 |
 | ADR-012 | 2026-08-04 | SecurityManager 密钥存储失败改 assertionFailure + 临时密钥降级 | 已实施 |
 | ADR-013 | 2026-10-11 | UFPStorage 下沉采用引擎层 + 业务装配层拆分 + DatabaseManager 二次拆分，业务协议不物理下沉 | 设计中 |
+| ADR-014 | 2026-11-18 | Google 认证统一采用全平台 AppAuth（替代 GIDSignIn，解除原生 macOS 阻塞项） | 已实施 |
 
 ---
 
@@ -128,3 +129,12 @@
 **决策**: 采用**引擎层 + 业务装配层拆分 + DatabaseManager 二次拆分**——UFPStorage 下沉 `GenericDatabaseManager`（纯物理引擎：建库/连接/WAL/降级骨架，完整性校验闭包注入、文件名注入，零业务符号）+ `GenericSchemaMigrator`（GRDB `DatabaseMigrator` 机制，无业务 schema）+ `GenericSQLiteEngine`（泛型 CRUD/事务骨架，无业务依赖）；SQLiteStore 拆为「UFPStorage 通用 GRDB 引擎骨架 + App 层薄装配」（后者继续 conform Domain 协议）。Migrator 业务 schema（v1-v13+全局）、DatabaseManager 业务扩展（SecurityManager 适配/VaultDatabaseSwitcher conform/countPages/L10n/AppConstants）留 App 层，setup 时注入。`AnyPageStoreCapabilities` 等业务协议**不物理下沉**，留在 Domain 层。
 **影响**: `Packages/UFPStorage/Sources/UFPStorage/Engine/` 新增 GenericDatabaseManager/GenericSchemaMigrator/GenericSQLiteEngine；App 层 DatabaseManager 保留业务扩展、Migrator 保留业务 schema、SQLiteStore 改为基于通用引擎的薄装配层。
 **后果**: UFPStorage 保持「与业务完全无关」的通用底座定位；分层方向正确；SQLiteStore/DatabaseManager 依赖从直接 GRDB 收敛为依赖 UFPStorage 通用引擎。详见 `Docs/Architecture/2026-10-11-ufpstorage-downstream-design.md`。
+
+## ADR-014: Google 认证统一采用全平台 AppAuth
+
+**日期**: 2026-11-18
+**状态**: 已实施
+**背景**: 跨平台扩展 Phase 1（Catalyst→原生 macOS）发现阻塞项——GoogleSignIn-iOS xcframework 仅支持 iOS/macCatalyst/tvOS，**不支持原生 macOS（AppKit）**；且 `GoogleAuthStrategy.signIn(presenting: UIViewController)` 依赖 UIKit（原生 macOS 无 `UIViewController`）。而 CROSS_PLATFORM_EXPANSION.md 要求认证方案先行落地。
+**决策**: 采用**「统一 A：全平台 AppAuth」**——iOS 与 macOS 统一改用 **AppAuth-iOS** v3.0.0（`OIDAuthorizationService` + PKCE）实现 Google OIDC 登录，替代 `GIDSignInProvider`。本地 opensrc 已克隆 AppAuth-iOS（`platforms` 含 `.macOS(.v12)`，原生支持 AppKit）。`GoogleSignInProviding` 协议签名改为跨平台锚点 `ASPresentationAnchor`（iOS=UIWindow / macOS=NSWindow）；新增 `AppAuthGoogleProvider`，iOS 取 `UIWindow.rootViewController`、macOS 传 `NSWindow` 呈现，自动生成 state/nonce/PKCE(S256)，产出与 GIDSignIn 一致的 `idToken`（后端多 audience 验签契约不变）。
+**影响**: `Config/project.yml.template` 的 `GoogleSignIn` 改为 `AppAuth`；`Config/opensource_dependencies.yml` 移除 GoogleSignIn 及其 8 个传递依赖（app-check/GoogleUtilities/gtm-session-fetcher/GTMAppAuth/interop/ocmock/promises），AppAuth-iOS 升级为直接依赖；`AppWindowSceneDelegate` 移除 GIDSignIn 回调转发（AppAuth 经 ASWebAuthenticationSession 自动处理回跳）；新增 `AppAuthGoogleProvider.swift`、扩展 `FeatureConstants.GoogleConfig`（OIDC 端点/scope 常量）、`CrossPlatform.swift` 增加 macOS 锚点分支。
+**后果**: iOS/macOS/watchOS 三平台编译通过，GoogleAuthStrategyTests 全绿；解除原生 macOS 升级的认证阻塞项；安全审计白名单新增 `accounts.google.com`/`oauth2.googleapis.com` 公开 OIDC 端点。详见 `Docs/Architecture/CROSS_PLATFORM_EXPANSION.md` §6.3 任务 0。

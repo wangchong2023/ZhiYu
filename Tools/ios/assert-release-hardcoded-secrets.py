@@ -29,6 +29,8 @@ SAFE_URL_PATTERNS = [
     r'api\.openai\.com',
     r'api\.anthropic\.com',
     r'api\.googleapis\.com',
+    r'oauth2\.googleapis\.com',        # Google OIDC 令牌端点（公开基础设施，不含密钥）
+    r'accounts\.google\.com',          # Google OIDC 授权端点（公开基础设施，不含密钥）
     r'generativelanguage\.googleapis\.com',
     # 公开网站和文档
     r'zhiyu\.ai',

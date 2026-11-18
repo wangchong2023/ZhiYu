@@ -1,5 +1,7 @@
 # Google Sign-In SDK 接入方案
 
+> **⚠️ 已被取代（2026-11-18）**：本方案基于 GoogleSignIn-iOS SDK 接入。经 ADR-014 全平台 AppAuth 迁移后，GoogleSignIn 已被移除，改为 **AppAuth-iOS**（iOS/macOS 统一 OIDC，`OIDAuthorizationService` + PKCE）。本文档保留作为历史演进记录，技术方案细节请以 `Docs/Architecture/CROSS_PLATFORM_EXPANSION.md` §6.3 任务 0 与 ADR-014 为准。
+
 > 日期：2026-10-17
 > 模块：C 端（iOS app）
 > 依赖：后端 Google OAuth 多端 client id 受管配置 + 多 audience 验签（已上线）

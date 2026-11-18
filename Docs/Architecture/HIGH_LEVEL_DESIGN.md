@@ -269,7 +269,7 @@ public protocol LLMServiceProtocol: Sendable {
 | `#if !os(` 反向判定 | 47 | View modifier / ViewBuilder 分支 / DI 容器 / canImport |
 | `#if os(watchOS)` 正向判定 | 2 | 运行时 Trait `interfaceIdiom` |
 | `#if targetEnvironment(macCatalyst)` | 1 | `InterfaceIdiom.macCatalyst` 运行时判断 |
-| 复合条件含 `os()` | 1 | `#if canImport(GoogleSignIn)` 简化 |
+| 复合条件含 `os()` | 1 | `#if canImport(AppAuth)` 简化 |
 
 ### 平台适配基础设施
 

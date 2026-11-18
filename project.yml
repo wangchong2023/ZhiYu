@@ -38,9 +38,9 @@ packages:
   ZIPFoundation:
     path: /Users/constantine/Documents/work/code/opensrc/swift/ZIPFoundation
 
-  # 第三方登录
-  GoogleSignIn:
-    path: /Users/constantine/Documents/work/code/opensrc/swift/GoogleSignIn-iOS
+  # 第三方登录（Google OIDC 认证，iOS/macOS 统一）
+  AppAuth:
+    path: /Users/constantine/Documents/work/code/opensrc/swift/AppAuth-iOS
 
   # 测试工具
   SnapshotTesting:
@@ -114,7 +114,8 @@ targetTemplates:
       - package: ZhiYuFeatures
       - package: GRDB
       - package: ZIPFoundation
-      - package: GoogleSignIn
+      - package: AppAuth
+        product: AppAuth
   WatchAppTemplate:
     preBuildScripts:
       - script: "export PATH=\"$PATH:/opt/homebrew/bin:/usr/local/bin:/usr/bin\"\npython3 Tools/scripts/run-quality-all-audits.py"

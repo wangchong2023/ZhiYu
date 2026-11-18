@@ -144,70 +144,71 @@ dependencies:
     license: Apache-2.0
     purpose: "swift-dependencies 传递依赖（Swift 语法树，宏支持）"
 
-  - name: GoogleSignIn-iOS
-    upstream: "https://github.com/google/GoogleSignIn-iOS.git"
-    version: "10.0.0"
-    integration: project_yml_path
-    license: Apache-2.0
-    purpose: "Google 账号登录 SDK（GIDSignIn 拉取 idToken，Info.plist 标准键 GIDClientID）"
-    note: "本地克隆的 Package.swift 依赖已打本地 path 补丁（见下方 8 个传递依赖），升级需重打补丁"
-
-  # ── GoogleSignIn-iOS 传递依赖（离线化，本地 path 补丁）────────────────
-  # 均通过修改 GoogleSignIn-iOS/Package.swift 与 app-check/GTMAppAuth/Package.swift
-  # 中的 .package(url:) 为 .package(path:) 引入，故在此登记以便架构审计通过。
-  - name: app-check
-    upstream: "https://github.com/google/app-check.git"
-    version: "97f7d74d"
-    integration: project_yml_path
-    license: Apache-2.0
-    purpose: "GoogleSignIn 传递依赖（AppCheckCore，本地 path 补丁）"
-
   - name: AppAuth-iOS
     upstream: "https://github.com/openid/AppAuth-iOS.git"
     version: "a972daac"
     integration: project_yml_path
     license: Apache-2.0
-    purpose: "GoogleSignIn 传递依赖（AppAuth/AppAuthCore，本地 path 补丁）"
+    purpose: "Google OIDC 认证直接依赖（iOS/macOS 统一 AppAuth，OIDAuthorizationService + PKCE 产出 idToken）"
+
+  # ── 已弃用依赖（GoogleSignIn 迁移至 AppAuth 后不再被项目引用）────────────────
+  # 以下库已被 ADR-014 全平台 AppAuth 迁移移除，项目不再 import/link。
+  # 但因 ${OPENSRC_ROOT} 磁盘克隆仍存在，其 Package.swift 内部 path 依赖须保持注册
+  # 以通过 check-arch-opensource-internal-deps.py 审计；待清理磁盘克隆后一并移除。
+  - name: GoogleSignIn-iOS
+    upstream: "https://github.com/google/GoogleSignIn-iOS.git"
+    version: "10.0.0"
+    integration: spm
+    license: Apache-2.0
+    purpose: "已弃用：GoogleSignIn SDK（ADR-014 迁移至 AppAuth），仅为磁盘克隆注册一致性保留"
+    note: "已不被项目引用；清理 ${OPENSRC_ROOT}/GoogleSignIn-iOS 磁盘克隆后可删除本条目"
+
+  - name: app-check
+    upstream: "https://github.com/google/app-check.git"
+    version: "97f7d74d"
+    integration: spm
+    license: Apache-2.0
+    purpose: "已弃用：GoogleSignIn 传递依赖（ADR-014 迁移），仅为磁盘克隆注册一致性保留"
 
   - name: GoogleUtilities
     upstream: "https://github.com/google/GoogleUtilities.git"
     version: "5459ee56"
-    integration: project_yml_path
+    integration: spm
     license: Apache-2.0
-    purpose: "GoogleSignIn 传递依赖（GUL 工具，本地 path 补丁）"
+    purpose: "已弃用：GoogleSignIn 传递依赖（ADR-014 迁移），仅为磁盘克隆注册一致性保留"
 
   - name: gtm-session-fetcher
     upstream: "https://github.com/google/gtm-session-fetcher.git"
     version: "724a52ee"
-    integration: project_yml_path
+    integration: spm
     license: Apache-2.0
-    purpose: "GoogleSignIn 传递依赖（GTMSessionFetcherCore，本地 path 补丁）"
+    purpose: "已弃用：GoogleSignIn 传递依赖（ADR-014 迁移），仅为磁盘克隆注册一致性保留"
 
   - name: GTMAppAuth
     upstream: "https://github.com/google/GTMAppAuth.git"
     version: "57094cd4"
-    integration: project_yml_path
+    integration: spm
     license: Apache-2.0
-    purpose: "GoogleSignIn 传递依赖（GTMAppAuth，本地 path 补丁）"
+    purpose: "已弃用：GoogleSignIn 传递依赖（ADR-014 迁移），仅为磁盘克隆注册一致性保留"
 
   - name: interop-ios-for-google-sdks
     upstream: "https://github.com/google/interop-ios-for-google-sdks.git"
     version: "040d087a"
-    integration: project_yml_path
+    integration: spm
     license: Apache-2.0
-    purpose: "GoogleSignIn 传递依赖（interop，本地 path 补丁）"
+    purpose: "已弃用：GoogleSignIn 传递依赖（ADR-014 迁移），仅为磁盘克隆注册一致性保留"
 
   - name: ocmock
     upstream: "https://github.com/firebase/ocmock.git"
     version: "7291762d"
-    integration: project_yml_path
+    integration: spm
     license: Apache-2.0
-    purpose: "GoogleSignIn 传递依赖（OCMock 测试替身，本地 path 补丁）"
-    note: "本地补丁含两处：① 依赖经 GoogleSignIn-iOS/Package.swift 的 path 引入；② Package.swift target 的 exclude 移除了本 commit 不存在的 Carthage/ 与 OCMock/en.lproj/ 路径（消除 SwiftPM Invalid Exclude 告警）。"
+    purpose: "已弃用：GoogleSignIn 传递依赖（ADR-014 迁移），仅为磁盘克隆注册一致性保留"
+    note: "本地补丁含两处：① 依赖经 GoogleSignIn-iOS/Package.swift 的 path 引入；② Package.swift target 的 exclude 移除了本 commit 不存在的 Carthage/ 与 OCMock/en.lproj/ 路径"
 
   - name: promises
     upstream: "https://github.com/google/promises.git"
     version: "f4a19a3c"
-    integration: project_yml_path
+    integration: spm
     license: Apache-2.0
-    purpose: "GoogleSignIn 传递依赖（FBLPromises，本地 path 补丁）"
+    purpose: "已弃用：GoogleSignIn 传递依赖（ADR-014 迁移），仅为磁盘克隆注册一致性保留"

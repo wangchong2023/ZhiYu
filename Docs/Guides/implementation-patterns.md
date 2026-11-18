@@ -326,13 +326,13 @@ let isCatalyst = (idiom == .macCatalyst)
 
 ```swift
 // ❌ Before — 复合条件含 os() 判定
-#if canImport(GoogleSignIn) && !os(watchOS)
-import GoogleSignIn
+#if canImport(AppAuth) && !os(watchOS)
+import AppAuth
 #endif
 
-// ✅ After — GoogleSignIn 本身不支持 watchOS，canImport 已足够
-#if canImport(GoogleSignIn)
-import GoogleSignIn
+// ✅ After — AppAuth 本身不支持 watchOS，canImport 已足够
+#if canImport(AppAuth)
+import AppAuth
 #endif
 ```
 

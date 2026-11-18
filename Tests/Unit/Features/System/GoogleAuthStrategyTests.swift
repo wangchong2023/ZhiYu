@@ -16,20 +16,24 @@
 
 import XCTest
 @testable import ZhiYu
+import AuthenticationServices
+#if canImport(UIKit)
+import UIKit
+#endif
 
 /// 可注入的 GoogleSignIn 登录能力 Mock
 @MainActor
 private final class MockGoogleSignInProvider: GoogleSignInProviding {
 
     var result: Result<GoogleSignInCredentialData, Error>
-    var presentedController: UIViewController?
+    var presentedAnchor: ASPresentationAnchor?
 
     init(result: Result<GoogleSignInCredentialData, Error>) {
         self.result = result
     }
 
-    func signIn(presenting: UIViewController) async throws -> GoogleSignInCredentialData {
-        presentedController = presenting
+    func signIn(presenting anchor: ASPresentationAnchor) async throws -> GoogleSignInCredentialData {
+        presentedAnchor = anchor
         return try result.get()
     }
 }
@@ -37,18 +41,18 @@ private final class MockGoogleSignInProvider: GoogleSignInProviding {
 @MainActor
 final class GoogleAuthStrategyTests: XCTestCase {
 
-    /// 便捷构造：默认注入有效 clientID、假根控制器与固定 provider 结果
+    /// 便捷构造：默认注入有效 clientID、假呈现锚点与固定 provider 结果
     private func makeStrategy(
         result: Result<GoogleSignInCredentialData, Error> = .success(
             .init(idToken: "token", userID: "uid", email: "a@b.com", name: "Alice")
         ),
         clientID: String? = "valid-client-id",
-        rootVC: UIViewController? = UIViewController()
+        anchor: ASPresentationAnchor? = UIWindow()
     ) -> GoogleAuthStrategy {
         GoogleAuthStrategy(
             signInProvider: MockGoogleSignInProvider(result: result),
             clientIDResolver: { clientID },
-            rootViewControllerProvider: { rootVC }
+            anchorProvider: { anchor }
         )
     }
 
@@ -149,7 +153,7 @@ final class GoogleAuthStrategyTests: XCTestCase {
         let strategy = GoogleAuthStrategy(
             signInProvider: provider,
             clientIDResolver: { "valid" },
-            rootViewControllerProvider: { UIViewController() }
+            anchorProvider: { UIWindow() }
         )
 
         let credential = try await strategy.acquireCredentials()
@@ -160,7 +164,7 @@ final class GoogleAuthStrategyTests: XCTestCase {
         XCTAssertEqual(credential.extraInfo?["email"], "a@b.com")
         XCTAssertEqual(credential.extraInfo?["nickname"], "Alice B")
         XCTAssertEqual(credential.credential, FeatureConstants.GoogleConfig.oidcCredentialPlaceholder)
-        XCTAssertNotNil(provider.presentedController, "signIn 分支应传入根控制器")
+        XCTAssertNotNil(provider.presentedAnchor, "signIn 分支应传入呈现锚点")
     }
 
     /// provider 返回空 idToken 时应抛出 token 错误
@@ -176,9 +180,9 @@ final class GoogleAuthStrategyTests: XCTestCase {
         }
     }
 
-    /// 无前台根控制器时应抛出窗口错误
+    /// 无呈现锚点时应抛出窗口错误
     func testAcquire_Configured_NoRootViewController_ThrowsWindowError() async {
-        let strategy = makeStrategy(rootVC: nil)
+        let strategy = makeStrategy(anchor: nil)
         do {
             _ = try await strategy.acquireCredentials()
             XCTFail("无前台根控制器时应抛出窗口错误")

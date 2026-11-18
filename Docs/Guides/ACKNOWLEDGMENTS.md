@@ -13,7 +13,7 @@
 | [swift-markdown-ui](https://github.com/gonzalezreal/swift-markdown-ui) | MIT | SwiftUI 原生 Markdown 渲染组件 |
 | SwiftJSONSanitizer | MIT | JSON 清洗与安全解析（离线 vendored，`opensrc/swift/`） |
 | PartialJSON | Apache 2.0 | 流式部分 JSON 解析（离线 vendored，`opensrc/swift/`） |
-| [GoogleSignIn](https://github.com/google/GoogleSignIn-iOS) | Apache 2.0 | Google 账号 OAuth 登录 |
+| [AppAuth-iOS](https://github.com/openid/AppAuth-iOS) | Apache 2.0 | Google OIDC 认证登录 |
 | [swift-snapshot-testing](https://github.com/pointfreeco/swift-snapshot-testing) | MIT | 快照测试框架（仅测试依赖） |
 
 ## 2. Swift Package Manager 传递依赖

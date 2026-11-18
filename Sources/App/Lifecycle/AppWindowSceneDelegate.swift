@@ -12,9 +12,6 @@
 import SwiftUI
 import UFPCore
 import UIKit
-#if canImport(GoogleSignIn)
-import GoogleSignIn
-#endif
 
 // MARK: - 场景代理（多窗口支持）
 @available(iOS 16.0, macCatalyst 16.0, *)
@@ -49,16 +46,10 @@ class AppWindowSceneDelegate: NSObject, UIWindowSceneDelegate {
         #endif
     }
 
-    /// 处理从外部应用打开的本应用 URL（GoogleSignIn 回调）
+    /// 处理从外部应用打开的本应用 URL（AppAuth 内部经 ASWebAuthenticationSession 自动处理，无需转发）
     /// - Parameter scene: scene
     /// - Parameter URLContexts: URL 上下文集合
-    func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
-        for context in URLContexts {
-            #if canImport(GoogleSignIn)
-            GIDSignIn.sharedInstance.handle(context.url)
-            #endif
-        }
-    }
+    func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {}
 
     /// sceneDid断开
     /// - Parameter scene: scene

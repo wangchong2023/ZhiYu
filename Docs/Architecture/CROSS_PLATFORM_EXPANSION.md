@@ -1,10 +1,12 @@
 # 跨平台客户端扩展设计规格
 
-> **版本**：v1.0
-> **日期**：2026-08-04
-> **状态**：待审查
+> **版本**：v1.1
+> **日期**：2026-08-04（2026-11 修订）
+> **状态**：已修订
 > **作者**：USER + CodeFree-O 协作
 > **关联文档**：`PLATFORM_PROTOCOL_ARCHITECTURE.md`、`LAYERING_L0_L3.md`、`HIGH_LEVEL_DESIGN.md`
+
+> **⚠️ v1.1 修订说明（2026-11）**：针对 Phase 1（macOS 原生升级）经工程审查修正。新增认证阻塞项（GoogleSignIn 不支持原生 macOS）并确定**统一 A：全平台 AppAuth 方案**、修正部署目标版本体系（macOS 27 而非 14）、修正 `MacPlatformRegistrar` 服务数（15 而非 20+）、修正 `.commands` 行号、修正 `AppWindowSceneDelegate` 处置（删除而非改造）、修正 `LSApplicationCategoryType` 存在性、更新 Catalyst 分支清单。详见 §6.3。
 
 ---
 
@@ -91,7 +93,7 @@ ZhiYu 当前是纯 Apple 原生 Swift 生态，已建立成熟的 Apple 内跨�
 | iOS+Android 逻辑复用 | Skip.tools 转译（Swift → Kotlin） | 现有 Swift 直接转译，零学习成本，iOS 零侵入 |
 | Windows 技术栈 | C# + WinUI 3 | 微软官方推荐，原生体验最佳 |
 | 鸿蒙技术栈 | ArkTS + ArkUI | 华为官方推荐，原生支持分布式能力 |
-| macOS 升级 | 从 Catalyst 升级为原生 macOS target | 原生窗口/菜单/拖放体验更好 |
+| macOS 升级 | 从 Catalyst 升级为原生 macOS target | 原生窗口/菜单/拖放体验更好（认证：统一 A 全平台 AppAuth，见 §6.3 任务 0） |
 | 仓库结构 | 核心仓库 + 平台仓库 | iOS 为主，其他平台跟随，契约集中 |
 | 接口一致性 | Protobuf IDL 定义核心契约 | 语言无关，各平台生成/对齐，防止漂移 |
 
@@ -501,12 +503,12 @@ ZhiYu-Android/
 | 阶段 | 目标 | 平台 | 周期 | 风险 | 优先级 |
 |------|------|------|------|------|--------|
 | Phase 0 | IDL 契约层建立 + Skip POC | iOS 改造 + Android POC | 4-6 周 | 中 | P0 |
-| Phase 1 | macOS 原生升级（独立小迭代） | macOS | 2-3 周 | 低 | P0 |
+| Phase 1 | macOS 原生升级（独立小迭代） | macOS | 3-4 周 | 中（认证阻塞） | P0 |
 | Phase 2 | Android 上线 | Android | 8-12 周 | 中 | P0 |
 | Phase 3 | Windows 客户端 | Windows | 12-16 周 | 高 | P2 |
 | Phase 4 | 鸿蒙客户端 | 鸿蒙 | 12-16 周 | 高 | P2 |
 
-> **阶段调整说明**：原 Phase 2（macOS 原生升级）提前为 **Phase 1**，作为 Phase 0 完成后的独立小迭代。原因：代码评估发现 `MacPlatformRegistrar`（20+ macOS 服务已注册）、`MacAppEnvironment`、`#if os(macOS)` 菜单栏扩展等基础设施已就位，实际工作量从原估 4-6 周下调为 2-3 周。原 Android/Windows/鸿蒙顺延为 Phase 2/3/4。
+> **阶段调整说明**：原 Phase 2（macOS 原生升级）提前为 **Phase 1**，作为 Phase 0 完成后的独立小迭代。原因：代码评估发现 `MacPlatformRegistrar`（15 个 macOS 服务已注册）、`MacAppEnvironment`、`ZhiYuApp.swift` 菜单栏扩展（`#if os(macOS)`）等基础设施已就位。**⚠️ 2026 修订**：经工程审查新增认证阻塞项——GoogleSignIn-iOS 不支持原生 macOS，确定**统一 A：全平台 AppAuth** 替代（见 §6.3 任务 0），周期由原 2-3 周上调为 3-4 周，风险由低上调为中。原 Android/Windows/鸿蒙顺延为 Phase 2/3/4。
 
 ### 6.2 Phase 0：IDL 契约层 + Skip POC（4-6 周）
 
@@ -529,36 +531,47 @@ ZhiYu-Android/
 
 **决策门**：Phase 0 结束时评估 Skip POC 结果，决定 Phase 2 是否全面采用 Skip。
 
-### 6.3 Phase 1：macOS 原生升级（2-3 周，独立小迭代）
+### 6.3 Phase 1：macOS 原生升级（3-4 周，独立小迭代）
+
+> **2026 修订**：本节经工程审查修正。原文 2-3 周 / 低风险基于 2026-08-04 代码盘点，已过时。最新核对（`common-capability-extraction` 分支）新增认证阻塞项并修正多处文件/行号/服务数论断。
 
 **目标**：从 Mac Catalyst 升级为原生 macOS target，获得原生窗口/菜单/拖放体验。
 
-**前置条件**：Phase 0 完成（IDL 契约层就位，避免 macOS 改动与 IDL 改造冲突）。
+**前置条件**：
+1. Phase 0 完成（IDL 契约层就位，避免 macOS 改动与 IDL 改造冲突）
+2. **✅ 任务 0：全平台 AppAuth 迁移已完成**（2026-11-18，见下方任务 0）——iOS 与 macOS 均已改用 AppAuth 统一 Google 认证，GIDSignIn SDK 依赖已移除
 
-**代码评估依据**（2026-08-04 盘点）：
-- `MacPlatformRegistrar` 已注册 20+ macOS 服务（Pasteboard/FileArchiver/Accessibility/DeviceInfo/URLOpener/ShareSheet/Haptic 等），用 `#if os(macOS)` 隔离
+**代码评估依据**（2026-11 核对，修正自 2026-08-04 版本）：
+- `MacPlatformRegistrar` 已注册 **15 个** macOS 服务（Pasteboard/PDF/Storage/ML/OCR/Speech/Biometric/Environment/Accessibility/Haptic/Archiver/DeviceInfo/URLOpener/ShareSheet 等），用 `#if os(macOS)` 隔离
 - `MacAppEnvironment` 已实现桌面环境（`screenClass/.expansive`、`interactionStyle/.pointer`）
-- `ZhiYuApp.swift:71` 的 `.commands` 菜单栏扩展已是 `#if os(macOS)`，原生 macOS 直接生效
-- 全仓 `targetEnvironment(macCatalyst)` 引用仅 ~20 处，集中在 `ContentView`/`AppWindowSceneDelegate`/`iOSPlatformRegistrar`
+- `ZhiYuApp.swift:139-148` 的 `.commands` 菜单栏扩展已是 `#if os(macOS)`（原文档误标 :71），原生 macOS 直接生效
+- 全仓 `targetEnvironment(macCatalyst)` 引用 **21 处**（原文档误标 ~20 处），集中在 `ContentView`/`UserProfileMenu`/`AppWindowSceneDelegate`/`iOSPlatformRegistrar`/`ActivityService`/`PlatformTraits` 等
+- `MacInfo.plist` 已含 `LSApplicationCategoryType`（原文档误标需"新增"）
 - CI 门禁已禁止 Features/Domain 层用 `#if os()`，Shared 层 UIKit 用法已通过 PlatformContext/`DesignSystem` 抽象隔离
+- **✅ Google 认证已由 AppAuth 统一**（2026-11-18）：`project.yml` 的 `BaseAppTemplate` 依赖已由 `GoogleSignIn` 改为 `AppAuth`，`GoogleAuthStrategy`/`AppWindowSceneDelegate` 不再 `import GoogleSignIn`（见任务 0）
 
 **任务**：
-1. **target 配置改造**（0.5 天）：`project.yml` 中 `ZhiYuMac` 的 `platform: iOS` → `macOS`；删除 `SUPPORTS_MACCATALYST`/`SDKROOT: iphoneos`/`TARGETED_DEVICE_FAMILY: 2`；deploymentTarget 对齐 macOS 14
-2. **Catalyst 分支清理**（2-3 天）：`ContentView.swift`/`AppWindowSceneDelegate.swift`/`iOSPlatformRegistrar.swift` 中的 `#if targetEnvironment(macCatalyst)` 改为 `#if os(macOS)` 或删除（原生 macOS 走 `MacPlatformRegistrar`，不再需要 Catalyst 降级分支）
-3. **UIKit API 替换**（3-5 天）：Catalyst 允许的 `UIKit` 在原生 macOS 需换 `AppKit` 或跨平台 API（`UIColor`→`NSColor`、`UIImage`→`NSImage`、`UIView`→`NSView`、`UIPasteboard`→`NSPasteboard`）。`MacPasteboardService` 已存在，主要检查 Shared 层残留
-4. **Info.plist & Entitlements**（0.5 天）：`Sources/MacInfo.plist` 加 `LSApplicationCategoryType`；sandbox/network/entitlements 按原生 macOS 配置
-5. **第三方 SDK 验证**（0.5 天）：确认 `WechatOpenSDK`/`ATAuthSDK` 的 `.xcframework` 是否含 macOS slice，必要时换 SDK 或禁用
-6. **三平台编译 + 测试验证**（0.5 天）：`make ios && make mac && make watch && make test` 全过
+0. **✅ 全平台 AppAuth 迁移（已完成 2026-11-18）**：采用**「统一 A」**方案，iOS 与 macOS 统一改用 **AppAuth-iOS**（`OIDAuthorizationService` + PKCE）实现 Google OIDC 登录，替代 `GIDSignInProvider`。依据：GoogleSignIn-iOS xcframework 仅支持 iOS/macCatalyst/tvOS，不支持原生 macOS（AppKit），且 `GoogleAuthStrategy.signIn(presenting: UIViewController)` 依赖 UIKit（原生 macOS 无 `UIViewController`）；而本地 opensrc 已克隆 **AppAuth-iOS v3.0.0**（`platforms` 含 `.macOS(.v12)`，原生支持 AppKit），是 Google 官方文档推荐的 iOS/macOS OIDC 客户端，后端契约（客户端产出 `idToken` 由后端验签，多 audience）与 GIDSignIn 一致，AppAuth 通过 authorization code 交换同样产出 `idToken`。实施结果：新增 `AppAuthGoogleProvider`（iOS 取 `UIWindow.rootViewController`、macOS 用 `NSWindow`，自动生成 state/nonce/PKCE），协议签名改为跨平台锚点 `ASPresentationAnchor`，上层 `GoogleSignInProviding` 协议与后端契约**完全不变**；从 `project.yml` 移除 `GoogleSignIn`/`GTMAppAuth`/`GoogleUtilities`/`app-check`/`gtm-session-fetcher`/`interop-ios-for-google-sdks`/`ocmock`/`promises` 依赖（`Config/opensource_dependencies.yml` 同步清理），`AppWindowSceneDelegate` 移除 GIDSignIn 回调转发。iOS/macOS/watchOS 三平台编译通过，GoogleAuthStrategyTests 全绿
+1. **target 配置改造**（0.5 天）：`project.yml` 中 `ZhiYuMac` 的 `platform: iOS` → `macOS`；删除 `SUPPORTS_MACCATALYST`/`SDKROOT: iphoneos`/`TARGETED_DEVICE_FAMILY: 2`；deploymentTarget 对齐现有版本体系 **macOS 27.0**（原文档误标 macOS 14；`project.yml` 全局 `deploymentTarget.macOS` 已为 `27.0`）
+2. **🆕 删除未接入的 `AppWindowSceneDelegate`**（0.5 天）：原文档误标为"改 Catalyst 分支"。实测该 delegate 用 `UIWindow`+`UIHostingController` 手动建窗，但 `MacInfo.plist` 的 `UIApplicationSceneManifest` **未配置 delegateClassName** → 是**未接入死代码**；真正的窗口由 `ZhiYuApp`（纯 SwiftUI App + `WindowGroup`）创建。原生 macOS 下 UIKit scene 生命周期不编译，应**整文件删除**（或 `#if os(iOS)` 隔离），而非改造
+3. **Catalyst 分支清理**（1-2 天）：`ContentView.swift:170/267`、`UserProfileMenu.swift:14/235/410`、`iOSPlatformRegistrar.swift:44`、`ActivityService.swift`、`PlatformTraits.swift:40` 中的 `#if targetEnvironment(macCatalyst)` 分支：原生 macOS 下 `os(iOS)` 为假自动排除，多数**直接删除**而非改写；`iOSAccessibilityService.swift:12` 的 `os(iOS) || targetEnvironment(macCatalyst)` 需拆分
+4. **UIKit API 替换**（3-5 天）：Catalyst 允许的 `UIKit` 在原生 macOS 需换 `AppKit` 或跨平台 API（`UIColor`→`NSColor`、`UIImage`→`NSImage`、`UIView`→`NSView`、`UIPasteboard`→`NSPasteboard`）。重点排查 Shared/Features 层残留（`AIRainbowGlowBadge.swift:242` 等非平台目录）
+5. **Info.plist & Entitlements**（0.5 天）：`MacInfo.plist` **删除 UIKit 专属键**（`UIApplicationSceneManifest`/`UILaunchScreen`/`UIUserInterfaceStyle`/`NSSupportsLiveActivities`）；`LSApplicationCategoryType` 已存在无需新增；sandbox/network/entitlements 按原生 macOS 配置
+6. **第三方 SDK 验证**（0.5 天）：确认 `WechatOpenSDK`/`ATAuthSDK` 的 `.xcframework` 是否含 macOS slice，必要时换 SDK 或禁用（GoogleSignIn 已由任务 0 的 AppAuth 迁移移除）
+7. **三平台编译 + 测试验证**（0.5 天）：`make ios && make mac && make watch && make test` 全过
 
 **风险**：
+- **✅ GoogleSignIn 原生 macOS 不可用**（已解决 2026-11-18）：已完成任务 0 全平台 AppAuth 迁移，iOS/macOS 认证统一；剩余风险为原生 macOS 真机回归验证
 - Shared/Features 层可能有 `UIKit` 残留（Catalyst 下能编译，原生 macOS 报错）——需 `make mac` 编译扫出
-- 第三方 `.xcframework` 可能缺 macOS slice
-- 风险等级：**低**（平台适配层已就位，无架构性改动）
+- 第三方 `.xcframework`（Wechat/ATAuth）可能缺 macOS slice
+- 风险等级：**中**（认证迁移为确定性阻塞 + UIKit 残留不确定性）
 
-**优势**：复用现有 Swift 核心逻辑与 `MacPlatformRegistrar` 基础设施，是五个阶段中风险最低的。
+**优势**：复用现有 Swift 核心逻辑与 `MacPlatformRegistrar` 基础设施；AppWindowSceneDelegate 为死代码可安全删除，实际 UIKit 改造成本低于文档预估。
 
 **交付物**：
-- 原生 macOS target（`platform: macOS`）
+- 原生 macOS target（`platform: macOS`，deploymentTarget 27.0）
+- ✅ 全平台 AppAuth 统一 Google 认证（已完成 2026-11-18：iOS + macOS 共享 `GoogleAuthStrategy`，GIDSignIn 依赖已移除，`GoogleSignInProviding` 协议不变）
+- macOS 认证迁移决策记录（ADR）
 - 清理后的 Catalyst 分支代码
 - 三平台编译通过 + 单元测试通过
 

@@ -1,5 +1,7 @@
 # 实施计划：Google Sign-In SDK 接入
 
+> **⚠️ 已被取代（2026-11-18）**：本计划基于 GoogleSignIn-iOS SDK 接入，已被 ADR-014 全平台 AppAuth 迁移取代。GoogleSignIn 已移除并改为 **AppAuth-iOS**（`AppAuthGoogleProvider`，iOS/macOS 统一）。本文档保留作为历史演进记录，当前实现请参考 `Sources/Features/System/Auth/Strategy/AppAuthGoogleProvider.swift`。
+
 > 关联设计：`Docs/superpowers/specs/2026-10-17-google-signin-sdk-integration-design.md`
 > 日期：2026-10-17 · 模块：C 端（iOS app）
 

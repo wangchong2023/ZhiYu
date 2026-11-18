@@ -46,14 +46,32 @@ extension FeatureConstants {
     }
 
     // MARK: - Google Sign-In SDK 配置 (Google Sign-In SDK Config)
-    /// GoogleSignIn SDK 的 Info.plist 配置探针常量
+    /// Google OIDC 认证（AppAuth）配置常量
     enum GoogleConfig {
-        /// Info.plist 中 Google 客户端 ID 的标准键名（SDK 默认读取，非自定义键）
+        /// Info.plist 中 Google 客户端 ID 的标准键名（AppAuth 仍复用该键读取）
         static let clientIDKey = "GIDClientID"
         /// 占位客户端 ID，用于区分「已配置」与「未替换占位」
         static let placeholderClientID = "your-google-client-id"
         /// Google OAuth 占位凭据（Google 登录依靠 extraInfo["idToken"]，credential 字段填充非空占位以满足后端 @NotBlank 校验）
         static let oidcCredentialPlaceholder = "google_oidc_token"
+        /// Google OIDC 授权端点
+        static let authorizationEndpoint = "https://accounts.google.com/o/oauth2/v2/auth"
+        /// Google OIDC 令牌端点
+        static let tokenEndpoint = "https://oauth2.googleapis.com/token"
+        /// Google OIDC 请求 scope
+        static let oidcScopes = [OIDCScope.openid, OIDCScope.profile, OIDCScope.email]
+        /// 反向 URL scheme 前缀（完整 redirectURI = schemePrefix + clientID + 路径后缀）
+        static let redirectSchemePrefix = "com.googleusercontent.apps."
+        /// redirectURI 路径后缀
+        static let redirectPathSuffix = ":/oauthredirect"
+    }
+
+    // MARK: - OpenID Connect Scope (OIDC Scope)
+    /// OpenID Connect scope 字面量
+    enum OIDCScope {
+        static let openid = "openid"
+        static let profile = "profile"
+        static let email = "email"
     }
 
     // MARK: - 插件权限名 (Permission Name)

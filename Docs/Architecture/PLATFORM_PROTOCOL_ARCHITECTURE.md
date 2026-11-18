@@ -43,13 +43,13 @@
 
 ```swift
 // ❌ 旧模式 — 复合条件含 os() 判定
-#if canImport(GoogleSignIn) && !os(watchOS)
-import GoogleSignIn
+#if canImport(AppAuth) && !os(watchOS)
+import AppAuth
 #endif
 
-// ✅ 新模式 — GoogleSignIn 本身不支持 watchOS，canImport 已足够
-#if canImport(GoogleSignIn)
-import GoogleSignIn
+// ✅ 新模式 — AppAuth 本身不支持 watchOS，canImport 已足够
+#if canImport(AppAuth)
+import AppAuth
 #endif
 ```
 
@@ -201,7 +201,7 @@ struct iOSPlatformRegistrar {
 | 业务逻辑 DI 容器 | 12 | 移除宏包裹，依赖 `WatchPlatformRegistrar` 不注册 watchOS 不支持的服务 |
 | 框架依赖 canImport | 8 | `#if canImport(UIKit)` 替代 `#if !os(watchOS)` |
 | Mac Catalyst 运行时判断 | 1 | `InterfaceIdiom.macCatalyst` 替代 `#if targetEnvironment(macCatalyst)` |
-| 复合条件简化 | 1 | `#if canImport(GoogleSignIn)` 替代 `#if canImport(GoogleSignIn) && !os(watchOS)` |
+| 复合条件简化 | 1 | `#if canImport(AppAuth)` 替代 `#if canImport(AppAuth) && !os(watchOS)` |
 
 ### 4.3 历史阶段消除明细
 

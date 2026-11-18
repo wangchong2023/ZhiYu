@@ -239,6 +239,7 @@
 		13264BE1E76D17E22894C74F /* ChatRunnerIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F08472AC20D340EEBCE098F8 /* ChatRunnerIntegrationTests.swift */; };
 		13286F509410B1A6D667CBCD /* PluginMarketServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C699C5FA06BF2B6284795A8 /* PluginMarketServiceTests.swift */; };
 		134CF88EAF6467133E0F8940 /* FileSignatureRepoEdgeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F956A200480CBF352E6602A /* FileSignatureRepoEdgeTests.swift */; };
+		135E88690927773E342255A0 /* AppAuthGoogleProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24C4E5A9DB62912A580E92EA /* AppAuthGoogleProvider.swift */; };
 		1364186A74917DE3F6F36016 /* FrontmatterParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B3121C554F05877F9EA3995 /* FrontmatterParser.swift */; };
 		1379C93F0FA7AEA1C736B963 /* ImportSynthesisE2ETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0881C102C2E21734199DB3B8 /* ImportSynthesisE2ETests.swift */; };
 		1384924BABF7481390158542 /* DocumentSanitationEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FB1E89FD50CA0D238FA899A /* DocumentSanitationEngine.swift */; };
@@ -646,7 +647,7 @@
 		3758B444F1C6BC2D6E9D9FBA /* Date+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B76B953CC50C3072AC188E14 /* Date+Extensions.swift */; };
 		37786CFCA8641CCC5E487E2A /* BaseUITestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AACB1253A863C68867FEA34 /* BaseUITestCase.swift */; };
 		377B75AE2E91FFD741B149CD /* WeeklyInsightDeepTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CAA0839AF9455BC1F43E13F /* WeeklyInsightDeepTests.swift */; };
-		378ADFDA5CA06DBA4B734ABC /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = A176EF903F2827C4A0ED770A /* GoogleSignIn */; };
+		378ADFDA5CA06DBA4B734ABC /* AppAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 6468B3025933711F166C67A7 /* AppAuth */; };
 		37A12084C4476A252BBDCE32 /* L10n+Chat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 894214A0A9869DEF7A51D46F /* L10n+Chat.swift */; };
 		37C05958FFEDF61E597F76FF /* L10n+Lint.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8C65E65AA5F887742273586 /* L10n+Lint.swift */; };
 		37D14092B17171BEB5BD3E04 /* KeychainServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DEC939B8371DAEFD2D6482 /* KeychainServiceTests.swift */; };
@@ -1691,7 +1692,7 @@
 		93489456C12BF6AA86737AE5 /* LLMConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FB00671B8090A4261724DEF /* LLMConstants.swift */; };
 		934EC1B96DE3886A46CEE906 /* WebScraperProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DE1B65474599658CFBB22F /* WebScraperProcessor.swift */; };
 		936EC019673146C9304BBB8E /* CollaborationServiceDeepTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9427E9D5269CFCAA1E8AF2D /* CollaborationServiceDeepTests.swift */; };
-		93A600313B280F364B3D7158 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = C06AB7CC20652260B213FAC0 /* GoogleSignIn */; };
+		93A600313B280F364B3D7158 /* AppAuth in Frameworks */ = {isa = PBXBuildFile; productRef = EE43C6EB4C6780508F7619E5 /* AppAuth */; };
 		93C6B67DDA17F4F9AE144083 /* KnowledgeStoreProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AAF7055A24EF9D1C8DD66F5 /* KnowledgeStoreProtocol.swift */; };
 		93D6FC1FB3CB48E101E8CF32 /* MultipeerCollaborationSessionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B168D4D394710EFED36D3CA9 /* MultipeerCollaborationSessionTests.swift */; };
 		93E694BB907CD2ABCEC6C12A /* LiveActivityProgressCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCE6A41176CB9C8C772E4409 /* LiveActivityProgressCalculator.swift */; };
@@ -1833,6 +1834,7 @@
 		9DF786F3181FCD58A32D1F87 /* ZhiYuApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E749D27FD9632FEDBAF6E34A /* ZhiYuApp.swift */; };
 		9E27B353EC98766A1AAB2729 /* ThemeManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F36AF1890B8E2629E4575A5 /* ThemeManagerTests.swift */; };
 		9E3F313804128F3A69F34309 /* VaultPageCountTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6A713BEBD88538EC5412067 /* VaultPageCountTests.swift */; };
+		9E43AD94A4AF32AF499B707E /* AppAuthGoogleProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24C4E5A9DB62912A580E92EA /* AppAuthGoogleProvider.swift */; };
 		9E652406FD26CA1B2844A2F4 /* L10n+Action.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0521B65A92A56E042517BB63 /* L10n+Action.swift */; };
 		9E81B410EEBFA19FE801AC8C /* DomainDTOsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ADCBCB27655588C348EE2E4 /* DomainDTOsTests.swift */; };
 		9E8AB0FA9AA447839B3961C4 /* iOSHapticService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C84C953CDB10B686AF8D46A /* iOSHapticService.swift */; };
@@ -3337,6 +3339,7 @@
 		24076C7015758C2A79DD698A /* DatabaseWriterProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseWriterProviderTests.swift; sourceTree = "<group>"; };
 		242B644BE716C72200063E36 /* SidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarView.swift; sourceTree = "<group>"; };
 		244A79AD070C266715CFEBC4 /* AppStoreProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStoreProtocol.swift; sourceTree = "<group>"; };
+		24C4E5A9DB62912A580E92EA /* AppAuthGoogleProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppAuthGoogleProvider.swift; sourceTree = "<group>"; };
 		24D41F7A23E525AEFA031AEF /* PresetButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresetButtonStyle.swift; sourceTree = "<group>"; };
 		2507C20309451932BEF3E309 /* IngestProgressCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IngestProgressCalculator.swift; sourceTree = "<group>"; };
 		2511A3BFC59EA7B984445CCC /* ZhiYuMacTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ZhiYuMacTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -4585,7 +4588,6 @@
 		C5E9AD0A1D176000283F326B /* MemoryEngineSupplementTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryEngineSupplementTests.swift; sourceTree = "<group>"; };
 		C5FF77EF01A0AF6DD9696EDA /* SearchFullViewAndNotebookTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchFullViewAndNotebookTests.swift; sourceTree = "<group>"; };
 		C607D0740F5C0DD78184EB08 /* SharedViewModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedViewModifiers.swift; sourceTree = "<group>"; };
-		C60C779FFD79599B783988C1 /* GoogleSignIn-iOS */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "GoogleSignIn-iOS"; path = "../../opensrc/swift/GoogleSignIn-iOS"; sourceTree = SOURCE_ROOT; };
 		C6392D8DB538A8BC565120E9 /* SearchStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchStoreTests.swift; sourceTree = "<group>"; };
 		C648BB8FBB082DC46FB0E00C /* MediaStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaStore.swift; sourceTree = "<group>"; };
 		C6726404DF7D531A8CAD576D /* PromptTemplateEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptTemplateEngine.swift; sourceTree = "<group>"; };
@@ -4973,6 +4975,7 @@
 		F99D1D620BC7DA3EAEDCD8EB /* AppStoreDeveloperDataTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStoreDeveloperDataTests.swift; sourceTree = "<group>"; };
 		FA65B09EDF01091B9B172E64 /* GoogleAuthStrategyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleAuthStrategyTests.swift; sourceTree = "<group>"; };
 		FA84836B2500456AA76CBE7B /* testChatContentViewPlainText.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testChatContentViewPlainText.1.png; sourceTree = "<group>"; };
+		FAAF8B2A1EF026CAB697ED23 /* AppAuth-iOS */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "AppAuth-iOS"; path = "../../opensrc/swift/AppAuth-iOS"; sourceTree = SOURCE_ROOT; };
 		FAD4FA10D9B71CD96081145D /* testSubscriptionPlanCardYearlySelected.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testSubscriptionPlanCardYearlySelected.1.png; sourceTree = "<group>"; };
 		FB0B885FA6F023C524BE137E /* AuthRefreshDeepTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthRefreshDeepTests.swift; sourceTree = "<group>"; };
 		FB6960B3BA4EE62191C99D3D /* lottie-ios */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "lottie-ios"; path = "../../opensrc/swift/lottie-ios"; sourceTree = SOURCE_ROOT; };
@@ -5027,7 +5030,7 @@
 				418DC0C05AF67A4888644ED8 /* ZhiYuFeatures in Frameworks */,
 				B7378933890BD4C2409F8C5F /* GRDB in Frameworks */,
 				7E2A1E17C9968D16AAA42597 /* ZIPFoundation in Frameworks */,
-				378ADFDA5CA06DBA4B734ABC /* GoogleSignIn in Frameworks */,
+				378ADFDA5CA06DBA4B734ABC /* AppAuth in Frameworks */,
 				FCA927C6BB99F4816F28E9EF /* Markdown in Frameworks */,
 				CE3A6ABAC151B928A81D736B /* MarkdownUI in Frameworks */,
 				FF1DC637C892846743BB7FE5 /* SwiftJSONSanitizer in Frameworks */,
@@ -5090,7 +5093,7 @@
 				E8A70C1C6EAF06515EA23491 /* ZhiYuFeatures in Frameworks */,
 				6E876C4FF7D5C406A5FD7CAD /* GRDB in Frameworks */,
 				00BEB06568A91D0340A01DF1 /* ZIPFoundation in Frameworks */,
-				93A600313B280F364B3D7158 /* GoogleSignIn in Frameworks */,
+				93A600313B280F364B3D7158 /* AppAuth in Frameworks */,
 				9633D0D2419B1801B2AA91E6 /* Markdown in Frameworks */,
 				BF03D58486FF3416C8D5D8AA /* MarkdownUI in Frameworks */,
 				99D75D23EB605E2D219B0336 /* SwiftJSONSanitizer in Frameworks */,
@@ -5956,6 +5959,7 @@
 		2D3675B0973E72F2C7C3618D /* Strategy */ = {
 			isa = PBXGroup;
 			children = (
+				24C4E5A9DB62912A580E92EA /* AppAuthGoogleProvider.swift */,
 				D1E32150871B1F525224182A /* AppleAuthStrategy.swift */,
 				6CAB40648A8E6E47B8C83296 /* CarrierAuthStrategy.swift */,
 				ECD332478BCA833BF0058B4C /* GitHubAuthStrategy.swift */,
@@ -8084,7 +8088,7 @@
 		BBC9CA3E7AEF3E87A432BA5F /* Packages */ = {
 			isa = PBXGroup;
 			children = (
-				C60C779FFD79599B783988C1 /* GoogleSignIn-iOS */,
+				FAAF8B2A1EF026CAB697ED23 /* AppAuth-iOS */,
 				2A3D238DE824A5C4D40ED087 /* GRDB.swift */,
 				FB6960B3BA4EE62191C99D3D /* lottie-ios */,
 				89F9D06BD6B97EA0B4F316B8 /* PartialJSON */,
@@ -9538,7 +9542,7 @@
 				853F48544C24F900AD6CA9D4 /* ZhiYuFeatures */,
 				5D76EDDAB3391C2872023439 /* GRDB */,
 				E07EA93BDAB667833737A3D5 /* ZIPFoundation */,
-				A176EF903F2827C4A0ED770A /* GoogleSignIn */,
+				6468B3025933711F166C67A7 /* AppAuth */,
 				3C509CDE54F9FADA12715AA5 /* Markdown */,
 				ECF2CD474C3D88A5CC4BD795 /* MarkdownUI */,
 				B9667D54E01C7A06BDD4838C /* SwiftJSONSanitizer */,
@@ -9571,7 +9575,7 @@
 				4F3F5683C09430C4842B4968 /* ZhiYuFeatures */,
 				716272077C548B3B84363540 /* GRDB */,
 				24CB394839B073E4BF4BE767 /* ZIPFoundation */,
-				C06AB7CC20652260B213FAC0 /* GoogleSignIn */,
+				EE43C6EB4C6780508F7619E5 /* AppAuth */,
 				C13F2DF2F43DB257AE289945 /* Markdown */,
 				888AA75A28EB00908A26B344 /* MarkdownUI */,
 				D4676AFB282494CB649DBDC7 /* SwiftJSONSanitizer */,
@@ -9683,8 +9687,8 @@
 			mainGroup = F7830C324A588F24A3F73C4A;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				5F25473CB0D65D106CE9B04F /* XCLocalSwiftPackageReference "/Users/constantine/Documents/work/code/opensrc/swift/AppAuth-iOS" */,
 				AA534F88156CA7BFF2CB567E /* XCLocalSwiftPackageReference "/Users/constantine/Documents/work/code/opensrc/swift/GRDB.swift" */,
-				24EC745229D6F1414778BF5F /* XCLocalSwiftPackageReference "/Users/constantine/Documents/work/code/opensrc/swift/GoogleSignIn-iOS" */,
 				CB0DC0CDF3D8D056150CB1F8 /* XCLocalSwiftPackageReference "/Users/constantine/Documents/work/code/opensrc/swift/lottie-ios" */,
 				303F6819A350D0E794D9CCD1 /* XCLocalSwiftPackageReference "/Users/constantine/Documents/work/code/opensrc/swift/PartialJSON" */,
 				526A4682863E0FBB114FFD1E /* XCLocalSwiftPackageReference "/Users/constantine/Documents/work/code/opensrc/swift/swift-snapshot-testing" */,
@@ -11093,6 +11097,7 @@
 				A24FAAAD736E119A2116B0EE /* AhoCorasickEngine.swift in Sources */,
 				96A4FF7269504B970B591ED2 /* ApiResponse.swift in Sources */,
 				C1ADF40C9A3224C83A3856B5 /* AppAILoadingSkeleton.swift in Sources */,
+				135E88690927773E342255A0 /* AppAuthGoogleProvider.swift in Sources */,
 				D0BB0F8D2C39934578CCAE99 /* AppBackupService.swift in Sources */,
 				E786D4569BC829F00E014375 /* AppCloudSyncService.swift in Sources */,
 				A8D490D26988230961A4A423 /* AppConfig.swift in Sources */,
@@ -11907,6 +11912,7 @@
 				BCA38B7AD9954A9A8B16F13B /* AhoCorasickEngine.swift in Sources */,
 				E2C2A61A720FDB58008C3DC9 /* ApiResponse.swift in Sources */,
 				8F9E21CDB87EF7919AD7DE84 /* AppAILoadingSkeleton.swift in Sources */,
+				9E43AD94A4AF32AF499B707E /* AppAuthGoogleProvider.swift in Sources */,
 				7C4171C41C2343F8D998FA43 /* AppBackupService.swift in Sources */,
 				5FEAF8739614854D6964DA6D /* AppCloudSyncService.swift in Sources */,
 				9B59C583AE094CDDDC810AA7 /* AppConfig.swift in Sources */,
@@ -13449,10 +13455,6 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = /Users/constantine/Documents/work/code/opensrc/swift/SwiftJSONSanitizer;
 		};
-		24EC745229D6F1414778BF5F /* XCLocalSwiftPackageReference "/Users/constantine/Documents/work/code/opensrc/swift/GoogleSignIn-iOS" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = "/Users/constantine/Documents/work/code/opensrc/swift/GoogleSignIn-iOS";
-		};
 		2BA8038BE3D0ED8543110DEB /* XCLocalSwiftPackageReference "Packages/UFPStorage" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/UFPStorage;
@@ -13468,6 +13470,10 @@
 		5DB841C5334235DD8D829B65 /* XCLocalSwiftPackageReference "Packages/ZhiYuFeatures" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/ZhiYuFeatures;
+		};
+		5F25473CB0D65D106CE9B04F /* XCLocalSwiftPackageReference "/Users/constantine/Documents/work/code/opensrc/swift/AppAuth-iOS" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "/Users/constantine/Documents/work/code/opensrc/swift/AppAuth-iOS";
 		};
 		6565B68099C6F4D6DCA6A41C /* XCLocalSwiftPackageReference "/Users/constantine/Documents/work/code/opensrc/swift/swift-markdown" */ = {
 			isa = XCLocalSwiftPackageReference;
@@ -13568,6 +13574,10 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = UFPDesignSystem;
 		};
+		6468B3025933711F166C67A7 /* AppAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = AppAuth;
+		};
 		6EF263CD79839C69FB7160DD /* UFPDesignSystem */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = UFPDesignSystem;
@@ -13600,10 +13610,6 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = ZhiYuAICore;
 		};
-		A176EF903F2827C4A0ED770A /* GoogleSignIn */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = GoogleSignIn;
-		};
 		A3F17215B7AFAE7677CDF0F3 /* UFPStorage */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = UFPStorage;
@@ -13619,10 +13625,6 @@
 		B9667D54E01C7A06BDD4838C /* SwiftJSONSanitizer */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = SwiftJSONSanitizer;
-		};
-		C06AB7CC20652260B213FAC0 /* GoogleSignIn */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = GoogleSignIn;
 		};
 		C13F2DF2F43DB257AE289945 /* Markdown */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -13655,6 +13657,10 @@
 		ED3A71CB97AD5C34FD8F9F06 /* SnapshotTesting */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = SnapshotTesting;
+		};
+		EE43C6EB4C6780508F7619E5 /* AppAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = AppAuth;
 		};
 		F20FA72DF87AFDF297AD7CAF /* PartialJSON */ = {
 			isa = XCSwiftPackageProductDependency;
