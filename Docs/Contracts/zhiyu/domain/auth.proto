@@ -1,0 +1,19 @@
+syntax = "proto3";
+package zhiyu.domain;
+
+import "zhiyu/domain/common.proto";
+
+option swift_prefix = "ZhiYu";
+
+message OAuthCredential {
+  string identity_type = 1;
+  string identifier = 2;
+  string credential = 3;
+  map<string, string> extra_info = 4;
+}
+
+message AuthResult {
+  bool success = 1;
+  string token = 2;
+  string message = 3;
+}

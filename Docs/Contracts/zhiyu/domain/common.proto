@@ -1,0 +1,17 @@
+syntax = "proto3";
+package zhiyu.domain;
+
+option swift_prefix = "ZhiYu";
+
+enum Platform {
+  PLATFORM_UNSPECIFIED = 0;
+  PLATFORM_IOS = 1;
+  PLATFORM_MACOS = 2;
+  PLATFORM_WATCHOS = 3;
+  PLATFORM_ANDROID = 4;
+}
+
+message Result {
+  bool success = 1;
+  string message = 2;
+}
