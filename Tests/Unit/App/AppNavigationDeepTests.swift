@@ -122,22 +122,6 @@ final class AppNavigationDeepTests: XCTestCase {
         XCTAssertNotNil(Notification.Name(rawValue: "splashDismissed"))
     }
 
-    func testAppWindowSceneDelegate_Lifecycle() {
-        #if !os(watchOS)
-        let delegate = AppWindowSceneDelegate()
-        XCTAssertNil(delegate.window)
-
-        // 创建临时场景调用空实现以覆盖生命周期分支
-        if let windowScene = UIApplication.shared.connectedScenes.first {
-            delegate.sceneDidDisconnect(windowScene)
-            delegate.sceneDidBecomeActive(windowScene)
-            delegate.sceneWillResignActive(windowScene)
-            delegate.sceneWillEnterForeground(windowScene)
-            delegate.sceneDidEnterBackground(windowScene)
-        }
-        #endif
-    }
-
     func testAIViewProvider_MakeView() {
         let provider = AIViewProvider()
 

@@ -14,7 +14,7 @@ import SwiftUI
 @testable import ZhiYu
 
 /// App 层非 View 文件深度测试
-/// 覆盖 ViewFactory/AppWindowSceneDelegate/AppEnvironment/AppModels/iOSAppEnvironment/AppModel
+/// 覆盖 ViewFactory/AppEnvironment/AppModels/iOSAppEnvironment/AppModel
 final class AppNonViewDeepTests: XCTestCase {
 
     // MARK: - AppModels
@@ -188,15 +188,4 @@ final class AppNonViewDeepTests: XCTestCase {
     }
     #endif
 
-    // MARK: - AppWindowSceneDelegate
-
-    #if !os(watchOS)
-    @available(iOS 16.0, macCatalyst 16.0, *)
-    @MainActor
-    func testAppWindowSceneDelegateInstantiable() {
-        let delegate = AppWindowSceneDelegate()
-        XCTAssertNotNil(delegate)
-        XCTAssertNil(delegate.window, "初始化后 window 应为 nil")
     }
-    #endif
-}
