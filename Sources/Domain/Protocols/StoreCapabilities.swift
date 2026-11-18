@@ -35,7 +35,7 @@ public protocol MonitorableStore: Sendable {
 }
 
 /// 通用页面存储操作协议 (类型抹除抽象接口)，定义知识库核心持久化契约。
-public protocol AnyPageStore: Sendable {
+public protocol AnyPageStore: MonitorableStore, Sendable {
     /// 异步获取当前内存中已缓存的全量页面镜像。
     var pages: [KnowledgePage] { get async }
     
@@ -178,18 +178,6 @@ public protocol AnyPageStore: Sendable {
     /// - Parameter logger: 用于实时回调写入进度的审计日志闭包。
     func seedDefaultContent(logger: @escaping @Sendable (LogAction, String, String) -> Void) async
 
-    /// 记录一条数据库审计日志，满足可观测性要求。
-    ///
-    /// - Parameters:
-    ///   - action: 日志动作类型。
-    ///   - target: 目标实体。
-    ///   - details: 详情。
-    ///   - duration: 耗时。
-    ///   - startTime: 开始时间。
-    ///   - endTime: 结束时间。
-    ///   - module: 所属模块。
-    func addLog(action: LogAction, target: String, details: String, duration: TimeInterval?, startTime: Date?, endTime: Date?, module: String?)
-    
     /// 获取当前应用各持久化目录所占用的物理存储空间统计信息。
     ///
     /// - Returns: 返回包含数据库物理文件大小、日志文件大小、以及导出缓存大小的元组。
