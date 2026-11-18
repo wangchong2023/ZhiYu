@@ -212,3 +212,14 @@ dependencies:
     integration: spm
     license: Apache-2.0
     purpose: "已弃用：GoogleSignIn 传递依赖（ADR-014 迁移），仅为磁盘克隆注册一致性保留"
+
+  # ── IDL 契约层工具链（Phase 0）───────────────────────────────
+  # swift-protobuf 作为 brew 安装的 protoc 生成插件（protoc-gen-swift），
+  # 由 Tools/contracts/gen.sh 调用，将 Docs/Contracts/*.proto 生成为 Swift 契约代码。
+  # 非 SPM 依赖，不入 project.yml target 链接。
+  - name: swift-protobuf
+    upstream: "https://github.com/apple/swift-protobuf.git"
+    version: "1.41.0"
+    integration: brew
+    license: Apache-2.0
+    purpose: "IDL 契约层 Swift 代码生成插件（protoc-gen-swift），Phase 0 工具链"
