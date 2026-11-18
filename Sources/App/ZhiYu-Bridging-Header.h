@@ -10,7 +10,7 @@
 //
 
 #include <TargetConditionals.h>
-#if !TARGET_OS_MACCATALYST
+#if TARGET_OS_IOS
 #import <WechatOpenSDK/WechatOpenSDK.h>
 #import <ATAuthSDK_D/ATAuthSDK.h>
 #endif
