@@ -108,15 +108,10 @@ struct MacEnvironmentInjection: ViewModifier {
 ```
 Sources/App/Scenes/AppSceneBuilder.swift                     # 单一分发点（#if 三平台，App 层）
 Sources/App/Scenes/SceneEnvironmentInjection.swift            # 环境注入公共 modifier（两平台共用）
-Sources/Platforms/macOS/Scenes/MacSceneBuilder.swift         # macOS 场景根
+Sources/Platforms/macOS/Scenes/MacSceneBuilder.swift         # macOS 场景根（主窗口+Settings+辅助窗口）
 Sources/Platforms/macOS/Scenes/MacMainWindow.swift           # 主窗口三栏外壳
 Sources/Platforms/macOS/Scenes/MacMenuCommands.swift         # 完整菜单栏
-Sources/Platforms/macOS/Scenes/Settings/MacSettingsView.swift
-Sources/Platforms/macOS/Scenes/Settings/GeneralSettingsPane.swift
-Sources/Platforms/macOS/Scenes/Settings/AISettingsPane.swift
-Sources/Platforms/macOS/Scenes/Settings/AccountSettingsPane.swift
-Sources/Platforms/macOS/Scenes/Settings/SecuritySettingsPane.swift
-Sources/Platforms/macOS/Scenes/Settings/AboutPane.swift
+Sources/Platforms/macOS/Scenes/MacSettingsView.swift         # 原生设置（Sidebar+Detail，7 Section）
 Sources/Platforms/iOS/Scenes/iOSSceneBuilder.swift            # iOS 场景根（现有 WindowGroup）
 ```
 
@@ -207,33 +202,134 @@ public static let authFormWidth: CGFloat = 420
 
 ---
 
-## 设置页：原生 Settings scene
+## 多窗口与弹窗入口分层（Mac 原生化）
 
-### 系统偏好设置风格（TabView 5 Pane）
+### 现状问题
+
+`ContentView.swift:92-146` 有 **6 个 `appFullScreenCover` 弹窗**（`appFullScreenCover` 在 macOS 用 `sheet`，见 `DesignModifiers.swift:234`）：
+`SettingsView`/`AISettingsView`/`UserProfileView`/`SubscriptionPlanView`/`PluginCenterView`/`AboutView`。
+
+设计若只迁移"设置"会遗漏其余 5 个，且 `UserProfileMenu`（共享组件）的"设置/订阅/AI设置/插件"入口在 Mac 上仍走 sheet 路径，与原生 Settings 冲突。
+
+### 分层方案（按类型）
+
+| 视图 | 类型 | Mac 呈现 |
+|------|------|----------|
+| `SettingsView` | 设置类 | 原生 `Settings` scene（⌘,） |
+| `AISettingsView` | 设置类 | 并入 Settings scene（AI Section） |
+| `UserProfileView` | 账户类 | 独立 `Window` scene（profile） |
+| `SubscriptionPlanView` | 账户类 | 独立 `Window` scene（plan） |
+| `PluginCenterView` | 插件类 | 独立 `Window` scene（plugins） |
+| `AboutView` | 关于类 | macOS 原生 About 面板（`NSApplication.orderFrontStandardAboutPanel`）或独立 Window |
+
+### MacSceneBuilder 补充窗口
 
 ```swift
-struct MacSettingsView: View {
-    var body: some View {
-        TabView {
-            GeneralSettingsPane()
-                .tabItem { Label(L10n.Settings.general, systemImage: "gearshape") }
-            AISettingsPane()
-                .tabItem { Label(L10n.Settings.ai, systemImage: "brain.head.profile") }
-            AccountSettingsPane()
-                .tabItem { Label(L10n.Settings.account, systemImage: "person.crop.circle") }
-            SecuritySettingsPane()
-                .tabItem { Label(L10n.Settings.security, systemImage: "lock.shield") }
-            AboutPane()
-                .tabItem { Label(L10n.Settings.about, systemImage: "info.circle") }
+@MainActor
+struct MacSceneBuilder {
+    static var root: some Scene {
+        WindowGroup("智宇", id: "main") {
+            MacMainWindow().modifier(MacEnvironmentInjection())
         }
-        .frame(width: 620, height: 480)
+        .defaultSize(width: 1200, height: 800)
+        .commands { MacMenuCommands() }
+
+        Settings { MacSettingsView() }   // 设置 scene
+
+        // 辅助窗口（原生多窗口）
+        Window("个人资料", id: "profile") { UserProfileView() }
+        Window("订阅计划", id: "plan") { SubscriptionPlanView() }
+        Window("插件中心", id: "plugins") { PluginCenterView() }
+        Window("笔记本中心", id: "notebook-hub") { NotebookHubView() }
     }
 }
 ```
 
+### UserProfileMenu Mac 化（共享组件）
+
+`UserProfileMenu`（`UserProfileMenu.swift:14`）在 macOS 分支用 `SettingsLink`（设置）与 `@Environment(\.openWindow)`（其余窗口）：
+
+```swift
+// UserProfileMenu body — 在现有 #if os(watchOS)/#else 基础上，
+// 增加 macOS 分支（#if os(macOS)，共享组件允许平台宏，但需内聚）
+#if os(macOS)
+Menu {
+    Button { openWindow(id: "profile") } { Label(..., systemImage: "person") }
+    Divider()
+    SettingsLink { Label(L10n.Common.settings, systemImage: "gearshape") }  // 原生设置
+    Button { openWindow(id: "plan") } { Label(L10n.Auth.subscription, ...) }
+    Button { openWindow(id: "plugins") } { Label(L10n.Plugin.title, ...) }
+    Divider()
+    Button(role: .destructive) { authService.logout() } { Label(logout, ...) }
+} label: { profileLabel }
+#endif
+```
+
+> **Note**: `UserProfileMenu` 属 Shared 层（非业务层），允许 `#if os(macOS)`，但仅在此一处内聚，不散落。
+
+### 窗口级配置
+
+```swift
+WindowGroup("智宇", id: "main") { ... }
+    .defaultSize(width: 1200, height: 800)
+    .windowResizability(.contentSize)          // 随内容调整，非固定
+    // 辅助窗口最小尺寸由视图内容决定
+```
+
+### 辅助窗口登录态约束
+
+辅助 `Window`（profile/plan/plugins/notebook-hub）仅登录/游客状态可打开；未登录时 `openWindow` 不触发或先引导登录。在 `UserProfileMenu` 与 `MacMenuCommands` 中用 `authSession.isLoggedIn || authSession.isGuest` 守卫。
+
+### 无障碍（Accessibility）
+
+- 现有 `accessibilityIdentifier`（如 `settingsMenuButton`/`aiSettingsMenuButton`/`logoutButton`）在 Mac 上保留，供 UI 自动化与 VoiceOver 定位。
+- `UserProfileMenu` Mac 化后保留 `accessibilityIdentifier`，不因平台分支丢失。
+- 侧边栏/设置列表用系统默认焦点行为（`NavigationSplitView` 自带键盘导航）。
+- 菜单命令带 `keyboardShortcut`，支持键盘可达。
+
+---
+
+## 设置页：原生 Settings scene
+
+### 结构：保留现有 7 Section，只改布局
+
+**决策**：不重分类，沿用现有 `SettingsView.SettingsSection`（appearance/security/data/plugins/feedback/developer/about），只把移动端列表改为 Mac 原生布局。
+
+`MacSettingsView` 复用 `SettingsView` 的 `SettingsSection` 枚举与 `detailColumn(for:)` 内容，但用 **Sidebar + Detail 布局**（对齐 `SettingsView.swift:108` 的 `.mac` 已有分支，抽为独立 `MacSettingsView`）：
+
+```swift
+struct MacSettingsView: View {
+    @State private var selectedSection: SettingsView.SettingsSection? = .appearance
+
+    var body: some View {
+        NavigationSplitView {
+            List(SettingsView.SettingsSection.allCases, selection: $selectedSection) { section in
+                Label(section.displayName, systemImage: section.iconName)
+                    .tag(section)
+            }
+            .navigationSplitViewColumnWidth(min: 180, ideal: 220, max: 260)
+            .listStyle(.sidebar)
+        } detail: {
+            if let section = selectedSection {
+                SettingsView.detailColumn(for: section)   // 复用现有分区内容
+            } else {
+                Text(L10n.Common.selectSection)
+            }
+        }
+        .frame(minWidth: 620, minHeight: 480)
+    }
+}
+```
+
+> **Note**: `SettingsSection` 及其 `detailColumn(for:)` 需从 `SettingsView` 内部提取为可复用类型（`private` → `internal`，或迁移到独立文件），供 `MacSettingsView` 与 `SettingsView` 共用，避免重复。
+
+### AISettings 并入
+
+`AISettingsView` 作为 AI 设置内容并入 Mac 设置（新增 Section 或并入 appearance/data），Mac 上不再以独立 sheet 打开。
+
 ### Pane 内容来源
 
-各 Pane 复用现有 `SettingsView.swift` 的既有分区（外观/语言/主题 → 通用；模型/API → AI；登录/订阅/同步 → 账户；隐私/生物识别 → 安全；关于 → 关于），拆解到对应 Pane。依赖（`SettingsStore`/`ThemeManager`/`LLMConfig`）经环境注入保持。
+各 Section 复用现有 `SettingsView` 分区（外观/安全/数据/插件/反馈/关于），依赖（`SettingsStore`/`ThemeManager`/`LLMConfig`）经环境注入保持。原有 `.mac` 分支的 sidebarColumn 逻辑迁移到 `MacSettingsView`，`SettingsView` 保留 iOS/移动端路径。
 
 ### 触发方式
 
@@ -299,8 +395,10 @@ public static let macSidebarWidth: CGFloat = 260   // 新增，供 MacMainWindow
 | 侧边栏宽度 Token | `DesignSystem+Sidebar` | 仅新增，iOS 不受影响 |
 | 登录页 Token | `UFPDesignSystem` Metrics | 仅新增 `authHeroWidth`/`authFormWidth`，iOS 不引用 |
 | `AuthView` 桌面布局 | `AuthView` 同文件 | 运行时 Trait 分派，iOS 走原布局 |
-| `ContentView` | 不动 | macOS 走 `MacMainWindow` |
-| 现有 25 处 `#if os(macOS)` | 保持/收敛 | 已在 Platforms/基础设施层 |
+| `UserProfileMenu` Mac 化 | Shared 层单点 `#if os(macOS)` | iOS/watch 分支不动 |
+| `SettingsSection`/`detailColumn` 提取 | `SettingsView` 文件 | 提取为 internal，两平台共用 |
+| `ContentView` | 仅 macOS 分支移除弹窗 | iOS 路径不变 |
+| 现有 `#if os(macOS)` | 保持/收敛 | 已在 Platforms/基础设施层 |
 | `AppSceneBuilder`/`SceneEnvironmentInjection` | App 层新增 | 单一分发点 |
 
 **原则**：共享层只新增 Token/类型，不修改 iOS 现有行为路径；平台差异靠 `#if os` 分发点 + Platforms 目录隔离。
@@ -313,19 +411,63 @@ public static let macSidebarWidth: CGFloat = 260   // 新增，供 MacMainWindow
 2. **任务 2**：`MacSceneBuilder` + `MacMainWindow` 骨架（三栏复用现有 `adaptiveSplitView`）
 3. **任务 3**：主窗口接入 `.commands` 基础菜单（⌘N、退出）
 4. **任务 4**：登录页运行时 Trait 桌面化（`AuthView` 分派 + `macLoginLayout` + Auth Token）
-5. **任务 5**：`Settings` scene + `MacSettingsView` TabView 外壳
-6. **任务 6**：拆分设置 Pane（通用/AI/账户/安全/关于）
-7. **任务 7**：完整菜单栏（查看/窗口/帮助）+ 侧边栏宽度 Token
-8. **任务 8**：辅助 `Window` scene（笔记本中心）
-9. **任务 9**：移除 macOS 分支 fullScreenCover 设置入口，接入 `SettingsLink`；视觉打磨
+5. **任务 5**：`Settings` scene + `MacSettingsView`（Sidebar+Detail，提取 `SettingsSection` 为可复用类型）
+6. **任务 6**：`UserProfileMenu` Mac 化（`SettingsLink` + `openWindow`）+ 辅助 Window scenes（profile/plan/plugins）
+7. **任务 7**：完整菜单栏（查看/窗口/帮助）+ 侧边栏宽度 Token + 辅助窗口登录态守卫
+8. **任务 8**：移除 macOS 分支 6 个 `appFullScreenCover` 弹窗入口，接入原生场景；AISettings 并入设置；About 用原生面板
+9. **任务 9**：视觉打磨（材质/工具栏/字体）
+10. **任务 10**：测试用例更新 + 文档更新（见下两节）
 
 ---
 
 ## L10n 与设计 Token 约束
 
-- 设计中的菜单文案、设置 Pane 标题、快捷键提示等全部通过 `L10n.模块.属性` 强类型访问，禁止硬编码。
-- 新增 key（如 `L10n.Settings.general/ai/account/security/about`、`L10n.Sidebar.toggle`、`L10n.Notebook.openHub` 等）须在 `Sources/Localization/Extensions/L10n+XXX.swift` 注册并映射到 `.xcstrings` Catalog。
+- 设计中的菜单文案、设置 Section 标题、快捷键提示等全部通过 `L10n.模块.属性` 强类型访问，禁止硬编码。
+- 新增 key（如 `L10n.Sidebar.toggle`、`L10n.Notebook.openHub`、辅助窗口标题 `L10n.Window.profile/plan/plugins` 等）须在 `Sources/Localization/Extensions/L10n+XXX.swift` 注册并映射到 `.xcstrings` Catalog。
+- 设置 Section 标题沿用现有 `L10n.Settings.Section.*`（已存在），不新增 5 Pane 分类 key。
 - 视图样式/间距/圆角一律引用 `DesignSystem` Token，禁止硬编码字面量。
+
+---
+
+## 测试用例更新
+
+### 单元测试
+
+| 测试文件 | 更新点 |
+|----------|--------|
+| `Tests/Unit/App/AppRootScenesAndNavigationTests.swift` | 验证 `AppSceneBuilder` 分发（macOS→MacSceneBuilder，iOS→iOSSceneBuilder）；`ZhiYuApp.body` 极简化不破坏现有导航 |
+| `Tests/Unit/App/ContentViewDeepTests.swift` / `ContentViewAndCollaborationDeepTests.swift` | 确认 macOS 分支移除 6 个 `appFullScreenCover` 后 iOS 路径不变（iOS 保留），补 `ContentView` 平台分支测试 |
+| `Tests/Unit/App/AppRootScenesAndSidebarDeepTests.swift` | 侧边栏宽度 Token 切换（mac 用 `macSidebarWidth`，iOS 用原值） |
+| 新增 `Tests/Unit/App/AppSceneBuilderTests.swift` | `AppSceneBuilder.root` 各平台分发；`SceneEnvironmentInjection` 环境注入完整性（20+ environment 不遗漏） |
+| 新增 `Tests/Unit/Auth/MacAuthViewLayoutTests.swift` | `AuthView` 的 `interfaceIdiom == .mac` 分派到 `macLoginLayout`；iOS 走 `mobileLoginLayout`；登录逻辑不变 |
+
+### UI 测试
+
+| 测试文件 | 更新点 |
+|----------|--------|
+| `Tests/UI/SettingsUITests.swift` | 现有 iOS Tab 栏进设置路径保留；新增 macOS 场景验证 ⌘, 打开 Settings、Sidebar+Detail 布局 |
+| `Tests/UI/AISettingsTabSwitchingUITests.swift` | 路由注入打开 AI 设置 sheet 的路径，在 macOS 改为验证 AI 设置并入 Settings scene |
+| 新增 `Tests/UI/MacSettingsUITests.swift` | Mac 设置导航、Section 切换、⌘, 触发（如测试环境支持 Mac UI 自动化） |
+| `Tests/UI/ZhiYuUITests.swift` | 确认登录→主界面路径在 Mac 上经 `macLoginLayout` 后不变 |
+
+### 快照测试
+
+- 现有 iOS 快照（`Tests/SnapshotTests/`）不回归：共享层仅新增 Token/类型。
+- 可选新增 Mac 快照：`MacSettingsView`（Sidebar+Detail）、`macLoginLayout`（需 SwiftUI 快照工具支持多平台）。
+
+---
+
+## 文档更新
+
+| 文档 | 更新点 |
+|------|--------|
+| `Docs/Architecture/HIGH_LEVEL_DESIGN.md` | 场景结构：`AppSceneBuilder` 单一分发点 + `MacSceneBuilder`/`iOSSceneBuilder`；多窗口 |
+| `Docs/Architecture/PLATFORM_PROTOCOL_ARCHITECTURE.md` | `AppSceneBuilder` 作为平台 scene 分发点示例；`UserProfileMenu` Mac 化模式 |
+| `Docs/Guides/config-conventions.md` | 新增 `Platforms/macOS/Scenes/` 目录规范（Mac 场景/视图隔离）；`Platforms/iOS/Scenes/` |
+| `Docs/Design/UI_COMPONENTS.md` | Mac 原生组件（设置 Sidebar+Detail、辅助窗口、菜单命令） |
+| `Docs/Requirements/FEATURE_LIST.md` | Mac 原生特性（原生设置、多窗口、完整菜单、桌面登录）实现状态 |
+| `AGENTS.md` | 场景结构、`Platforms/*/Scenes` 文件布局说明 |
+| `Docs/superpowers/specs/2026-11-19-mac-native-ui-redesign-design.md` | 本文档 |
 
 ---
 
@@ -333,10 +475,9 @@ public static let macSidebarWidth: CGFloat = 260   // 新增，供 MacMainWindow
 
 - **构建门禁**：`make mac` 编译通过（Swift 6 严格并发）。
 - **静态门禁**：`make audit`（架构分层、去魔鬼化、L10n、平台宏规范全绿）。
-- **现有测试**：iOS 单测不受影响（共享层仅新增分支/Token）。
-- **Mac UI 验证**：手动验证 ⌘, 打开设置、菜单栏功能、侧边栏宽度、多窗口、⌘N 新建。
-- **平台宏审计**：确认业务层（Features/Domain）无新增 `#if os()`，`#if os(macOS)` 收敛于 AppSceneBuilder + Platforms 目录。
-- **快照测试**：现有 iOS 快照不回归；Mac 界面可选新增快照。
+- **现有测试**：iOS 单测/UI 测试/快照不回归（共享层仅新增分支/Token）。
+- **Mac UI 验证**：手动验证 ⌘, 打开设置、菜单栏功能、侧边栏宽度、多窗口、⌘N 新建、登录页桌面布局。
+- **平台宏审计**：确认业务层（Features/Domain）无新增 `#if os()`，`#if os(macOS)` 收敛于 AppSceneBuilder + Platforms 目录 + UserProfileMenu（Shared 层单点）。
 
 ---
 
@@ -344,8 +485,10 @@ public static let macSidebarWidth: CGFloat = 260   // 新增，供 MacMainWindow
 
 | 风险 | 缓解 |
 |------|------|
-| SettingsView 拆分 Pane 改动大 | 分任务推进，每个 Pane 独立提交 |
-| fullScreenCover → Settings 迁移影响 Router 状态 | 保留 iOS 路径，macOS 分支单独处理 |
+| `SettingsSection`/`detailColumn(for:)` 从 `SettingsView` 提取改动大 | 提取为可复用类型，`SettingsView` 与 `MacSettingsView` 共用；iOS 单测守护 |
+| 6 个 `appFullScreenCover` 移除影响 Router/UI 测试 | 仅移除 macOS 分支，iOS 保留；UI 测试分平台断言 |
+| `UserProfileMenu`（Shared 层）Mac 化改动 | 单点 `#if os(macOS)` 内聚；iOS/watch 分支不动 |
+| 辅助窗口登录态 | `openWindow` 守卫（`isLoggedIn || isGuest`） |
 | 共享层改动引入 iOS 回归 | 仅新增 Token/类型 + iOS 单测 + 快照守护 |
 | Swift 6 严格并发 | 新类型标注 `@MainActor` |
-| 平台宏散布 | AppSceneBuilder 单一分发点 + Platforms 目录隔离 |
+| 平台宏散布 | AppSceneBuilder 单一分发点 + Platforms 目录隔离 + Shared 单点 |
