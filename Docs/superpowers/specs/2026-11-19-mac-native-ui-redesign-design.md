@@ -289,6 +289,61 @@ WindowGroup("智宇", id: "main") { ... }
 
 ---
 
+## MacMainWindow 组装策略（复用现有 ContentView）
+
+### 核心原则：只换外壳，不重写内容
+
+`ContentView`（`Sources/App/Scenes/ContentView.swift`）已完整处理 macOS 布局：`adaptiveTabView` 在 macOS 走 `adaptiveSplitView`（`AppLayoutComponents.swift:153`，三栏 `NavigationSplitView`），并已包含：
+
+| 能力 | 位置 | 说明 |
+|------|------|------|
+| 登录态分派 | `mainContainer`（`AppLayoutComponents.swift:24`） | 未登录→`AuthView`，登录→主内容 |
+| 三栏布局 | `adaptiveSplitView`（`:153`） | `NavigationSplitView` + `.commandPaletteSheet` |
+| 全局浮层 | `globalOverlaySheets()`（`:109`） | CreateSheet/PerfDashboard/Medal/CoachMark |
+| toast 提示 | `mainContent`（`:67`） | `appToast()` |
+| 安全锁定层 | `ContentView.swift:86` | `LockOverlayView`（macOS 用 Touch ID） |
+| 依赖注入 | `ContentView.swift:21-40` | store/themeManager/router/authService/vaultService + 10+ 环境 |
+| tint/deepLink | `ScenesSharedComponents.swift:218` | `TabViewCommonModifiers` |
+
+### MacMainWindow 定义
+
+```swift
+// Sources/Platforms/macOS/Scenes/MacMainWindow.swift
+/// macOS 主窗口：复用现有 ContentView 全部能力，仅作原生外壳包装
+struct MacMainWindow: View {
+    var body: some View {
+        ContentView()          // 完整复用：登录分派 + 三栏 + 浮层 + 锁定 + toast + 注入
+            .modifier(MacEnvironmentInjection())
+    }
+}
+```
+
+> **Note**: `MacMainWindow` 不重复实现布局/浮层/锁定，直接包装 `ContentView`。macOS 专属差异（窗口标题/尺寸/辅助窗口入口）由 `MacSceneBuilder`/`MacMenuCommands` 承担。
+
+### 安全锁定解锁（Touch ID）
+
+`LockOverlayView`（`Sources/Shared/UIComponents/Overlays/LockOverlayView.swift:21`）已有 macOS 分支（`touchid` 图标），无需改动。`MacMainWindow` 包装 `ContentView` 后自动保留此能力。
+
+### CommandPalette 增强（可选）
+
+`showCommandPalette`（`ContentView.swift:31`）当前无触发入口（声明但未赋值）。Mac 菜单栏可新增"打开命令面板"命令（快捷键 ⌘P）触发：
+
+```swift
+// MacMenuCommands
+CommandGroup(after: .toolbar) {
+    Button(L10n.Search.commandPalette) { showCommandPalette.toggle() }
+        .keyboardShortcut("p", modifiers: .command)
+}
+```
+
+> 需将 `showCommandPalette` 从 `ContentView` 提升到共享状态（或通过通知/Router）供菜单命令访问。
+
+### 插件安装 fileImporter 保留
+
+`PluginCenterView`（`Sources/Features/System/Settings/View/Plugins/PluginCenterView.swift:71`）含 `fileImporter`（插件安装）。迁移到独立 `Window` scene 后，`fileImporter` 在 `Window` 内正常工作（SwiftUI `.sheet` + `.fileImporter` 支持窗口呈现），无需额外处理，但需在 UI 测试中验证。
+
+---
+
 ## 设置页：原生 Settings scene
 
 ### 结构：保留现有 7 Section，只改布局
@@ -397,6 +452,7 @@ public static let macSidebarWidth: CGFloat = 260   // 新增，供 MacMainWindow
 | `AuthView` 桌面布局 | `AuthView` 同文件 | 运行时 Trait 分派，iOS 走原布局 |
 | `UserProfileMenu` Mac 化 | Shared 层单点 `#if os(macOS)` | iOS/watch 分支不动 |
 | `SettingsSection`/`detailColumn` 提取 | `SettingsView` 文件 | 提取为 internal，两平台共用 |
+| `MacMainWindow` | Platforms/macOS 新增 | 包装 `ContentView`，不重写内容；iOS 不受影响 |
 | `ContentView` | 仅 macOS 分支移除弹窗 | iOS 路径不变 |
 | 现有 `#if os(macOS)` | 保持/收敛 | 已在 Platforms/基础设施层 |
 | `AppSceneBuilder`/`SceneEnvironmentInjection` | App 层新增 | 单一分发点 |
@@ -408,14 +464,14 @@ public static let macSidebarWidth: CGFloat = 260   // 新增，供 MacMainWindow
 ## 实施拆分（建议任务顺序）
 
 1. **任务 1**：`SceneEnvironmentInjection`（抽取 20+ 环境注入）+ `AppSceneBuilder` + `iOSSceneBuilder`（现有结构）
-2. **任务 2**：`MacSceneBuilder` + `MacMainWindow` 骨架（三栏复用现有 `adaptiveSplitView`）
+2. **任务 2**：`MacSceneBuilder` + `MacMainWindow`（包装 `ContentView`，复用三栏/浮层/锁定/注入）骨架 + 窗口级配置
 3. **任务 3**：主窗口接入 `.commands` 基础菜单（⌘N、退出）
 4. **任务 4**：登录页运行时 Trait 桌面化（`AuthView` 分派 + `macLoginLayout` + Auth Token）
 5. **任务 5**：`Settings` scene + `MacSettingsView`（Sidebar+Detail，提取 `SettingsSection` 为可复用类型）
 6. **任务 6**：`UserProfileMenu` Mac 化（`SettingsLink` + `openWindow`）+ 辅助 Window scenes（profile/plan/plugins）
 7. **任务 7**：完整菜单栏（查看/窗口/帮助）+ 侧边栏宽度 Token + 辅助窗口登录态守卫
 8. **任务 8**：移除 macOS 分支 6 个 `appFullScreenCover` 弹窗入口，接入原生场景；AISettings 并入设置；About 用原生面板
-9. **任务 9**：视觉打磨（材质/工具栏/字体）
+9. **任务 9**：视觉打磨（材质/工具栏/字体）+ CommandPalette 快捷键（可选）+ 插件 fileImporter 验证
 10. **任务 10**：测试用例更新 + 文档更新（见下两节）
 
 ---
@@ -438,8 +494,9 @@ public static let macSidebarWidth: CGFloat = 260   // 新增，供 MacMainWindow
 | `Tests/Unit/App/AppRootScenesAndNavigationTests.swift` | 验证 `AppSceneBuilder` 分发（macOS→MacSceneBuilder，iOS→iOSSceneBuilder）；`ZhiYuApp.body` 极简化不破坏现有导航 |
 | `Tests/Unit/App/ContentViewDeepTests.swift` / `ContentViewAndCollaborationDeepTests.swift` | 确认 macOS 分支移除 6 个 `appFullScreenCover` 后 iOS 路径不变（iOS 保留），补 `ContentView` 平台分支测试 |
 | `Tests/Unit/App/AppRootScenesAndSidebarDeepTests.swift` | 侧边栏宽度 Token 切换（mac 用 `macSidebarWidth`，iOS 用原值） |
-| 新增 `Tests/Unit/App/AppSceneBuilderTests.swift` | `AppSceneBuilder.root` 各平台分发；`SceneEnvironmentInjection` 环境注入完整性（20+ environment 不遗漏） |
+| 新增 `Tests/Unit/App/AppSceneBuilderTests.swift` | `AppSceneBuilder.root` 各平台分发；`SceneEnvironmentInjection` 环境注入完整性（20+ environment 不遗漏）；`MacMainWindow` 包装 `ContentView` 保留锁定层/浮层/toast |
 | 新增 `Tests/Unit/Auth/MacAuthViewLayoutTests.swift` | `AuthView` 的 `interfaceIdiom == .mac` 分派到 `macLoginLayout`；iOS 走 `mobileLoginLayout`；登录逻辑不变 |
+| 新增 `Tests/Unit/App/MacWindowSceneTests.swift` | 辅助 `Window` scene（profile/plan/plugins）登录态守卫（未登录不触发 `openWindow`） |
 
 ### UI 测试
 
