@@ -260,6 +260,9 @@ final class Router: TestStateResettable {
     /// 是否正在显示人工智能参数设置面板
     var isShowingAISettingsSheet: Bool = false
     
+    /// 是否正在显示命令面板（CommandPalette，⌘P/⌘K 触发）
+    var showCommandPalette: Bool = false
+    
     /// 触发全局语言刷新
     func triggerLanguageRefresh() {
         languageForceUpdate.toggle()
@@ -319,6 +322,7 @@ final class Router: TestStateResettable {
             isShowingPluginsSheet = false
             isShowingAboutSheet = false
             isShowingAISettingsSheet = false
+            showCommandPalette = false
         }
     }
     

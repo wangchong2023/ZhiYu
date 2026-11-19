@@ -28,6 +28,8 @@ extension L10n {
         public static var noResults: String { Search.tr("search.noResults") }
         public static var noResultsHint: String { Search.tr("search.noResultsHint") }
         public static var filterTags: String { Search.tr("search.filterTags") }
+        /// 命令面板菜单按钮文本（⌘P 触发）
+        public static var commandPalette: String { Search.tr("palette.commandPalette") }
 
         /// results计数
         /// - Parameter count: 计数

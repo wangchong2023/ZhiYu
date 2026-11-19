@@ -28,7 +28,6 @@ struct ContentView: View {
     @Environment(\.colorScheme) var colorScheme
     
     @StateObject internal var tooltipManager = TooltipManager.shared
-    @State internal var showCommandPalette = false
     @Namespace internal var heroNamespace
     @EnvironmentObject var onboardingService: OnboardingService
     @EnvironmentObject var medalService: MedalService

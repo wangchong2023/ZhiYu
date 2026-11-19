@@ -176,7 +176,7 @@ extension ContentView {
             }
         }
         .tint(tintColor)
-        .commandPaletteSheet(isPresented: $showCommandPalette)
+        .commandPaletteSheet(isPresented: $router.showCommandPalette)
         #endif
     }
     
@@ -219,7 +219,7 @@ extension ContentView {
             }
             .accessibilityIdentifier("Graph")
         }
-        .applyTabViewCommonModifiers(tintColor: tintColor, deepLinkService: deepLinkService, showCommandPalette: $showCommandPalette, consumeDeepLink: consumeDeepLink)
+        .applyTabViewCommonModifiers(tintColor: tintColor, deepLinkService: deepLinkService, showCommandPalette: $router.showCommandPalette, consumeDeepLink: consumeDeepLink)
         #endif
     }
     
@@ -269,7 +269,7 @@ extension ContentView {
                 }
                 .tag(AppTab.graph)
         }
-        .applyTabViewCommonModifiers(tintColor: tintColor, deepLinkService: deepLinkService, showCommandPalette: $showCommandPalette, consumeDeepLink: consumeDeepLink)
+        .applyTabViewCommonModifiers(tintColor: tintColor, deepLinkService: deepLinkService, showCommandPalette: $router.showCommandPalette, consumeDeepLink: consumeDeepLink)
         #endif
     }
     

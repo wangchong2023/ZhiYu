@@ -6,11 +6,14 @@
 //  核心职责：macOS 菜单命令（新建页面/退出守卫），归一主窗口菜单。
 //
 import SwiftUI
+import Dependencies
 
 /// macOS 菜单命令
 struct MacMenuCommands: Commands {
     /// 打开窗口场景的环境依赖（用于唤起笔记本中心窗口）
     @Environment(\.openWindow) private var openWindow
+    /// 全局路由（@MainActor 单例），用于 ⌘P 命令面板切换
+    @Dependency(\.router) private var router
 
     var body: some Commands {
         // 文件：新建页面 (⌘N)
@@ -19,6 +22,15 @@ struct MacMenuCommands: Commands {
                 NotificationCenter.default.post(name: .createNewPage, object: nil)
             }
             .keyboardShortcut("n", modifiers: .command)
+        }
+
+        // 文件：命令面板 (⌘P)
+        // 命令面板（CommandPalette）是全局搜索/指令入口，放"文件"分组以复用既有菜单标题。
+        CommandGroup(after: .newItem) {
+            Button(L10n.Search.commandPalette) { @MainActor in
+                router.showCommandPalette.toggle()
+            }
+            .keyboardShortcut("p", modifiers: .command)
         }
 
         // 查看：切换侧边栏 (⌃⌘S)
