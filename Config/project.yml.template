@@ -380,18 +380,11 @@ targets:
       - path: Tests
         includes:
           - "Platforms/MacPlatformTests.swift"
-      - path: Sources
-        includes:
-          - "Platforms/macOS/MacFileArchiver.swift"
-          - "Platforms/macOS/MacOSPlatformCapabilities.swift"
-          - "Platforms/macOS/MacPasteboardService.swift"
-          - "Core/Base/Protocols/PasteboardProtocol.swift"
-          - "Core/Base/Protocols/FileArchiverProtocol.swift"
-          - "Core/Base/Protocols/PlatformCapabilities.swift"
-          - "Core/Base/Constants/AppConstants.swift"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: top.izhiyu.app.ZhiYuMacTests
+    dependencies:
+      - target: ZhiYuMac
 
   ZhiYuMacUITests:
     type: bundle.ui-testing

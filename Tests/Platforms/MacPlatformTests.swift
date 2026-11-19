@@ -13,6 +13,7 @@ import XCTest
 import LocalAuthentication
 #if os(macOS)
 import AppKit
+@testable import ZhiYuMac
 #else
 @testable import ZhiYu
 #endif

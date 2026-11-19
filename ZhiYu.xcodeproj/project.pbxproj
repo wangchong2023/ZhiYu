@@ -96,7 +96,6 @@
 		077CB3586F4CABC3AB9C43AE /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = DDB12E0501C0083FE73E085B /* SnapshotTesting */; };
 		07858CA46ADCAE6D93512106 /* CoreConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 526A6BD8E59AD3939C841264 /* CoreConstants.swift */; };
 		079CC553F3806F02866516C4 /* DatabaseManager+Testing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A25A45DBEE89BE292BE12C8 /* DatabaseManager+Testing.swift */; };
-		079D3F008B0EF5482410257E /* FileArchiverProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00EA2420EB77613B5AE3641F /* FileArchiverProtocol.swift */; };
 		07A31E796326F6C7710F3431 /* UserProfileAndMarkdownRendererTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AF68A6CC1CBE5DF3F209C33 /* UserProfileAndMarkdownRendererTests.swift */; };
 		07C754855A73285795BE4AB1 /* ModuleRegistrar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27225A732EA9DEE5493E0E41 /* ModuleRegistrar.swift */; };
 		0804C0ABC060D68145A33EAB /* CollaborationModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4E7C238B00D09E936040D6F /* CollaborationModels.swift */; };
@@ -250,7 +249,6 @@
 		13AD1C7748B3861EE5951E95 /* KeyStoreProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 847817CF10BD9D479CA8EAEB /* KeyStoreProtocol.swift */; };
 		13CC166915059080E810BEAE /* AIViewProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBC5F373188318BE0EF81DDE /* AIViewProvider.swift */; };
 		13CEBA8B9A3B3CC31015EB21 /* DesignSystem+Feedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCBBBA7AEA1CFF5A2D16A8DD /* DesignSystem+Feedback.swift */; };
-		13D1320494E799385BBDC1F8 /* MacOSPlatformCapabilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02760DED2B74C5B9CD4390EE /* MacOSPlatformCapabilities.swift */; };
 		13D84AB9DADBDB652CFEA323 /* SynthesisReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65491BB0DA7A65CDCA20BFB0 /* SynthesisReportView.swift */; };
 		13EE30F469253E3E96F93172 /* AppEnvironmentLifecycleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD3B97D031A794649BD45358 /* AppEnvironmentLifecycleTests.swift */; };
 		13EE40C05F7CE109FB9D344D /* SubscriptionPlanCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E502AED2E3FF220E643BD7C /* SubscriptionPlanCard.swift */; };
@@ -678,7 +676,6 @@
 		39EC9749F7A004FB5082B00E /* MultiVaultSwitchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A41902A5FBD7B7865B4DCFF /* MultiVaultSwitchTests.swift */; };
 		39F69FD2BC24B963E2755245 /* ImageExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = E67B7AB3CAF9B4C0B3D23C99 /* ImageExtractor.swift */; };
 		3A3099522006D1C727B0CFE0 /* PluginRecordFTS+GRDB.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D5A15FA8B384FE04FC600CC /* PluginRecordFTS+GRDB.swift */; };
-		3A3E71E91C99BA26AA421D14 /* PasteboardProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 227B4CA0D1A46574EE62D160 /* PasteboardProtocol.swift */; };
 		3A5F25573700C2DC34BBE734 /* FeatureGateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 815CF94E692FE376E5075532 /* FeatureGateManager.swift */; };
 		3A7734C6C45FD15CEC140C8D /* ModelLabMetricsCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A0BFE5F4F8E02FA36220D8D /* ModelLabMetricsCalculator.swift */; };
 		3AC6280E458A0E2658CD74FF /* ModelFormatProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = E33C1C655D744447DE4CA076 /* ModelFormatProbe.swift */; };
@@ -829,7 +826,6 @@
 		45ECE52A4EDCAC948AC9A80D /* iOSPlatformRegistrar.swift in Sources */ = {isa = PBXBuildFile; fileRef = B87FF126D63203F9A8DEF2F4 /* iOSPlatformRegistrar.swift */; };
 		4638988057B1161BB975026A /* PluginDetailSectionContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEB4FF89C5AC43C9AA23B06F /* PluginDetailSectionContainer.swift */; };
 		465E0088320DEF40278CED2F /* testTaskCenterView_EmptyState_RendersDashboardAndCards.1.png in Resources */ = {isa = PBXBuildFile; fileRef = 9FCFC9C68AA5487C8ED2EE5E /* testTaskCenterView_EmptyState_RendersDashboardAndCards.1.png */; };
-		4664F21262AED62CFD293210 /* PlatformCapabilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = F854391C926615E4B542DFA2 /* PlatformCapabilities.swift */; };
 		46945E8B3ECEE0F1CBEDDBDA /* L10n+ICloud.swift in Sources */ = {isa = PBXBuildFile; fileRef = C755F375A0358C5401CE811E /* L10n+ICloud.swift */; };
 		46ADE444E8BA9B997B6980FE /* MetricTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55899B3C262103F0E75682D8 /* MetricTile.swift */; };
 		46B98FB0764CA3428FFE255F /* AIAndEditorViewsSnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 773712830AFDF7B2F2ABF362 /* AIAndEditorViewsSnapshotTests.swift */; };
@@ -1981,7 +1977,6 @@
 		A8EF1509E90020FB30352147 /* MockGoogleAuthStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7C292E6732FFC25A2105B16 /* MockGoogleAuthStrategy.swift */; };
 		A91053C210FFD9BF8C2A5414 /* PDFModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 184351F1861A0151EBFF16E5 /* PDFModels.swift */; };
 		A922933FC1BC67387DC5BD4E /* testSnapshotDetailViewDefault.1.png in Resources */ = {isa = PBXBuildFile; fileRef = 7B47D8F59948E2FE867D42F8 /* testSnapshotDetailViewDefault.1.png */; };
-		A955C0434239CE44A79AECCE /* MacPasteboardService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9B86CFA19141866776ABB3C /* MacPasteboardService.swift */; };
 		A96BAFD587013B54DAA83DDF /* RAGEvaluationHistoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A615CD36E7E0535C6B46ACB /* RAGEvaluationHistoryTests.swift */; };
 		A99763AE07C8CD74AE301E82 /* PromptSanitizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F5D3C83452E0C8A2E3AB835 /* PromptSanitizer.swift */; };
 		A9A89C6373C95D6B1EF7FE60 /* SettingsStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD7963CE8DF09E5426298B83 /* SettingsStoreTests.swift */; };
@@ -1993,7 +1988,6 @@
 		AA36730ADEFD442DF78B9DC8 /* ModelDownloadCapabilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 688887F0F40AED8EB3686992 /* ModelDownloadCapabilities.swift */; };
 		AA55019AB89C542ECA1066D6 /* InferenceParametersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A45E6EE45D4890FC8A7E747D /* InferenceParametersView.swift */; };
 		AA6C1E21ACEF96DDDB4D617B /* AppBackupServiceConcurrencyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E944FD528F6D070BFA171A /* AppBackupServiceConcurrencyTests.swift */; };
-		AA893FE8BBE394C1F9076BB4 /* MacFileArchiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = E92A3DD3844EF70EDC0F0AAD /* MacFileArchiver.swift */; };
 		AA906F1DE3F897002DCEEE6A /* LiveActivityServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F6BFB35588F9400037674FD /* LiveActivityServiceTests.swift */; };
 		AAA8BB47761E53AB9C99F77C /* AgreementCheckboxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E081B8D0F4BF2852484795CC /* AgreementCheckboxView.swift */; };
 		AAC18840BDAD08C5F87EF126 /* IngestTimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF76635B437548E4513D9044 /* IngestTimelineView.swift */; };
@@ -2912,7 +2906,6 @@
 		F918C660642BFBE486A99553 /* LLMConfigurationAndMockClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97F25BCAAD9EC1DB767631B9 /* LLMConfigurationAndMockClientTests.swift */; };
 		F91D8539E4469CF24B1382B2 /* PageDetailCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46AB6DE722F0D1E050E07E59 /* PageDetailCoordinator.swift */; };
 		F935670809DF6D1E64CA49F0 /* testQuizView_EmptyQuestions_RendersUnavailableState.1.png in Resources */ = {isa = PBXBuildFile; fileRef = C34F21022BCCC9147ED1156A /* testQuizView_EmptyQuestions_RendersUnavailableState.1.png */; };
-		F95AFC2EC7F899077137C1CC /* AppConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751F592B285200694823E27F /* AppConstants.swift */; };
 		F95D36996271F9E880D17925 /* ModelLabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B605263F059EDE0CA6EC7CCF /* ModelLabView.swift */; };
 		F9647C52586210F45485F221 /* LLMProviders.json in Resources */ = {isa = PBXBuildFile; fileRef = 185B78C17147A3E10192A046 /* LLMProviders.json */; };
 		F980CD5D1737BCE6394280E8 /* SystemStatsModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCD316F099D6A447DAEA42CD /* SystemStatsModels.swift */; };
@@ -3025,6 +3018,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 67D028F10F307E1351F7262E;
 			remoteInfo = ZhiYu;
+		};
+		CA2FB673CF9AB535BC6C73BA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 343192E2DC0E4BD3DD924261 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 7A6CFC0442842DC91A9C4990;
+			remoteInfo = ZhiYuMac;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -9570,6 +9570,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				38710DC5963CF492FE0656A6 /* PBXTargetDependency */,
 			);
 			name = ZhiYuMacTests;
 			packageProductDependencies = (
@@ -10367,14 +10368,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F95AFC2EC7F899077137C1CC /* AppConstants.swift in Sources */,
-				079D3F008B0EF5482410257E /* FileArchiverProtocol.swift in Sources */,
-				AA893FE8BBE394C1F9076BB4 /* MacFileArchiver.swift in Sources */,
-				13D1320494E799385BBDC1F8 /* MacOSPlatformCapabilities.swift in Sources */,
-				A955C0434239CE44A79AECCE /* MacPasteboardService.swift in Sources */,
 				7BF3AC5D32F2EEA872C87A49 /* MacPlatformTests.swift in Sources */,
-				3A3E71E91C99BA26AA421D14 /* PasteboardProtocol.swift in Sources */,
-				4664F21262AED62CFD293210 /* PlatformCapabilities.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -12945,6 +12939,11 @@
 			target = 7A6CFC0442842DC91A9C4990 /* ZhiYuMac */;
 			targetProxy = 4DC6186E559610583C50431F /* PBXContainerItemProxy */;
 		};
+		38710DC5963CF492FE0656A6 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 7A6CFC0442842DC91A9C4990 /* ZhiYuMac */;
+			targetProxy = CA2FB673CF9AB535BC6C73BA /* PBXContainerItemProxy */;
+		};
 		7A6243E7563D905212F7A77E /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = E56CC6F666A8D6AEEA068124 /* ZhiYuWidgets */;
@@ -13075,7 +13074,6 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COMBINE_HIDPI_IMAGES = YES;
-				INFOPLIST_FILE = Sources/Platforms/iOS/Widgets/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -13084,6 +13082,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 27.0;
 				PRODUCT_BUNDLE_IDENTIFIER = top.izhiyu.app.ZhiYuMacTests;
 				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ZhiYuMac.app/Contents/MacOS/ZhiYuMac";
 			};
 			name = Debug;
 		};
@@ -13162,7 +13161,6 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COMBINE_HIDPI_IMAGES = YES;
-				INFOPLIST_FILE = Sources/Platforms/iOS/Widgets/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -13171,6 +13169,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 27.0;
 				PRODUCT_BUNDLE_IDENTIFIER = top.izhiyu.app.ZhiYuMacTests;
 				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ZhiYuMac.app/Contents/MacOS/ZhiYuMac";
 			};
 			name = Release;
 		};
