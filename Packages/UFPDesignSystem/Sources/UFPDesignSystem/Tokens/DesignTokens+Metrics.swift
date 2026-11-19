@@ -128,6 +128,12 @@ extension DesignTokens {
         public static let settingsSidebarWidth: CGFloat = DesignTokens.Spacing.Metrics.settingsSidebarWidth
         public static let settingsIconFrameSize: CGFloat = DesignTokens.Spacing.Metrics.settingsIconFrameSize
 
+        // MARK: - 登录页 (Auth) 布局尺寸 Token
+        /// Mac 登录页品牌区宽度 (420pt)
+        public static let authHeroWidth: CGFloat = 420
+        /// Mac 登录页登录表单最大宽度 (420pt)
+        public static let authFormWidth: CGFloat = 420
+
         // MARK: - 快照测试设备与布局尺寸 Token
         /// iPhone 13/14/15 Pro 竖屏逻辑宽度 (375pt)
         public static let snapshotPhoneWidth: CGFloat = 375

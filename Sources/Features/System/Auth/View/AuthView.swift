@@ -18,6 +18,7 @@ struct AuthView: View {
     @Dependency(\.toastService) private var toastManager
     @Environment(AuthService.self) var authService
     @Environment(ThemeManager.self) var themeManager
+    @Environment(\.interfaceIdiom) private var idiom
 
     // MARK: - 区域感知与3D翻转状态
     @State private var currentRegion: AuthRegion = AuthRegionDetector.shared.detectDefaultRegion()
@@ -34,6 +35,82 @@ struct AuthView: View {
     var body: some View {
         // swiftlint:disable:next redundant_discardable_let
         let _ = (showPrivacySheet, showTermsSheet)
+        if idiom == .mac {
+            macLoginLayout
+        } else {
+            mobileLoginLayout
+        }
+    }
+
+    // MARK: - 运行时 Trait 分派的登录布局
+
+    /// 桌面端 (macOS) 居中布局：左品牌区 + 右表单区，保留 3D 翻转卡片动画
+    private var macLoginLayout: some View {
+        ZStack {
+            // 背景层
+            themeManager.pageBackground()
+                .ignoresSafeArea()
+
+            HStack(spacing: 0) {
+                // 左侧品牌展示区
+                heroHeader
+                    .frame(maxWidth: DesignTokens.Metrics.authHeroWidth)
+                    .padding(.leading, DesignTokens.Spacing.huge)
+
+                Divider()
+                    .background(Color.appBorder.opacity(DesignTokens.Opacity.disabled))
+
+                // 右侧登录表单区
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: DesignTokens.Spacing.large) {
+                        topControlBar
+
+                        // 卡片登录承载容器 (保留3D翻转动画)
+                        Group {
+                            if displayedRegion == .china {
+                                AuthPhonePanel(
+                                    isLoading: $isLoading,
+                                    isAgreementChecked: $isAgreementChecked,
+                                    showPrivacySheet: $showPrivacySheet,
+                                    showTermsSheet: $showTermsSheet,
+                                    handleAuth: handleAuth
+                                )
+                            } else {
+                                OverseasLoginCardView()
+                                    .id(Localized.currentLanguage)
+                                    .rotation3DEffect(.degrees(180), axis: (x: 0, y: 1.0, z: 0.0))
+                            }
+                        }
+                        .rotation3DEffect(.degrees(rotateDegrees), axis: (x: 0, y: 1.0, z: 0.0))
+
+                        AuthOAuthPanel(
+                            isLoading: $isLoading,
+                            isAgreementChecked: $isAgreementChecked,
+                            errorMessage: $errorMessage,
+                            handleThirdPartyLogin: handleThirdPartyLogin
+                        )
+                        AuthGuestSection()
+                    }
+                    .frame(maxWidth: DesignTokens.Metrics.authFormWidth)
+                    .padding(DesignTokens.Spacing.wide)
+                }
+                .frame(maxWidth: .infinity)
+            }
+        }
+        .policySheet(
+            isPresented: $showPrivacySheet,
+            title: L10n.Auth.privacyPolicyTitle,
+            content: L10n.Auth.privacyPolicyContent
+        )
+        .policySheet(
+            isPresented: $showTermsSheet,
+            title: L10n.Auth.termsOfServiceTitle,
+            content: L10n.Auth.termsOfServiceContent
+        )
+    }
+
+    /// 移动端 (iPhone/iPad/watchOS) 布局：原纵向单列布局，保留 3D 翻转卡片动画
+    private var mobileLoginLayout: some View {
         ZStack {
             // 背景层
             themeManager.pageBackground()
