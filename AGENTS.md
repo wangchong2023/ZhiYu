@@ -120,7 +120,7 @@
 ```bash
 # 自动强载环境变量 → 自动 xcodegen → 一键构建对应 Targets
 make ios                  # 构建 iOS App (ZhiYu scheme)
-make mac                  # 构建 macOS Catalyst App (ZhiYuMac scheme)
+make mac                  # 构建 macOS 原生 App (ZhiYuMac scheme)
 make watch                # 构建 watchOS App (ZhiYuWatch scheme)
 make test                 # 运行主 App 全量测试（单元 + UI，实时进度监控 + 超时保护）
 make test-unit            # 仅运行单元测试（排除 UI 测试，约 3 分钟）
@@ -316,7 +316,7 @@ container.register(tagStore, for: TagStore.self)
 ## Targets
 
 - **ZhiYu** — iOS 应用（iPhone/iPad），主 target
-- **ZhiYuMac** — Mac Catalyst 应用
+- **ZhiYuMac** — 原生 macOS 应用
 - **ZhiYuWatch** — 独立 watchOS 应用
 - **ZhiYuWidgets** — iOS Widget 扩展（Live Activities）
 - **ZhiYuTests** — 单元测试 bundle
