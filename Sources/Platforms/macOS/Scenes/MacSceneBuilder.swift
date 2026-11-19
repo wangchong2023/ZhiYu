@@ -39,9 +39,9 @@ enum MacSceneBuilder {
         .commands { MacMenuCommands() }
     }
 
-    /// 设置窗口：占位视图，任务 5 创建 MacSettingsView 后替换
+    /// 设置窗口：复用 SettingsView 的 .mac 分支（sidebarColumn + detailColumn 布局）
     static func settings() -> some Scene {
-        Settings { MacSettingsPlaceholder() }
+        Settings { MacSettingsView() }
     }
 
     /// 辅助窗口：个人资料、订阅计划、插件中心、笔记本中心
@@ -60,12 +60,5 @@ enum MacSceneBuilder {
         Window(L10n.Vault.homeTitle, id: "notebook-hub") {
             NotebookHubView()
         }
-    }
-}
-
-/// 设置窗口占位视图：任务 5 创建 MacSettingsView 后移除
-private struct MacSettingsPlaceholder: View {
-    var body: some View {
-        Text(L10n.Common.settings)
     }
 }

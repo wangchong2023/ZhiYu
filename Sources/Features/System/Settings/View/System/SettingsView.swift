@@ -271,8 +271,10 @@ struct SettingsView: View {
             .navigationTitle(section.displayName)
             .appNavigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    doneButton(router: router)
+                if !(idiom == .macCatalyst || idiom == .mac) {
+                    ToolbarItem(placement: .confirmationAction) {
+                        doneButton(router: router)
+                    }
                 }
             }
         } else {
