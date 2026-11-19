@@ -36,6 +36,7 @@ SKIP_DIRS = {
     ".git", ".build", "DerivedData", "build",
     ".claude", ".gemini",           # IDE 工具配置，非项目代码
     "scratch",                       # 临时脚本
+    "security-check",                # CodeFree 代码审查报告产物（含绝对路径，非项目代码）
     ".VSCodeCounter",                # VSCode 代码统计工具生成的报告（构建产物）
 }
 
