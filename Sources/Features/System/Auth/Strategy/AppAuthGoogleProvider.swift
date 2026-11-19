@@ -117,15 +117,8 @@ public struct AppAuthGoogleProvider: GoogleSignInProviding {
                 callback: finish
             )
             #elseif canImport(AppKit)
-            // ASPresentationAnchor 在 macOS 下即 NSWindow
-            guard let window = anchor as? NSWindow else {
-                continuation.resume(throwing: AppError.auth(
-                    domain: FeatureConstants.ModuleName.googleAuthStrategy,
-                    code: -1,
-                    description: L10n.Auth.googleWindowError
-                ))
-                return
-            }
+            // ASPresentationAnchor 在 macOS 下即 NSWindow，编译期可保证转换成功
+            let window = anchor as NSWindow
             session = OIDAuthState.authState(
                 byPresenting: request,
                 presenting: window,

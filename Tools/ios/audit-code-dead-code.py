@@ -35,6 +35,9 @@ IGNORE_PATTERNS = [
     r"is declared public, but not used outside",      # 跨模块公开 API
     r"protocol .* conformance is redundant",           # 协议冗余声明
     r"retained, but never used",                       # 保留字段
+    # ── 跨平台条件编译引用（Periphery 单平台视角误判）──
+    r"Property 'watchOSNotSupported' is unused",       # FeatureConstants+Auth.swift:137 仅 watchOS 分支引用
+    r"Property 'carrierAuthStrategy' is unused",       # FeatureConstants+Common.swift:64 仅 watchOS 分支引用
     # ── Swift 编译器警告（非 Periphery 死代码）──
     r"immutable value .* was never used",              # 未使用变量
     r"initialization of immutable value .* was never used",  # 未使用初始化

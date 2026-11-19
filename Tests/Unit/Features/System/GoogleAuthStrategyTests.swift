@@ -47,7 +47,7 @@ final class GoogleAuthStrategyTests: XCTestCase {
             .init(idToken: "token", userID: "uid", email: "a@b.com", name: "Alice")
         ),
         clientID: String? = "valid-client-id",
-        anchor: ASPresentationAnchor? = UIWindow()
+        anchor: ASPresentationAnchor? = TestWindowFactory.makeWindow()
     ) -> GoogleAuthStrategy {
         GoogleAuthStrategy(
             signInProvider: MockGoogleSignInProvider(result: result),
@@ -153,7 +153,7 @@ final class GoogleAuthStrategyTests: XCTestCase {
         let strategy = GoogleAuthStrategy(
             signInProvider: provider,
             clientIDResolver: { "valid" },
-            anchorProvider: { UIWindow() }
+            anchorProvider: { TestWindowFactory.makeWindow() }
         )
 
         let credential = try await strategy.acquireCredentials()

@@ -22,9 +22,13 @@ public struct DeviceHardwareBar: View {
         #else
         var size = 0
         sysctlbyname("hw.machine", nil, &size, nil, 0)
-        var machine = [CChar](repeating: 0, count: size)
-        sysctlbyname("hw.machine", &machine, &size, nil, 0)
-        let identifier = String(cString: machine)
+        var machine = [UInt8](repeating: 0, count: size)
+        _ = machine.withUnsafeMutableBytes { buffer in
+            sysctlbyname("hw.machine", buffer.baseAddress, &size, nil, 0)
+        }
+        let identifier = String(bytes: machine, encoding: .utf8)?
+            .trimmingCharacters(in: CharacterSet(charactersIn: String(FeatureConstants.Hardware.cStringNullTerminator)))
+            ?? FeatureConstants.Hardware.fallbackChipName
         return identifier.isEmpty ? FeatureConstants.Hardware.fallbackChipName : identifier
         #endif
     }

@@ -291,6 +291,8 @@ extension FeatureConstants {
         static let minAvailableMemoryGB: Double = 0.5
         /// 无法获取可用内存时按物理内存总量估算的占比
         static let fallbackRatio: Double = 0.7
+        /// C 字符串数组的 null 终止符（sysctl 返回的 `hw.machine` 以此结尾）
+        static let cStringNullTerminator: Character = "\0"
     }
 
     // MARK: - 模型任务标签常量 (Model Task Tags)

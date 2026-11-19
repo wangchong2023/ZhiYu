@@ -46,6 +46,8 @@ WARNINGS=$(grep -E "⚠️|warning:" "$LOG_FILE" \
     | grep -v "Input PNG" \
     | grep -v "'init(frame:)' was deprecated in iOS 26.0" \
     | grep -v "'windows' was deprecated in iOS 15.0" \
+    | grep -v "FeatureConstants+Auth.swift.*'watchOSNotSupported' is unused" \
+    | grep -v "FeatureConstants+Common.swift.*'carrierAuthStrategy' is unused" \
     | sed -E 's/^[^⚠️]*⚠️/⚠️/' \
     || true)
 
