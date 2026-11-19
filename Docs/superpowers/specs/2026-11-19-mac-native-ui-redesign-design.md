@@ -350,41 +350,28 @@ CommandGroup(after: .toolbar) {
 
 **决策**：不重分类，沿用现有 `SettingsView.SettingsSection`（appearance/security/data/plugins/feedback/developer/about），只把移动端列表改为 Mac 原生布局。
 
-`MacSettingsView` 复用 `SettingsView` 的 `SettingsSection` 枚举与 `detailColumn(for:)` 内容，但用 **Sidebar + Detail 布局**（对齐 `SettingsView.swift:108` 的 `.mac` 已有分支，抽为独立 `MacSettingsView`）：
+**关键修正**：`SettingsView` 已有 `.mac` 分支（`SettingsView.swift:108-125`，sidebarColumn + detailColumn 的侧边栏+详情布局），已接近原生 Settings。`MacSettingsView` **复用现有 `SettingsView`**，不新建重复布局，也不提取 private 成员（`detailColumn`/`defaultSettingsList` 是 private 且依赖多环境，提取成本高风险大）。
 
 ```swift
+// Sources/Platforms/macOS/Scenes/MacSettingsView.swift
+/// macOS 原生设置：复用 SettingsView 的 .mac 分支，仅作场景外壳
 struct MacSettingsView: View {
-    @State private var selectedSection: SettingsView.SettingsSection? = .appearance
-
     var body: some View {
-        NavigationSplitView {
-            List(SettingsView.SettingsSection.allCases, selection: $selectedSection) { section in
-                Label(section.displayName, systemImage: section.iconName)
-                    .tag(section)
-            }
-            .navigationSplitViewColumnWidth(min: 180, ideal: 220, max: 260)
-            .listStyle(.sidebar)
-        } detail: {
-            if let section = selectedSection {
-                SettingsView.detailColumn(for: section)   // 复用现有分区内容
-            } else {
-                Text(L10n.Common.selectSection)
-            }
-        }
-        .frame(minWidth: 620, minHeight: 480)
+        SettingsView()   // 复用 .mac 分支（sidebarColumn + detailColumn）
     }
 }
 ```
 
-> **Note**: `SettingsSection` 及其 `detailColumn(for:)` 需从 `SettingsView` 内部提取为可复用类型（`private` → `internal`，或迁移到独立文件），供 `MacSettingsView` 与 `SettingsView` 共用，避免重复。
+### SettingsView 两处小改
+
+1. **Mac 分支移除 doneButton**：`detailColumn`（`SettingsView.swift:273-277`）内嵌 `doneButton`（依赖 `router.isShowingSettingsSheet` 关闭 sheet）。原生 `Settings` scene 由系统关闭（⌘W / 关闭按钮），Mac 分支不再显示"完成"按钮。
+2. **`detailColumn(for:router:)` 的 router 依赖**：Mac 分支仍传 `router`（`detailColumn` 内部 `AboutView`/`FeedbackView` 可能用），保留。
+
+> **Note**: `SettingsSection` 枚举保持 `private`（`SettingsView.swift:30`）——因为 `MacSettingsView` 复用整个 `SettingsView`，无需单独提取枚举。原设计"提取 SettingsSection 为可复用类型"不必要，予以撤销。
 
 ### AISettings 并入
 
 `AISettingsView` 作为 AI 设置内容并入 Mac 设置（新增 Section 或并入 appearance/data），Mac 上不再以独立 sheet 打开。
-
-### Pane 内容来源
-
-各 Section 复用现有 `SettingsView` 分区（外观/安全/数据/插件/反馈/关于），依赖（`SettingsStore`/`ThemeManager`/`LLMConfig`）经环境注入保持。原有 `.mac` 分支的 sidebarColumn 逻辑迁移到 `MacSettingsView`，`SettingsView` 保留 iOS/移动端路径。
 
 ### 触发方式
 
@@ -451,7 +438,7 @@ public static let macSidebarWidth: CGFloat = 260   // 新增，供 MacMainWindow
 | 登录页 Token | `UFPDesignSystem` Metrics | 仅新增 `authHeroWidth`/`authFormWidth`，iOS 不引用 |
 | `AuthView` 桌面布局 | `AuthView` 同文件 | 运行时 Trait 分派，iOS 走原布局 |
 | `UserProfileMenu` Mac 化 | Shared 层单点 `#if os(macOS)` | iOS/watch 分支不动 |
-| `SettingsSection`/`detailColumn` 提取 | `SettingsView` 文件 | 提取为 internal，两平台共用 |
+| `SettingsView` Mac 分支微调 | `SettingsView` 文件 | 仅 Mac 分支移除 doneButton，iOS 路径不变 |
 | `MacMainWindow` | Platforms/macOS 新增 | 包装 `ContentView`，不重写内容；iOS 不受影响 |
 | `ContentView` | 仅 macOS 分支移除弹窗 | iOS 路径不变 |
 | 现有 `#if os(macOS)` | 保持/收敛 | 已在 Platforms/基础设施层 |
@@ -467,7 +454,7 @@ public static let macSidebarWidth: CGFloat = 260   // 新增，供 MacMainWindow
 2. **任务 2**：`MacSceneBuilder` + `MacMainWindow`（包装 `ContentView`，复用三栏/浮层/锁定/注入）骨架 + 窗口级配置
 3. **任务 3**：主窗口接入 `.commands` 基础菜单（⌘N、退出）
 4. **任务 4**：登录页运行时 Trait 桌面化（`AuthView` 分派 + `macLoginLayout` + Auth Token）
-5. **任务 5**：`Settings` scene + `MacSettingsView`（Sidebar+Detail，提取 `SettingsSection` 为可复用类型）
+5. **任务 5**：`Settings` scene + `MacSettingsView`（复用 `SettingsView` 的 `.mac` 分支，移除 doneButton）
 6. **任务 6**：`UserProfileMenu` Mac 化（`SettingsLink` + `openWindow`）+ 辅助 Window scenes（profile/plan/plugins）
 7. **任务 7**：完整菜单栏（查看/窗口/帮助）+ 侧边栏宽度 Token + 辅助窗口登录态守卫
 8. **任务 8**：移除 macOS 分支 6 个 `appFullScreenCover` 弹窗入口，接入原生场景；AISettings 并入设置；About 用原生面板
@@ -542,7 +529,7 @@ public static let macSidebarWidth: CGFloat = 260   // 新增，供 MacMainWindow
 
 | 风险 | 缓解 |
 |------|------|
-| `SettingsSection`/`detailColumn(for:)` 从 `SettingsView` 提取改动大 | 提取为可复用类型，`SettingsView` 与 `MacSettingsView` 共用；iOS 单测守护 |
+| `SettingsView` Mac 分支 doneButton 移除影响 iOS | 仅改 `.mac` 分支，iOS 走原 `else` 分支；iOS 单测守护 |
 | 6 个 `appFullScreenCover` 移除影响 Router/UI 测试 | 仅移除 macOS 分支，iOS 保留；UI 测试分平台断言 |
 | `UserProfileMenu`（Shared 层）Mac 化改动 | 单点 `#if os(macOS)` 内聚；iOS/watch 分支不动 |
 | 辅助窗口登录态 | `openWindow` 守卫（`isLoggedIn || isGuest`） |
