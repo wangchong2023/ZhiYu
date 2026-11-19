@@ -347,7 +347,7 @@ graph TD
 2. **云端策略 RSA/ECDSA 数字签名与 Delta Patch (`DynamicComplianceManager+Patch`)**：
    - 使用 Apple `Security.framework` `SecKeyVerifySignature` 对云端 RemoteConfig JSON 下发策略实施 RSA/ECDSA 公钥防篡改验签；校验通过后自动执行 `configVersion` 增量 Delta Patch 合并。
 3. **三端 0 编译告警静态门禁 (`check-code-compiler-warnings.py`)**：
-   - 抓取 iOS / macOS Catalyst / watchOS 三端 Xcode 编译日志，阻断任何包含警告的代码提交。```
+   - 抓取 iOS / macOS / watchOS 三端 Xcode 编译日志，阻断任何包含警告的代码提交。```
 
 ### 6.1 核心合规与安全防护组件
 

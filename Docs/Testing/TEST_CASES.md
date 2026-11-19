@@ -118,11 +118,11 @@
 
 ---
 
-## 8. macOS Catalyst 专项测试用例
+## 8. macOS 专项测试用例
 
 | 用例 ID | 模块 | 测试场景 | 预期结果 | 优先级 |
 | :--- | :--- | :--- | :--- | :--- |
-| TC-MAC-01 | MenuBar | 顶栏菜单交互 | 验证在 macOS Catalyst 下顶栏“文件”、“编辑”、“AI 实验室”等系统原生菜单存在且可被键盘快捷键呼出。 | P1 |
+| TC-MAC-01 | MenuBar | 顶栏菜单交互 | 验证在 macOS 下顶栏“文件”、“编辑”、“AI 实验室”等系统原生菜单存在且可被键盘快捷键呼出。 | P1 |
 | TC-MAC-02 | Keyboard | 全局快捷键响应 | 验证使用 `Cmd + N` 快速新建卡片，`Cmd + F` 触发全局混合检索，功能完全对齐。 | P1 |
 
 ---
@@ -183,8 +183,8 @@
 | TC-VLT-04 | `SecurityIntegrityTests` (Tests/Unit/Core/SecurityIntegrityTests.swift) | `testHMACCalculationAndVerification`, `testIntegrityFailureOnTamper` |
 | TC-VLT-05 | `StorageRecordsTests` (Tests/Unit/Infrastructure/StorageRecordsTests.swift) | `testAuditLogRecord_databaseTableName_isAuditLogs`, `testAuditLogRecord_initWithCustomValues_storesProperties` |
 | TC-VLT-06 | `MultiVaultSwitchTests` (Tests/Integration/MultiVaultSwitchTests.swift) | `testConcurrencyVaultSwitchingStability`, `testVaultSwitchingNotificationBroadcasting` |
-| TC-MAC-01 | 无对应自动化测试（需求场景：macOS Catalyst 顶栏系统原生菜单） | — |
-| TC-MAC-02 | 无对应自动化测试（需求场景：macOS Catalyst 全局键盘快捷键） | — |
+| TC-MAC-01 | 无对应自动化测试（需求场景：macOS 顶栏系统原生菜单） | — |
+| TC-MAC-02 | 无对应自动化测试（需求场景：macOS 全局键盘快捷键） | — |
 | TC-WAT-01 | `WatchSyncTests` (Tests/Platforms/WatchSyncTests.swift) | `testWatchVoiceRecorderSync` |
 | TC-WAT-02 | `WatchSyncTests` (Tests/Platforms/WatchSyncTests.swift) | `testWatchMicroRecapCacheSync` |
 | TC-WAT-03 | `WatchPlatformTests` (Tests/Platforms/WatchPlatformTests.swift) | `testWatchModelCompilerThrows`, `testWatchSecurityScopedStorageStub`, `testWatchBiometricAuthProviderInterface` |

@@ -169,7 +169,7 @@
 ## 4. 非功能性需求 (Non-Functional Requirements)
 *   **性能**：本地搜索响应延迟 < 200ms；AI 混合检索首字弹出 < 1s。
 *   **隐私**：默认”离线优先”，敏感内容向量化在 Apple Neural Engine 内部完成。
-*   **跨平台**：iOS / macOS (Catalyst) / watchOS 三端原生，UI 自动适配。
+*   **跨平台**：iOS / macOS / watchOS 三端原生，UI 自动适配。
 
 ## 4. 用户路径地图 (User Journey Map)
 

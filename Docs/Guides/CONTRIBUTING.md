@@ -30,7 +30,7 @@ open ZhiYu.xcodeproj
 # 1. 构建 iOS 模拟器版本
 xcodebuild build -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
 
-# 2. 构建 macOS Catalyst 版本
+# 2. 构建 macOS 原生版本
 xcodebuild build -project ZhiYu.xcodeproj -scheme ZhiYuMac -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
 
 # 3. 运行全部单元与集成测试套件并开启覆盖率生成

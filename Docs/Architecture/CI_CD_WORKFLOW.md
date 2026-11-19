@@ -73,7 +73,7 @@ swift test --package-path Packages/ZhiYuFeatures
 | **prepare** | `build-prepare` | `main` / `develop` / `release/*` push | `xcodegen generate` + 解析 SPM 依赖 + 注入版本号 |
 | **analyze** | `static-analysis` | 所有 push / MR | 运行 20 项 Gatekeeper 静态合规审计 |
 | **build** | `build-ios` | `main` / `develop` / `release/*` push | 构建 iOS 模拟器目标 (`ZhiYu`) |
-| | `build-macos` | `main` / `develop` / `release/*` push | 构建 macOS Catalyst 目标 (`ZhiYuMac`) |
+| | `build-macos` | `main` / `develop` / `release/*` push | 构建原生 macOS 目标 (`ZhiYuMac`) |
 | | `build-watchos` | `main` / `develop` / `release/*` push | 构建 watchOS 模拟器目标 (`ZhiYuWatch`) |
 | **test** | `test-and-coverage` | `main` / `develop` / `release/*` push | 运行全量单元测试与覆盖率熔断门禁（语句 ≥ 95%，分支 ≥ 90%；门禁由 xccov 本地脚本 `check_xccov_coverage.py` 执行） |
 | **perf** | `perf-baseline` | 每周夜间 + 手动触发 | 运行性能测试与回归基线 |

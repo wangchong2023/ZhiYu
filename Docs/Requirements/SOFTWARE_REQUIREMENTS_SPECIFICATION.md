@@ -30,7 +30,7 @@
 
 ### 3.2 平台兼容性
 - **iOS/iPadOS**: 最小版本 17.0
-- **macOS**: 最小版本 14.0 (Catalyst 兼容)
+- **macOS**: 最小版本 27.0（原生 macOS target）
 - **watchOS**: 最小版本 10.0 (独立的语音采集逻辑)
 
 ## 4. 可靠性与稳健性 (Reliability)

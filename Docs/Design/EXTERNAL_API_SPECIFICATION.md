@@ -1,6 +1,6 @@
 # 智宇 (ZhiYu) 对外 RESTful API 接口规范文档
 
-本文档定义了智宇 (ZhiYu) AI 原生知识管理系统对外暴露的标准 RESTful HTTP API 接口规范。供前端应用（iOS / macOS Catalyst / watchOS）、客户端 SDK 以及第三方开发者集成参考。
+本文档定义了智宇 (ZhiYu) AI 原生知识管理系统对外暴露的标准 RESTful HTTP API 接口规范。供前端应用（iOS / macOS / watchOS）、客户端 SDK 以及第三方开发者集成参考。
 
 ---
 

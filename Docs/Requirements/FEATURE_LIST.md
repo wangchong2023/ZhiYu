@@ -84,7 +84,7 @@
 *   **存储引擎**：SQLite 3.35.0+（WAL 模式）。
 *   **向量引擎**：基于 Accelerate 框架的余弦相似度计算（`VectorStore`）。
 *   **UI 框架**：SwiftUI 100% 原生（iOS 27+ API 优先）。
-*   **最低支持**：iOS 27.0+, macOS 27.0+ (Catalyst), watchOS 27.0+。
+*   **最低支持**：iOS 27.0+, macOS 27.0+, watchOS 27.0+。
 *   **AI 并发模型**：Swift 6.4 严格并发，`@MainActor` + `actor` 全链路。
 
 ---

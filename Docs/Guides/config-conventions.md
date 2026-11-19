@@ -7,7 +7,7 @@
 | Target | 用途 | 设备族 |
 |--------|------|--------|
 | `ZhiYu` | iOS 主应用 | iPhone / iPad |
-| `ZhiYuMac` | Mac Catalyst | iPad / Mac |
+| `ZhiYuMac` | 原生 macOS 应用 | Mac |
 | `ZhiYuWatch` | watchOS 独立应用 | Apple Watch |
 | `ZhiYuTests` | 单元测试 | — |
 
