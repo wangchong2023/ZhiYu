@@ -109,7 +109,8 @@ audit:
 	("$$VENV_PY" Tools/ios/check-code-test-coupling.py --strict || (echo "❌ 存在测试耦合反模式（生产代码内嵌测试分支/Mock 类型），请运行 '$$VENV_PY Tools/ios/check-code-test-coupling.py --strict' 查看详情并修复" && exit 1)) && \
 	("$$VENV_PY" Tools/ios/audit-test-naming-chinese.py || (echo "❌ 测试函数存在中文命名，请运行 '$$VENV_PY Tools/ios/audit-test-naming-chinese.py' 查看详情并重命名为英文" && exit 1)) && \
 	echo "📊 运行测试结构度量..." && \
-	("$$VENV_PY" Tools/CI/audit-test-structure.py --verbose || (echo "❌ 测试结构度量不达标，请运行 '$$VENV_PY Tools/CI/audit-test-structure.py --json' 查看详情" && exit 1))
+	("$$VENV_PY" Tools/CI/audit-test-structure.py --verbose || (echo "❌ 测试结构度量不达标，请运行 '$$VENV_PY Tools/CI/audit-test-structure.py --json' 查看详情" && exit 1)) && \
+	("$$VENV_PY" Tools/ios/audit-platform-macro-distribution.py || (echo "❌ 存在平台宏散落点，请运行 '$$VENV_PY Tools/ios/audit-platform-macro-distribution.py --list-scanned' 查看详情并收敛到跨平台抽象" && exit 1))
 
 lint:
 	@swiftlint --strict
