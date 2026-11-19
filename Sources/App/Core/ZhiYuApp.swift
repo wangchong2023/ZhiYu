@@ -76,66 +76,12 @@ struct ZhiYuApp: App {
     }
     
     var body: some Scene {
-        WindowGroup {
-            ZStack {
-                // 主内容视图：注入所有必需的环境对象
-                ContentView()
-                    .environment(appEnv) // 注入环境持有者自身，修复 SettingsView 崩溃
-                    .environment(AuthService.shared)
-                    .environment(VaultService.shared)
-                    .environment(appEnv.store)
-                    .environment(appEnv.store.aiWorkflowStore)
-                    .environment(appEnv.store.aiInsightStore)
-                    .environment(appEnv.store.searchStore)
-                    .environment(appEnv.store.tagStore)
-                    .environment(appEnv.store.knowledgeStore)
-                    .environment(appEnv.store.settingsStore)
-                    .environment(appEnv.llmConfig)
-                    .environment(appEnv.router)
-                    .environment(appEnv.ingestStore)
-                    .environment(appEnv.synthesisStore)
-                    // P1 骨架注入：AppModel + DependencyContainer（P2-P6 阶段逐步替换上方 .environment 调用）
-                    .environment(appModel)
-                    .environment(dependencies)
-                    .environment(themeManager)
-                    .environmentObject(ServiceContainer.shared.resolve(LLMService.self) as LLMService) // inject_exempt: App 入口 DI 初始化
-                    .environmentObject(onboardingService)
-                    .environmentObject(MedalService.shared)
-                    .environment(\.locale, Localized.currentLocale)
-
-                // 启动闪屏层：覆盖在主视图之上
-                if !hasSeenSplash {
-                    SplashView(onDismiss: {
-                        guard !hasSeenSplash else { return }
-                        Logger.shared.info("[Splash] Dismissing splash and persisting hasSeenSplashBefore.")
-                        let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) // inject_exempt: App 入口 DI 初始化
-                        SplashPresentationPolicy.markSplashSeen(keyStore: keyStore)
-                        withAnimation(.easeInOut(duration: DesignTokens.Animation.slowDuration)) {
-                            hasSeenSplash = true
-                            NotificationCenter.default.post(name: .splashDismissed, object: nil)
-                        }
-                    })
-                    .transition(.opacity)
-                    .zIndex(1)
-                }
-            }
-            .onChange(of: AuthSession.shared.isLoggedIn) { _, isLoggedIn in
-                // 用户首次登录完成（或已成功恢复会话）时，若仍在闪屏则立即跳过并固化持久化
-                if isLoggedIn && !hasSeenSplash {
-                    Logger.shared.info("[Splash] User logged in during splash, dismissing immediately.")
-                    let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) // inject_exempt: App 入口 DI 初始化
-                    SplashPresentationPolicy.markSplashSeen(keyStore: keyStore)
-                    withAnimation(.easeInOut(duration: DesignTokens.Animation.slowDuration)) {
-                        hasSeenSplash = true
-                        NotificationCenter.default.post(name: .splashDismissed, object: nil)
-                    }
-                }
-            }
-            .preferredColorScheme(themeManager.colorSchemeMode.preferredColorScheme)
-            .tint(themeManager.accentColor)
-            .animation(.easeInOut(duration: 0.6), value: hasSeenSplash)
-            .appToast()
-        }
+        // 场景分发：平台差异收敛于 AppSceneBuilder，环境注入收敛于 SceneEnvironmentInjection
+        AppSceneBuilder.root(
+            appEnv: appEnv, appModel: appModel, dependencies: dependencies,
+            themeManager: themeManager, onboardingService: onboardingService,
+            hasSeenSplash: hasSeenSplash
+        )
         #if os(macOS)
         .commands {
             CommandGroup(replacing: .newItem) {
