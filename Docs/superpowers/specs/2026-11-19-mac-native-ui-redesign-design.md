@@ -34,18 +34,34 @@ ZhiYuMac 已从 Catalyst 迁移为原生 macOS target（`platform: macOS`，SDKR
 
 ### 场景单一分发点（`AppSceneBuilder`）
 
-不直接在 `ZhiYuApp.body` 写多个 `#if os(macOS)`，仿照 `ModuleRegistrar` 建一个场景分发点，把平台 scene 差异收敛：
+不直接在 `ZhiYuApp.body` 写多个 `#if os(macOS)`，仿照 `ModuleRegistrar` 建一个场景分发点，把平台 scene 差异收敛。
+
+**关键约束**：`ZhiYuApp` 的 `.environment` 注入依赖 `@State` 持有（`appEnv`/`appModel`/`dependencies`/`themeManager`/`onboardingService`）。分发点必须是**实例方法或接收状态的函数**，不能是 `static` 无参属性（无法访问 `@State`）。
 
 ```swift
 // Sources/App/Scenes/AppSceneBuilder.swift — 唯一 #if os 三平台分发点
 @MainActor
 enum AppSceneBuilder {
-    /// 场景根分发：平台差异在此收敛，业务层无宏
-    static var root: some Scene {
+    /// 场景根分发（@SceneBuilder 组合多 scene，支持条件编译选组）
+    /// 接收 ZhiYuApp 的 @State 状态，注入到平台场景
+    @SceneBuilder
+    static func root(
+        appEnv: AppEnvironment,
+        appModel: ZhiYuAppModel,
+        dependencies: DependencyContainer,
+        themeManager: ThemeManager,
+        onboardingService: OnboardingService,
+        hasSeenSplash: Bool
+    ) -> some Scene {
         #if os(macOS)
-        MacSceneBuilder.root          // macOS：主窗口 + Settings + 辅助窗口
+        MacSceneBuilder.main(appEnv: appEnv, appModel: appModel, dependencies: dependencies,
+                             themeManager: themeManager, onboardingService: onboardingService)
+        MacSceneBuilder.settings()
+        MacSceneBuilder.windows()
         #else
-        iOSSceneBuilder.root          // iOS/watchOS：现有 WindowGroup + ContentView
+        iOSSceneBuilder.main(appEnv: appEnv, appModel: appModel, dependencies: dependencies,
+                             themeManager: themeManager, onboardingService: onboardingService,
+                             hasSeenSplash: hasSeenSplash)
         #endif
     }
 }
@@ -55,7 +71,11 @@ enum AppSceneBuilder {
 
 ```swift
 var body: some Scene {
-    AppSceneBuilder.root
+    AppSceneBuilder.root(
+        appEnv: appEnv, appModel: appModel, dependencies: dependencies,
+        themeManager: themeManager, onboardingService: onboardingService,
+        hasSeenSplash: hasSeenSplash
+    )
 }
 ```
 
@@ -64,44 +84,83 @@ var body: some Scene {
 ```swift
 // Sources/Platforms/macOS/Scenes/MacSceneBuilder.swift
 @MainActor
-struct MacSceneBuilder {
-    static var root: some Scene {
+enum MacSceneBuilder {
+    /// 主窗口（WindowGroup + commands）
+    @SceneBuilder
+    static func main(appEnv: AppEnvironment, appModel: ZhiYuAppModel,
+                     dependencies: DependencyContainer, themeManager: ThemeManager,
+                     onboardingService: OnboardingService) -> some Scene {
         WindowGroup("智宇", id: "main") {
-            MacMainWindow()                    // 复用现有三栏布局
-                .modifier(MacEnvironmentInjection())
+            MacMainWindow()
+                .modifier(SceneEnvironmentInjection(
+                    appEnv: appEnv, appModel: appModel, dependencies: dependencies,
+                    themeManager: themeManager, onboardingService: onboardingService
+                ))
         }
         .defaultSize(width: 1200, height: 800)
         .commands {
             MacMenuCommands()
         }
+    }
 
-        Settings {                             // 原生设置（⌘,）
-            MacSettingsView()
-        }
+    /// 设置 scene（原生 Settings）
+    static func settings() -> some Scene {
+        Settings { MacSettingsView() }
+    }
 
-        Window("笔记本中心", id: "notebook-hub") {
-            NotebookHubView()
-        }
+    /// 辅助窗口 scenes（多窗口）
+    @SceneBuilder
+    static func windows() -> some Scene {
+        Window("个人资料", id: "profile") { UserProfileView() }
+        Window("订阅计划", id: "plan") { SubscriptionPlanView() }
+        Window("插件中心", id: "plugins") { PluginCenterView() }
+        Window("笔记本中心", id: "notebook-hub") { NotebookHubView() }
     }
 }
 ```
 
+> **Note**: `@SceneBuilder` 允许条件编译（`#if os`）选择多 scene 组，且各分支返回的 `some Scene` 经 builder 组合，类型一致，规避 opaque 返回类型不一致问题。
+
 ### 环境注入内聚（`MacEnvironmentInjection`）
 
-现有 `ZhiYuApp.body` 中 20+ 个 `.environment` 注入抽成公共 modifier，macOS 与 iOS 共用，避免重复：
+现有 `ZhiYuApp.body` 中 20+ 个 `.environment` 注入抽成公共 modifier，macOS 与 iOS 共用，避免重复。接收状态参数：
 
 ```swift
-// Sources/App/Scenes/Mac/MacEnvironmentInjection.swift
-struct MacEnvironmentInjection: ViewModifier {
+// Sources/App/Scenes/SceneEnvironmentInjection.swift（两平台共用）
+struct SceneEnvironmentInjection: ViewModifier {
+    let appEnv: AppEnvironment
+    let appModel: ZhiYuAppModel
+    let dependencies: DependencyContainer
+    let themeManager: ThemeManager
+    let onboardingService: OnboardingService
+
     func body(content: Content) -> some View {
         content
             .environment(appEnv)
             .environment(AuthService.shared)
             .environment(appEnv.store)
-            // ... 全部 20+ 注入
+            .environment(appEnv.store.aiWorkflowStore)
+            .environment(appEnv.store.aiInsightStore)
+            .environment(appEnv.store.searchStore)
+            .environment(appEnv.store.tagStore)
+            .environment(appEnv.store.knowledgeStore)
+            .environment(appEnv.store.settingsStore)
+            .environment(appEnv.llmConfig)
+            .environment(appEnv.router)
+            .environment(appEnv.ingestStore)
+            .environment(appEnv.synthesisStore)
+            .environment(appModel)
+            .environment(dependencies)
+            .environment(themeManager)
+            .environmentObject(onboardingService)
+            .environmentObject(MedalService.shared)
+            .environment(\.locale, Localized.currentLocale)
+            // ... 对齐 ZhiYuApp.body 全部注入
     }
 }
 ```
+
+> 注：iOS 场景的 `ContentView` 直接包裹此 modifier；macOS 场景的 `MacMainWindow` 也包裹。`SplashView`（iOS）保持由 `iOSSceneBuilder` 处理。
 
 ### 文件布局（平台宏内聚）
 
@@ -109,9 +168,9 @@ struct MacEnvironmentInjection: ViewModifier {
 Sources/App/Scenes/AppSceneBuilder.swift                     # 单一分发点（#if 三平台，App 层）
 Sources/App/Scenes/SceneEnvironmentInjection.swift            # 环境注入公共 modifier（两平台共用）
 Sources/Platforms/macOS/Scenes/MacSceneBuilder.swift         # macOS 场景根（主窗口+Settings+辅助窗口）
-Sources/Platforms/macOS/Scenes/MacMainWindow.swift           # 主窗口三栏外壳
+Sources/Platforms/macOS/Scenes/MacMainWindow.swift           # 主窗口外壳（包装 ContentView）
 Sources/Platforms/macOS/Scenes/MacMenuCommands.swift         # 完整菜单栏
-Sources/Platforms/macOS/Scenes/MacSettingsView.swift         # 原生设置（Sidebar+Detail，7 Section）
+Sources/Platforms/macOS/Scenes/MacSettingsView.swift         # 原生设置（复用 SettingsView .mac 分支）
 Sources/Platforms/iOS/Scenes/iOSSceneBuilder.swift            # iOS 场景根（现有 WindowGroup）
 ```
 
@@ -226,22 +285,14 @@ public static let authFormWidth: CGFloat = 420
 
 ```swift
 @MainActor
-struct MacSceneBuilder {
-    static var root: some Scene {
-        WindowGroup("智宇", id: "main") {
-            MacMainWindow().modifier(MacEnvironmentInjection())
-        }
-        .defaultSize(width: 1200, height: 800)
-        .commands { MacMenuCommands() }
-
-        Settings { MacSettingsView() }   // 设置 scene
-
-        // 辅助窗口（原生多窗口）
-        Window("个人资料", id: "profile") { UserProfileView() }
-        Window("订阅计划", id: "plan") { SubscriptionPlanView() }
-        Window("插件中心", id: "plugins") { PluginCenterView() }
-        Window("笔记本中心", id: "notebook-hub") { NotebookHubView() }
-    }
+// MacSceneBuilder 完整结构见「架构方案」章节（main/settings/windows 分法）
+// 此处为辅助窗口 windows() 的完整示意：
+@SceneBuilder
+static func windows() -> some Scene {
+    Window("个人资料", id: "profile") { UserProfileView() }
+    Window("订阅计划", id: "plan") { SubscriptionPlanView() }
+    Window("插件中心", id: "plugins") { PluginCenterView() }
+    Window("笔记本中心", id: "notebook-hub") { NotebookHubView() }
 }
 ```
 
@@ -313,7 +364,7 @@ WindowGroup("智宇", id: "main") { ... }
 struct MacMainWindow: View {
     var body: some View {
         ContentView()          // 完整复用：登录分派 + 三栏 + 浮层 + 锁定 + toast + 注入
-            .modifier(MacEnvironmentInjection())
+            .modifier(SceneEnvironmentInjection(...))   // 注入见「环境注入内聚」章节
     }
 }
 ```
