@@ -448,6 +448,39 @@ public static let macSidebarWidth: CGFloat = 260   // 新增，供 MacMainWindow
 
 ---
 
+## 平台宏收缩审计（新增排查项）
+
+### 现状基线
+
+全库 209 处平台宏，分布合规性核查（已实测）：
+
+| 层级 | 宏数 | 合规性 |
+|------|------|--------|
+| `Domain` | 0 | ✅ 合规（规范要求绝对为 0） |
+| `Features` | 4 | ✅ 合规（全为 `targetEnvironment(simulator)`/`canImport(Vision)`，非 `#if os()` 平台宏） |
+| `Shared/Platforms/Adaptor` | 29 | ✅ 集中收敛点（`CrossPlatform`/`PlatformTraits`） |
+| `Shared/UIComponents` 等 | 散落 | ⚠️ 视图组件平台实现（规范表 2.2 允许），需审计是否语义化封装 |
+| `Infrastructure` | 5 | ⚠️ 需审计 |
+| `App` | 散落 | ⚠️ 需审计分发点收敛 |
+
+**结论**：业务层（Features/Domain）已合规；现有门禁 `check-code-platform-macros.py` 仅审计 Features/Domain，**未覆盖 Shared/App/Infrastructure 层的散落合理性**。
+
+### 审计目标
+
+1. **门禁增强**：扩展 `check-code-platform-macros.py`（或新增 `audit-platform-macro-distribution.py`），审计 Shared/App/Infrastructure 层宏分布，标记：
+   - 可收敛到 `Platforms/Adaptor`（`CrossPlatform`/`PlatformTraits`）的重复平台 API 访问
+   - 应封装为 `PlatformModifiers` 语义化 View modifier 的裸散落
+   - 应走 `PlatformRegistrar` 单一分发点的平台服务宏
+2. **收缩优化**：对识别出的不合理散落，参考 `PLATFORM_PROTOCOL_ARCHITECTURE.md`（PlatformRegistrar 分发 + PlatformModifiers 语义化 + CrossPlatform 桥接）收敛。
+3. **本方案新增宏**（`AppSceneBuilder` 分发点 + `Platforms/macOS` 目录隔离 + `UserProfileMenu` 单点）已按规范内聚，纳入审计白名单。
+
+### 参考规范
+
+- `Docs/Architecture/PLATFORM_PROTOCOL_ARCHITECTURE.md`：宏允许层级（Shared/Platforms/Core/Infrastructure/App）、`PlatformRegistrar` 单一分发点、`PlatformModifiers` 语义化封装。
+- 现有合规先例：`ModuleRegistrar.swift:30`（单一分发点）、`CrossPlatform.swift`（桥接集中）、`PlatformTraits.swift`（运行时 Trait）。
+
+---
+
 ## 实施拆分（建议任务顺序）
 
 1. **任务 1**：`SceneEnvironmentInjection`（抽取 20+ 环境注入）+ `AppSceneBuilder` + `iOSSceneBuilder`（现有结构）
@@ -458,8 +491,9 @@ public static let macSidebarWidth: CGFloat = 260   // 新增，供 MacMainWindow
 6. **任务 6**：`UserProfileMenu` Mac 化（`SettingsLink` + `openWindow`）+ 辅助 Window scenes（profile/plan/plugins）
 7. **任务 7**：完整菜单栏（查看/窗口/帮助）+ 侧边栏宽度 Token + 辅助窗口登录态守卫
 8. **任务 8**：移除 macOS 分支 6 个 `appFullScreenCover` 弹窗入口，接入原生场景；AISettings 并入设置；About 用原生面板
-9. **任务 9**：视觉打磨（材质/工具栏/字体）+ CommandPalette 快捷键（可选）+ 插件 fileImporter 验证
-10. **任务 10**：测试用例更新 + 文档更新（见下两节）
+9. **任务 9**：平台宏收缩审计（门禁增强 + Shared/App/Infrastructure 层散落优化）
+10. **任务 10**：视觉打磨（材质/工具栏/字体）+ CommandPalette 快捷键（可选）+ 插件 fileImporter 验证
+11. **任务 11**：测试用例更新 + 文档更新（见下两节）
 
 ---
 
@@ -521,7 +555,7 @@ public static let macSidebarWidth: CGFloat = 260   // 新增，供 MacMainWindow
 - **静态门禁**：`make audit`（架构分层、去魔鬼化、L10n、平台宏规范全绿）。
 - **现有测试**：iOS 单测/UI 测试/快照不回归（共享层仅新增分支/Token）。
 - **Mac UI 验证**：手动验证 ⌘, 打开设置、菜单栏功能、侧边栏宽度、多窗口、⌘N 新建、登录页桌面布局。
-- **平台宏审计**：确认业务层（Features/Domain）无新增 `#if os()`，`#if os(macOS)` 收敛于 AppSceneBuilder + Platforms 目录 + UserProfileMenu（Shared 层单点）。
+- **平台宏审计**：`check-code-platform-macros.py`（Features/Domain 禁宏）+ 新增分布审计（Shared/App/Infrastructure 散落合理性）；本方案新增宏收敛于 AppSceneBuilder 分发点 + Platforms 目录 + UserProfileMenu（Shared 层单点）。
 
 ---
 
@@ -536,3 +570,4 @@ public static let macSidebarWidth: CGFloat = 260   // 新增，供 MacMainWindow
 | 共享层改动引入 iOS 回归 | 仅新增 Token/类型 + iOS 单测 + 快照守护 |
 | Swift 6 严格并发 | 新类型标注 `@MainActor` |
 | 平台宏散布 | AppSceneBuilder 单一分发点 + Platforms 目录隔离 + Shared 单点 |
+| 宏收缩优化引入 iOS 回归 | 先审计再收缩，逐点收敛 + iOS 单测/快照守护；视图组件平台实现（表 2.2 允许）不强改 |
