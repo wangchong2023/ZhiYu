@@ -805,6 +805,7 @@
 		442F3735F1F0993CB36893A8 /* MedalComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15AFCFF5D8CE108CF9A5242F /* MedalComponents.swift */; };
 		44317C9C6C7751FBFC4E7C8B /* testChatView_EmptyState_RendersPlaceholderGuide.1.png in Resources */ = {isa = PBXBuildFile; fileRef = 12FA3E7CD43D7F3731226D01 /* testChatView_EmptyState_RendersPlaceholderGuide.1.png */; };
 		445A3BBD992CB229B3684912 /* ImportRecordCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BA32EEB7F25B605AAAC31F7 /* ImportRecordCard.swift */; };
+		448839CC62FDAE6DEDBEEEE8 /* MacWindowSceneTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9CECAE723541A9663A56566 /* MacWindowSceneTests.swift */; };
 		44945E92DC2B8C855906D2C9 /* LLMProviders.json in Resources */ = {isa = PBXBuildFile; fileRef = 185B78C17147A3E10192A046 /* LLMProviders.json */; };
 		44B4D65D5F5B6B5E75E77763 /* L10n+ICloud.swift in Sources */ = {isa = PBXBuildFile; fileRef = C755F375A0358C5401CE811E /* L10n+ICloud.swift */; };
 		44BA5B02D2A3AA19A942DFF0 /* ApplePlatformCapabilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8320FE0F8700A532289587CB /* ApplePlatformCapabilities.swift */; };
@@ -4879,6 +4880,7 @@
 		E9942F81B14C0062D145574D /* SpotlightService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightService.swift; sourceTree = "<group>"; };
 		E9998E1BE95E800CF1515D41 /* ZhiYuWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZhiYuWatchApp.swift; sourceTree = "<group>"; };
 		E9B86CFA19141866776ABB3C /* MacPasteboardService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacPasteboardService.swift; sourceTree = "<group>"; };
+		E9CECAE723541A9663A56566 /* MacWindowSceneTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacWindowSceneTests.swift; sourceTree = "<group>"; };
 		E9D19D7844C3136805DFC2C2 /* IngestFileHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IngestFileHandler.swift; sourceTree = "<group>"; };
 		E9D304A47798EF5E2F56A4F3 /* RAGGovernanceRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RAGGovernanceRepository.swift; sourceTree = "<group>"; };
 		E9E34D3DAA5E64E76B6EAD5F /* SQLiteImportRecordRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SQLiteImportRecordRepository.swift; sourceTree = "<group>"; };
@@ -5872,6 +5874,7 @@
 				F8D742BFFEA08DC4DBF7DDE8 /* iPadEnvironmentTests.swift */,
 				4C2B65474EA3E3BAA39505FA /* iPadRouterTests.swift */,
 				844A1984BECD49EAFE406FBF /* MacSceneBuilderTests.swift */,
+				E9CECAE723541A9663A56566 /* MacWindowSceneTests.swift */,
 				17F6C0DED7D62D881D947C6A /* ModuleRegistrarTests.swift */,
 				D7D9C3A5A3DAA75BBCDF7049 /* RouterNavigationPathStressTests.swift */,
 				84C96C55407D9FEE1F154ED4 /* RouterTests.swift */,
@@ -10729,6 +10732,7 @@
 				3963F0C2BBAA8AD5262CE19C /* MacAuthViewLayoutTests.swift in Sources */,
 				AE858E3D49BD96B7F5E3CED8 /* MacPlatformTests.swift in Sources */,
 				78625AEBDD4644045CC899EE /* MacSceneBuilderTests.swift in Sources */,
+				448839CC62FDAE6DEDBEEEE8 /* MacWindowSceneTests.swift in Sources */,
 				86F434A3F7639E3C63ED3018 /* MaintenanceAndImportDeepTests.swift in Sources */,
 				8A2E5BD7088AB34C5CFEC525 /* MarkdownAndOnDeviceLLMDeepBranchTests.swift in Sources */,
 				EE062905F76933FA2037FCDB /* MarkdownProcessorBlockEdgeTests.swift in Sources */,

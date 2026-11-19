@@ -17,6 +17,8 @@ struct UserProfileMenu: View {
     @Environment(Router.self) var router
     @EnvironmentObject var onboardingService: OnboardingService
     @Environment(ThemeManager.self) var themeManager
+    // property wrapper 必须位于 struct 顶层，禁止放在 body 内 #if 分支
+    @Environment(\.openWindow) private var openWindow
     
     @State private var isShowingPopover = false
     @State private var showWatchMenu = false
@@ -38,6 +40,12 @@ struct UserProfileMenu: View {
             case .aiSettings: router.isShowingAISettingsSheet = true
             }
         }
+    }
+
+    /// 判断是否允许打开辅助窗口（个人资料/订阅/插件）——登录态守卫
+    /// 抽为纯函数便于跨平台测试断言（ZhiYuTests target 不含 macOS 目录，非 macOS-only 的纯函数可直接断言）。
+    static func canOpenAuxWindow(isLoggedIn: Bool, isGuest: Bool) -> Bool {
+        isLoggedIn || isGuest
     }
     
     var body: some View {
@@ -64,6 +72,61 @@ struct UserProfileMenu: View {
                     .navigationTitle(L10n.Common.settings)
             }
         }
+        #elseif os(macOS)
+        // macOS：设置走原生 SettingsLink，个人资料/订阅/插件走辅助窗口，退出走 authService.logout()
+        Menu {
+            Button(action: {
+                HapticFeedback.shared.trigger(.selection)
+                guard UserProfileMenu.canOpenAuxWindow(
+                    isLoggedIn: AuthSession.shared.isLoggedIn,
+                    isGuest: AuthSession.shared.isGuest
+                ) else { return }
+                openWindow(id: "profile")
+            }) {
+                Label(authService.currentUser?.name ?? L10n.Auth.profileAndQuota, systemImage: "person.crop.circle.fill")
+            }
+
+            Divider()
+
+            SettingsLink {
+                Label(L10n.Common.settings, systemImage: "gearshape.fill")
+            }
+            .accessibilityIdentifier("settingsMenuButton")
+
+            Button(action: {
+                guard UserProfileMenu.canOpenAuxWindow(
+                    isLoggedIn: AuthSession.shared.isLoggedIn,
+                    isGuest: AuthSession.shared.isGuest
+                ) else { return }
+                openWindow(id: "plan")
+            }) {
+                Label(L10n.Auth.subscription, systemImage: "creditcard.fill")
+            }
+
+            Button(action: {
+                guard UserProfileMenu.canOpenAuxWindow(
+                    isLoggedIn: AuthSession.shared.isLoggedIn,
+                    isGuest: AuthSession.shared.isGuest
+                ) else { return }
+                openWindow(id: "plugins")
+            }) {
+                Label(L10n.Plugin.title, systemImage: "puzzlepiece.extension.fill")
+            }
+
+            Divider()
+
+            Button(role: .destructive, action: {
+                HapticFeedback.shared.trigger(.selection)
+                authService.logout()
+            }) {
+                Label(L10n.Common.logout, systemImage: DesignTokens.Icons.logout)
+            }
+            .accessibilityIdentifier("logoutButton")
+        } label: {
+            profileLabel
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("userProfileMenuButton")
         #else
         // iOS/iPadOS：使用原生 Menu 控件，彻底解决 ToolbarItem 内部 popover 状态失效导致的点击无响应问题
         Menu {
