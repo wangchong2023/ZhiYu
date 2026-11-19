@@ -14,8 +14,10 @@
 graph TD
     subgraph "L3: 应用调度层 (ZhiYu App)"
         ZApp[ZhiYuApp]
+        SceneBuilder[AppSceneBuilder 场景根分发]
         Router[Router / Navigation]
         Env[AppEnvironment]
+        MacWindow[MacMainWindow / MacMenuCommands / MacSettingsView]
     end
 
     subgraph "L2: 业务功能切片包 (Packages/ZhiYuFeatures)"
@@ -101,6 +103,36 @@ graph TD
     LLMSvc & SQLStore & EmbedMgr --> Sys_Log & Sys_Sec
     Sys_Log & Sys_Sec --> DI & Proto
 ```
+
+### 1.1 应用场景根分发 (AppSceneBuilder + 多窗口)
+
+`ZhiYuApp.body` 不直接声明平台 scene，而是委托给唯一的平台宏收敛点 **`AppSceneBuilder`**（`Sources/App/Scenes/AppSceneBuilder.swift`，`#if os` 三平台分发）：
+
+```swift
+@MainActor
+enum AppSceneBuilder {
+    static func root(...) -> some Scene {
+        #if os(macOS)
+        MacSceneBuilder.main(...)      // 主窗口：MacMainWindow + SceneEnvironmentInjection + MacMenuCommands
+        MacSceneBuilder.settings()     // Settings 窗口：MacSettingsView 复用 SettingsView 的 .mac 分支
+        MacSceneBuilder.windows()      // 辅助窗口：profile / plan / plugins / notebook-hub
+        #else
+        iOSSceneBuilder.main(...)
+        #endif
+    }
+}
+```
+
+**macOS 多窗口结构**（`Sources/Platforms/macOS/Scenes/`）：
+
+| Scene | 文件 | 职责 |
+|-------|------|------|
+| 主窗口 | `MacMainWindow` | 原生外壳，复用 `ContentView`（登录分派 + 三栏 + 浮层 + 注入） |
+| 设置窗口 | `MacSettingsView` | 复用 `SettingsView` 的 `.mac` 分支（sidebarColumn + detailColumn 双栏） |
+| 菜单命令 | `MacMenuCommands` | ⌘N 新建、⌘P 命令面板、⌃⌘S 侧边栏、辅助窗口、帮助 |
+| 辅助窗口 | `MacSceneBuilder.windows()` | `Window` 场景：个人资料 / 订阅 / 插件中心 / 笔记本中心 |
+
+**关键约束**：macOS 不再通过全屏 sheet 弹窗展示设置/资料/订阅等（`ContentView` 中 `#if !os(macOS)` 守卫关闭 sheet 路径），改由原生 `Settings` 场景与辅助 `Window` 场景承载；环境注入统一收敛于 `SceneEnvironmentInjection` ViewModifier，iOS/macOS 两平台共用。
 
 ---
 

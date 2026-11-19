@@ -32,6 +32,9 @@
 | **Apple Pencil 双击切换** | iPadOS | 🚧 开发中 | `PlatformCapabilities` 中有协议定义，实现待验证 |
 | **Siri Shortcuts 快速记录** | iOS/iPadOS | ✅ 已上线 | 已接入 `L10n.Shortcuts`，支持 Capture、Search、Stats 意图及后台执行 |
 | **Spotlight 全局搜索集成** | macOS | 🚧 开发中 | `Infrastructure/Storage/Search/SpotlightService.swift` 存在，集成完整度待验证 |
+| **原生多窗口场景** | macOS | ✅ 已上线 | `AppSceneBuilder` 唯一 `#if os` 场景分发，`MacSceneBuilder` 组合主窗口 + Settings + 辅助窗口（profile/plan/plugins/notebook-hub） |
+| **原生菜单栏** | macOS | ✅ 已上线 | `MacMenuCommands`：⌘N 新建页面、⌘P 命令面板（Router 驱动）、⌃⌘S 侧边栏、帮助 |
+| **原生登录布局** | macOS | ✅ 已上线 | `AuthView` 依据运行时 `interfaceIdiom == .mac` 分派桌面布局，登录逻辑与区域/翻转状态跨布局单一来源 |
 | **watchOS 语音笔记** | watchOS | ✅ 已上线 | 平台降级 Stub 与跨端 WCSession 离线同步队列已单元测试全面覆盖 (TC-WAT-01, TC-WAT-03) |
 | **表盘 Complications** | watchOS | ✅ 已上线 | 快捷点击载荷编解码与 50+ 最热卡片微缩缓存同步已单元测试覆盖 (TC-WAT-02) |
 | **桌面静态小组件 (Static Widget)** | iOS/iPadOS | ✅ 已上线 | 支持 Small, Medium, Large 尺寸，展示知识总量与新增量，全面打通 `zhiyu://create` 快捷新建与 `zhiyu://search` 容灾 Deep Link (TC-WID-01 ~ TC-WID-03) |
@@ -52,7 +55,7 @@
 | :--- | :--- | :--- |
 | **实时协作 (CollaborationService)** | 🚧 开发中 | `CollaborationService` 存在，UI 仅为示意占位。需落地 MultipeerConnectivity 的 LWW 冲突收敛引擎 |
 | **插件市场 (Plugin Market)** | 📋 规划中 | 架构组已输出 `PLUGIN_MARKET_HLD.md`，核心 UI 与 JavaScriptCore 沙盒网关待实现 |
-| **命令面板 (Cmd+K)** | ✅ 已上线 | `CommandPaletteView` 全局快捷键已集成 |
+| **命令面板 (Cmd+K)** | ✅ 已上线 | `CommandPaletteView` 全局快捷键已集成，⌘P 已迁移至 Router（`router.showCommandPalette`），macOS 由 `MacMenuCommands` 注册 ⌘P 快捷键 |
 | **撤销/重做** | ✅ 已上线 | 系统 `UndoManager` 全库操作历史支持多级回退 |
 
 ## 6. 知识维护与质量 (Maintenance & Quality)

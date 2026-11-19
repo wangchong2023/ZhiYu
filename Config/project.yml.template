@@ -393,6 +393,18 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: top.izhiyu.app.ZhiYuMacTests
 
+  ZhiYuMacUITests:
+    type: bundle.ui-testing
+    platform: macOS
+    deploymentTarget: "27.0"
+    sources:
+      - path: Tests/UI_Mac
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: top.izhiyu.app.ZhiYuMacUITests
+    dependencies:
+      - target: ZhiYuMac
+
 schemes:
   ZhiYu:
     build:
@@ -424,9 +436,11 @@ schemes:
     build:
       targets:
         ZhiYuMacTests: all
+        ZhiYuMacUITests: all
     test:
       targets:
         - ZhiYuMacTests
+        - ZhiYuMacUITests
   
   ZhiYuWatch:
     build:

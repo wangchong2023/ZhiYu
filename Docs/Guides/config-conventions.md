@@ -28,6 +28,19 @@ targets:
 - 新增平台相关文件时，确保放入正确平台目录并被正确 target 排除
 - 共用文件放在 `Sources/Shared/` 下，不重复添加
 
+### Platforms/macOS/Scenes 目录规范
+
+macOS 原生场景代码统一收敛于 `Sources/Platforms/macOS/Scenes/`，职责单一、文件命名与 Scene 职责对齐：
+
+| 文件 | 场景职责 |
+|------|---------|
+| `MacSceneBuilder.swift` | macOS 场景根构建器（主窗口 + Settings + 辅助窗口统一出口） |
+| `MacMainWindow.swift` | 主窗口原生外壳，仅包装复用 `ContentView`，不重写布局/注入 |
+| `MacMenuCommands.swift` | 菜单命令（⌘N 新建、⌘P 命令面板、辅助窗口、帮助） |
+| `MacSettingsView.swift` | 原生设置，复用 `SettingsView` 的 `.mac` 双栏分支 |
+
+> 约束：`MacMainWindow` / `MacSettingsView` 只作薄壳包装，业务布局与状态仍由 `ContentView` / `SettingsView` 单一来源承载，避免平台层重复实现。
+
 ### 依赖管理
 
 外部包通过 `packages` 字段声明，Swift Package Manager 管理版本：

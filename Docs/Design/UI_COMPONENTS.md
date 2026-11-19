@@ -31,7 +31,23 @@
 
 ---
 
-## 4. 全链路溯源矩阵 (Traceability Matrix)
+## 3.5 Mac 原生组件 (macOS Native Components)
+
+macOS 原生 App (ZhiYuMac) 在 `Sources/Platforms/macOS/Scenes/` 提供平台专属组件，采用"**薄壳包装 + 复用单一来源**"策略，不重写业务布局：
+
+| 组件 | 文件 | 组装策略 |
+|------|------|---------|
+| `MacMainWindow` | `Sources/Platforms/macOS/Scenes/MacMainWindow.swift` | 仅 `ContentView()` 包装，登录分派/三栏/浮层/锁定/注入全部复用 |
+| `MacSceneBuilder` | `Sources/Platforms/macOS/Scenes/MacSceneBuilder.swift` | 主窗口 + Settings + 辅助窗口（profile/plan/plugins/notebook-hub）三组 scene |
+| `MacMenuCommands` | `Sources/Platforms/macOS/Scenes/MacMenuCommands.swift` | ⌘N 新建、⌘P 命令面板、⌃⌘S 侧边栏、辅助窗口、帮助 |
+| `MacSettingsView` | `Sources/Platforms/macOS/Scenes/MacSettingsView.swift` | 复用 `SettingsView` 的 `.mac` 分支（sidebarColumn + detailColumn 双栏） |
+
+**设计要点**：
+- `AppSceneBuilder` 为唯一 `#if os` 场景分发点，`MacSceneBuilder` 在其 macOS 分支内组合场景。
+- 环境注入统一收敛于 `SceneEnvironmentInjection` ViewModifier，iOS/macOS 共用，避免平台层重复。
+- macOS 不再使用全屏 sheet 弹窗（`ContentView` 中以 `#if !os(macOS)` 关闭），设置走原生 `Settings` 场景、资料/订阅/插件走辅助 `Window` 场景。
+
+---
 
 为实现卓越工程，确保所有的需求（SRS）、架构设计（Architecture）、源代码（Code）和测试用例（Tests）均能精准对齐。
 

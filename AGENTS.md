@@ -181,8 +181,10 @@ Sources/
 │   ├── ZhiYuApp.swift           # 入口点，场景定义，全局环境注入
 │   ├── AppEnvironment.swift     # L0-L2 初始化顺序编排，所有 Store 单例持有者
 │   ├── ModuleRegistrar.swift    # 模块化 DI 注册（Core/Storage/Domain/App 四模块）
-│   ├── Router.swift             # 全局导航状态管理（NavigationPath + AppRoute 枚举）
-│   ├── ViewFactory.swift        # 按功能域注册 ViewProvider，解耦视图创建
+│   ├── Navigation/              # 全局导航状态管理（NavigationPath + AppRoute 枚举）
+│   │   ├── Router.swift         # 全局导航状态管理（@Observable 单例，NavigationPath + AppRoute）
+│   │   └── ViewFactory.swift    # 按功能域注册 ViewProvider，解耦视图创建
+│   ├── Scenes/                  # 场景根分发与公共注入（AppSceneBuilder / SceneEnvironmentInjection / ContentView）
 │   ├── Store/AppStore.swift     # 全局状态树
 │   └── Environment/             # 平台 AppEnvironmentProtocol 实现
 ├── Core/                        # [L0] ServiceContainer (DI)、协议、工具类、系统能力
@@ -209,6 +211,8 @@ Sources/
 │   ├── UIComponents/            # 通用 UI 组件库（Buttons、Cards、Editors、Overlays 等）
 │   └── Platforms/Adaptor/       # 跨平台适配
 ├── Platforms/                   # 平台特定实现 (iOS / macOS / watchOS)
+│   └── macOS/
+│       └── Scenes/              # macOS 原生场景（MacMainWindow / MacSceneBuilder / MacMenuCommands / MacSettingsView）
 └── Localization/                # 多语言 .xcstrings（含分表，通过 update_localization.py 合并）
 Tests/
 ├── Unit/                        # 单元测试（按架构层级 + 功能域组织）
@@ -224,7 +228,8 @@ Tests/
 │   ├── Localization/            # 本地化测试（L10n 强类型访问验证）
 │   └── Platforms/               # 平台特定测试（Widget、watchOS 等）
 ├── Integration/                 # 集成测试（如 RAGPipelineTests）
-├── UI/                          # UI 测试
+├── UI/                          # iOS UI 测试
+├── UI_Mac/                      # macOS UI 测试（MacBaseUITestCase + MacNativeUITests）
 ├── SnapshotTests/               # 快照测试（使用 pointfreeco/swift-snapshot-testing）
 ├── Boundary/                    # 边界测试
 ├── Performance/                 # 性能测试
@@ -320,6 +325,7 @@ container.register(tagStore, for: TagStore.self)
 - **ZhiYuWatch** — 独立 watchOS 应用
 - **ZhiYuWidgets** — iOS Widget 扩展（Live Activities）
 - **ZhiYuTests** — 单元测试 bundle
+- **ZhiYuMacUITests** — macOS UI 测试 bundle（`Tests/UI_Mac/`，MacBaseUITestCase + MacNativeUITests）
 
 ## 外部依赖
 

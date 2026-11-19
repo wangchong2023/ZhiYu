@@ -416,7 +416,47 @@ bash Tools/ci/run-code-static-analysis.sh
 
 ---
 
-## 10. 相关文档
+## 10. 场景级平台收敛（AppSceneBuilder + UserProfileMenu Mac 化）
+
+### 10.1 AppSceneBuilder：场景根分发点
+
+平台差异在场景（Scene）层面同样需要收敛。`Sources/App/Scenes/AppSceneBuilder.swift` 是**唯一 `#if os` 三平台场景分发点**，业务层 `ZhiYuApp.body` 仅调用它：
+
+```swift
+@MainActor
+enum AppSceneBuilder {
+    static func root(...) -> some Scene {
+        #if os(macOS)
+        MacSceneBuilder.main(...)      // 主窗口 + 环境注入 + MacMenuCommands
+        MacSceneBuilder.settings()     // 原生 Settings 窗口
+        MacSceneBuilder.windows()      // profile / plan / plugins / notebook-hub 辅助窗口
+        #else
+        iOSSceneBuilder.main(...)
+        #endif
+    }
+}
+```
+
+macOS 分支进一步由 `MacSceneBuilder`（`Sources/Platforms/macOS/Scenes/MacSceneBuilder.swift`）组合三组 scene，环境注入抽取为公共 `SceneEnvironmentInjection` ViewModifier，两平台共用。
+
+### 10.2 UserProfileMenu 的 macOS 分支
+
+`UserProfileMenu`（`Sources/Shared/UIComponents/Menus/UserProfileMenu.swift`）针对 macOS 采用原生 `Menu` + 辅助窗口，替代 iOS 的 sheet 派发：
+
+| 菜单项 | iOS/iPadOS | macOS |
+|--------|-----------|-------|
+| 个人资料 | `router.isShowingProfileSheet = true` | `openWindow(id: "profile")` |
+| 设置 | `router.isShowingSettingsSheet = true` | **`SettingsLink`（原生 Settings 场景）** |
+| 订阅计划 | `router.isShowingPlanSheet = true` | `openWindow(id: "plan")` |
+| 插件中心 | `router.isShowingPluginsSheet = true` | `openWindow(id: "plugins")` |
+| AI 设置 | `router.isShowingAISettingsSheet = true` | 并入 Settings 的 AI Section（无独立入口） |
+| 退出 | `authService.logout()` | `authService.logout()` |
+
+**登录态守卫**：辅助窗口入口统一通过纯函数 `UserProfileMenu.canOpenAuxWindow(isLoggedIn:isGuest:)` 守卫（`isLoggedIn || isGuest`），抽为纯函数便于跨平台单测断言。
+
+---
+
+## 11. 相关文档
 
 - [`LAYERING_L0_L3.md`](./LAYERING_L0_L3.md) — 严格分层规范与 8 条红线
 - [`HIGH_LEVEL_DESIGN.md`](./HIGH_LEVEL_DESIGN.md) — 概要设计 v2.1

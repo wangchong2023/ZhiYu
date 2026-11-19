@@ -22,6 +22,20 @@
                ReferencedContainer = "container:ZhiYu.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "D67CFC20B0EF183D22F09632"
+               BuildableName = "ZhiYuMacUITests.xctest"
+               BlueprintName = "ZhiYuMacUITests"
+               ReferencedContainer = "container:ZhiYu.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -48,6 +62,17 @@
                BlueprintIdentifier = "4C95D2C7AA51BCE61C4E99A9"
                BuildableName = "ZhiYuMacTests.xctest"
                BlueprintName = "ZhiYuMacTests"
+               ReferencedContainer = "container:ZhiYu.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "D67CFC20B0EF183D22F09632"
+               BuildableName = "ZhiYuMacUITests.xctest"
+               BlueprintName = "ZhiYuMacUITests"
                ReferencedContainer = "container:ZhiYu.xcodeproj">
             </BuildableReference>
          </TestableReference>
