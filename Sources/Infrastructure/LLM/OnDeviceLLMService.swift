@@ -86,9 +86,14 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
     }
 
     // MARK: - 初始化
+    /// 仅做轻量字段初始化，不做重活。
+    /// 原因：`static let shared` 为 `@MainActor` 惰性单例，由 `dispatch_once` 触发；
+    /// 若在 init 内同步执行 `@MainActor` 隔离重活（discoverModels：文件遍历 + @Dependency 访问 +
+    /// contains 闭包执行器检查），在 AppEnvironment 初始化链路的嵌套 MainActor 单例初始化中
+    /// 会触发 Swift 6 执行器自死锁（isMainExecutor 循环等待）。
+    /// 模型发现改为由设置页等使用方显式调用（见 OnDeviceLLMSettingsView），避免启动路径卡死。
     public init() {
         checkAvailability()
-        discoverModels()
     }
 
     // MARK: - 可用性物理检测
