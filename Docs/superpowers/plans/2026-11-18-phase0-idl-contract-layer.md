@@ -311,7 +311,7 @@ git commit -m "refactor: Phase0 Auth/DTO 协议对齐为 *Contract"
 - [ ] **Step 1: 初始化 Skip 项目**
 
 ```bash
-cd /Users/constantine/Documents/work/code/opensrc/skip-poc  # 若不存在先创建
+cd ~/Documents/work/code/opensrc/skip-poc  # 若不存在先创建
 skip init ZhiYuPoc
 cd ZhiYuPoc
 ```
