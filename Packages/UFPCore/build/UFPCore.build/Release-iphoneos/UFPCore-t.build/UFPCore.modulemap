@@ -1,4 +1,0 @@
-module UFPCore {
-header "UFPCore-Swift.h"
-export *
-}

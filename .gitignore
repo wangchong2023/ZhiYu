@@ -94,3 +94,6 @@ Sources/Domain/Contracts/Generated/
 
 # 误提交的编译产物二进制（原为工具构建输出，非项目源码）
 /main
+
+# SPM 本地包构建产物（swift test --package-path 输出，非源码）
+Packages/*/build/

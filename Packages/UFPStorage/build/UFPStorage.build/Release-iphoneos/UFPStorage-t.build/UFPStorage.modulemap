@@ -1,4 +1,0 @@
-module UFPStorage {
-header "UFPStorage-Swift.h"
-export *
-}
