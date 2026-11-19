@@ -35,11 +35,23 @@ struct AuthView: View {
     var body: some View {
         // swiftlint:disable:next redundant_discardable_let
         let _ = (showPrivacySheet, showTermsSheet)
-        if idiom == .mac {
+        if usesDesktopLayout {
             desktopLoginLayout
         } else {
             compactLoginLayout
         }
+    }
+
+    /// 是否走桌面形态布局：仅当运行时 Trait 为 `.mac` 时启用。
+    /// body 分派与单测共用 `isDesktopLayout` 判定，保证分派逻辑可被测。
+    var usesDesktopLayout: Bool {
+        AuthView.isDesktopLayout(idiom)
+    }
+
+    /// 布局分派决策的纯函数形式：仅 `.mac` 走桌面形态布局。
+    /// 与 `@Environment` 解耦，便于单测直接验证分派决策本身。
+    static func isDesktopLayout(_ idiom: InterfaceIdiom) -> Bool {
+        idiom == .mac
     }
 
     // MARK: - 运行时 Trait 分派的登录布局
@@ -58,7 +70,7 @@ struct AuthView: View {
                     .padding(.leading, DesignTokens.Spacing.huge)
 
                 Divider()
-                    .background(Color.appBorder.opacity(DesignTokens.Opacity.disabled))
+                    .background(Color.appBorder.opacity(DesignTokens.Opacity.shadow))
 
                 // 右侧登录表单区
                 ScrollView(showsIndicators: false) {
