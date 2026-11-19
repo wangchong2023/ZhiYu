@@ -82,16 +82,6 @@ struct ZhiYuApp: App {
             themeManager: themeManager, onboardingService: onboardingService,
             hasSeenSplash: hasSeenSplash
         )
-        #if os(macOS)
-        .commands {
-            CommandGroup(replacing: .newItem) {
-                Button(L10n.Creation.newPage) {
-                    NotificationCenter.default.post(name: .createNewPage, object: nil)
-                }
-                .keyboardShortcut("n", modifiers: .command)
-            }
-        }
-        #endif
     }
 }
 

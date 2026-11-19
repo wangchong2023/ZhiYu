@@ -24,6 +24,11 @@ final class MacSceneBuilderTests: XCTestCase {
         _ = MacMainWindow()
     }
 
+    /// MacMenuCommands 应可无参实例化（编译期存在性断言）
+    func testMacMenuCommands_Instantiable() {
+        _ = MacMenuCommands()
+    }
+
     /// MacSceneBuilder 主窗口场景应可编译构建
     func testMacSceneBuilder_MainBuilds() {
         _ = MacSceneBuilder.main(

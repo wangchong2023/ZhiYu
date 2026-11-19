@@ -15,7 +15,7 @@ import UFPDesignSystem
 /// macOS 场景构建器：主窗口、Settings 与辅助窗口的统一场景出口
 @MainActor
 enum MacSceneBuilder {
-    /// 主窗口：承载 MacMainWindow 外壳 + 依赖注入，应用默认菜单命令占位
+    /// 主窗口：承载 MacMainWindow 外壳 + 依赖注入 + MacMenuCommands 菜单命令
     @SceneBuilder
     static func main(
         appEnv: AppEnvironment,
@@ -36,8 +36,7 @@ enum MacSceneBuilder {
             height: DesignTokens.Metrics.macMainWindowHeight
         )
         .windowResizability(.contentSize)
-        // 占位：MacMenuCommands 于任务 3 创建后替换
-        .commands { EmptyCommands() }
+        .commands { MacMenuCommands() }
     }
 
     /// 设置窗口：占位视图，任务 5 创建 MacSettingsView 后替换
