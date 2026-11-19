@@ -74,6 +74,8 @@ extension DesignTokens {
         public static let macMainWindowWidth: CGFloat = 1200
         /// Mac 主窗口默认高度 (800pt)
         public static let macMainWindowHeight: CGFloat = 800
+        /// Mac 侧边栏宽度 (260pt)
+        public static let macSidebarWidth: CGFloat = 260
         /// 笔记本名称最大长度限制 (24字符)
         public static let maxNotebookNameLength: Int = 24
         /// 耗时分析标签宽度 (60px)

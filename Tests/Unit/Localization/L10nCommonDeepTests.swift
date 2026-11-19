@@ -121,7 +121,7 @@ final class L10nCommonDeepTests: XCTestCase {
             L10n.Common.Sidebar.healthCheck, L10n.Common.Sidebar.knowledge,
             L10n.Common.Sidebar.pageList, L10n.Common.Sidebar.universe,
             L10n.Common.Sidebar.tagManager, L10n.Common.Sidebar.plugins,
-            L10n.Common.Sidebar.collaboration
+            L10n.Common.Sidebar.collaboration, L10n.Common.Sidebar.toggle
         ]
         for value in values { assertNonMissing(value) }
     }

@@ -160,6 +160,7 @@ extension ContentView {
             if router.selectedTab == .knowledge {
                 NavigationSplitView {
                     AdaptiveSidebarView(selectedTab: $router.selectedTab)
+                        .macSidebarColumnWidth()
                 } content: {
                     SidebarView(heroNamespace: heroNamespace, selection: $router.sidebarSelection)
                 } detail: {
@@ -168,6 +169,7 @@ extension ContentView {
             } else {
                 NavigationSplitView {
                     AdaptiveSidebarView(selectedTab: $router.selectedTab)
+                        .macSidebarColumnWidth()
                 } detail: {
                     AdaptiveDetailView(selectedTab: $router.selectedTab, selection: $router.sidebarSelection, heroNamespace: heroNamespace)
                 }
@@ -367,5 +369,19 @@ extension ContentView {
             // 🟢 补全：快捷切换到“AI 智能对话” Tab
             router.navigateToTool(.chat)
         }
+    }
+}
+
+// MARK: - 侧边栏列宽修饰器
+/// 仅 macOS 应用 `DesignTokens.Metrics.macSidebarWidth` 作为侧边栏列首选宽度；
+/// iPad 保持系统默认宽度，不做干预。
+private extension View {
+    @ViewBuilder
+    func macSidebarColumnWidth() -> some View {
+        #if os(macOS)
+        navigationSplitViewColumnWidth(DesignTokens.Metrics.macSidebarWidth)
+        #else
+        self
+        #endif
     }
 }

@@ -116,4 +116,11 @@ final class TokenCoverageTests: XCTestCase {
         XCTAssertEqual(DesignTokens.Spacing.Feedback.defaultRating, 3)
         XCTAssertEqual(DesignTokens.Spacing.Feedback.maxRating, 5)
     }
+
+    // MARK: - Mac Metrics 值不变量
+
+    /// Mac 侧边栏宽度 token 值不变量
+    func testMacSidebarWidthValue() {
+        XCTAssertEqual(DesignTokens.Metrics.macSidebarWidth, 260)
+    }
 }

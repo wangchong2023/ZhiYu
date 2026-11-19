@@ -12945,6 +12945,21 @@
           }
         }
       }
+    },
+    "notebook.openHub": {
+      "extractionState": "manual",
+      "localizations": {
+        "ar": { "stringUnit": { "state": "translated", "value": "فتح مركز دفاتر الملاحظات" } },
+        "en": { "stringUnit": { "state": "translated", "value": "Open Notebook Hub" } },
+        "es": { "stringUnit": { "state": "translated", "value": "Abrir centro de cuadernos" } },
+        "fr": { "stringUnit": { "state": "translated", "value": "Ouvrir le centre de carnets" } },
+        "ja": { "stringUnit": { "state": "translated", "value": "ノートブックセンターを開く" } },
+        "ko": { "stringUnit": { "state": "translated", "value": "노트북 센터 열기" } },
+        "pt": { "stringUnit": { "state": "translated", "value": "Abrir centro de notebooks" } },
+        "ru": { "stringUnit": { "state": "translated", "value": "Открыть центр записных книжек" } },
+        "zh-Hans": { "stringUnit": { "state": "translated", "value": "打开笔记本中心" } },
+        "zh-Hant": { "stringUnit": { "state": "translated", "value": "開啟筆記本中心" } }
+      }
     }
   },
   "version": "1.0"

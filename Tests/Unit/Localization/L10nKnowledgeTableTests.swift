@@ -25,6 +25,19 @@ final class L10nKnowledgeTableTests: XCTestCase {
         XCTAssertEqual(L10n.Tag.tableName, "Knowledge")
     }
 
+    func testTableNameNotebookIsKnowledge() {
+        XCTAssertEqual(L10n.Notebook.tableName, "Knowledge")
+    }
+
+    // MARK: - Notebook 属性 key 存在性
+
+    func testNotebookOpenHubReturnsNonMissing() {
+        let result = L10n.Notebook.openHub
+        XCTAssertFalse(result.contains("[MISSING:"),
+                       "openHub 返回 Missing: \(result)")
+        XCTAssertFalse(result.isEmpty)
+    }
+
     // MARK: - Creation 属性 key 存在性
 
     func testCreationBasicPropsReturnNonMissing() {

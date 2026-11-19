@@ -119,6 +119,7 @@ extension L10n {
 
         public enum Sidebar {
             public static var title: String { Common.tr("sidebar.title") }
+            public static var toggle: String { Common.tr("sidebar.toggle") }
             public static var weeklyInsight: String { Common.tr("sidebar.weeklyInsight") }
             public static var dashboard: String { Common.tr("sidebar.dashboard") }
             public static var allPages: String { Common.tr("sidebar.allPages") }
