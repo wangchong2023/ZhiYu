@@ -21,6 +21,7 @@
 | ADR-013 | 2026-10-11 | UFPStorage 下沉采用引擎层 + 业务装配层拆分 + DatabaseManager 二次拆分，业务协议不物理下沉 | 设计中 |
 | ADR-014 | 2026-11-18 | Google 认证统一采用全平台 AppAuth（替代 GIDSignIn，解除原生 macOS 阻塞项） | 已实施 |
 | ADR-015 | 2026-11-18 | Phase 0 IDL 契约层收缩交付 + Skip 转译不采用（Phase 2 改 KMP/手写重写） | 已实施 |
+| ADR-016 | 2026-11-19 | Mac Catalyst 升级为原生 macOS target（Phase 1，解除 UIKit/Catalyst 依赖） | 已实施 |
 
 ---
 
@@ -148,3 +149,12 @@
 **决策**: **收缩 Phase 0 交付范围**——IDL 契约层止于 **proto 契约文件 + gen.sh 生成脚本**（生成代码 gitignore 不入库、不接线 runtime、不协议对齐）；**Skip.tools 不全面采用**，Phase 2（Android）改用 **KMP/手写重写 + IDL 契约复用**。
 **影响**: 新增 `Docs/Contracts/zhiyu/domain/{common,auth,knowledge}.proto`、`Docs/Contracts/README.md`、`Docs/Contracts/skip-poc-report.md`、`Tools/contracts/gen.sh`；`Config/opensource_dependencies.yml` 登记 swift-protobuf（integration: brew，protoc 生成插件）；`.gitignore` 忽略 `Sources/Domain/Contracts/Generated/`；从 git 移除任务 1 初版提交的 3 个 `.pb.swift`（未接线、不可编译的死文件）。
 **后果**: Phase 0 交付物为语言无关的 proto 契约 + 生成脚本（按需 `bash Tools/contracts/gen.sh` 再生 `.pb.swift`）；Skip 评估结论记录于 skip-poc-report.md；Phase 1（macOS 原生升级）前置条件中"Phase 0 完成"以收缩版为准（契约层就位，不阻塞 macOS 升级）。swift-protobuf 与 Skip 选型经 USER 确认。
+
+## ADR-016: Mac Catalyst 升级为原生 macOS target
+
+**日期**: 2026-11-19
+**状态**: 已实施
+**背景**: ZhiYuMac 此前基于 **Mac Catalyst**（`platform: iOS` + `SUPPORTS_MACCATALYST`），以 UIKit 子集运行于 macOS。Catalyst 存在窗口/菜单/拖放/键盘等桌面体验与沙箱能力受限，且随 iOS SDK 演进维护成本上升。跨平台扩展 Phase 1（见 CROSS_PLATFORM_EXPANSION.md §6.3）决定升级为原生 macOS target（`platform: macOS`，deploymentTarget 27.0），获得原生 AppKit 体验。前置：Phase 0 契约层就位、ADR-014 全平台 AppAuth 迁移解除认证阻塞项。
+**决策**: **ZhiYuMac 从 Mac Catalyst 升级为原生 macOS target**——`project.yml` 的 `ZhiYuMac` 改 `platform: macOS`，删除 `SUPPORTS_MACCATALYST`/`SDKROOT: iphoneos`/`TARGETED_DEVICE_FAMILY: 2`；整文件删除未接入死代码 `AppWindowSceneDelegate.swift`（Catalyst 手动建窗逻辑，原生 macOS 不编译）；清理 20 处 `#if targetEnvironment(macCatalyst)` 分支（原生 macOS 下 `os(iOS)` 为假自动排除，直接删除）；Shared/Features 层 UIKit 改用跨平台抽象或 AppKit（`UIPasteboard`→`PasteboardProtocol`、`UIApplication` scene 查询→`connectedScenes` 抽象等）；`MacInfo.plist` 删除 UIKit 专属键（`UIApplicationSceneManifest`/`UILaunchScreen`/`UIUserInterfaceStyle`/`NSSupportsLiveActivities`）；保留 `LSApplicationCategoryType`。
+**影响**: `ZhiYuMac` 变更为原生 macOS target；删除 AppWindowSceneDelegate（-102 行）；清理 Catalyst 分支（-224 行），残留 10 处全在 `Platforms/iOS`（合法保留）；Bridging Header 的 `#if !TARGET_OS_MACCATALYST` 改 `#if TARGET_OS_IOS`（避免原生 macOS 误编 iOS 专属头）；新增跨平台 Pasteboard 抽象（`CrossPlatform.swift` 的 `AppPasteboard`）。
+**后果**: iOS/macOS/watchOS **三平台编译通过**（`make ios && make mac && make watch`）；完整静态分析全绿（22 项门禁 + 编译告警清零）；SPM 全包单测通过；App 单元测试 2601 用例非快照全过（快照失败为既有基线漂移，台账记录）；原生 macOS 获得原生窗口/菜单/拖放体验。详见 `Docs/Architecture/CROSS_PLATFORM_EXPANSION.md` §6.3。

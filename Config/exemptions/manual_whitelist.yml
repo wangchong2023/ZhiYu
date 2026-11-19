@@ -980,6 +980,18 @@ swiftui_uikit_supplement:
   expiry_check: true
   category:
   - doc-drift
+- symbol: UIApplication
+  reason: UIKit 应用单例（文档描述 Catalyst 替换前符号）
+  added: 2026-11-19
+  expiry_check: true
+  category:
+  - doc-drift
+- symbol: UIScreen
+  reason: UIKit 屏幕（文档描述 Catalyst 替换前符号）
+  added: 2026-11-19
+  expiry_check: true
+  category:
+  - doc-drift
 - symbol: Button
   reason: SwiftUI Button 视图
   added: 2026-09-16
