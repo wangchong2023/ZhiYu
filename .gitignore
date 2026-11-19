@@ -51,6 +51,7 @@ env/
 # CodeFree 安全审计产物
 .codefree/
 codefree-code-review/
+security-check/
 
 # Temporary log/pid files
 /tmp/*.log

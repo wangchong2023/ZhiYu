@@ -43,8 +43,11 @@ final class MacNativeUITests: MacBaseUITestCase {
             return
         }
 
-        // 设置窗口已打开：点击 AI Section（L10n.Settings.Section.ai 文案）
-        let aiButton = app.buttons["AI"]
+        // 设置窗口已打开：点击 AI Section
+        // 不硬编码本地化 label，按 label 模糊匹配（覆盖 en="Artificial Intelligence" / zh="人工智能"）
+        let aiButton = app.buttons.matching(
+            NSPredicate(format: "label CONTAINS[c] 'ai' OR label CONTAINS[c] '人工'")
+        ).firstMatch
         XCTAssertTrue(aiButton.waitForExistence(timeout: 10), "设置侧边栏应包含 AI Section")
         aiButton.tap()
     }
@@ -69,8 +72,8 @@ final class MacNativeUITests: MacBaseUITestCase {
             return
         }
         app.typeKey("p", modifierFlags: .command)
-        // 命令面板由 Router.showCommandPalette 驱动，弹出 sheet
-        let palette = app.otherElements["commandPalette"]
-        XCTAssertTrue(palette.waitForExistence(timeout: 10), "⌘P 应弹出命令面板")
+        // 命令面板由 Router.showCommandPalette 驱动，弹出 sheet；以搜索栏 TextField 作为可达锚点
+        let paletteSearchField = app.textFields.firstMatch
+        XCTAssertTrue(paletteSearchField.waitForExistence(timeout: 10), "⌘P 应弹出命令面板（搜索栏出现）")
     }
 }
