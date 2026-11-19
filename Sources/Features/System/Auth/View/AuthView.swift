@@ -36,16 +36,16 @@ struct AuthView: View {
         // swiftlint:disable:next redundant_discardable_let
         let _ = (showPrivacySheet, showTermsSheet)
         if idiom == .mac {
-            macLoginLayout
+            desktopLoginLayout
         } else {
-            mobileLoginLayout
+            compactLoginLayout
         }
     }
 
     // MARK: - 运行时 Trait 分派的登录布局
 
-    /// 桌面端 (macOS) 居中布局：左品牌区 + 右表单区，保留 3D 翻转卡片动画
-    private var macLoginLayout: some View {
+    /// 桌面形态居中布局：左品牌区 + 右表单区，保留 3D 翻转卡片动画
+    private var desktopLoginLayout: some View {
         ZStack {
             // 背景层
             themeManager.pageBackground()
@@ -109,8 +109,8 @@ struct AuthView: View {
         )
     }
 
-    /// 移动端 (iPhone/iPad/watchOS) 布局：原纵向单列布局，保留 3D 翻转卡片动画
-    private var mobileLoginLayout: some View {
+    /// 紧凑形态布局：原纵向单列布局，保留 3D 翻转卡片动画
+    private var compactLoginLayout: some View {
         ZStack {
             // 背景层
             themeManager.pageBackground()

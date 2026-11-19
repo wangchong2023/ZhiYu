@@ -1,12 +1,12 @@
 //
-//  MacAuthViewLayoutTests.swift
+//  AuthViewLayoutTraitTests.swift
 //  ZhiYuTests
 //
 //  Created by Antigravity on 2026/11/19.
 //  Copyright © 2026 WangChong. All rights reserved.
 //
 //  系统层级：[L3] 表现层测试
-//  核心职责：验证 AuthView 依据运行时 Trait (interfaceIdiom) 在 Mac 与移动端布局间
+//  核心职责：验证 AuthView 依据运行时 Trait (interfaceIdiom) 在桌面与紧凑布局间
 //            正确分派，并确认区域切换/3D 翻转状态在两种布局下单一来源（登录逻辑共享）。
 //
 
@@ -17,7 +17,7 @@ import Dependencies
 @testable import ZhiYu
 
 @MainActor
-final class MacAuthViewLayoutTests: XCTestCase {
+final class AuthViewLayoutTraitTests: XCTestCase {
 
     override func setUp() async throws {
         try await super.setUp()
@@ -26,13 +26,13 @@ final class MacAuthViewLayoutTests: XCTestCase {
 
     // MARK: - 1. 运行时 Trait 布局分派
 
-    /// Mac 形态 (idiom == .mac) 应走 macLoginLayout 且可正常渲染
+    /// 桌面形态 (idiom == .mac) 应走 desktopLoginLayout 且可正常渲染
     func testAuthView_RendersMacLayout_WithMacIdiom() {
         let host = render(idiom: .mac)
         XCTAssertNotNil(host.view)
     }
 
-    /// 非 Mac 形态 (idiom == .iPhone) 应走 mobileLoginLayout 且可正常渲染
+    /// 非桌面形态 (idiom == .iPhone) 应走 compactLoginLayout 且可正常渲染
     func testAuthView_RendersMobileLayout_WithNonMacIdiom() {
         let host = render(idiom: .iPhone)
         XCTAssertNotNil(host.view)
