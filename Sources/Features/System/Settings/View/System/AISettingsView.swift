@@ -17,6 +17,12 @@ import UFPDesignSystem
 struct AISettingsView: View {
     @Environment(AppStore.self) var store
     @Environment(ThemeManager.self) var themeManager
+    @Environment(\.dismiss) private var dismiss
+
+    /// 是否显示右上角「完成」关闭按钮。
+    /// 作为独立页面（appFullScreenCover）弹出时显示；嵌入 SettingsView 的 detailColumn 时隐藏，
+    /// 由 SettingsView 统一管理工具栏，避免出现冗余的「完成」按钮。
+    var showsDismissButton: Bool = true
 
     @State private var selectedTab = 0
 
@@ -53,7 +59,17 @@ struct AISettingsView: View {
             }
         }
         .navigationTitle(L10n.Settings.Section.ai)
-        .doneDismissToolbar()
+        .appNavigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if showsDismissButton {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(L10n.Common.done) {
+                        dismiss()
+                    }
+                    .bold()
+                }
+            }
+        }
     }
     
     /// 获取当前设置界面的选项卡标签文本数组

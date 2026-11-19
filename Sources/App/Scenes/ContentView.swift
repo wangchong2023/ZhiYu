@@ -89,6 +89,8 @@ struct ContentView: View {
                     .zIndex(DesignTokens.ZIndex.lockOverlay)
             }
         }
+        // macOS 原生场景由 openWindow/SettingsLink 提供设置等入口，不再挂载全屏弹窗（iOS/watchOS 保留 sheet 路径）。
+        #if !os(macOS)
         .appFullScreenCover(isPresented: $router.isShowingSettingsSheet) {
             SettingsView()
                 .environment(store)
@@ -144,6 +146,7 @@ struct ContentView: View {
             .globalSheetTheme()
             .applyPresentationSizing()
         }
+        #endif
         .animation(DesignTokens.Animation.Config.prominentSpring, value: authSession.isLoggedIn || authSession.isGuest)
         .animation(DesignTokens.Animation.Config.prominentSpring, value: vaultService.selectedVaultID)
         .environmentObject(MedalService.shared)

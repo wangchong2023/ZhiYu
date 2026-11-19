@@ -30,6 +30,7 @@ struct SettingsView: View {
         case appearance      // 界面外观
         case security        // 安全隐私
         case data            // 数据与日志
+        case ai              // AI 智能体
         case plugins         // 插件与扩展
         case feedback        // 反馈改进
         #if DEBUG
@@ -39,9 +40,9 @@ struct SettingsView: View {
 
         static var allCases: [SettingsSection] {
             #if DEBUG
-            return [.appearance, .security, .data, .plugins, .feedback, .developer, .about]
+            return [.appearance, .security, .data, .ai, .plugins, .feedback, .developer, .about]
             #else
-            return [.appearance, .security, .data, .plugins, .feedback, .about]
+            return [.appearance, .security, .data, .ai, .plugins, .feedback, .about]
             #endif
         }
 
@@ -56,6 +57,8 @@ struct SettingsView: View {
                 return L10n.Settings.Section.security
             case .data:
                 return L10n.Settings.Section.data
+            case .ai:
+                return L10n.Settings.Section.ai
             case .plugins:
                 return L10n.Settings.Section.plugins
             case .feedback:
@@ -78,6 +81,8 @@ struct SettingsView: View {
                 return DesignTokens.Icons.settingsSecurity
             case .data:
                 return DesignTokens.Icons.settingsData
+            case .ai:
+                return DesignTokens.Icons.sparkles
             case .plugins:
                 return DesignTokens.Icons.settingsPlugins
             case .feedback:
@@ -260,6 +265,9 @@ struct SettingsView: View {
                         .environment(themeManager)
                 case .plugins:
                     PluginExtensionsDetailView()
+                case .ai:
+                    AISettingsView(showsDismissButton: false)
+                        .environment(themeManager)
                 #if DEBUG
                 case .developer:
                     developerSettingsDestination
