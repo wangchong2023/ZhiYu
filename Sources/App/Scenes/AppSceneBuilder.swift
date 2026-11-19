@@ -24,12 +24,13 @@ enum AppSceneBuilder {
         hasSeenSplash: Bool
     ) -> some Scene {
         #if os(macOS)
-        // macOS 分支占位：MacSceneBuilder 于任务 2 创建后替换为真实三组 scene
-        iOSSceneBuilder.main(
+        // macOS 分支：@SceneBuilder 组合主窗口、Settings 与辅助窗口三组 scene
+        MacSceneBuilder.main(
             appEnv: appEnv, appModel: appModel, dependencies: dependencies,
-            themeManager: themeManager, onboardingService: onboardingService,
-            hasSeenSplash: hasSeenSplash
+            themeManager: themeManager, onboardingService: onboardingService
         )
+        MacSceneBuilder.settings()
+        MacSceneBuilder.windows()
         #else
         iOSSceneBuilder.main(
             appEnv: appEnv, appModel: appModel, dependencies: dependencies,
