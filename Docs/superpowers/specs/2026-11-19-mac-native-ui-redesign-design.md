@@ -122,6 +122,91 @@ Sources/Platforms/iOS/Scenes/iOSSceneBuilder.swift            # iOS 场景根（
 
 ---
 
+## 登录页：运行时 Trait 桌面化 AuthView
+
+### 现状
+
+`AuthView`（`Sources/Features/System/Auth/View/AuthView.swift`）在业务层（Features），纯移动端风格：全屏 ZStack + ScrollView + 3D 翻转 + 顶部区域/语言切换条。未登录时由 `mainContainer`（`AppLayoutComponents.swift:39`）直接显示。无任何平台适配，Mac 上呈现 iOS 风格全屏登录页。
+
+### 方案：运行时 Trait 分派（符合业务层规范）
+
+`AuthView` 在业务层，**禁用 `#if os()`**。采用项目已确立的运行时 Trait 模式（先例：`SettingsView.swift:108`、`GraphComponents.swift:108` 用 `@Environment(\.interfaceIdiom)` 判断 `.mac`）：
+
+```swift
+struct AuthView: View {
+    @Environment(\.interfaceIdiom) private var idiom
+
+    var body: some View {
+        if idiom == .mac {
+            macLoginLayout                    // 桌面居中布局
+        } else {
+            mobileLoginLayout                 // 现有移动端布局（原 body）
+        }
+    }
+}
+```
+
+- 桌面布局 `macLoginLayout` 作为 `AuthView` 的**私有 computed 属性**（同文件，可访问 `@State` 与 `handleAuth`/`handleThirdPartyLogin`）。
+- 复用现有 `heroHeader`/`topControlBar`/`AuthPhonePanel`/`AuthOAuthPanel`/`AuthGuestSection`，不改业务逻辑。
+- 无 `#if os()`，纯运行时 Trait，符合业务层规范。
+
+### Mac 桌面登录布局（`macLoginLayout`）
+
+```swift
+private var macLoginLayout: some View {
+    ZStack {
+        themeManager.pageBackground().ignoresSafeArea()
+
+        HStack(spacing: 0) {
+            // 左侧品牌展示区
+            heroHeader
+                .frame(maxWidth: DesignTokens.Metrics.authHeroWidth)
+                .padding(.leading, DesignTokens.Spacing.huge)
+
+            Divider()
+                .background(Color.appBorder.opacity(DesignTokens.Opacity.shadow))
+
+            // 右侧登录卡片（居中，非全屏滚动）
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: DesignTokens.Spacing.large) {
+                    topControlBar
+                    if displayedRegion == .china {
+                        AuthPhonePanel(...)
+                    } else {
+                        OverseasLoginCardView()
+                            .id(Localized.currentLanguage)
+                    }
+                    AuthOAuthPanel(...)
+                    AuthGuestSection()
+                }
+                .frame(maxWidth: DesignTokens.Metrics.authFormWidth)
+                .padding(DesignTokens.Spacing.wide)
+            }
+            .frame(maxWidth: .infinity)
+        }
+    }
+    .policySheet(...)      // 复用政策弹窗
+}
+```
+
+### 新增 Design Token
+
+在 `UFPDesignSystem` 的 `DesignTokens+Metrics.swift`（对齐 `settingsSidebarWidth` 风格）新增：
+
+```swift
+// DesignTokens+Metrics.swift — Metrics 枚举扩展
+/// Mac 登录页品牌区宽度 (420pt)
+public static let authHeroWidth: CGFloat = 420
+/// Mac 登录页登录表单最大宽度 (420pt)
+public static let authFormWidth: CGFloat = 420
+```
+
+### 登录页与场景的关系
+
+未登录时 `MacMainWindow` 直接呈现 `AuthView`（经 trait 分派到桌面布局），无额外弹窗；登录成功后进入主三栏。登录状态切换逻辑保持不变（`mainContainer` 的 `isLoggedIn || isGuest` 判断）。
+
+---
+
 ## 设置页：原生 Settings scene
 
 ### 系统偏好设置风格（TabView 5 Pane）
@@ -212,6 +297,8 @@ public static let macSidebarWidth: CGFloat = 260   // 新增，供 MacMainWindow
 | 改动 | 位置 | 平台影响 |
 |------|------|----------|
 | 侧边栏宽度 Token | `DesignSystem+Sidebar` | 仅新增，iOS 不受影响 |
+| 登录页 Token | `UFPDesignSystem` Metrics | 仅新增 `authHeroWidth`/`authFormWidth`，iOS 不引用 |
+| `AuthView` 桌面布局 | `AuthView` 同文件 | 运行时 Trait 分派，iOS 走原布局 |
 | `ContentView` | 不动 | macOS 走 `MacMainWindow` |
 | 现有 25 处 `#if os(macOS)` | 保持/收敛 | 已在 Platforms/基础设施层 |
 | `AppSceneBuilder`/`SceneEnvironmentInjection` | App 层新增 | 单一分发点 |
@@ -225,11 +312,12 @@ public static let macSidebarWidth: CGFloat = 260   // 新增，供 MacMainWindow
 1. **任务 1**：`SceneEnvironmentInjection`（抽取 20+ 环境注入）+ `AppSceneBuilder` + `iOSSceneBuilder`（现有结构）
 2. **任务 2**：`MacSceneBuilder` + `MacMainWindow` 骨架（三栏复用现有 `adaptiveSplitView`）
 3. **任务 3**：主窗口接入 `.commands` 基础菜单（⌘N、退出）
-4. **任务 4**：`Settings` scene + `MacSettingsView` TabView 外壳
-5. **任务 5**：拆分设置 Pane（通用/AI/账户/安全/关于）
-6. **任务 6**：完整菜单栏（查看/窗口/帮助）+ 侧边栏宽度 Token
-7. **任务 7**：辅助 `Window` scene（笔记本中心）
-8. **任务 8**：移除 macOS 分支 fullScreenCover 设置入口，接入 `SettingsLink`；视觉打磨
+4. **任务 4**：登录页运行时 Trait 桌面化（`AuthView` 分派 + `macLoginLayout` + Auth Token）
+5. **任务 5**：`Settings` scene + `MacSettingsView` TabView 外壳
+6. **任务 6**：拆分设置 Pane（通用/AI/账户/安全/关于）
+7. **任务 7**：完整菜单栏（查看/窗口/帮助）+ 侧边栏宽度 Token
+8. **任务 8**：辅助 `Window` scene（笔记本中心）
+9. **任务 9**：移除 macOS 分支 fullScreenCover 设置入口，接入 `SettingsLink`；视觉打磨
 
 ---
 
