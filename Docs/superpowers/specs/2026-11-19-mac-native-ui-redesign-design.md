@@ -121,7 +121,7 @@ enum MacSceneBuilder {
 
 > **Note**: `@SceneBuilder` 允许条件编译（`#if os`）选择多 scene 组，且各分支返回的 `some Scene` 经 builder 组合，类型一致，规避 opaque 返回类型不一致问题。
 
-### 环境注入内聚（`MacEnvironmentInjection`）
+### 环境注入内聚（`SceneEnvironmentInjection`）
 
 现有 `ZhiYuApp.body` 中 20+ 个 `.environment` 注入抽成公共 modifier，macOS 与 iOS 共用，避免重复。接收状态参数：
 
@@ -566,7 +566,7 @@ public static let macSidebarWidth: CGFloat = 260   // 新增，供 MacMainWindow
 | `Tests/Unit/App/AppRootScenesAndNavigationTests.swift` | 验证 `AppSceneBuilder` 分发（macOS→MacSceneBuilder，iOS→iOSSceneBuilder）；`ZhiYuApp.body` 极简化不破坏现有导航 |
 | `Tests/Unit/App/ContentViewDeepTests.swift` / `ContentViewAndCollaborationDeepTests.swift` | 确认 macOS 分支移除 6 个 `appFullScreenCover` 后 iOS 路径不变（iOS 保留），补 `ContentView` 平台分支测试 |
 | `Tests/Unit/App/AppRootScenesAndSidebarDeepTests.swift` | 侧边栏宽度 Token 切换（mac 用 `macSidebarWidth`，iOS 用原值） |
-| 新增 `Tests/Unit/App/AppSceneBuilderTests.swift` | `AppSceneBuilder.root` 各平台分发；`SceneEnvironmentInjection` 环境注入完整性（20+ environment 不遗漏）；`MacMainWindow` 包装 `ContentView` 保留锁定层/浮层/toast |
+| 新增 `Tests/Unit/App/AppSceneBuilderTests.swift` | `AppSceneBuilder.root(...)` 各平台分发；`SceneEnvironmentInjection` 环境注入完整性（20+ environment 不遗漏）；`MacMainWindow` 包装 `ContentView` 保留锁定层/浮层/toast |
 | 新增 `Tests/Unit/Auth/MacAuthViewLayoutTests.swift` | `AuthView` 的 `interfaceIdiom == .mac` 分派到 `macLoginLayout`；iOS 走 `mobileLoginLayout`；登录逻辑不变 |
 | 新增 `Tests/Unit/App/MacWindowSceneTests.swift` | 辅助 `Window` scene（profile/plan/plugins）登录态守卫（未登录不触发 `openWindow`） |
 
