@@ -39,6 +39,14 @@ dependencies:
     license: MIT
     purpose: "流式 JSON 部分解析（LLM 流式响应）"
 
+  - name: LiteRT-LM
+    upstream: "https://github.com/google-ai-edge/LiteRT-LM.git"
+    version: "v0.20.0"
+    integration: spm
+    license: Apache-2.0
+    purpose: "Google AI Edge 端侧大模型推理引擎（原生 .litertlm/.task 多模态/思考模式/Metal GPU 加速）"
+    note: "本地化离线补丁：Package.swift 两个 binaryTarget 指向本地 prebuilt_xcframeworks/CLiteRTLM.xcframework 与 CLiteRTLM_mac.xcframework"
+
   - name: lottie-ios
     upstream: "https://github.com/airbnb/lottie-ios.git"
     version: "main"

@@ -17,11 +17,15 @@ public enum PromptSecuritySanitizer {
 
     /// 使用指定 XML 标签安全包裹输入文本
     public static func sanitizeAndWrap(_ input: String, tag: String) -> String {
+        let openTag = "<\(tag)>"
+        let escapedOpenTag = "&lt;\(tag)&gt;"
+        let closeTag = "</\(tag)>"
+        let escapedCloseTag = "&lt;/\(tag)&gt;"
         let escapedInput = input
-            .replacingOccurrences(of: "<\(tag)>", with: "&lt;\(tag)&gt;")
-            .replacingOccurrences(of: "</\(tag)>", with: "&lt;/\(tag)&gt;")
+            .replacingOccurrences(of: openTag, with: escapedOpenTag)
+            .replacingOccurrences(of: closeTag, with: escapedCloseTag)
 
-        return "<\(tag)>\n\(escapedInput)\n</\(tag)>"
+        return "\(openTag)\n\(escapedInput)\n\(closeTag)"
     }
 
     private static let zeroWidthScalarSet: Set<UInt32> = [

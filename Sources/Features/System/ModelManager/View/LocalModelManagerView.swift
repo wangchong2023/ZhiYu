@@ -70,7 +70,7 @@ public struct LocalModelManagerView: View {
                 switch selectedTab {
                 case .store:
                     ModelStoreView(embedInScrollView: true) {
-                        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                        withAnimation(.appStandard) {
                             selectedTab = .lab
                         }
                     }
@@ -78,7 +78,7 @@ public struct LocalModelManagerView: View {
                     .environment(router)
                 case .lab:
                     ModelLabView(embedInScrollView: true) {
-                        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                        withAnimation(.appStandard) {
                             selectedTab = .store
                         }
                     }
@@ -99,7 +99,7 @@ public struct LocalModelManagerView: View {
             ForEach(ModelManagerTab.allCases) { tab in
                 let isSelected = selectedTab == tab
                 Button(action: {
-                    withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                    withAnimation(.appStandard) {
                         selectedTab = tab
                     }
                 }) {

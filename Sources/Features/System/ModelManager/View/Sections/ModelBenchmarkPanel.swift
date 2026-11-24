@@ -22,19 +22,34 @@ final class ModelBenchmarkState {
 
     init() {}
 
-    /// 执行多轮次跑分压测
+    /// 执行多轮次跑分压测（端侧模型已加载时走真实硬件时钟推理压测，未加载时降级估算）
     func startBenchmark(modelId: String) async {
         guard !isRunning else { return }
         isRunning = true
         selectedModelId = modelId
 
-        let finalResult = await ModelBenchmarkRunner.shared.runBenchmark(
-            modelId: modelId,
-            rounds: FeatureConstants.Benchmark.defaultRounds
-        ) { [weak self] _, progressResult in
+        let progressHandler: @Sendable (Int, BenchmarkResult) -> Void = { [weak self] _, progressResult in
             Task { @MainActor in
                 self?.currentResult = progressResult
             }
+        }
+
+        let finalResult: BenchmarkResult
+        if OnDeviceLLMService.shared.isModelLoaded {
+            finalResult = await ModelBenchmarkRunner.shared.runBenchmark(
+                modelId: modelId,
+                rounds: FeatureConstants.Benchmark.defaultRounds,
+                inferenceExecutor: { prompt in
+                    try await OnDeviceLLMService.shared.generate(prompt: prompt)
+                },
+                onProgress: progressHandler
+            )
+        } else {
+            finalResult = await ModelBenchmarkRunner.shared.runBenchmark(
+                modelId: modelId,
+                rounds: FeatureConstants.Benchmark.defaultRounds,
+                onProgress: progressHandler
+            )
         }
 
         currentResult = finalResult
@@ -106,8 +121,8 @@ struct ModelBenchmarkContentView: View {
                             style: StrokeStyle(lineWidth: strokeWidth, lineCap: .round)
                         )
                         .frame(width: gaugeSize, height: gaugeSize)
-                        .rotationEffect(.degrees(state.isRunning ? 360 : 0))
-                        .animation(.linear(duration: 1.2).repeatForever(autoreverses: false), value: state.isRunning)
+                        .rotationEffect(.degrees(state.isRunning ? FeatureConstants.Benchmark.fullCircleDegrees : 0))
+                        .animation(.linear(duration: DesignTokens.Animations.pulseDuration).repeatForever(autoreverses: false), value: state.isRunning)
                 }
 
                 VStack(spacing: DesignTokens.SystemSpacing.atomic) {

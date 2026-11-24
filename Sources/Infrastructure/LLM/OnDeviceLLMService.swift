@@ -10,8 +10,12 @@
 //
 @preconcurrency import Foundation
 @preconcurrency import CoreML
+#if canImport(FoundationModels)
+import FoundationModels
+#endif
 import Combine
 import UFPCore
+import ZhiYuAICore
 import Dependencies
 
 // MARK: - On-Device LLM Service
@@ -27,6 +31,13 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
     
     /// 指示当前大模型是否已完全成功载入内存
     @Published public var isModelLoaded: Bool = false
+
+    /// 端侧硬件加速偏好（AUTO / CPU / GPU / NPU）
+    public var preferredAccelerator: LocalInferenceAccelerator = .auto
+
+    /// Google LiteRT-LM 开源端侧推理后端实例（支持 .litertlm / .task 真实多模态推理，可注入替身用于测试）
+    private let liteRTBackend: any LocalInferenceBackendProtocol
+    private var isLiteRTLoaded: Bool = false
     
     /// 指示模型当前是否正处于推理生成（Inference）阻塞状态
     @Published public var isGenerating: Bool = false
@@ -77,12 +88,17 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
         public static let generationTemperature: Double = 0.7
         public static let smartIngestMaxTokens: Int = 500
         public static let chatMaxTokens: Int = 300
+        public static let liteRTExtension: String = "litertlm"
+        public static let taskExtension: String = "task"
+        public static let thoughtOpenTag: String = "<thought>"
+        public static let thoughtCloseTag: String = "</thought>\n"
         public static let contextPageLimit: Int = 5
         public static let contentPreviewChars: Int = 200
         public static let titleHitWeight: Int = 3
         public static let tagHitWeight: Int = 2
         public static let contentHitWeight: Int = 1
         public static let minTokenLength: Int = 2
+        public static let minElapsedSeconds: TimeInterval = 0.001
     }
 
     // MARK: - 初始化
@@ -92,7 +108,8 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
     /// contains 闭包执行器检查），在 AppEnvironment 初始化链路的嵌套 MainActor 单例初始化中
     /// 会触发 Swift 6 执行器自死锁（isMainExecutor 循环等待）。
     /// 模型发现改为由设置页等使用方显式调用（见 OnDeviceLLMSettingsView），避免启动路径卡死。
-    public init() {
+    public init(liteRTBackend: any LocalInferenceBackendProtocol = LiteRTInferenceBackend()) {
+        self.liteRTBackend = liteRTBackend
         checkAvailability()
     }
 
@@ -128,7 +145,11 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
         if let enumerator = FileManager.default.enumerator(at: docDir, includingPropertiesForKeys: [.fileSizeKey]) {
             for case let fileURL as URL in enumerator {
                 let ext = fileURL.pathExtension.lowercased()
-                if ext == SystemConstants.FileExtension.bin || ext == SystemConstants.FileExtension.gguf || ext == SystemConstants.FileExtension.mlmodelC {
+                if ext == Config.liteRTExtension
+                    || ext == Config.taskExtension
+                    || ext == SystemConstants.FileExtension.bin
+                    || ext == SystemConstants.FileExtension.gguf
+                    || ext == SystemConstants.FileExtension.mlmodelC {
                     let name = fileURL.deletingPathExtension().lastPathComponent
                     let modelId = "\(LLMConstants.ModelIDPrefix.downloaded)\(name)"
                     if !models.contains(where: { $0.id == modelId }) {
@@ -166,9 +187,14 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
         }
     }
 
-    /// 估算模型文件夹的总物理大小
+    /// 估算模型文件或模型目录的总物理大小（兼容单文件 `.litertlm`/`.task`/`.gguf` 与目录型 `.mlmodelc`）
     private func estimateModelSize(url: URL) -> Int64 {
         let fm = FileManager.default
+        if let values = try? url.resourceValues(forKeys: [.isDirectoryKey, .fileSizeKey]),
+           values.isDirectory != true,
+           let size = values.fileSize {
+            return Int64(size)
+        }
         var totalSize: Int64 = 0
         if let enumerator = fm.enumerator(at: url, includingPropertiesForKeys: [.fileSizeKey]) {
             for case let fileURL as URL in enumerator {
@@ -212,8 +238,18 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
             let ext = url.pathExtension.lowercased()
             if ext == SystemConstants.FileExtension.mlmodelC {
                 compiledURL = url
+            } else if ext == Config.liteRTExtension || ext == Config.taskExtension {
+                // Google LiteRT-LM 原生 .litertlm / .task 权重：真实加载 C++/Metal 推理引擎
+                try await liteRTBackend.loadModel(at: url, accelerator: preferredAccelerator)
+                isLiteRTLoaded = true
+                isModelLoaded = true
+                loadedModelName = model.name
+                generationProgress = 1.0
+                keyStore?.set(selectedModelID, forKey: configKey)
+                return
             } else if ext == SystemConstants.FileExtension.bin || ext == SystemConstants.FileExtension.gguf {
-                // 沙盒下载的 GGUF / LiteRT-LM 二进制模型权重：端侧完成物理内存映射并直接标记就绪
+                // 存量 .bin / .gguf 权重兼容分支
+                isLiteRTLoaded = false
                 isModelLoaded = true
                 loadedModelName = model.name
                 generationProgress = 1.0
@@ -255,7 +291,17 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
 
         let startTime = Date()
 
-        // 核心 Core ML 推理预测过程
+        // 1. Apple FoundationModels 系统级端侧大模型真实推理（iOS 26 / macOS 26+，零下载即用）
+        if let systemGenerated = try await generateWithFoundationModelsIfSelected(prompt: prompt, startTime: startTime) {
+            return systemGenerated
+        }
+
+        // 2. Google LiteRT-LM 开源引擎真实推理（支持 .litertlm / .task 与 Thinking Mode 流式分离）
+        if isLiteRTLoaded {
+            return try await generateWithLiteRT(prompt: prompt, maxTokens: maxTokens, startTime: startTime)
+        }
+
+        // 3. 核心 Core ML 推理预测过程
         if currentModel is MLModel {
             // 动态从 InferenceParametersStore 中读取当前模型对应的调节参数
             let modelId = selectedModelID.replacingOccurrences(of: LLMConstants.ModelIDPrefix.downloaded, with: "")
@@ -310,6 +356,89 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
 
         isGenerating = false
         throw OnDeviceError.emptyResponse
+    }
+
+    /// 当选中系统内置 Apple Intelligence 模型时，使用 Apple FoundationModels 执行真实离线推理
+    private func generateWithFoundationModelsIfSelected(prompt: String, startTime: Date) async throws -> String? {
+        #if canImport(FoundationModels)
+        guard #available(iOS 26.0, macOS 26.0, *),
+              selectedModelID == LLMConstants.OnDeviceModelID.appleIntelligence else {
+            return nil
+        }
+        do {
+            let session = LanguageModelSession()
+            let response = try await session.respond(to: prompt)
+            let generated = response.content
+            let elapsed = max(Date().timeIntervalSince(startTime), Config.minElapsedSeconds)
+            let tokenCount = max(1, generated.count / PromptConstants.TokenLimits.charactersPerToken)
+            inferenceSpeed = Double(tokenCount) / elapsed
+            generatedText = generated
+            generationProgress = 1.0
+            isGenerating = false
+            return generated
+        } catch {
+            isGenerating = false
+            throw OnDeviceError.inferenceFailed(error.localizedDescription)
+        }
+        #else
+        _ = (prompt, startTime)
+        return nil
+        #endif
+    }
+
+    /// 使用 Google LiteRT-LM 开源后端执行真实端侧流式推理
+    private func generateWithLiteRT(prompt: String, maxTokens: Int, startTime: Date) async throws -> String {
+        defer { isGenerating = false }
+        let modelId = selectedModelID
+            .replacingOccurrences(of: LLMConstants.ModelIDPrefix.downloaded, with: "")
+            .replacingOccurrences(of: LLMConstants.ModelIDPrefix.bundled, with: "")
+        let storedParams = InferenceParametersStore.shared.loadParameters(for: modelId)
+        let options = LocalInferenceOptions(
+            temperature: storedParams?.temperature ?? Config.generationTemperature,
+            topP: storedParams?.topP ?? LocalInferenceOptions.Defaults.topP,
+            topK: storedParams?.topK ?? LocalInferenceOptions.Defaults.topK,
+            maxTokens: storedParams?.maxTokens ?? maxTokens,
+            enableThinking: false,
+            accelerator: preferredAccelerator
+        )
+
+        var thoughtBuffer = ""
+        var answerBuffer = ""
+        var measuredTPS: Double = 0.0
+
+        do {
+            for try await chunk in liteRTBackend.generateStream(
+                prompt: prompt,
+                imageData: [],
+                audioData: nil,
+                options: options
+            ) {
+                switch chunk {
+                case .thought(let delta):
+                    thoughtBuffer += delta
+                    generatedText = Config.thoughtOpenTag + thoughtBuffer + Config.thoughtCloseTag + answerBuffer
+                case .text(let delta):
+                    answerBuffer += delta
+                    generatedText = thoughtBuffer.isEmpty
+                        ? answerBuffer
+                        : Config.thoughtOpenTag + thoughtBuffer + Config.thoughtCloseTag + answerBuffer
+                case .completed(_, let decodeTPS):
+                    measuredTPS = decodeTPS
+                }
+            }
+        } catch {
+            throw OnDeviceError.inferenceFailed(error.localizedDescription)
+        }
+
+        let elapsed = max(Date().timeIntervalSince(startTime), Config.minElapsedSeconds)
+        if measuredTPS > 0 {
+            inferenceSpeed = measuredTPS
+        } else {
+            let tokenCount = max(1, answerBuffer.count / PromptConstants.TokenLimits.charactersPerToken)
+            inferenceSpeed = Double(tokenCount) / elapsed
+        }
+        generationProgress = 1.0
+        return generatedText
     }
 
     // MARK: - 端侧智能导入 (Smart Ingest)
@@ -407,19 +536,28 @@ public final class OnDeviceLLMService: OnDeviceLLMServiceProtocol {
     }
 
     // MARK: - 强行取消生成
-    /// 取消Generation
+    /// 取消当前正在进行的端侧推理生成（同时取消 CoreML Task 与 LiteRT-LM 原生生成流）
     public func cancelGeneration() {
         generationTask?.cancel()
         generationTask = nil
+        if isLiteRTLoaded {
+            let backend = liteRTBackend
+            Task { await backend.cancelGeneration() }
+        }
         isGenerating = false
         generatedText = ""
         generationProgress = 0
     }
 
     // MARK: - 卸载内存模型
-    /// unloadModel
+    /// 卸载当前常驻模型并释放 CoreML / LiteRT-LM 原生权重与 GPU 缓冲区
     public func unloadModel() {
         currentModel = nil
+        if isLiteRTLoaded {
+            isLiteRTLoaded = false
+            let backend = liteRTBackend
+            Task { await backend.unloadModel() }
+        }
         isModelLoaded = false
         loadedModelName = ""
         inferenceSpeed = 0

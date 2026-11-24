@@ -10,6 +10,8 @@
 //
 
 import SwiftUI
+import UniformTypeIdentifiers
+import Dependencies
 import UFPCore
 import UFPDesignSystem
 
@@ -43,6 +45,7 @@ public struct ModelStoreView: View {
     @Environment(AppStore.self) private var store
     @Environment(Router.self) private var router
     @Environment(ThemeManager.self) private var themeManager
+    @Dependency(\.toastService) private var toastService
 
     /// 全局大模型市场中台管理器
     @State private var modelManager = GlobalModelManager.shared
@@ -58,6 +61,14 @@ public struct ModelStoreView: View {
     @State private var expandedModelId: String?
     /// 当前选中的任务类型筛选
     @State private var selectedFilter: ModelStoreFilter = .all
+    /// 控制 BYOM 本地模型文件选择器弹出
+    @State private var showModelImporter = false
+    /// 控制双源（魔搭社区 / HuggingFace）令牌配置弹窗
+    @State private var showHFTokenSheet = false
+    /// HuggingFace 令牌编辑态文本
+    @State private var hfTokenInput = ""
+    /// 魔搭社区 SDK 令牌编辑态文本
+    @State private var msTokenInput = ""
 
     /// 是否需要外层 ScrollView 包装，用于扁平化整合单页滚动
     public var embedInScrollView: Bool = true
@@ -123,6 +134,19 @@ public struct ModelStoreView: View {
         }
         .navigationTitle(L10n.Settings.localModelManager)
         .inlineNavigationBarTitleIfAvailable()
+        .onAppear {
+            modelManager.refreshHuggingFaceTokenStatus()
+        }
+        .fileImporter(
+            isPresented: $showModelImporter,
+            allowedContentTypes: [.data, .item],
+            allowsMultipleSelection: false
+        ) { result in
+            handleModelImportResult(result)
+        }
+        .sheet(isPresented: $showHFTokenSheet) {
+            hfTokenConfigSheet
+        }
         .alert(item: $alertManifest) { manifest in
             let requiredGb = String(format: "%.1f", manifest.minDeviceMemoryInGb)
             let currentGb = String(format: "%.1f", Double(modelManager.physicalMemory) / SystemConstants.bytesPerGB)
@@ -140,7 +164,10 @@ public struct ModelStoreView: View {
             // 1. 端侧硬件算力看板
             DeviceHardwareBar()
 
-            // 2. 任务分类横向筛选胶囊栏
+            // 2. BYOM 本地导入 & HuggingFace 令牌快捷操作条
+            storeUtilityBar
+
+            // 3. 任务分类横向筛选胶囊栏
             filterChipsBar
 
             // 3. 模型卡片列表
@@ -202,5 +229,170 @@ public struct ModelStoreView: View {
         }
         .frame(maxWidth: .infinity, minHeight: DesignTokens.Metrics.sourceCardHeight)
         .cardStyle(horizontalPadding: DesignTokens.Spacing.medium, verticalPadding: DesignTokens.Spacing.large)
+    }
+
+    // MARK: - BYOM 本地导入 & HuggingFace 令牌栏
+
+    @ViewBuilder
+    private var storeUtilityBar: some View {
+        HStack(spacing: DesignTokens.Spacing.small) {
+            Button(action: { showModelImporter = true }) {
+                Label(L10n.ModelManager.BYOM.importButton, systemImage: DesignTokens.Icons.folderBadgePlus)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.appAccent)
+                    .padding(.horizontal, DesignTokens.SystemSpacing.medium)
+                    .padding(.vertical, DesignTokens.SystemSpacing.small)
+                    .background(Color.appAccent.opacity(DesignTokens.Opacity.glass))
+                    .clipShape(Capsule())
+                    .contentShape(Capsule())
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("importLocalModelButton")
+
+            Button(action: {
+                msTokenInput = modelManager.loadModelScopeToken()
+                hfTokenInput = modelManager.loadHuggingFaceToken()
+                showHFTokenSheet = true
+            }) {
+                HStack(spacing: DesignTokens.Spacing.tiny) {
+                    Image(systemName: DesignTokens.Icons.lock)
+                        .font(.caption)
+                    Text(L10n.ModelManager.ModelSource.title)
+                        .font(.caption.weight(.semibold))
+                    if modelManager.hasAnySourceToken {
+                        Text(L10n.ModelManager.HFToken.configured)
+                            .font(.caption2.bold())
+                            .foregroundStyle(Color.theme.green)
+                    }
+                }
+                .foregroundStyle(.appText)
+                .padding(.horizontal, DesignTokens.SystemSpacing.medium)
+                .padding(.vertical, DesignTokens.SystemSpacing.small)
+                .background(Color.appCard.opacity(DesignTokens.Opacity.prominent))
+                .clipShape(Capsule())
+                .overlay(
+                    Capsule()
+                        .strokeBorder(Color.appBorder.opacity(DesignTokens.Opacity.soft), lineWidth: DesignTokens.Spacing.borderWidth)
+                )
+                .contentShape(Capsule())
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("hfTokenConfigButton")
+
+            Spacer()
+        }
+    }
+
+    @ViewBuilder
+    private var hfTokenConfigSheet: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.large) {
+                    // 1. 首选下载源路由策略（自动 / 魔搭社区 / HuggingFace）
+                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
+                        Text(L10n.ModelManager.ModelSource.preferenceLabel)
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.appText)
+
+                        Picker(
+                            L10n.ModelManager.ModelSource.preferenceLabel,
+                            selection: Binding(
+                                get: { modelManager.downloadSourcePreference },
+                                set: { modelManager.downloadSourcePreference = $0 }
+                            )
+                        ) {
+                            ForEach(GlobalModelManager.DownloadSourcePreference.allCases) { pref in
+                                Text(pref.displayTitle).tag(pref)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .labelsHidden()
+                    }
+
+                    Divider()
+
+                    // 2. 魔搭社区 (ModelScope) SDK 令牌
+                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
+                        HStack {
+                            Text(L10n.ModelManager.ModelSource.msTokenTitle)
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(.appText)
+                            if modelManager.hasModelScopeToken {
+                                Text(L10n.ModelManager.HFToken.configured)
+                                    .font(.caption2.bold())
+                                    .foregroundStyle(Color.theme.green)
+                            }
+                        }
+                        Text(L10n.ModelManager.ModelSource.msTokenDesc)
+                            .font(.caption)
+                            .foregroundStyle(.appSecondary)
+                        SecureField(L10n.ModelManager.ModelSource.msTokenPlaceholder, text: $msTokenInput)
+                            .textFieldStyle(.roundedBorder)
+                    }
+
+                    Divider()
+
+                    // 3. HuggingFace 访问令牌
+                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
+                        HStack {
+                            Text(L10n.ModelManager.HFToken.title)
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(.appText)
+                            if modelManager.hasHuggingFaceToken {
+                                Text(L10n.ModelManager.HFToken.configured)
+                                    .font(.caption2.bold())
+                                    .foregroundStyle(Color.theme.green)
+                            }
+                        }
+                        Text(L10n.ModelManager.HFToken.description)
+                            .font(.caption)
+                            .foregroundStyle(.appSecondary)
+                        SecureField(L10n.ModelManager.HFToken.placeholder, text: $hfTokenInput)
+                            .textFieldStyle(.roundedBorder)
+                    }
+
+                    HStack(spacing: DesignTokens.Spacing.medium) {
+                        if modelManager.hasAnySourceToken {
+                            Button(L10n.ModelManager.HFToken.clear, role: .destructive) {
+                                modelManager.clearModelScopeToken()
+                                modelManager.clearHuggingFaceToken()
+                                msTokenInput = ""
+                                hfTokenInput = ""
+                                showHFTokenSheet = false
+                            }
+                        }
+                        Spacer()
+                        Button(L10n.Common.cancel) {
+                            showHFTokenSheet = false
+                        }
+                        Button(L10n.Common.save) {
+                            modelManager.saveModelScopeToken(msTokenInput)
+                            modelManager.saveHuggingFaceToken(hfTokenInput)
+                            showHFTokenSheet = false
+                        }
+                        .buttonStyle(.borderedProminent)
+                    }
+                }
+                .padding(DesignTokens.Spacing.wide)
+            }
+            .navigationTitle(L10n.ModelManager.ModelSource.title)
+            .appNavigationBarTitleDisplayMode(.inline)
+        }
+        .frame(minWidth: DesignTokens.Metrics.authFormWidth, minHeight: DesignTokens.Metrics.authHeroWidth)
+    }
+
+    private func handleModelImportResult(_ result: Result<[URL], Error>) {
+        switch result {
+        case .success(let urls):
+            guard let url = urls.first else { return }
+            do {
+                let manifest = try modelManager.importCustomModel(from: url)
+                toastService.show(type: .success, message: L10n.ModelManager.BYOM.importSuccess(manifest.displayName))
+            } catch {
+                toastService.show(type: .error, message: L10n.ModelManager.BYOM.importFailed(error.localizedDescription))
+            }
+        case .failure(let error):
+            toastService.show(type: .error, message: L10n.ModelManager.BYOM.importFailed(error.localizedDescription))
+        }
     }
 }

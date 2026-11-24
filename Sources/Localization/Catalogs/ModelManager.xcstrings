@@ -23591,6 +23591,278 @@
           }
         }
       }
+    },
+    "model_manager.byom.import_button": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import Local Model"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "导入本地模型"
+          }
+        }
+      }
+    },
+    "model_manager.byom.import_success": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Imported local model: %@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已导入本地模型：%@"
+          }
+        }
+      }
+    },
+    "model_manager.byom.import_failed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import failed: %@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "导入失败：%@"
+          }
+        }
+      }
+    },
+    "model_manager.hf.token_title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HuggingFace Token"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HuggingFace 令牌"
+          }
+        }
+      }
+    },
+    "model_manager.hf.token_placeholder": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter hf_... access token"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "输入 hf_... 访问令牌"
+          }
+        }
+      }
+    },
+    "model_manager.hf.token_desc": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Required to download gated HuggingFace models such as official Gemma weights. Stored encrypted in your local keychain."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用于下载需要授权的 Gemma 等 HuggingFace 官方模型权重，令牌将加密保存在本机钥匙串中。"
+          }
+        }
+      }
+    },
+    "model_manager.hf.token_configured": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Configured"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "已配置"
+          }
+        }
+      }
+    },
+    "model_manager.hf.token_clear": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear Token"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "清除令牌"
+          }
+        }
+      }
+    },
+    "model_manager.source.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Model Source & Tokens"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "模型源与令牌"
+          }
+        }
+      }
+    },
+    "model_manager.source.preference_label": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preferred Download Source"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "首选下载源"
+          }
+        }
+      }
+    },
+    "model_manager.source.auto": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auto (By Region)"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "自动（按地区）"
+          }
+        }
+      }
+    },
+    "model_manager.source.modelscope": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ModelScope Hub"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "魔搭社区"
+          }
+        }
+      }
+    },
+    "model_manager.source.huggingface": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hugging Face"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hugging Face 社区"
+          }
+        }
+      }
+    },
+    "model_manager.source.ms_token_title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ModelScope SDK Token"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "魔搭社区 SDK 令牌"
+          }
+        }
+      }
+    },
+    "model_manager.source.ms_token_placeholder": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter ModelScope SDK token"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "输入魔搭社区 SDK Token"
+          }
+        }
+      }
+    },
+    "model_manager.source.ms_token_desc": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Used for accelerated & gated model downloads on ModelScope in China. Stored encrypted in your local keychain."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "用于中国大陆高速下载魔搭社区（ModelScope）及受限模型权重，令牌将加密保存在本机钥匙串中。"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

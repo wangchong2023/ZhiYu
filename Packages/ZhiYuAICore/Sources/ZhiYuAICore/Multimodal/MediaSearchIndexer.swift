@@ -50,6 +50,11 @@ public struct MediaSearchResult: Identifiable, Sendable {
 
 /// 即时媒体检索索引器
 public actor MediaSearchIndexer {
+    public enum Defaults {
+        public static let topK: Int = 10
+        public static let minScore: Float = -1.0
+    }
+
     public static let shared = MediaSearchIndexer()
 
     private let embeddingEngine: MultimodalEmbeddingProtocol
@@ -77,8 +82,8 @@ public actor MediaSearchIndexer {
     /// 执行以文搜图跨模态检索
     public func search(
         query: String,
-        topK: Int = 10,
-        minScore: Float = -1.0
+        topK: Int = Defaults.topK,
+        minScore: Float = Defaults.minScore
     ) async throws -> [MediaSearchResult] {
         guard !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             return []
@@ -95,8 +100,8 @@ public actor MediaSearchIndexer {
     /// 执行以图搜图相似度检索（根据目标图片 ID 寻找最相似的图片）
     public func searchByImage(
         targetId: String,
-        topK: Int = 10,
-        minScore: Float = -1.0
+        topK: Int = Defaults.topK,
+        minScore: Float = Defaults.minScore
     ) -> [MediaSearchResult] {
         guard let targetItem = items.first(where: { $0.id == targetId }) else {
             return []

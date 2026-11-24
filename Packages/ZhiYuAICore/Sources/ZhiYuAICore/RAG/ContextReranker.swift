@@ -36,6 +36,12 @@ public struct RerankedResult: Sendable {
 }
 
 public struct ContextReranker: Sendable {
+    public enum Defaults {
+        public static let topK: Int = 5
+        public static let minScore: Float = 0.35
+        public static let initialScoreWeight: Float = 0.7
+        public static let crossScoreWeight: Float = 0.3
+    }
 
     public init() {}
 
@@ -43,8 +49,8 @@ public struct ContextReranker: Sendable {
     public func rerank(
         query: String,
         candidates: [(chunk: ContextRerankChunk, initialScore: Float)],
-        topK: Int = 5,
-        minScore: Float = 0.35
+        topK: Int = Defaults.topK,
+        minScore: Float = Defaults.minScore
     ) -> [RerankedResult] {
         let queryTokens = Set(query.lowercased().split(separator: " ").map(String.init))
 
@@ -53,7 +59,7 @@ public struct ContextReranker: Sendable {
             let overlap = Float(queryTokens.intersection(chunkTokens).count)
             let crossScore = queryTokens.isEmpty ? 0.0 : (overlap / Float(queryTokens.count))
 
-            let finalScore = candidate.initialScore * 0.7 + crossScore * 0.3
+            let finalScore = candidate.initialScore * Defaults.initialScoreWeight + crossScore * Defaults.crossScoreWeight
             guard finalScore >= minScore else { return nil }
 
             return RerankedResult(chunk: candidate.chunk, score: finalScore)

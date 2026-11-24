@@ -61,7 +61,8 @@ let package = Package(
         .package(path: "../UFPStorage"),
         .package(path: "../ZhiYuDomain"),
         .package(path: "\(opensrcRoot)/SwiftJSONSanitizer"),
-        .package(path: "\(opensrcRoot)/PartialJSON")
+        .package(path: "\(opensrcRoot)/PartialJSON"),
+        .package(path: "\(opensrcRoot)/LiteRT-LM")
     ],
     targets: [
         .target(
@@ -71,7 +72,8 @@ let package = Package(
                 .product(name: "UFPStorage", package: "UFPStorage"),
                 .product(name: "ZhiYuDomain", package: "ZhiYuDomain"),
                 .product(name: "SwiftJSONSanitizer", package: "SwiftJSONSanitizer"),
-                .product(name: "PartialJSON", package: "PartialJSON")
+                .product(name: "PartialJSON", package: "PartialJSON"),
+                .product(name: "LiteRTLM", package: "LiteRT-LM", condition: .when(platforms: [.iOS, .macOS]))
             ]
         ),
         .target(

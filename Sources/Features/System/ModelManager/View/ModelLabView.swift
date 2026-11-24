@@ -115,7 +115,7 @@ public struct ModelLabView: View {
                 contentStack
             }
         }
-        .animation(.spring(response: 0.35, dampingFraction: 0.8), value: labManager.selectedUseCase)
+        .animation(.standardAnimation, value: labManager.selectedUseCase)
         .sheet(isPresented: $showConfigSheet) {
             configurationSheet
         }

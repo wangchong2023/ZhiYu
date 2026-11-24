@@ -137,15 +137,21 @@ extension ModelLabView {
         let liveBadge = labManager.currentStats.speed > 0
             ? L10n.ModelManager.Lab.Chat.metricsBadgeFormat(labManager.currentStats.firstTokenLatency, labManager.currentStats.speed)
             : nil
-        HStack {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
             if labManager.generatedText.isEmpty {
                 AIThinkingBubbleView(customText: labManager.loadingStageText.isEmpty ? nil : labManager.loadingStageText)
             } else {
-                AIChatBubbleView(
-                    text: labManager.generatedText,
-                    isUser: false,
-                    metricsBadgeText: liveBadge
-                )
+                let parsed = ThinkingContentParser.parse(rawText: labManager.generatedText)
+                if let thought = parsed.thinkingText {
+                    ThinkingCollapsibleView(thinkingText: thought, isStreaming: labManager.isGenerating)
+                }
+                if !parsed.answerText.isEmpty || parsed.thinkingText == nil {
+                    AIChatBubbleView(
+                        text: parsed.thinkingText == nil ? labManager.generatedText : parsed.answerText,
+                        isUser: false,
+                        metricsBadgeText: liveBadge
+                    )
+                }
             }
         }
         .id("generating_anchor")
@@ -153,17 +159,20 @@ extension ModelLabView {
 
     @ViewBuilder
     var chatInputBarView: some View {
-        HStack(alignment: .center, spacing: DesignTokens.Spacing.medium) {
+        HStack(alignment: .center, spacing: DesignTokens.Spacing.small) {
             // 左侧特化附件（加号）菜单按钮，根据不同用例由 ModelLabManager 状态层分发不同选项，避开 View 本地化审计
             Menu {
-                ForEach(labManager.attachmentOptions) { option in
-                    Button(action: {
-                        HapticFeedback.shared.trigger(.selection)
-                        toastManager.show(type: .success, message: option.successMessage)
-                    }) {
-                        Label(option.title, systemImage: option.icon)
+                Group {
+                    ForEach(labManager.attachmentOptions) { option in
+                        Button(action: {
+                            HapticFeedback.shared.trigger(.selection)
+                            toastManager.show(type: .success, message: option.successMessage)
+                        }) {
+                            Label(option.title, systemImage: option.icon)
+                        }
                     }
                 }
+                .labelStyle(.titleAndIcon)
             } label: {
                 Image(systemName: DesignTokens.Icons.plus)
                     .font(.title2)
@@ -171,6 +180,28 @@ extension ModelLabView {
                     .frame(width: DesignSystem.Action.inputBarHeight, height: DesignSystem.Action.inputBarHeight)
             }
             .buttonStyle(.plain)
+
+            // Thinking Mode 快捷开关（对齐 Google AI Edge Gallery AI Chat 思考模式一键切换）
+            Button {
+                HapticFeedback.shared.trigger(.selection)
+                enableThinking.toggle()
+            } label: {
+                HStack(spacing: DesignTokens.Spacing.atomic) {
+                    Image(systemName: DesignTokens.Icons.sparkles)
+                        .font(.caption.weight(.semibold))
+                    Text(L10n.ModelManager.Lab.enableThinking)
+                        .font(.caption2.weight(.semibold))
+                        .lineLimit(1)
+                }
+                .foregroundStyle(enableThinking ? Color.theme.white : .appSecondary)
+                .padding(.horizontal, DesignTokens.Spacing.small)
+                .padding(.vertical, DesignTokens.Spacing.tiny)
+                .background(enableThinking ? Color.appAccent : Color.appBorder.opacity(DesignTokens.Opacity.glass))
+                .clipShape(Capsule())
+                .contentShape(Capsule())
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("toggleThinkingModeButton")
 
             TextField(labManager.isGenerating ? L10n.Chat.aiRunning : L10n.ModelManager.Lab.chatInputPlaceholder, text: $chatInputText)
                 .font(.subheadline)
@@ -218,8 +249,13 @@ extension ModelLabView {
         Task {
             guard let model = getActiveModel() else { return }
             HapticFeedback.shared.trigger(.selection)
-            // 调用已有的 runSimulation 模拟回复
-            await labManager.runSimulation(for: .aiChat, model: model, prompt: text)
+            // 调用 ModelLabManager（优先真实 LiteRT-LM / FoundationModels 端侧流式推理，无权重时降级）
+            await labManager.runSimulation(
+                for: .aiChat,
+                model: model,
+                prompt: text,
+                enableThinking: enableThinking
+            )
 
             // 推理结束后，把流式生成的文本转入历史对话消息，并清空生成缓冲区
             let aiMsg = LabChatMessage(

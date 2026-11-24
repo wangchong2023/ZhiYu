@@ -14,167 +14,9 @@ import Foundation
 import Observation
 import SwiftUI
 import UFPCore
+import ZhiYuAICore
 import Dependencies
 import UFPDesignSystem
-
-/// 大模型测试实验室的场景类型
-public enum UseCaseType: String, CaseIterable, Identifiable, Sendable {
-    case askImage = "ask_image"
-    case audioScribe = "audio_scribe"
-    case aiChat = "ai_chat"
-    case agentSkills = "agent_skills"
-    case promptLab = "prompt_lab"
-    case tinyGarden = "tiny_garden"
-    case mobileActions = "mobile_actions"
-    case instantMediaSearch = "instant_media_search"
-    case videoMomentSearch = "video_moment_search"
-    case benchmark = "benchmark"
-
-    public var id: String { rawValue }
-
-    public var title: String {
-        switch self {
-        case .askImage: return L10n.ModelManager.Lab.useCaseAskImage
-        case .audioScribe: return L10n.ModelManager.Lab.useCaseAudioScribe
-        case .aiChat: return L10n.ModelManager.Lab.useCaseChat
-        case .agentSkills: return L10n.ModelManager.Lab.useCaseAgentSkills
-        case .promptLab: return L10n.ModelManager.Lab.useCasePromptLab
-        case .tinyGarden: return L10n.ModelManager.Lab.useCaseTinyGarden
-        case .mobileActions: return L10n.ModelManager.Lab.useCaseMobileActions
-        case .instantMediaSearch: return L10n.ModelManager.Lab.useCaseInstantMediaSearch
-        case .videoMomentSearch: return L10n.ModelManager.Lab.useCaseVideoMomentSearch
-        case .benchmark: return L10n.ModelManager.Benchmark.title
-        }
-    }
-
-    public var description: String {
-        switch self {
-        case .askImage: return L10n.ModelManager.Lab.descAskImage
-        case .audioScribe: return L10n.ModelManager.Lab.descAudioScribe
-        case .aiChat: return L10n.ModelManager.Lab.descChat
-        case .agentSkills: return L10n.ModelManager.Lab.descAgentSkills
-        case .promptLab: return L10n.ModelManager.Lab.descPromptLab
-        case .tinyGarden: return L10n.ModelManager.Lab.descTinyGarden
-        case .mobileActions: return L10n.ModelManager.Lab.descMobileActions
-        case .instantMediaSearch: return L10n.ModelManager.Lab.descInstantMediaSearch
-        case .videoMomentSearch: return L10n.ModelManager.Lab.descVideoMomentSearch
-        case .benchmark: return L10n.ModelManager.Benchmark.description
-        }
-    }
-
-    public var icon: String {
-        switch self {
-        case .askImage: return "photo.fill"
-        case .audioScribe: return "mic.fill"
-        case .aiChat: return "bubble.left.and.bubble.right.fill"
-        case .agentSkills: return "sparkles.square.filled.on.square"
-        case .promptLab: return "slider.horizontal.3"
-        case .tinyGarden: return "leaf.fill"
-        case .mobileActions: return "iphone.radiowaves.left.and.right"
-        case .instantMediaSearch: return "photo.on.rectangle.angled"
-        case .videoMomentSearch: return "video.badge.waveform.fill"
-        case .benchmark: return "speedometer"
-        }
-    }
-
-    public var themeColor: Color {
-        switch self {
-        case .askImage: return Color.theme.blue
-        case .audioScribe: return Color.theme.purple
-        case .aiChat: return Color.theme.cyan
-        case .agentSkills: return Color.theme.purple
-        case .promptLab: return Color.theme.orange
-        case .tinyGarden: return Color.theme.green
-        case .mobileActions: return Color.theme.blue
-        case .instantMediaSearch: return Color.theme.orange
-        case .videoMomentSearch: return Color.theme.green
-        case .benchmark: return Color.theme.purple
-        }
-    }
-    
-    /// 匹配大模型需要支持的任务特征
-    public var requiredTask: String {
-        switch self {
-        case .askImage: return "multimodal"
-        case .audioScribe: return "multimodal"
-        case .instantMediaSearch: return FeatureConstants.TaskName.mediaSearch
-        case .videoMomentSearch: return FeatureConstants.TaskName.videoSearch
-        case .benchmark: return "benchmark"
-        case .aiChat, .agentSkills, .promptLab, .tinyGarden, .mobileActions: return "chat"
-        }
-    }
-
-    /// 初始预设 Prompt 文本
-    public var defaultPresetPrompt: String {
-        switch self {
-        case .askImage: return L10n.ModelManager.Lab.Prompt.askImage
-        case .aiChat: return L10n.ModelManager.Lab.Prompt.chat
-        case .agentSkills: return L10n.ModelManager.Lab.Prompt.agentSkills
-        case .promptLab: return L10n.ModelManager.Lab.Prompt.promptLab
-        case .tinyGarden: return L10n.ModelManager.Lab.Prompt.tinyGarden
-        case .mobileActions: return L10n.ModelManager.Lab.Prompt.mobileActions
-        case .instantMediaSearch: return L10n.ModelManager.Lab.Prompt.instantMediaSearch
-        case .videoMomentSearch: return L10n.ModelManager.Lab.Prompt.videoMomentSearch
-        case .benchmark, .audioScribe: return ""
-        }
-    }
-}
-
-/// 性能实时评估指标结构
-public struct PerformanceStats: Sendable, Equatable {
-    /// 推理生成速度 (Tokens/Sec)
-    public var speed: Double
-    /// 模型预加载/首词预填耗时 (ms)
-    public var prefillLatency: Int
-    /// 首词输出延迟耗时 (ms)
-    public var firstTokenLatency: Int
-    /// 物理运存开销 (MB)
-    public var memoryUsage: Double
-}
-
-/// 任务路由及功能调用追踪步进结构
-public struct TraceStep: Sendable, Identifiable {
-    public var id: String { title }
-    public var title: String
-    public var desc: String
-    public var icon: String
-    public var colorName: String
-    
-    public init(title: String, desc: String, icon: String, colorName: String) {
-        self.title = title
-        self.desc = desc
-        self.icon = icon
-        self.colorName = colorName
-    }
-}
-
-/// 视觉多模态识别结果项
-public struct ConfidenceItem: Sendable, Identifiable {
-    public var id: String { name }
-    public var name: String
-    public var score: Double
-    public var colorName: String
-    
-    public init(name: String, score: Double, colorName: String) {
-        self.name = name
-        self.score = score
-        self.colorName = colorName
-    }
-}
-
-/// 智能对话附件选项结构
-public struct AttachmentOption: Sendable, Identifiable {
-    public var id: String { title }
-    public var title: String
-    public var icon: String
-    public var successMessage: String
-    
-    public init(title: String, icon: String, successMessage: String) {
-        self.title = title
-        self.icon = icon
-        self.successMessage = successMessage
-    }
-}
 
 /// 大模型实验室业务状态中台
 @Observable
@@ -182,6 +24,34 @@ public struct AttachmentOption: Sendable, Identifiable {
 public final class ModelLabManager {
 
     // MARK: - 依赖注入
+
+    private enum SimulationTiming {
+        static let e4bChunkDelayMs: Int = 45
+        static let e2bChunkDelayMs: Int = 30
+        static let nanosecondsPerMillisecond: UInt64 = 1_000_000
+        static let askImageBasePrefillMs: Int = 450
+        static let defaultBasePrefillMs: Int = 180
+        static let askImageBaseFirstTokenMs: Int = 520
+        static let defaultBaseFirstTokenMs: Int = 210
+        static let e4bPrefillOverheadMs: Int = 80
+        static let e4bFirstTokenOverheadMs: Int = 95
+        static let e4bMemoryUsageMB: Double = 1240.0
+        static let e2bMemoryUsageMB: Double = 850.0
+        static let memoryJitterMinMB: Double = -20.0
+        static let memoryJitterMaxMB: Double = 30.0
+    }
+
+    private enum PresetConfidenceScores {
+        static let deskDisplay: Double = 0.94
+        static let deskKeyboard: Double = 0.88
+        static let deskPlant: Double = 0.82
+        static let archTopology: Double = 0.96
+        static let archFlow: Double = 0.91
+        static let archComponents: Double = 0.85
+        static let nightSkyline: Double = 0.95
+        static let nightWindows: Double = 0.89
+        static let nightMoon: Double = 0.84
+    }
 
     // MARK: - 状态属性
     
@@ -214,6 +84,18 @@ public final class ModelLabManager {
     public var useCaseOutputs: [String: String] = [:]
     /// 按用例隔离的实时性能评估看板指标，杜绝未测试场景的数据残留
     public var useCaseStats: [String: PerformanceStats] = [:]
+
+    /// Google LiteRT-LM 端侧真实推理后端实例（支持多模态与 Thinking Mode 流式推理，可注入替身用于单测）
+    private let liteRTBackend: any LocalInferenceBackendProtocol
+    private let localModelURLResolver: @MainActor (String) -> URL?
+    private var loadedLiteRTModelId: String?
+
+    private enum LiteRTStreamingTags {
+        static let thoughtOpen = "<thought>"
+        static let thoughtClose = "</thought>\n"
+        static let liteRTExtension = "litertlm"
+        static let taskExtension = "task"
+    }
 
     /// 切换目标用例并恢复对应输出与指标状态
     public func switchUseCase(to useCase: UseCaseType?) {
@@ -267,8 +149,16 @@ public final class ModelLabManager {
     }
     
     // MARK: - 初始化
-    
-    public init() {}
+
+    public init(
+        liteRTBackend: any LocalInferenceBackendProtocol = LiteRTInferenceBackend(),
+        localModelURLResolver: (@MainActor (String) -> URL?)? = nil
+    ) {
+        self.liteRTBackend = liteRTBackend
+        self.localModelURLResolver = localModelURLResolver ?? { modelId in
+            GlobalModelManager.shared.getLocalModelURL(for: modelId)
+        }
+    }
     
     // MARK: - 逻辑方法
     
@@ -308,32 +198,20 @@ public final class ModelLabManager {
         model: LLMManifest,
         prompt: String,
         imageData: Data? = nil,
+        audioData: Data? = nil,
         temperature: Double? = nil,
         topP: Double? = nil,
-        sampleId: String? = nil
+        sampleId: String? = nil,
+        enableThinking: Bool = false
     ) async {
         guard !isGenerating else { return }
         
         isGenerating = true
         generatedText = ""
         setupExtraData(for: useCase)
-        
-        // 1. 初始化预填和首词延迟指标（根据不同模型配置动态呈现真实耗时与内存）
-        let basePrefill = useCase == .askImage ? 450 : 180
-        let baseFirstToken = useCase == .askImage ? 520 : 210
-        let isE4B = model.parameterCount.contains(FeatureConstants.ModelParameter.e4B)
-        
-        let prefillLatency = basePrefill + (isE4B ? 80 : 0)
-        let firstTokenLatency = baseFirstToken + (isE4B ? 95 : 0)
-        let simulatedMemory = (isE4B ? 1240.0 : 850.0) + Double.random(in: -20...30)
-        
-        currentStats = PerformanceStats(
-            speed: 0.0,
-            prefillLatency: prefillLatency,
-            firstTokenLatency: firstTokenLatency,
-            memoryUsage: simulatedMemory
-        )
-        
+
+        let (isE4B, firstTokenLatency) = initializeSimulationMetrics(for: useCase, model: model)
+
         // 2. Ask Image：处理预置图或相册图片的真实端侧视觉特征与标签
         var visionResult: VisionAnalysisResult?
         if useCase == .askImage {
@@ -346,44 +224,90 @@ public final class ModelLabManager {
             }
         }
 
-        let isDownloaded = isModelDownloadedLocally(modelId: model.modelId)
-        if isDownloaded {
+        if isModelDownloadedLocally(modelId: model.modelId) {
             loadingStageText = L10n.ModelManager.Lab.modelLoadingIndicator
         }
 
-        // 3. 决定最终输出文本（严格使用已下载的本地大模型，未下载时进行诚实未就绪引导）
+        // 3. 优先尝试 Google LiteRT-LM 真实多模态流式推理（.litertlm / .task 权重）
         let cleanPrompt = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
         let tempVal = temperature ?? model.defaultParameters.temperature
         let topPVal = topP ?? model.defaultParameters.topP
-        let localModelResponse: String?
-        if useCase == .aiChat {
-            localModelResponse = await requestLocalModelResponse(model: model, prompt: cleanPrompt, vision: visionResult)
-        } else {
-            localModelResponse = nil
-        }
+        let streamedViaLiteRT = await streamWithLiteRTIfAvailable(
+            for: useCase,
+            model: model,
+            prompt: cleanPrompt,
+            imageData: imageData,
+            audioData: audioData,
+            temperature: tempVal,
+            topP: topPVal,
+            enableThinking: enableThinking
+        )
         loadingStageText = ""
-        
-        let finalResponseText: String
-        if let localModelResponse {
-            finalResponseText = localModelResponse
-        } else {
-            finalResponseText = LabResponseSynthesizer.shared.synthesize(
-                useCase: useCase,
-                prompt: cleanPrompt,
-                model: model,
-                temperature: tempVal,
-                topP: topPVal,
-                visionResult: visionResult,
-                sampleId: sampleId
-            )
+        if streamedViaLiteRT {
+            useCaseOutputs[useCase.rawValue] = generatedText
+            useCaseStats[useCase.rawValue] = currentStats
+            isGenerating = false
+            return
         }
-        
-        // 模拟首词加载的延迟（展现思考与预填过程）
-        try? await Task.sleep(nanoseconds: UInt64(firstTokenLatency * 1_000_000))
+
+        // 4. 其次尝试 OnDeviceLLMService（Apple FoundationModels / CoreML），无可用权重时回退离线展演
+        let finalResponseText = await resolveFallbackResponse(
+            useCase: useCase,
+            model: model,
+            prompt: cleanPrompt,
+            temperature: tempVal,
+            topP: topPVal,
+            visionResult: visionResult,
+            sampleId: sampleId
+        )
+
+        try? await Task.sleep(nanoseconds: UInt64(firstTokenLatency) * SimulationTiming.nanosecondsPerMillisecond)
         await streamOutputText(finalResponseText, isE4B: isE4B)
         useCaseOutputs[useCase.rawValue] = generatedText
         useCaseStats[useCase.rawValue] = currentStats
         isGenerating = false
+    }
+
+    private func initializeSimulationMetrics(for useCase: UseCaseType, model: LLMManifest) -> (isE4B: Bool, firstTokenLatency: Int) {
+        let basePrefill = useCase == .askImage ? SimulationTiming.askImageBasePrefillMs : SimulationTiming.defaultBasePrefillMs
+        let baseFirstToken = useCase == .askImage ? SimulationTiming.askImageBaseFirstTokenMs : SimulationTiming.defaultBaseFirstTokenMs
+        let isE4B = model.parameterCount.contains(FeatureConstants.ModelParameter.e4B)
+        let prefillLatency = basePrefill + (isE4B ? SimulationTiming.e4bPrefillOverheadMs : 0)
+        let firstTokenLatency = baseFirstToken + (isE4B ? SimulationTiming.e4bFirstTokenOverheadMs : 0)
+        let simulatedMemory = (isE4B ? SimulationTiming.e4bMemoryUsageMB : SimulationTiming.e2bMemoryUsageMB)
+            + Double.random(in: SimulationTiming.memoryJitterMinMB...SimulationTiming.memoryJitterMaxMB)
+        currentStats = PerformanceStats(
+            speed: 0.0,
+            prefillLatency: prefillLatency,
+            firstTokenLatency: firstTokenLatency,
+            memoryUsage: simulatedMemory
+        )
+        return (isE4B, firstTokenLatency)
+    }
+
+    private func resolveFallbackResponse(
+        useCase: UseCaseType,
+        model: LLMManifest,
+        prompt: String,
+        temperature: Double,
+        topP: Double,
+        visionResult: VisionAnalysisResult?,
+        sampleId: String?
+    ) async -> String {
+        let supportsLocal = useCase == .aiChat || useCase == .promptLab || useCase == .askImage
+            || useCase == .agentSkills || useCase == .tinyGarden || useCase == .mobileActions
+        if supportsLocal, let local = await requestLocalModelResponse(model: model, prompt: prompt, vision: visionResult) {
+            return local
+        }
+        return LabResponseSynthesizer.shared.synthesize(
+            useCase: useCase,
+            prompt: prompt,
+            model: model,
+            temperature: temperature,
+            topP: topP,
+            visionResult: visionResult,
+            sampleId: sampleId
+        )
     }
 
     /// 针对中文/多语言文本按短 Chunk 递增流式输出，呈现打字机动效
@@ -403,11 +327,82 @@ public final class ModelLabManager {
             let elapsed = Date().timeIntervalSince(startTime)
             if elapsed > 0 {
                 let currentSpeed = Double(currentTokenCount * FeatureConstants.ModelLabSimulation.tokenSpeedMultiplier) / elapsed
-                currentStats.speed = min(currentSpeed, isE4B ? 32.5 : 45.8)
+                let maxSimulatedSpeed = isE4B ? FeatureConstants.Benchmark.baseTps4B : FeatureConstants.Benchmark.baseTps2B
+                currentStats.speed = min(currentSpeed, maxSimulatedSpeed)
             }
-            let sleepMs = isE4B ? 45 : 30
-            try? await Task.sleep(nanoseconds: UInt64(sleepMs * 1_000_000))
+            let sleepMs = isE4B ? SimulationTiming.e4bChunkDelayMs : SimulationTiming.e2bChunkDelayMs
+            try? await Task.sleep(nanoseconds: UInt64(sleepMs) * SimulationTiming.nanosecondsPerMillisecond)
             currentIndex = endIndex
+        }
+    }
+
+    /// 当本地沙盒已就绪 .litertlm / .task 权重时，直接通过 Google LiteRT-LM 执行真实多模态流式推理
+    private func streamWithLiteRTIfAvailable(
+        for useCase: UseCaseType,
+        model: LLMManifest,
+        prompt: String,
+        imageData: Data?,
+        audioData: Data?,
+        temperature: Double,
+        topP: Double,
+        enableThinking: Bool
+    ) async -> Bool {
+        guard useCase != .benchmark,
+              !prompt.isEmpty,
+              let localURL = localModelURLResolver(model.modelId) else {
+            return false
+        }
+        let ext = localURL.pathExtension.lowercased()
+        guard ext == LiteRTStreamingTags.liteRTExtension || ext == LiteRTStreamingTags.taskExtension else {
+            return false
+        }
+
+        do {
+            if loadedLiteRTModelId != model.modelId {
+                try await liteRTBackend.loadModel(at: localURL, accelerator: .auto)
+                loadedLiteRTModelId = model.modelId
+            }
+            let options = LocalInferenceOptions(
+                temperature: temperature,
+                topP: topP,
+                topK: model.defaultParameters.topK,
+                maxTokens: model.defaultParameters.maxTokens,
+                enableThinking: enableThinking,
+                accelerator: .auto
+            )
+            let images = imageData.map { [$0] } ?? []
+            var thoughtBuffer = ""
+            var answerBuffer = ""
+
+            for try await chunk in liteRTBackend.generateStream(
+                prompt: prompt,
+                imageData: images,
+                audioData: audioData,
+                options: options
+            ) {
+                if !isGenerating {
+                    await liteRTBackend.cancelGeneration()
+                    break
+                }
+                switch chunk {
+                case .thought(let delta):
+                    thoughtBuffer += delta
+                    generatedText = LiteRTStreamingTags.thoughtOpen + thoughtBuffer + LiteRTStreamingTags.thoughtClose + answerBuffer
+                case .text(let delta):
+                    answerBuffer += delta
+                    generatedText = thoughtBuffer.isEmpty
+                        ? answerBuffer
+                        : LiteRTStreamingTags.thoughtOpen + thoughtBuffer + LiteRTStreamingTags.thoughtClose + answerBuffer
+                case .completed(let ttftMs, let decodeTPS):
+                    currentStats.firstTokenLatency = Int(ttftMs)
+                    currentStats.prefillLatency = Int(ttftMs)
+                    currentStats.speed = decodeTPS
+                }
+            }
+            return !generatedText.isEmpty
+        } catch {
+            Logger.shared.warning("[ModelLabManager] LiteRT-LM 真实流式推理回退: \(error.localizedDescription)")
+            return false
         }
     }
 
@@ -421,6 +416,7 @@ public final class ModelLabManager {
         }
         
         if let onDevice = ServiceContainer.shared.resolveOptional((any OnDeviceLLMServiceProtocol).self) as? OnDeviceLLMService {
+            let userPrompt = vision.map { "\($0.featureDescription)\n\n\(prompt)" } ?? prompt
             if !onDevice.isModelLoaded {
                 let expectedID = "\(LLMConstants.ModelIDPrefix.downloaded)\(model.modelId)"
                 onDevice.selectedModelID = expectedID
@@ -428,12 +424,21 @@ public final class ModelLabManager {
             }
 
             if onDevice.isModelLoaded {
-                let userPrompt = vision.map { "\($0.featureDescription)\n\n\(prompt)" } ?? prompt
                 do {
                     let text = try await onDevice.generate(prompt: userPrompt, maxTokens: OnDeviceLLMService.Config.chatMaxTokens)
-                    return text.isEmpty ? nil : text
+                    if !text.isEmpty { return text }
                 } catch {
-                    Logger.shared.warning("[ModelLabManager] 端侧本地模型推理失败: \(error.localizedDescription)")
+                    Logger.shared.warning("[ModelLabManager] 端侧权重推理未就绪，尝试系统端侧 FoundationModels: \(error.localizedDescription)")
+                }
+            }
+
+            // 端侧系统级 Apple FoundationModels 真实离线推理兜底（绝不请求云端 API）
+            onDevice.selectedModelID = LLMConstants.OnDeviceModelID.appleIntelligence
+            try? await onDevice.loadModel()
+            if onDevice.isModelLoaded {
+                if let systemText = try? await onDevice.generate(prompt: userPrompt, maxTokens: OnDeviceLLMService.Config.chatMaxTokens),
+                   !systemText.isEmpty {
+                    return systemText
                 }
             }
         }
@@ -442,24 +447,30 @@ public final class ModelLabManager {
 
     /// 检测目标本地大模型在端侧沙盒是否已下载就绪
     private func isModelDownloadedLocally(modelId: String) -> Bool {
-        if GlobalModelManager.shared.isModelLocalReady(for: modelId) {
+        if localModelURLResolver(modelId) != nil || GlobalModelManager.shared.isModelLocalReady(for: modelId) {
             return true
         }
         let fm = FileManager.default
         if let docURL = fm.urls(for: .documentDirectory, in: .userDomainMask).first {
-            let binURL = docURL.appendingPathComponent("\(modelId).bin")
-            let modelcURL = docURL.appendingPathComponent("MLModels/\(modelId).mlmodelc")
-            if fm.fileExists(atPath: binURL.path) || fm.fileExists(atPath: modelcURL.path) {
+            let candidates = [
+                docURL.appendingPathComponent("\(modelId).\(LiteRTStreamingTags.liteRTExtension)"),
+                docURL.appendingPathComponent("\(modelId).\(LiteRTStreamingTags.taskExtension)"),
+                docURL.appendingPathComponent("\(modelId).bin"),
+                docURL.appendingPathComponent("MLModels/\(modelId).mlmodelc")
+            ]
+            if candidates.contains(where: { fm.fileExists(atPath: $0.path) }) {
                 return true
             }
         }
         return false
     }
 
-    /// 停止当前的测试推理
+    /// 停止当前的测试推理（同步通知 LiteRT-LM 原生引擎中断生成）
     public func stopSimulation() {
         isGenerating = false
         loadingStageText = ""
+        let backend = liteRTBackend
+        Task { await backend.cancelGeneration() }
     }
     
     // MARK: - 预置样本置信度辅助
@@ -474,21 +485,21 @@ public final class ModelLabManager {
         switch sampleId {
         case FeatureConstants.LabSynthesisConstants.sampleSmartDesk:
             confidenceItems = [
-                ConfidenceItem(name: consts.presetDeskDisplay, score: 0.94, colorName: colors[0]),
-                ConfidenceItem(name: consts.presetDeskKeyboard, score: 0.88, colorName: colors[1]),
-                ConfidenceItem(name: consts.presetDeskPlant, score: 0.82, colorName: colors[2])
+                ConfidenceItem(name: consts.presetDeskDisplay, score: PresetConfidenceScores.deskDisplay, colorName: colors[0]),
+                ConfidenceItem(name: consts.presetDeskKeyboard, score: PresetConfidenceScores.deskKeyboard, colorName: colors[1]),
+                ConfidenceItem(name: consts.presetDeskPlant, score: PresetConfidenceScores.deskPlant, colorName: colors[2])
             ]
         case FeatureConstants.LabSynthesisConstants.sampleArchChart:
             confidenceItems = [
-                ConfidenceItem(name: consts.presetArchTopology, score: 0.96, colorName: colors[0]),
-                ConfidenceItem(name: consts.presetArchFlow, score: 0.91, colorName: colors[1]),
-                ConfidenceItem(name: consts.presetArchComponents, score: 0.85, colorName: colors[2])
+                ConfidenceItem(name: consts.presetArchTopology, score: PresetConfidenceScores.archTopology, colorName: colors[0]),
+                ConfidenceItem(name: consts.presetArchFlow, score: PresetConfidenceScores.archFlow, colorName: colors[1]),
+                ConfidenceItem(name: consts.presetArchComponents, score: PresetConfidenceScores.archComponents, colorName: colors[2])
             ]
         case FeatureConstants.LabSynthesisConstants.sampleCityNight:
             confidenceItems = [
-                ConfidenceItem(name: consts.presetNightSkyline, score: 0.95, colorName: colors[0]),
-                ConfidenceItem(name: consts.presetNightWindows, score: 0.89, colorName: colors[1]),
-                ConfidenceItem(name: consts.presetNightMoon, score: 0.84, colorName: colors[2])
+                ConfidenceItem(name: consts.presetNightSkyline, score: PresetConfidenceScores.nightSkyline, colorName: colors[0]),
+                ConfidenceItem(name: consts.presetNightWindows, score: PresetConfidenceScores.nightWindows, colorName: colors[1]),
+                ConfidenceItem(name: consts.presetNightMoon, score: PresetConfidenceScores.nightMoon, colorName: colors[2])
             ]
         default:
             break

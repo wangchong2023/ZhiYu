@@ -23,11 +23,12 @@ struct OpenAICompatibleAdapter: LLMAdapter {
     /// - Returns: 字符串
     func generate(prompt: String, systemPrompt: String) async throws -> String {
         let client = LLMClient(baseURL: config.baseURL, apiKey: config.apiKey)
+        let defaultTemperature: Double = 0.7
         let body = LLMRequestBuilder.systemUserBody(
             model: config.model,
             systemPrompt: systemPrompt,
             userPrompt: prompt,
-            temperature: 0.7
+            temperature: defaultTemperature
         )
         let response = try await client.sendRequest(body: body)
         guard let choices = response["choices"] as? [[String: Any]],

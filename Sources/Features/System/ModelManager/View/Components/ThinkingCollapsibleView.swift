@@ -18,24 +18,76 @@ struct ParsedThinkingResult: Equatable, Sendable {
 
 /// 思考过程解析工具类
 enum ThinkingContentParser {
-    /// 从模型回复中分离思考过程与最终答案
-    static func parse(rawText: String) -> ParsedThinkingResult {
-        let openTag = FeatureConstants.ThinkingConstants.thinkTagOpen
-        let closeTag = FeatureConstants.ThinkingConstants.thinkTagClose
+    private enum TagPairs {
+        static let thoughtOpen = "<thought>"
+        static let thoughtClose = "</thought>"
+        static let pairs: [(open: String, close: String)] = [
+            (FeatureConstants.ThinkingConstants.thinkTagOpen, FeatureConstants.ThinkingConstants.thinkTagClose),
+            (thoughtOpen, thoughtClose)
+        ]
+    }
 
-        guard let openRange = rawText.range(of: openTag, options: .caseInsensitive) else {
+    /// 从模型回复中分离思考过程与最终答案（支持 `<think>` 与 `<thought>`、多段思考块与流式半闭合）
+    static func parse(rawText: String) -> ParsedThinkingResult {
+        var thoughts: [String] = []
+        var answerParts: [String] = []
+        var foundTag = false
+        var cursor = rawText.startIndex
+
+        while cursor < rawText.endIndex {
+            guard let nextOpen = findEarliestOpenTag(in: rawText, from: cursor) else {
+                answerParts.append(String(rawText[cursor...]))
+                break
+            }
+
+            foundTag = true
+            if nextOpen.range.lowerBound > cursor {
+                answerParts.append(String(rawText[cursor..<nextOpen.range.lowerBound]))
+            }
+
+            let contentStart = nextOpen.range.upperBound
+            if let closeRange = rawText.range(of: nextOpen.closeTag, options: .caseInsensitive, range: contentStart..<rawText.endIndex) {
+                let thought = String(rawText[contentStart..<closeRange.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+                if !thought.isEmpty {
+                    thoughts.append(thought)
+                }
+                cursor = closeRange.upperBound
+            } else {
+                // 流式生成思考内容中（尚未收到闭合标签）
+                let thought = String(rawText[contentStart...]).trimmingCharacters(in: .whitespacesAndNewlines)
+                if !thought.isEmpty {
+                    thoughts.append(thought)
+                }
+                break
+            }
+        }
+
+        guard foundTag else {
             return ParsedThinkingResult(thinkingText: nil, answerText: rawText)
         }
+        let joinedThought = thoughts.isEmpty ? nil : thoughts.joined(separator: "\n\n")
+        let joinedAnswer = answerParts.joined().trimmingCharacters(in: .whitespacesAndNewlines)
+        return ParsedThinkingResult(thinkingText: joinedThought, answerText: joinedAnswer)
+    }
 
-        if let closeRange = rawText.range(of: closeTag, options: .caseInsensitive, range: openRange.upperBound..<rawText.endIndex) {
-            let thought = String(rawText[openRange.upperBound..<closeRange.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
-            let answer = String(rawText[closeRange.upperBound...]).trimmingCharacters(in: .whitespacesAndNewlines)
-            return ParsedThinkingResult(thinkingText: thought.isEmpty ? nil : thought, answerText: answer)
-        } else {
-            // 正在流式生成思考内容中（尚未闭合 </think>）
-            let thought = String(rawText[openRange.upperBound...]).trimmingCharacters(in: .whitespacesAndNewlines)
-            return ParsedThinkingResult(thinkingText: thought, answerText: "")
+    private static func findEarliestOpenTag(
+        in text: String,
+        from start: String.Index
+    ) -> (range: Range<String.Index>, closeTag: String)? {
+        var earliest: (range: Range<String.Index>, closeTag: String)?
+        for pair in TagPairs.pairs {
+            guard let range = text.range(of: pair.open, options: .caseInsensitive, range: start..<text.endIndex) else {
+                continue
+            }
+            if let current = earliest {
+                if range.lowerBound < current.range.lowerBound {
+                    earliest = (range, pair.close)
+                }
+            } else {
+                earliest = (range, pair.close)
+            }
         }
+        return earliest
     }
 }
 
@@ -70,7 +122,7 @@ struct ThinkingCollapsibleView: View {
 
     private var headerButton: some View {
         Button {
-            withAnimation(.easeInOut(duration: 0.2)) {
+            withAnimation(.easeInOut(duration: DesignTokens.Animations.fastDuration)) {
                 HapticFeedback.shared.trigger(.selection)
                 isExpanded.toggle()
             }

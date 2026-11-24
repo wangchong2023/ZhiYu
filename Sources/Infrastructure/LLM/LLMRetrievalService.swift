@@ -27,12 +27,20 @@ final class LLMRetrievalService: Sendable {
         self.promptService = promptService ?? PromptService(defaults: .standard)
     }
 
+    private enum RetrievalTemperatures {
+        static let rewrite: Double = 0.3
+        static let expand: Double = 0.5
+        static let rerankPages: Double = 0.2
+        static let rerankChunks: Double = 0.1
+        static let hyde: Double = 0.7
+    }
+
     // MARK: - 查询优化 (Query Optimization)
 
     /// 将原始自然语言问题改写为更适合检索的格式
     func rewriteQuery(_ query: String) async -> String {
         let prompt = contextBuilder.buildRewritePrompt(query: query)
-        let body = LLMRequestBuilder.userOnlyBody(model: model, userPrompt: prompt, temperature: 0.3)
+        let body = LLMRequestBuilder.userOnlyBody(model: model, userPrompt: prompt, temperature: RetrievalTemperatures.rewrite)
         return await sendOptionalRequest(body: body, fallback: query)
     }
 
@@ -43,7 +51,7 @@ final class LLMRetrievalService: Sendable {
             model: model,
             systemPrompt: "Return JSON array of strings only.",
             userPrompt: prompt,
-            temperature: 0.5
+            temperature: RetrievalTemperatures.expand
         )
 
         do {
@@ -64,7 +72,7 @@ final class LLMRetrievalService: Sendable {
         let titles = candidates.map { "\($0.title) (ID: \($0.id))" }.joined(separator: "\n")
         let prompt = promptService.rerankPrompt + "\n\nQuery: \(query)\n\nCandidates:\n\(titles)"
         
-        let body = LLMRequestBuilder.userOnlyBody(model: model, userPrompt: prompt, temperature: 0.2)
+        let body = LLMRequestBuilder.userOnlyBody(model: model, userPrompt: prompt, temperature: RetrievalTemperatures.rerankPages)
 
         let content = try await LLMResponseHandler.sendAndExtract(client: client, body: body)
         let rankedIDs = LLMUtils.parseJSONArray(content)
@@ -92,7 +100,7 @@ final class LLMRetrievalService: Sendable {
             model: model,
             systemPrompt: L10n.AI.Prompt.rerankSystem,
             userPrompt: prompt,
-            temperature: 0.1
+            temperature: RetrievalTemperatures.rerankChunks
         )
 
         do {
@@ -127,7 +135,7 @@ final class LLMRetrievalService: Sendable {
             model: model,
             systemPrompt: L10n.AI.Prompt.hydeSystem,
             userPrompt: prompt,
-            temperature: 0.7
+            temperature: RetrievalTemperatures.hyde
         )
         return await sendOptionalRequest(body: body, fallback: query)
     }

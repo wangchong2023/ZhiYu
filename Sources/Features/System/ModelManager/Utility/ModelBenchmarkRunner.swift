@@ -38,6 +38,8 @@ struct BenchmarkResult: Sendable, Equatable {
     var totalRounds: Int
     /// 性能综合评级
     var grade: BenchmarkGrade
+    /// 是否为无真实引擎时的硬件估算结果（true = 模拟估算；false = 真实端侧模型推理实测）
+    var isSimulated: Bool
 
     init(
         ttftMilliseconds: Double = 0.0,
@@ -45,7 +47,8 @@ struct BenchmarkResult: Sendable, Equatable {
         peakRAMDeltaMB: Double = 0.0,
         completedRounds: Int = 0,
         totalRounds: Int = FeatureConstants.Benchmark.defaultRounds,
-        grade: BenchmarkGrade = .good
+        grade: BenchmarkGrade = .good,
+        isSimulated: Bool = false
     ) {
         self.ttftMilliseconds = ttftMilliseconds
         self.decodeTPS = decodeTPS
@@ -53,26 +56,101 @@ struct BenchmarkResult: Sendable, Equatable {
         self.completedRounds = completedRounds
         self.totalRounds = totalRounds
         self.grade = grade
+        self.isSimulated = isSimulated
     }
 }
 
 /// 端侧性能基准跑分执行引擎
 actor ModelBenchmarkRunner {
+    private enum HardwareConstants {
+        static let nanosecondsPerMillisecond: Double = 1_000_000.0
+        static let nanosecondsPerSecond: Double = 1_000_000_000.0
+        static let minDecodeSeconds: Double = 0.001
+        static let estimatedCharsPerToken: Int = 4
+    }
 
     static let shared = ModelBenchmarkRunner()
 
     init() {}
 
-    /// 执行标准多轮次性能基准跑分
-    /// - Parameters:
-    ///   - modelId: 测试的目标模型标识
-    ///   - rounds: 压测轮次
-    ///   - onProgress: 每轮完成时的中间进度与当前结果回调
-    /// - Returns: 最终多轮次均值压测结果
+    /// 执行标准多轮次性能基准跑分（兼容存量调用方，无真实端侧引擎时采用估算路径）
     func runBenchmark(
         modelId: String,
         rounds: Int = FeatureConstants.Benchmark.defaultRounds,
         onProgress: (@Sendable (Int, BenchmarkResult) -> Void)? = nil
+    ) async -> BenchmarkResult {
+        await runSimulatedBenchmark(modelId: modelId, rounds: rounds, onProgress: onProgress)
+    }
+
+    /// 执行真实端侧模型硬件时钟压测（采集真实 TTFT/TPS/RAM，零 Task.sleep 与零随机伪造）
+    func runBenchmark(
+        modelId _: String,
+        rounds: Int = FeatureConstants.Benchmark.defaultRounds,
+        inferenceExecutor: @escaping @Sendable (String) async throws -> String,
+        onProgress: (@Sendable (Int, BenchmarkResult) -> Void)? = nil
+    ) async -> BenchmarkResult {
+        await runHardwareBenchmark(rounds: rounds, executor: inferenceExecutor, onProgress: onProgress)
+    }
+
+    /// 真实端侧推理硬件时钟压测（零 Task.sleep / 零 Double.random）
+    private func runHardwareBenchmark(
+        rounds: Int,
+        executor: @Sendable (String) async throws -> String,
+        onProgress: (@Sendable (Int, BenchmarkResult) -> Void)?
+    ) async -> BenchmarkResult {
+        let effectiveRounds = max(rounds, 1)
+        var totalTTFT: Double = 0.0
+        var totalTPS: Double = 0.0
+        var maxRAMDelta: Double = 0.0
+        let initialRAM = currentProcessMemoryMB()
+
+        let benchmarkPrompt = L10n.ModelManager.Lab.Prompt.chat
+        for roundIndex in 1...effectiveRounds {
+            let startNano = DispatchTime.now().uptimeNanoseconds
+            let output = (try? await executor(benchmarkPrompt)) ?? ""
+            let elapsedNano = DispatchTime.now().uptimeNanoseconds - startNano
+            let elapsedSeconds = max(Double(elapsedNano) / HardwareConstants.nanosecondsPerSecond, HardwareConstants.minDecodeSeconds)
+            let ttftMs = Double(elapsedNano) / HardwareConstants.nanosecondsPerMillisecond
+            let estimatedTokens = max(output.count / HardwareConstants.estimatedCharsPerToken, 1)
+            let currentTPS = Double(estimatedTokens) / elapsedSeconds
+            let ramDelta = max(currentProcessMemoryMB() - initialRAM, 0.0)
+
+            totalTTFT += ttftMs
+            totalTPS += currentTPS
+            maxRAMDelta = max(maxRAMDelta, ramDelta)
+
+            let avgTTFT = totalTTFT / Double(roundIndex)
+            let avgTPS = totalTPS / Double(roundIndex)
+            let partial = BenchmarkResult(
+                ttftMilliseconds: avgTTFT,
+                decodeTPS: avgTPS,
+                peakRAMDeltaMB: maxRAMDelta,
+                completedRounds: roundIndex,
+                totalRounds: effectiveRounds,
+                grade: evaluateGrade(tps: avgTPS, ttft: avgTTFT),
+                isSimulated: false
+            )
+            onProgress?(roundIndex, partial)
+        }
+
+        let finalTTFT = totalTTFT / Double(effectiveRounds)
+        let finalTPS = totalTPS / Double(effectiveRounds)
+        return BenchmarkResult(
+            ttftMilliseconds: finalTTFT,
+            decodeTPS: finalTPS,
+            peakRAMDeltaMB: maxRAMDelta,
+            completedRounds: effectiveRounds,
+            totalRounds: effectiveRounds,
+            grade: evaluateGrade(tps: finalTPS, ttft: finalTTFT),
+            isSimulated: false
+        )
+    }
+
+    /// 无真实端侧引擎加载时的兼容估算路径
+    private func runSimulatedBenchmark(
+        modelId: String,
+        rounds: Int,
+        onProgress: (@Sendable (Int, BenchmarkResult) -> Void)?
     ) async -> BenchmarkResult {
         let effectiveRounds = max(rounds, 1)
         var totalTTFT: Double = 0.0
@@ -89,11 +167,11 @@ actor ModelBenchmarkRunner {
             let isE4B = modelId.contains(FeatureConstants.ModelParameter.e4B)
             let basePrefill = isE4B ? FeatureConstants.Benchmark.basePrefill4B : FeatureConstants.Benchmark.basePrefill2B
             let prefillJitter = Double.random(in: FeatureConstants.Benchmark.prefillJitterMin...FeatureConstants.Benchmark.prefillJitterMax)
-            let simulatedPrefillNano = UInt64((basePrefill + prefillJitter) * 1_000_000.0)
+            let simulatedPrefillNano = UInt64((basePrefill + prefillJitter) * HardwareConstants.nanosecondsPerMillisecond)
             try? await Task.sleep(nanoseconds: simulatedPrefillNano)
 
             let ttftNano = DispatchTime.now().uptimeNanoseconds - startNano
-            let ttftMs = Double(ttftNano) / 1_000_000.0
+            let ttftMs = Double(ttftNano) / HardwareConstants.nanosecondsPerMillisecond
 
             // 2. 模拟端侧连续解码生成 Tokens：严格对齐端侧 ANE/GPU 物理吞吐 (2B 约 45.8 Tok/s, 4B 约 31.2 Tok/s)
             let targetBaseTPS = isE4B ? FeatureConstants.Benchmark.baseTps4B : FeatureConstants.Benchmark.baseTps2B
@@ -101,10 +179,10 @@ actor ModelBenchmarkRunner {
 
             let generatedTokens = FeatureConstants.Benchmark.benchmarkTokensCount
             let expectedDecodeSeconds = Double(generatedTokens) / jitteredTPS
-            try? await Task.sleep(nanoseconds: UInt64(expectedDecodeSeconds * 1_000_000_000.0))
+            try? await Task.sleep(nanoseconds: UInt64(expectedDecodeSeconds * HardwareConstants.nanosecondsPerSecond))
 
             let totalNano = DispatchTime.now().uptimeNanoseconds - startNano
-            let decodeSeconds = max(Double(totalNano - ttftNano) / 1_000_000_000.0, 0.001)
+            let decodeSeconds = max(Double(totalNano - ttftNano) / HardwareConstants.nanosecondsPerSecond, HardwareConstants.minDecodeSeconds)
             let currentTPS = Double(generatedTokens) / decodeSeconds
 
             let currentRAM = currentProcessMemoryMB()
@@ -124,7 +202,8 @@ actor ModelBenchmarkRunner {
                 peakRAMDeltaMB: maxRAMDelta,
                 completedRounds: roundIndex,
                 totalRounds: effectiveRounds,
-                grade: currentGrade
+                grade: currentGrade,
+                isSimulated: true
             )
 
             onProgress?(roundIndex, intermediateResult)
@@ -140,7 +219,8 @@ actor ModelBenchmarkRunner {
             peakRAMDeltaMB: maxRAMDelta,
             completedRounds: effectiveRounds,
             totalRounds: effectiveRounds,
-            grade: finalGrade
+            grade: finalGrade,
+            isSimulated: true
         )
     }
 

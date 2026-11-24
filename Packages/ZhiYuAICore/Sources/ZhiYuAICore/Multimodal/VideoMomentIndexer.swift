@@ -63,6 +63,14 @@ public struct VideoMomentResult: Identifiable, Sendable {
 
 /// 端侧视频时刻检索索引器
 public actor VideoMomentIndexer {
+    public enum Config {
+        public static let defaultSampleIntervalSeconds: Double = 1.0
+        public static let defaultTopK: Int = 5
+        public static let preferredTimescale: Int32 = 600
+        public static let clusterWindowSeconds: Double = 1.5
+        public static let secondsPerMinute: Int = 60
+    }
+
     public static let shared = VideoMomentIndexer()
 
     private let embeddingEngine: MultimodalEmbeddingProtocol
@@ -77,7 +85,7 @@ public actor VideoMomentIndexer {
     public func indexVideo(
         url: URL,
         videoId: String,
-        sampleInterval: Double = 1.0
+        sampleInterval: Double = Config.defaultSampleIntervalSeconds
     ) async throws -> Int {
         #if !os(watchOS) && canImport(AVFoundation)
         guard FileManager.default.fileExists(atPath: url.path) else {
@@ -105,7 +113,7 @@ public actor VideoMomentIndexer {
         var currentOffset: Double = 0.0
 
         while currentOffset < durationSeconds {
-            let time = CMTime(seconds: currentOffset, preferredTimescale: 600)
+            let time = CMTime(seconds: currentOffset, preferredTimescale: Config.preferredTimescale)
             do {
                 let (cgImage, _) = try await generator.image(at: time)
                 let vector = try await embeddingEngine.embedImage(cgImage)
@@ -133,7 +141,7 @@ public actor VideoMomentIndexer {
     public func searchMoments(
         videoId: String? = nil,
         query: String,
-        topK: Int = 5
+        topK: Int = Config.defaultTopK
     ) async throws -> [VideoMomentResult] {
         guard !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             return []
@@ -159,7 +167,7 @@ public actor VideoMomentIndexer {
         var filteredResults: [VideoMomentResult] = []
         for scored in scoredFrames {
             let isTooClose = filteredResults.contains { item in
-                item.videoId == scored.frame.videoId && abs(item.timeOffsetSeconds - scored.frame.timeOffset) < 1.5
+                item.videoId == scored.frame.videoId && abs(item.timeOffsetSeconds - scored.frame.timeOffset) < Config.clusterWindowSeconds
             }
             if !isTooClose {
                 let formatted = Self.formatTime(seconds: scored.frame.timeOffset)
@@ -200,8 +208,8 @@ public actor VideoMomentIndexer {
     /// 格式化时间为 mm:ss
     public static func formatTime(seconds: Double) -> String {
         let totalSeconds = Int(max(0, seconds))
-        let minutes = totalSeconds / 60
-        let secs = totalSeconds % 60
+        let minutes = totalSeconds / Config.secondsPerMinute
+        let secs = totalSeconds % Config.secondsPerMinute
         return String(format: "%02d:%02d", minutes, secs)
     }
 }

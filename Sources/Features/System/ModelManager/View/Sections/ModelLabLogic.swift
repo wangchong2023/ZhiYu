@@ -11,6 +11,7 @@
 //
 
 import SwiftUI
+import UFPDesignSystem
 
 // MARK: - 逻辑辅助
 
@@ -38,7 +39,7 @@ extension ModelLabView {
 
     func applyPreset(_ preset: ParameterPreset) {
         let params = preset.parameters
-        withAnimation(.easeInOut(duration: 0.3)) {
+        withAnimation(.easeInOut(duration: DesignTokens.Animations.springResponse)) {
             tempTemperature = params.temperature
             tempTopP = params.topP
             tempTopK = params.topK
@@ -50,7 +51,7 @@ extension ModelLabView {
 
     func loadParametersForModel(_ modelId: String) {
         if let config = InferenceParametersStore.shared.loadParameters(for: modelId) {
-            withAnimation(.easeInOut(duration: 0.3)) {
+            withAnimation(.easeInOut(duration: DesignTokens.Animations.springResponse)) {
                 tempTemperature = config.temperature
                 tempTopP = config.topP
                 tempTopK = config.topK

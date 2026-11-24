@@ -36,7 +36,7 @@ struct ModelCardView: View {
         let downloadState = modelManager.downloadStates[manifest.modelId] ?? .failed(error: FeatureConstants.DefaultValue.notDownloaded)
         let isLocalReady = modelManager.isModelLocalReady(for: manifest.modelId)
 
-        let cardBackground = Color.appCard.opacity(eligibility == .restricted ? 0.4 : 0.8)
+        let cardBackground = Color.appCard.opacity(eligibility == .restricted ? DesignTokens.Opacity.disabled : DesignTokens.Opacity.prominent)
         let borderColor = isSelected ? Color.appAccent : (eligibility == .restricted ? Color.theme.red.opacity(DesignTokens.Opacity.disabled) : Color.appBorder.opacity(DesignTokens.Opacity.prominent))
         let shadowColor = isSelected ? Color.appAccent.opacity(DesignTokens.Opacity.medium) : Color.theme.black.opacity(DesignTokens.Opacity.ghost)
 
@@ -157,7 +157,7 @@ struct ModelCardView: View {
                         }
                         
                         Button {
-                            withAnimation(.easeInOut(duration: 0.3)) {
+                            withAnimation(.easeInOut(duration: DesignTokens.Animations.springResponse)) {
                                 expandedModelId = (expandedModelId == manifest.modelId) ? nil : manifest.modelId
                             }
                         } label: {
@@ -233,7 +233,7 @@ struct ModelCardView: View {
             )
             .shadow(color: shadowColor, radius: DesignTokens.SystemShadow.radiusMedium, x: 0, y: DesignTokens.SystemShadow.offsetSmall)
             .onTapGesture {
-                withAnimation(.easeInOut(duration: 0.3)) {
+                withAnimation(.easeInOut(duration: DesignTokens.Animations.springResponse)) {
                     expandedModelId = (expandedModelId == manifest.modelId) ? nil : manifest.modelId
                 }
             }

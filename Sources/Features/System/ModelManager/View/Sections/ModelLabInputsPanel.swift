@@ -335,7 +335,7 @@ extension ModelLabView {
                                 )
                             )
                             .frame(width: DesignTokens.SystemStroke.heavy, height: barHeight)
-                            .animation(.easeInOut(duration: 0.1), value: level)
+                            .animation(.easeInOut(duration: DesignTokens.Animations.microDuration), value: level)
                     }
 
                     Text(audioRecorder.durationFormatted)

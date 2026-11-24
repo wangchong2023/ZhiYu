@@ -140,10 +140,10 @@ extension ModelLabView {
                             isPromptFocused ?
                             LinearGradient(colors: [Color.theme.cyan, Color.theme.purple, Color.theme.blue], startPoint: .topLeading, endPoint: .bottomTrailing) :
                             LinearGradient(colors: [Color.theme.white.opacity(DesignTokens.Opacity.glass)], startPoint: .topLeading, endPoint: .bottomTrailing),
-                            lineWidth: isPromptFocused ? 1.5 : 1.0
+                            lineWidth: isPromptFocused ? DesignTokens.SystemStroke.emphasis : DesignTokens.SystemStroke.border
                         )
                 )
-                .shadow(color: isPromptFocused ? Color.theme.cyan.opacity(DesignTokens.Colors.Opacity.disabledOpacity) : .clear, radius: isPromptFocused ? 6 : 0, x: 0, y: 0)
+                .shadow(color: isPromptFocused ? Color.theme.cyan.opacity(DesignTokens.Colors.Opacity.disabledOpacity) : .clear, radius: isPromptFocused ? DesignTokens.SystemShadow.radiusSmall : 0, x: 0, y: 0)
                 .overlay(
                     Group {
                         if testPrompt.isEmpty {

@@ -49,12 +49,8 @@ class LLMService: ObservableObject, LLMServiceProtocol {
     }
     
     /// 安全的访问密钥 API Key。
-    /// UI 自动化测试模式下自愈：拦截并返回测试专用的虚假 Key，解决测试环境因未填写密钥而阻断导入卡片交互的问题。
     var apiKey: String {
         get {
-            if ProcessInfo.processInfo.arguments.contains(LLMConstants.UITesting.launchArg) {
-                return "mock_api_key_for_testing"
-            }
             return configManager?.apiKey ?? ""
         }
         set { configManager?.apiKey = newValue; objectWillChange.send() }
@@ -73,12 +69,8 @@ class LLMService: ObservableObject, LLMServiceProtocol {
     }
     
     /// AI 模块是否处于开启状态。
-    /// UI 自动化测试模式下自愈：强制返回开启状态，以便测试卡片可交互。
     var isEnabled: Bool {
         get {
-            if ProcessInfo.processInfo.arguments.contains(LLMConstants.UITesting.launchArg) {
-                return true
-            }
             return configManager?.isEnabled ?? false
         }
         set { configManager?.isEnabled = newValue; objectWillChange.send() }
@@ -97,11 +89,7 @@ class LLMService: ObservableObject, LLMServiceProtocol {
     }
 
     /// 判断大模型所需的密钥、地址及开关是否已配置就绪。
-    /// UI 自动化测试模式下自愈：默认返回就绪状态，确保 RAG 链路和导入入口彻底打通。
     var isReady: Bool {
-        if ProcessInfo.processInfo.arguments.contains(LLMConstants.UITesting.launchArg) {
-            return true
-        }
         return configManager?.isReady ?? false
     }
 

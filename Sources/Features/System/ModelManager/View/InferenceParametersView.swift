@@ -203,7 +203,8 @@ public struct InferenceParametersView: View {
                     
                     // 2. 异步等待上一个 Popover 动画彻底收起完毕后，再激活当前 Popover，避免 SwiftUI 同步变更 presentation 时序冲突
                     Task { @MainActor in
-                        try? await Task.sleep(nanoseconds: 100_000_000) // 延迟 100ms
+                        let popoverDismissDelayNs: UInt64 = 100_000_000
+                        try? await Task.sleep(nanoseconds: popoverDismissDelayNs) // 延迟 100ms
                         if activeTipId == nil {
                             activeTipId = id
                         }
@@ -251,7 +252,7 @@ public struct InferenceParametersView: View {
 
     private func applyPreset(_ preset: ParameterPreset) {
         let params = preset.parameters
-        withAnimation(.easeInOut(duration: 0.3)) {
+        withAnimation(.easeInOut(duration: DesignTokens.Animations.springResponse)) {
             temperature = params.temperature
             topP = params.topP
             topK = params.topK
@@ -264,7 +265,7 @@ public struct InferenceParametersView: View {
         // 尝试从持久化存储加载该模型的参数配置
         if let config = parametersStore.loadParameters(for: modelId) {
             // 找到保存的配置，恢复参数
-            withAnimation(.easeInOut(duration: 0.3)) {
+            withAnimation(.easeInOut(duration: DesignTokens.Animations.springResponse)) {
                 temperature = config.temperature
                 topP = config.topP
                 topK = config.topK

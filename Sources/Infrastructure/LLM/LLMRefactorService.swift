@@ -25,6 +25,14 @@ public final class LLMRefactorService: Sendable {
         self.promptService = promptService ?? PromptService(defaults: .standard)
     }
 
+    private enum RefactorConfig {
+        static let linkDiscoveryTemperature: Double = 0.1
+        static let linkDiscoveryMaxTokens: Int = 500
+        static let foldingTemperature: Double = 0.2
+        static let foldingMaxTokens: Int = 2000
+        static let analyzeMaxTokens: Int = 1000
+    }
+
     // MARK: - 链接发现 (Link Discovery)
 
     /// 扫描文本以发现潜在的内部链接建议
@@ -41,7 +49,12 @@ public final class LLMRefactorService: Sendable {
         \"\"\"
         """
 
-        let body = LLMRequestBuilder.userOnlyBody(model: model, userPrompt: prompt, temperature: 0.1, maxTokens: 500)
+        let body = LLMRequestBuilder.userOnlyBody(
+            model: model,
+            userPrompt: prompt,
+            temperature: RefactorConfig.linkDiscoveryTemperature,
+            maxTokens: RefactorConfig.linkDiscoveryMaxTokens
+        )
 
         let responseContent = try await LLMResponseHandler.sendAndExtract(client: client, body: body)
         return LLMUtils.parseJSONArray(responseContent)
@@ -61,7 +74,12 @@ public final class LLMRefactorService: Sendable {
         \(newContent)
         """
 
-        let body = LLMRequestBuilder.userOnlyBody(model: model, userPrompt: prompt, temperature: 0.2, maxTokens: 2000)
+        let body = LLMRequestBuilder.userOnlyBody(
+            model: model,
+            userPrompt: prompt,
+            temperature: RefactorConfig.foldingTemperature,
+            maxTokens: RefactorConfig.foldingMaxTokens
+        )
 
         let folded = try await LLMResponseHandler.sendAndExtract(client: client, body: body)
         return folded.isEmpty ? (existingContent + "\n\n" + newContent) : folded
@@ -84,7 +102,7 @@ public final class LLMRefactorService: Sendable {
             model: model,
             userPrompt: prompt,
             temperature: AppConfig.AI.defaultTemperature,
-            maxTokens: 1000
+            maxTokens: RefactorConfig.analyzeMaxTokens
         )
 
         let responseContent = try await LLMResponseHandler.sendAndExtract(client: client, body: body)

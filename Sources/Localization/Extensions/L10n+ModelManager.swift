@@ -973,5 +973,37 @@ extension L10n {
                 ModelManager.trf("benchmark_tps_format", tps)
             }
         }
+
+        // MARK: - BYOM 自定义本地模型导入
+        public enum BYOM {
+            public static var importButton: String { ModelManager.tr("model_manager.byom.import_button") }
+            public static func importSuccess(_ name: String) -> String {
+                ModelManager.trf("model_manager.byom.import_success", name)
+            }
+            public static func importFailed(_ reason: String) -> String {
+                ModelManager.trf("model_manager.byom.import_failed", reason)
+            }
+        }
+
+        // MARK: - HuggingFace 令牌鉴权
+        public enum HFToken {
+            public static var title: String { ModelManager.tr("model_manager.hf.token_title") }
+            public static var placeholder: String { ModelManager.tr("model_manager.hf.token_placeholder") }
+            public static var description: String { ModelManager.tr("model_manager.hf.token_desc") }
+            public static var configured: String { ModelManager.tr("model_manager.hf.token_configured") }
+            public static var clear: String { ModelManager.tr("model_manager.hf.token_clear") }
+        }
+
+        // MARK: - 魔搭社区与双源下载配置
+        public enum ModelSource {
+            public static var title: String { ModelManager.tr("model_manager.source.title") }
+            public static var preferenceLabel: String { ModelManager.tr("model_manager.source.preference_label") }
+            public static var auto: String { ModelManager.tr("model_manager.source.auto") }
+            public static var modelscope: String { ModelManager.tr("model_manager.source.modelscope") }
+            public static var huggingface: String { ModelManager.tr("model_manager.source.huggingface") }
+            public static var msTokenTitle: String { ModelManager.tr("model_manager.source.ms_token_title") }
+            public static var msTokenPlaceholder: String { ModelManager.tr("model_manager.source.ms_token_placeholder") }
+            public static var msTokenDesc: String { ModelManager.tr("model_manager.source.ms_token_desc") }
+        }
     }
 }

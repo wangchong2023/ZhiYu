@@ -28,15 +28,15 @@ public final class GlobalModelManager: TestStateResettable {
     @ObservationIgnored @Dependency(\.remoteConfig) private var remoteConfig: any RemoteConfigCapabilities
     @ObservationIgnored @Dependency(\.modelDownload) private var downloadManager: any ModelDownloadCapabilities
     /// Factory 风格：属性类型标注为可选（T?）， 自动使用 resolveOptional
-    @ObservationIgnored @Dependency(\.keyStore) private var keyStore: (any KeyStoreProtocol)?
+    @ObservationIgnored @Dependency(\.keyStore) var keyStore: (any KeyStoreProtocol)?
     
     // MARK: - 全局响应式属性
     
     /// 远程拉取的端侧模型白名单列表
-    public private(set) var remoteManifests: [LLMManifest] = []
+    public internal(set) var remoteManifests: [LLMManifest] = []
     
     /// 模型 ID 到对应下载进度状态的映射映射表
-    public private(set) var downloadStates: [String: DownloadState] = [:]
+    public internal(set) var downloadStates: [String: DownloadState] = [:]
     
     /// 是否正在加载白名单
     public private(set) var isLoading: Bool = false
@@ -45,7 +45,13 @@ public final class GlobalModelManager: TestStateResettable {
     public let physicalMemory: UInt64
     
     /// 已下载模型的存储占用（字节），按 modelId 索引
-    public private(set) var modelStorageUsage: [String: Int64] = [:]
+    public internal(set) var modelStorageUsage: [String: Int64] = [:]
+
+    /// 当前是否已配置 HuggingFace 访问令牌（用于下载 gated 模型）
+    public internal(set) var hasHuggingFaceToken: Bool = false
+
+    /// 当前是否已配置魔搭社区（ModelScope）SDK 令牌
+    public internal(set) var hasModelScopeToken: Bool = false
 
     /// 模型调用次数统计，按 modelId 索引
     public private(set) var modelCallCounts: [String: Int] = [:]
@@ -191,8 +197,11 @@ public final class GlobalModelManager: TestStateResettable {
         let remoteConfig = ServiceContainer.shared.resolveOptional((any RemoteConfigCapabilities).self) ?? RemoteConfigService.shared
 
         do {
-            // 1. 静默拉取白名单（支持极致的离线兜底 fallback）
-            self.remoteManifests = try await remoteConfig.fetchLLMManifests()
+            // 1. 静默拉取白名单（支持极致的离线兜底 fallback），并合并本地持久化的 BYOM 自定义模型
+            let fetched = try await remoteConfig.fetchLLMManifests()
+            let customManifests = loadPersistedCustomManifests()
+            let customIds = Set(customManifests.map(\.modelId))
+            self.remoteManifests = customManifests + fetched.filter { !customIds.contains($0.modelId) }
             
             // 2. 扫描本地沙盒文件，对齐下载状态
             refreshLocalModelFiles()
@@ -220,10 +229,11 @@ public final class GlobalModelManager: TestStateResettable {
         }
     }
 
-    /// 校验并对齐单个大模型在本地沙盒中的物理状态
+    /// 校验并对齐单个大模型在本地沙盒中的物理状态（兼容 .litertlm / .task / .gguf / .bin）
     private func syncLocalModelState(for manifest: LLMManifest, directory: URL, currentFlags: Set<String>) {
         let modelId = manifest.modelId
-        let fileURL = directory.appendingPathComponent("\(modelId).bin")
+        let fileURL = Self.resolveLocalModelURL(for: modelId, in: directory)
+            ?? directory.appendingPathComponent(modelId + FeatureConstants.ModelSpecConstants.modelBinExtension)
 
         let isFileValid = validateAndAlignDiskFile(manifest: manifest, fileURL: fileURL, currentFlags: currentFlags)
 
@@ -232,6 +242,18 @@ public final class GlobalModelManager: TestStateResettable {
         } else {
             alignIncompleteDownloadState(for: modelId)
         }
+    }
+
+    /// 按优先级定位本地模型文件，保留原始扩展名并兼容存量 `.bin` 文件
+    public static func resolveLocalModelURL(for modelId: String, in directory: URL) -> URL? {
+        let fm = FileManager.default
+        for ext in BYOMConstants.supportedExtensions {
+            let candidate = directory.appendingPathComponent(modelId + ext)
+            if fm.fileExists(atPath: candidate.path) {
+                return candidate
+            }
+        }
+        return nil
     }
 
     /// 校验沙盒物理权重文件合法性并执行自愈与坏包清理（基于魔数探针与权威收据，绝不静默删除用户文件）
@@ -299,24 +321,80 @@ public final class GlobalModelManager: TestStateResettable {
     
     // MARK: - 后台静默下载管理
     
-    /// 发起大模型权重文件后台静默下载
-    /// - Parameter manifest: 期望下载的白名单大模型规格元数据
-    public func startDownload(for manifest: LLMManifest) {
-        let isChina = isChinaRegion
+    /// 解析双源下载路由结果（含主源与自动容灾备用源）
+    public struct ResolvedDownloadRoute: Equatable, Sendable {
+        public let primaryURL: URL
+        public let fallbackURL: URL?
+        public let prefersModelScope: Bool
+    }
+
+    /// 根据当前下载源偏好与地区计算主/备下载路由
+    public func resolveDownloadRoute(
+        for manifest: LLMManifest,
+        isChinaRegionOverride: Bool? = nil
+    ) -> ResolvedDownloadRoute? {
+        let preferModelScope: Bool
+        switch downloadSourcePreference {
+        case .auto:
+            preferModelScope = isChinaRegionOverride ?? isChinaRegion
+        case .modelscope:
+            preferModelScope = true
+        case .huggingface:
+            preferModelScope = false
+        }
+
         let primaryURLString: String
         let fallbackURLString: String?
-
-        if isChina {
+        if preferModelScope {
             primaryURLString = manifest.modelscopeURLString ?? manifest.remoteURLString
             fallbackURLString = manifest.huggingfaceURLString
-            Logger.shared.info("[GlobalModelManager] China region detected, routing download to ModelScope: \(primaryURLString)")
         } else {
             primaryURLString = manifest.huggingfaceURLString ?? manifest.remoteURLString
             fallbackURLString = manifest.modelscopeURLString
-            Logger.shared.info("[GlobalModelManager] Non-China region detected, routing download to HuggingFace: \(primaryURLString)")
         }
-        
-        guard let url = URL(string: primaryURLString) else { return }
+
+        guard let primaryURL = URL(string: primaryURLString) else { return nil }
+        let fallbackURL: URL?
+        if let fallback = fallbackURLString, fallback != primaryURLString {
+            fallbackURL = URL(string: fallback)
+        } else {
+            fallbackURL = nil
+        }
+        return ResolvedDownloadRoute(
+            primaryURL: primaryURL,
+            fallbackURL: fallbackURL,
+            prefersModelScope: preferModelScope
+        )
+    }
+
+    /// 按目标域名严格隔离鉴权令牌，严禁把 HuggingFace Token 发给魔搭或第三方域名（反之亦然）
+    public func authorizationHeader(for url: URL) -> String? {
+        guard let host = url.host?.lowercased(), !host.isEmpty else { return nil }
+        if Self.matchesDomain(host, suffixes: BYOMConstants.modelScopeHostSuffixes) {
+            let token = loadModelScopeToken()
+            return token.isEmpty ? nil : BYOMConstants.bearerPrefix + token
+        }
+        if Self.matchesDomain(host, suffixes: BYOMConstants.huggingFaceHostSuffixes) {
+            let token = loadHuggingFaceToken()
+            return token.isEmpty ? nil : BYOMConstants.bearerPrefix + token
+        }
+        return nil
+    }
+
+    private static func matchesDomain(_ host: String, suffixes: [String]) -> Bool {
+        suffixes.contains { suffix in
+            host == suffix || host.hasSuffix("." + suffix)
+        }
+    }
+
+    /// 发起大模型权重文件后台静默下载
+    /// - Parameter manifest: 期望下载的白名单大模型规格元数据
+    public func startDownload(for manifest: LLMManifest) {
+        guard let route = resolveDownloadRoute(for: manifest) else { return }
+        let url = route.primaryURL
+        Logger.shared.info(
+            "[GlobalModelManager] Routing download to \(route.prefersModelScope ? "ModelScope" : "HuggingFace"): \(url.absoluteString)"
+        )
         let modelId = manifest.modelId
         
         // 1. 如果该模型不支持该硬件物理内存 (restricted)，强力拦截，杜绝 OOM 爆内存
@@ -333,8 +411,8 @@ public final class GlobalModelManager: TestStateResettable {
                 observeDownloadState(for: modelId)
             } catch {
                 // 若首选源下载失败且存在备用镜像源（如 HuggingFace 失败自动切换 ModelScope），执行自动容灾重试
-                if let fallback = fallbackURLString, let fallbackURL = URL(string: fallback), fallback != primaryURLString {
-                    Logger.shared.warning("[GlobalModelManager] Primary download failed for \(modelId), automatically falling back to mirror: \(fallback)")
+                if let fallbackURL = route.fallbackURL {
+                    Logger.shared.warning("[GlobalModelManager] Primary download failed for \(modelId), automatically falling back to mirror: \(fallbackURL.absoluteString)")
                     do {
                         try await downloadManager.startDownload(modelId: modelId, remoteURL: fallbackURL)
                         observeDownloadState(for: modelId)
@@ -467,8 +545,7 @@ public final class GlobalModelManager: TestStateResettable {
             return true
         }
         let docDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        let fileURL = docDir.appendingPathComponent("\(modelId).bin")
-        guard FileManager.default.fileExists(atPath: fileURL.path) else { return false }
+        guard let fileURL = Self.resolveLocalModelURL(for: modelId, in: docDir) else { return false }
 
         // 1. 使用魔数格式探针核验证明，杜绝半截残卷或伪造空壳误判为就绪
         let probe = ModelFormatProbe.shared.inspect(fileURL: fileURL)
@@ -492,22 +569,26 @@ public final class GlobalModelManager: TestStateResettable {
             return url
         }
         let docDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        let fileURL = docDir.appendingPathComponent("\(modelId).bin")
-        if FileManager.default.fileExists(atPath: fileURL.path) {
-            return fileURL
-        }
-        return nil
+        return Self.resolveLocalModelURL(for: modelId, in: docDir)
     }
 
     /// 清理指定模型的本地沙盒权重与缓存（用户显式请求时执行物理清理与凭据移除）
     public func clearModelCache(for modelId: String) {
         let docDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        let fileURL = docDir.appendingPathComponent(modelId + FeatureConstants.ModelSpecConstants.modelBinExtension)
-        try? FileManager.default.removeItem(at: fileURL)
+        for ext in BYOMConstants.supportedExtensions {
+            let fileURL = docDir.appendingPathComponent(modelId + ext)
+            if FileManager.default.fileExists(atPath: fileURL.path) {
+                try? FileManager.default.removeItem(at: fileURL)
+            }
+        }
         ModelReceiptStore.shared.removeReceipt(for: modelId)
         modelStorageUsage.removeValue(forKey: modelId)
         markModelAsRemoved(modelId)
         downloadStates[modelId] = .failed(error: FeatureConstants.DefaultValue.notDownloaded)
+        if modelId.hasPrefix(BYOMConstants.customModelPrefix) {
+            removePersistedCustomManifest(modelId: modelId)
+            remoteManifests.removeAll { $0.modelId == modelId }
+        }
     }
     
     // MARK: - 智能端云路由决策 (2.4 契约)

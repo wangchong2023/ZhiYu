@@ -1,6 +1,6 @@
 {
-  "version": "1.2",
-  "updated": "2026-06-20",
+  "version": "2.0",
+  "updated": "2026-11-24",
   "models": [
     {
       "modelId": "gemma-4-e2b-it",
@@ -8,34 +8,34 @@
       "vendor": "Google",
       "fileSizeInBytes": 1450000000,
       "minDeviceMemoryInGb": 6.0,
-      "remoteURLString": "https://modelscope.cn/models/qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/master/qwen2.5-0.5b-instruct-q4_k_m.gguf",
-      "huggingfaceURLString": "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct/resolve/main/model.safetensors",
-      "modelscopeURLString": "https://modelscope.cn/models/qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/master/qwen2.5-0.5b-instruct-q4_k_m.gguf",
+      "remoteURLString": "https://modelscope.cn/models/litert-community/gemma-4-E2B-it-litert-lm/resolve/master/gemma-4-E2B-it-int4.litertlm",
+      "huggingfaceURLString": "https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it-int4.litertlm",
+      "modelscopeURLString": "https://modelscope.cn/models/litert-community/gemma-4-E2B-it-litert-lm/resolve/master/gemma-4-E2B-it-int4.litertlm",
       "sha256Checksum": "",
       "parameterCount": "E2B",
-      "supportedTasks": ["chat", "completion"],
-      "accelerators": ["CPU", "GPU"],
+      "supportedTasks": ["chat", "completion", "multimodal", "vision", "audio", "thinking", "function_calling"],
+      "accelerators": ["CPU", "GPU", "NPU"],
       "estimatedPeakMemoryInBytes": 5200000000,
-      "description": "适用于 iOS 的 Gemma 4 E2B 变体，使用 LiteRT-LM 进行部署。支持文本 input，提供最高达 32K 的上下文长度。",
+      "description": "面向端侧优化的 Gemma 4 E2B 模型（LiteRT-LM），原生支持文本、视觉、音频、Thinking 思考模式与最高 32K 上下文。",
       "defaultParameters": {
         "temperature": 1.0, "topP": 0.95, "topK": 64, "maxTokens": 4096
       }
     },
     {
       "modelId": "gemma-4-e4b-it",
-      "displayName": "Gemma-4-E4b-it",
+      "displayName": "Gemma-4-E4B-it",
       "vendor": "Google",
       "fileSizeInBytes": 2740000000,
       "minDeviceMemoryInGb": 8.0,
-      "remoteURLString": "https://modelscope.cn/models/qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/master/qwen2.5-0.5b-instruct-q4_k_m.gguf",
-      "huggingfaceURLString": "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct/resolve/main/model.safetensors",
-      "modelscopeURLString": "https://modelscope.cn/models/qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/master/qwen2.5-0.5b-instruct-q4_k_m.gguf",
+      "remoteURLString": "https://modelscope.cn/models/litert-community/gemma-4-E4B-it-litert-lm/resolve/master/gemma-4-E4B-it-int4.litertlm",
+      "huggingfaceURLString": "https://huggingface.co/litert-community/gemma-4-E4B-it-litert-lm/resolve/main/gemma-4-E4B-it-int4.litertlm",
+      "modelscopeURLString": "https://modelscope.cn/models/litert-community/gemma-4-E4B-it-litert-lm/resolve/master/gemma-4-E4B-it-int4.litertlm",
       "sha256Checksum": "",
       "parameterCount": "E4B",
-      "supportedTasks": ["chat", "completion"],
-      "accelerators": ["CPU", "GPU"],
+      "supportedTasks": ["chat", "completion", "multimodal", "vision", "audio", "thinking", "function_calling"],
+      "accelerators": ["CPU", "GPU", "NPU"],
       "estimatedPeakMemoryInBytes": 6800000000,
-      "description": "适用于 iOS 的 Gemma 4 E4B 变体，使用 LiteRT-LM 进行部署。支持文本 input，提供最高达 32K 的上下文长度。",
+      "description": "旗舰端侧 Gemma 4 E4B 模型（LiteRT-LM），强化复杂推理、Thinking 思考模式、视觉/音频多模态与 32K 长上下文。",
       "defaultParameters": {
         "temperature": 1.0, "topP": 0.95, "topK": 64, "maxTokens": 4096
       }
@@ -46,34 +46,34 @@
       "vendor": "Google",
       "fileSizeInBytes": 1740000000,
       "minDeviceMemoryInGb": 6.0,
-      "remoteURLString": "https://modelscope.cn/models/qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/master/qwen2.5-0.5b-instruct-q4_k_m.gguf",
-      "huggingfaceURLString": "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct/resolve/main/model.safetensors",
-      "modelscopeURLString": "https://modelscope.cn/models/qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/master/qwen2.5-0.5b-instruct-q4_k_m.gguf",
+      "remoteURLString": "https://modelscope.cn/models/google/gemma-3n-E2B-it-litert-preview/resolve/master/gemma-3n-E2B-it-int4.task",
+      "huggingfaceURLString": "https://huggingface.co/google/gemma-3n-E2B-it-litert-preview/resolve/main/gemma-3n-E2B-it-int4.task",
+      "modelscopeURLString": "https://modelscope.cn/models/google/gemma-3n-E2B-it-litert-preview/resolve/master/gemma-3n-E2B-it-int4.task",
       "sha256Checksum": "",
       "parameterCount": "E2B",
-      "supportedTasks": ["chat", "completion", "multimodal"],
+      "supportedTasks": ["chat", "completion", "multimodal", "vision", "audio"],
       "accelerators": ["CPU", "GPU"],
       "estimatedPeakMemoryInBytes": 5905580032,
-      "description": "适用于 iOS 的 Gemma 3n E2B 预览版，基于 MediaPipe LLM 推理 API 运行。",
+      "description": "基于 LiteRT / MediaPipe LLM 推理引擎的 Gemma 3n E2B 多模态预览版，支持图文与音频输入。",
       "defaultParameters": {
         "temperature": 1.0, "topP": 0.95, "topK": 64, "maxTokens": 4096
       }
     },
     {
       "modelId": "gemma-3n-e4b-it",
-      "displayName": "Gemma-3n-E4b-it",
+      "displayName": "Gemma-3n-E4B-it",
       "vendor": "Google",
       "fileSizeInBytes": 3170000000,
       "minDeviceMemoryInGb": 8.0,
-      "remoteURLString": "https://modelscope.cn/models/qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/master/qwen2.5-0.5b-instruct-q4_k_m.gguf",
-      "huggingfaceURLString": "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct/resolve/main/model.safetensors",
-      "modelscopeURLString": "https://modelscope.cn/models/qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/master/qwen2.5-0.5b-instruct-q4_k_m.gguf",
+      "remoteURLString": "https://modelscope.cn/models/google/gemma-3n-E4B-it-litert-preview/resolve/master/gemma-3n-E4B-it-int4.task",
+      "huggingfaceURLString": "https://huggingface.co/google/gemma-3n-E4B-it-litert-preview/resolve/main/gemma-3n-E4B-it-int4.task",
+      "modelscopeURLString": "https://modelscope.cn/models/google/gemma-3n-E4B-it-litert-preview/resolve/master/gemma-3n-E4B-it-int4.task",
       "sha256Checksum": "",
       "parameterCount": "E4B",
-      "supportedTasks": ["chat", "completion", "multimodal"],
+      "supportedTasks": ["chat", "completion", "multimodal", "vision", "audio"],
       "accelerators": ["CPU", "GPU"],
       "estimatedPeakMemoryInBytes": 6979321856,
-      "description": "适用于 iOS 的 Gemma 3n E4B 预览版，基于 MediaPipe LLM 推理 API 运行。",
+      "description": "基于 LiteRT / MediaPipe LLM 推理引擎的 Gemma 3n E4B 高精度多模态版，兼顾图文理解与端侧对话。",
       "defaultParameters": {
         "temperature": 1.0, "topP": 0.95, "topK": 64, "maxTokens": 4096
       }
@@ -95,6 +95,63 @@
       "description": "Google 官方开源的 740M 多模态统一向量嵌入模型，支持相册即时媒体搜索与视频关键时刻时序定位检索。",
       "defaultParameters": {
         "temperature": 0.0, "topP": 0.9, "topK": 40, "maxTokens": 768
+      }
+    },
+    {
+      "modelId": "functiongemma-270m-it",
+      "displayName": "FunctionGemma-270M-it",
+      "vendor": "Google",
+      "fileSizeInBytes": 284000000,
+      "minDeviceMemoryInGb": 4.0,
+      "remoteURLString": "https://modelscope.cn/models/litert-community/functiongemma-270m-it-litert-lm/resolve/master/functiongemma-270m-it.litertlm",
+      "huggingfaceURLString": "https://huggingface.co/litert-community/functiongemma-270m-it-litert-lm/resolve/main/functiongemma-270m-it.litertlm",
+      "modelscopeURLString": "https://modelscope.cn/models/litert-community/functiongemma-270m-it-litert-lm/resolve/master/functiongemma-270m-it.litertlm",
+      "sha256Checksum": "",
+      "parameterCount": "270M",
+      "supportedTasks": ["chat", "function_calling", "mobile_actions"],
+      "accelerators": ["CPU", "GPU"],
+      "estimatedPeakMemoryInBytes": 1200000000,
+      "description": "超轻量化 270M 端侧函数调用专用模型，专为结构化工具调用、系统快捷指令与 Agent Skills 优化。",
+      "defaultParameters": {
+        "temperature": 0.2, "topP": 0.9, "topK": 40, "maxTokens": 1024
+      }
+    },
+    {
+      "modelId": "qwen2.5-1.5b-instruct",
+      "displayName": "Qwen2.5-1.5B-Instruct",
+      "vendor": "Alibaba",
+      "fileSizeInBytes": 1120000000,
+      "minDeviceMemoryInGb": 4.0,
+      "remoteURLString": "https://modelscope.cn/models/litert-community/Qwen2.5-1.5B-Instruct/resolve/master/Qwen2.5-1.5B-Instruct_multi-prefill-seq_q8_ekv1280.task",
+      "huggingfaceURLString": "https://huggingface.co/litert-community/Qwen2.5-1.5B-Instruct/resolve/main/Qwen2.5-1.5B-Instruct_multi-prefill-seq_q8_ekv1280.task",
+      "modelscopeURLString": "https://modelscope.cn/models/litert-community/Qwen2.5-1.5B-Instruct/resolve/master/Qwen2.5-1.5B-Instruct_multi-prefill-seq_q8_ekv1280.task",
+      "sha256Checksum": "",
+      "parameterCount": "1.5B",
+      "supportedTasks": ["chat", "completion", "reasoning"],
+      "accelerators": ["CPU", "GPU"],
+      "estimatedPeakMemoryInBytes": 2600000000,
+      "description": "面向 LiteRT 量化的通义千问 Qwen2.5-1.5B 指令模型，中英文对话、代码与轻量逻辑推理表现均衡。",
+      "defaultParameters": {
+        "temperature": 0.7, "topP": 0.9, "topK": 40, "maxTokens": 2048
+      }
+    },
+    {
+      "modelId": "smollm2-360m-instruct",
+      "displayName": "SmolLM2-360M-Instruct",
+      "vendor": "HuggingFace",
+      "fileSizeInBytes": 265000000,
+      "minDeviceMemoryInGb": 3.0,
+      "remoteURLString": "https://modelscope.cn/models/litert-community/SmolLM2-360M-Instruct/resolve/master/SmolLM2-360M-Instruct.task",
+      "huggingfaceURLString": "https://huggingface.co/litert-community/SmolLM2-360M-Instruct/resolve/main/SmolLM2-360M-Instruct.task",
+      "modelscopeURLString": "https://modelscope.cn/models/litert-community/SmolLM2-360M-Instruct/resolve/master/SmolLM2-360M-Instruct.task",
+      "sha256Checksum": "",
+      "parameterCount": "360M",
+      "supportedTasks": ["chat", "completion"],
+      "accelerators": ["CPU", "GPU"],
+      "estimatedPeakMemoryInBytes": 900000000,
+      "description": "极简内存占用的 360M 超轻端侧语言模型，适合低配设备极速离线问答与轻量文本改写。",
+      "defaultParameters": {
+        "temperature": 0.7, "topP": 0.9, "topK": 40, "maxTokens": 1024
       }
     }
   ]

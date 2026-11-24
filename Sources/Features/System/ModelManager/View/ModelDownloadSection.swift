@@ -254,5 +254,7 @@ struct ModelActionButton: View {
             .foregroundStyle(foreground)
             .clipShape(Capsule())
         }
+        // 自绘胶囊按钮需关闭 macOS 默认 bezel，避免双层外框。
+        .buttonStyle(.plain)
     }
 }
