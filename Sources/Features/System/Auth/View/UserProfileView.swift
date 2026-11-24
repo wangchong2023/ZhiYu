@@ -19,6 +19,7 @@ import UFPCore
 @MainActor
 public struct UserProfileView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.interfaceIdiom) private var idiom
     @Environment(AuthService.self) private var authService
     @Environment(ThemeManager.self) var themeManager
     @Environment(AppStore.self) private var store
@@ -104,18 +105,20 @@ public struct UserProfileView: View {
         .navigationTitle(L10n.Auth.profileAndQuota)
         .appNavigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                Button(L10n.Common.cancel) {
-                    dismiss()
+            if idiom != .mac {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(L10n.Common.cancel) {
+                        dismiss()
+                    }
+                    .disabled(isSaving)
                 }
-                .disabled(isSaving)
             }
 
             ToolbarItem(placement: .confirmationAction) {
                 if isSaving {
                     ProgressView()
                 } else {
-                    Button(L10n.Common.done) {
+                    Button(idiom == .mac ? L10n.Common.save : L10n.Common.done) {
                         handleProfileSave()
                     }
                 }

@@ -52,37 +52,35 @@ struct SynthesisView: View {
 
     var body: some View {
         @Bindable var synthesisStore = synthesisStore
-        
-        NavigationStack {
-            ZStack {
-                themeManager.pageBackground()
-                    .ignoresSafeArea()
-                
-                mainList
-            }
-            .appToolbarBackgroundHidden()
-            .appTabToolbar(title: L10n.AI.Synthesis.title)
-            .synthesisViewPresentations(
-                showOutput: $showOutput,
-                pdfURL: $pdfURL,
-                showNoPagesAlert: $showNoPagesAlert,
-                showLimitAlert: $showLimitAlert,
-                showRenameDialog: $showRenameDialog,
-                showLLMAlert: $showLLMAlert,
-                showBatchDeleteConfirm: $showBatchDeleteConfirm,
-                showDeleteDocConfirm: $showDeleteDocConfirm,
-                newDocName: $newDocName,
-                docToRename: docToRename,
-                docToDelete: docToDelete,
-                batchDelete: batchDelete,
-                onConfigureAI: { router.isShowingAISettingsSheet = true },
-                synthesisStore: synthesisStore,
-                outputSheet: outputSheet
-            )
-            .onTaskStatusChange(taskCenter)
-            .task {
-                await store.refresh()
-            }
+
+        ZStack {
+            themeManager.pageBackground()
+                .ignoresSafeArea()
+
+            mainList
+        }
+        .appToolbarBackgroundHidden()
+        .appTabToolbar(title: L10n.AI.Synthesis.title)
+        .synthesisViewPresentations(
+            showOutput: $showOutput,
+            pdfURL: $pdfURL,
+            showNoPagesAlert: $showNoPagesAlert,
+            showLimitAlert: $showLimitAlert,
+            showRenameDialog: $showRenameDialog,
+            showLLMAlert: $showLLMAlert,
+            showBatchDeleteConfirm: $showBatchDeleteConfirm,
+            showDeleteDocConfirm: $showDeleteDocConfirm,
+            newDocName: $newDocName,
+            docToRename: docToRename,
+            docToDelete: docToDelete,
+            batchDelete: batchDelete,
+            onConfigureAI: { router.isShowingAISettingsSheet = true },
+            synthesisStore: synthesisStore,
+            outputSheet: outputSheet
+        )
+        .onTaskStatusChange(taskCenter)
+        .task {
+            await store.refresh()
         }
     }
 

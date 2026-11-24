@@ -82,23 +82,22 @@ struct FloatingContextCapsule: View {
         .frame(minHeight: DesignTokens.Spacing.Action.buttonHeight)
         #else
         Menu {
-            Button(action: {
-                HapticFeedback.shared.trigger(.selection)
-                onShowInsights?()
-            }) {
-                Label(L10n.Dashboard.index.overview, systemImage: DesignTokens.Icons.comparison)
-            }
-            
-            Divider()
-            
-            Button(role: .destructive, action: {
-                withAnimation(.spring(response: DesignTokens.Animation.springResponse, dampingFraction: DesignTokens.Animation.springDamping)) {
-                    vaultService.exitVault()
+            Group {
+                Button(L10n.Dashboard.index.overview, systemImage: DesignTokens.Icons.comparison) {
+                    HapticFeedback.shared.trigger(.selection)
+                    onShowInsights?()
                 }
-            }) {
-                Label(L10n.Vault.backToHub, systemImage: DesignTokens.Icons.backToHub)
+
+                Divider()
+
+                Button(L10n.Vault.backToHub, systemImage: DesignTokens.Icons.backToHub, role: .destructive) {
+                    withAnimation(.spring(response: DesignTokens.Animation.springResponse, dampingFraction: DesignTokens.Animation.springDamping)) {
+                        vaultService.exitVault()
+                    }
+                }
+                .accessibilityIdentifier("vaultBackToHubButton")
             }
-            .accessibilityIdentifier("vaultBackToHubButton")
+            .labelStyle(.titleAndIcon)
         } label: {
             capsuleLabel(text: vault.name)
         }

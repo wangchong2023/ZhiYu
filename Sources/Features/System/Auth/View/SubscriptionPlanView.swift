@@ -30,6 +30,7 @@ struct PlanFeature {
 @MainActor
 public struct SubscriptionPlanView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.interfaceIdiom) private var idiom
     @Environment(AuthService.self) private var authService
     @Environment(ThemeManager.self) var themeManager
     @Dependency(\.pluginRegistry) var registry
@@ -136,13 +137,16 @@ public struct SubscriptionPlanView: View {
                     Image(systemName: DesignTokens.Icons.chartBarDoc)
                         .font(.body.bold())
                 }
+                .appToolbarButtonStyle()
                 .popover(isPresented: $isQuotaExpanded) {
                     quotaPopoverContent
                         .presentationCompactAdaptation(.popover)
                 }
             }
-            ToolbarItem(placement: .confirmationAction) {
-                Button(L10n.Common.done) { dismiss() }
+            if idiom != .mac {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(L10n.Common.done) { dismiss() }
+                }
             }
         }
     }

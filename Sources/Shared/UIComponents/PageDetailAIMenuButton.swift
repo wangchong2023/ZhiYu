@@ -81,30 +81,16 @@ public struct PageDetailAIMenuButton: View {
     private var fullMenu: some View {
         Menu {
             Group {
-                Button(action: onGenerateSummary) {
-                    Label(L10n.Knowledge.Page.AI.summary, systemImage: DesignTokens.Icons.aiSummary)
-                }
-                Button(action: onExtractActions) {
-                    Label(L10n.Knowledge.Page.AI.extractActions, systemImage: DesignTokens.Icons.aiExtract)
-                }
+                Button(L10n.Knowledge.Page.AI.summary, systemImage: DesignTokens.Icons.aiSummary, action: onGenerateSummary)
+                Button(L10n.Knowledge.Page.AI.extractActions, systemImage: DesignTokens.Icons.aiExtract, action: onExtractActions)
 
                 Menu {
                     Group {
-                        Button(action: onMindmap) {
-                            Label(L10n.Knowledge.Page.AI.mindmap, systemImage: DesignTokens.Icons.mindmap)
-                        }
-                        Button(action: onQuiz) {
-                            Label(L10n.Knowledge.Page.AI.quiz, systemImage: DesignTokens.Icons.quiz)
-                        }
-                        Button(action: onSlides) {
-                            Label(L10n.Knowledge.Page.AI.slides, systemImage: DesignTokens.Icons.slides)
-                        }
-                        Button(action: onReport) {
-                            Label(L10n.Knowledge.Page.AI.report, systemImage: DesignTokens.Icons.report)
-                        }
-                        Button(action: onInfographic) {
-                            Label(L10n.Knowledge.Page.AI.infographic, systemImage: DesignTokens.Icons.infographic)
-                        }
+                        Button(L10n.Knowledge.Page.AI.mindmap, systemImage: DesignTokens.Icons.mindmap, action: onMindmap)
+                        Button(L10n.Knowledge.Page.AI.quiz, systemImage: DesignTokens.Icons.quiz, action: onQuiz)
+                        Button(L10n.Knowledge.Page.AI.slides, systemImage: DesignTokens.Icons.slides, action: onSlides)
+                        Button(L10n.Knowledge.Page.AI.report, systemImage: DesignTokens.Icons.report, action: onReport)
+                        Button(L10n.Knowledge.Page.AI.infographic, systemImage: DesignTokens.Icons.infographic, action: onInfographic)
                     }
                     .labelStyle(.titleAndIcon)
                 } label: {
@@ -112,15 +98,9 @@ public struct PageDetailAIMenuButton: View {
                 }
 
                 Divider()
-                Button(action: onShowSnapshotHistory) {
-                    Label(L10n.Knowledge.Page.History.title, systemImage: DesignTokens.Icons.history)
-                }
-                Button(action: onExpandContent) {
-                    Label(L10n.Knowledge.Page.expandStub, systemImage: DesignTokens.Icons.expandStub)
-                }
-                Button(action: onFindRelatedLinks) {
-                    Label(L10n.Knowledge.Page.findLinks, systemImage: DesignTokens.Icons.findLinks)
-                }
+                Button(L10n.Knowledge.Page.History.title, systemImage: DesignTokens.Icons.history, action: onShowSnapshotHistory)
+                Button(L10n.Knowledge.Page.expandStub, systemImage: DesignTokens.Icons.expandStub, action: onExpandContent)
+                Button(L10n.Knowledge.Page.findLinks, systemImage: DesignTokens.Icons.findLinks, action: onFindRelatedLinks)
             }
             .labelStyle(.titleAndIcon)
         } label: {
@@ -128,6 +108,7 @@ public struct PageDetailAIMenuButton: View {
                 .foregroundStyle(.appAccent)
                 .appToolbarItemStandardFrame()
         }
+        .appToolbarButtonStyle()
         .disabled(isDisabled)
     }
     #endif

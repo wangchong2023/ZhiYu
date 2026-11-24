@@ -109,36 +109,34 @@ struct ChatViewContent: View {
             Menu {
                 Group {
                     Section {
-                        Button(action: { }) {
-                            Label("\(coordinator.chatHistory.count) \(L10n.AI.LLM.messages)", systemImage: DesignTokens.Icons.chatBubble)
-                        }
-                        .disabled(true)
-                        
-                        Button(role: .destructive, action: { 
+                        Button("\(coordinator.chatHistory.count) \(L10n.AI.LLM.messages)", systemImage: DesignTokens.Icons.chatBubble) { }
+                            .disabled(true)
+
+                        Button(L10n.AI.LLM.clearHistory, systemImage: DesignTokens.Icons.delete, role: .destructive) {
                             coordinator.showClearConfirmation = true
-                        }) {
-                            Label(L10n.AI.LLM.clearHistory, systemImage: DesignTokens.Icons.delete)
                         }
                     }
-                    
+
                     Section {
                         NavigationLink(destination: PromptWorkshopView()) {
                             Label(L10n.Settings.promptSettings, systemImage: DesignTokens.Icons.promptLibrary)
                         }
                     }
-                    
+
                     if !coordinator.chatHistory.isEmpty {
                         Section(L10n.Chat.exportConversation) {
-                            Button(action: {
+                            Button(
+                                coordinator.isSelectionMode ? L10n.Common.done : L10n.Chat.selectToExport,
+                                systemImage: coordinator.isSelectionMode ? DesignTokens.Icons.checkCircle : DesignTokens.Icons.checklist
+                            ) {
                                 coordinator.toggleSelectionMode()
-                            }) {
-                                Label(coordinator.isSelectionMode ? L10n.Common.done : L10n.Chat.selectToExport, systemImage: coordinator.isSelectionMode ? DesignTokens.Icons.checkCircle : DesignTokens.Icons.checklist)
                             }
 
-                            Button(action: {
+                            Button(
+                                coordinator.isSelectionMode && !coordinator.selectedMessageIDs.isEmpty ? L10n.Chat.exportSelectedPDF : L10n.Chat.exportPDF,
+                                systemImage: DesignTokens.Icons.docRichtext
+                            ) {
                                 Task { await coordinator.exportChat() }
-                            }) {
-                                Label(coordinator.isSelectionMode && !coordinator.selectedMessageIDs.isEmpty ? L10n.Chat.exportSelectedPDF : L10n.Chat.exportPDF, systemImage: DesignTokens.Icons.docRichtext)
                             }
                         }
                     }

@@ -24,108 +24,106 @@ struct BackupView: View {
     @State private var backupToDelete: BackupService.BackupEntry?
     
     var body: some View {
-        NavigationStack {
-            List {
-                // Auto Backup Toggle
-                Section {
-                    Toggle(isOn: $backupService.isAutoBackupEnabled) {
-                        Label(L10n.Backup.autoBackup, systemImage: DesignTokens.Icons.history)
+        List {
+            // Auto Backup Toggle
+            Section {
+                Toggle(isOn: $backupService.isAutoBackupEnabled) {
+                    Label(L10n.Backup.autoBackup, systemImage: DesignTokens.Icons.history)
+                }
+
+                if let lastDate = backupService.lastBackupDate {
+                    HStack {
+                        Text(L10n.Backup.lastBackup)
+                            .foregroundStyle(.appSecondary)
+                        Spacer()
+                        Text(lastDate.formatted(Date.FormatStyle(date: .numeric, time: .standard, locale: Localized.currentLocale)))
+                            .foregroundStyle(.appSecondary)
                     }
-                    
-                    if let lastDate = backupService.lastBackupDate {
-                        HStack {
-                            Text(L10n.Backup.lastBackup)
-                                .foregroundStyle(.appSecondary)
-                            Spacer()
-                            Text(lastDate.formatted(Date.FormatStyle(date: .numeric, time: .standard, locale: Localized.currentLocale)))
-                                .foregroundStyle(.appSecondary)
+                }
+            } header: {
+                Text(L10n.Backup.settings)
+            }
+            .appListRowBackground()
+
+            // Manual Actions
+            Section {
+                Button {
+                    // Bug #56 修复：手动"立即创建备份"必须绕过自动备份开关与节流，
+                    // 否则在 isAutoBackupEnabled=false 时按钮静默失效。
+                    backupService.createForcedBackup(pages: store.pages)
+                    HapticFeedback.shared.trigger(.selection)
+                } label: {
+                    Label(L10n.Backup.createNow, systemImage: DesignTokens.Icons.plusCircle)
+                }
+
+                Button {
+                    Task { await store.saveToDisk() }
+                    backupService.markClean()
+                } label: {
+                    Label(L10n.Backup.exportCurrent, systemImage: DesignTokens.Icons.export)
+                }
+            } header: {
+                Text(L10n.Backup.actions)
+            }
+            .appListRowBackground()
+
+            // Backup History
+            Section {
+                if backupService.backupEntries.isEmpty {
+                    ContentUnavailableView(
+                        L10n.Backup.noBackups,
+                        systemImage: DesignTokens.Icons.archiveboxOutline,
+                        description: Text(L10n.Backup.noBackupsDesc)
+                    )
+                } else {
+                    ForEach(backupService.backupEntries) { entry in
+                        BackupEntryRow(entry: entry, backupDirectory: backupService.backupDirectory) {
+                            selectedEntry = entry
+                            showRestoreConfirmation = true
+                        } onDelete: {
+                            HapticFeedback.shared.trigger(.warning)
+                            backupToDelete = entry
+                            showDeleteConfirmation = true
                         }
                     }
-                } header: {
-                    Text(L10n.Backup.settings)
                 }
-                .appListRowBackground()
-                
-                // Manual Actions
-                Section {
-                    Button {
-                        // Bug #56 修复：手动"立即创建备份"必须绕过自动备份开关与节流，
-                        // 否则在 isAutoBackupEnabled=false 时按钮静默失效。
-                        backupService.createForcedBackup(pages: store.pages)
-                        HapticFeedback.shared.trigger(.selection)
-                    } label: {
-                        Label(L10n.Backup.createNow, systemImage: DesignTokens.Icons.plusCircle)
-                    }
-                    
-                    Button {
-                        Task { await store.saveToDisk() }
-                        backupService.markClean()
-                    } label: {
-                        Label(L10n.Backup.exportCurrent, systemImage: DesignTokens.Icons.export)
-                    }
-                } header: {
-                    Text(L10n.Backup.actions)
-                }
-                .appListRowBackground()
-                
-                // Backup History
-                Section {
-                    if backupService.backupEntries.isEmpty {
-                        ContentUnavailableView(
-                            L10n.Backup.noBackups,
-                            systemImage: DesignTokens.Icons.archiveboxOutline,
-                            description: Text(L10n.Backup.noBackupsDesc)
-                        )
-                    } else {
-                        ForEach(backupService.backupEntries) { entry in
-                            BackupEntryRow(entry: entry, backupDirectory: backupService.backupDirectory) {
-                                selectedEntry = entry
-                                showRestoreConfirmation = true
-                            } onDelete: {
-                                HapticFeedback.shared.trigger(.warning)
-                                backupToDelete = entry
-                                showDeleteConfirmation = true
-                            }
-                        }
-                    }
-                } header: {
-                    Text(L10n.Backup.history)
-                }
-                .appListRowBackground()
+            } header: {
+                Text(L10n.Backup.history)
             }
-            .insetGroupedListStyleIfIOS()
-            .scrollContentBackground(.hidden)
-            .background(themeManager.pageBackground())
-            .navigationTitle(L10n.Backup.title)
-.appNavigationBarTitleDisplayMode(.inline)
-            .confirmationDialog(
-                L10n.Backup.restoreTitle,
-                isPresented: $showRestoreConfirmation,
-                titleVisibility: .visible
-            ) {
-                Button(L10n.Backup.restore, role: .destructive) {
-                    restoreFromBackup()
-                }
-                Button(L10n.Common.cancel, role: .cancel) { selectedEntry = nil }
-            } message: {
-                Text(L10n.Backup.restoreMessage)
+            .appListRowBackground()
+        }
+        .insetGroupedListStyleIfIOS()
+        .scrollContentBackground(.hidden)
+        .background(themeManager.pageBackground())
+        .navigationTitle(L10n.Backup.title)
+        .appNavigationBarTitleDisplayMode(.inline)
+        .confirmationDialog(
+            L10n.Backup.restoreTitle,
+            isPresented: $showRestoreConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button(L10n.Backup.restore, role: .destructive) {
+                restoreFromBackup()
             }
-            .confirmationDialog(
-                L10n.Backup.deleteConfirmTitle,
-                isPresented: $showDeleteConfirmation,
-                titleVisibility: .visible
-            ) {
-                Button(L10n.Common.delete, role: .destructive) {
-                    if let entry = backupToDelete {
-                        backupService.deleteBackup(entry)
-                        HapticFeedback.shared.trigger(.success)
-                    }
-                    backupToDelete = nil
+            Button(L10n.Common.cancel, role: .cancel) { selectedEntry = nil }
+        } message: {
+            Text(L10n.Backup.restoreMessage)
+        }
+        .confirmationDialog(
+            L10n.Backup.deleteConfirmTitle,
+            isPresented: $showDeleteConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button(L10n.Common.delete, role: .destructive) {
+                if let entry = backupToDelete {
+                    backupService.deleteBackup(entry)
+                    HapticFeedback.shared.trigger(.success)
                 }
-                Button(L10n.Common.cancel, role: .cancel) { backupToDelete = nil }
-            } message: {
-                Text(L10n.Backup.deleteConfirmMessage)
+                backupToDelete = nil
             }
+            Button(L10n.Common.cancel, role: .cancel) { backupToDelete = nil }
+        } message: {
+            Text(L10n.Backup.deleteConfirmMessage)
         }
     }
     
