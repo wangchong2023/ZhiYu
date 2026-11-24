@@ -307,7 +307,7 @@ inject_deprecated_whitelist:
   added: '2026-09-28'
   expiry_check: P11
 - file: Sources/Features/System/ModelManager/ModelLabManager.swift
-  line: 423
+  line: 418
   type: ServiceContainer.shared
   reason: 端侧推理服务解析，@Dependency 局部解析临时方案
   added: '2026-11-06'
