@@ -612,7 +612,7 @@ final class SearchPerformanceTests: XCTestCase {
 | **有界集成** | 集成测试必须有明确边界（如 DB+Repository、LLM+RAG），禁止无边界全链路 |
 | **真实 DB 用 `:memory:`** | 集成测试用内存数据库，禁止写真实文件 |
 | **Mock 外部网络** | LLM/CloudKit 等外部服务必须 Mock，禁止真实网络调用 |
-| **隔离机制** | 遵循 `AppLauncher` 分流 + `ServiceContainer` 重置（对齐 2.1/2.2） |
+| **隔离机制** | 遵循 `UnitTestHostApp` 宿主物理隔离 + `ServiceContainer` 重置（对齐 2.1/2.2） |
 | **Golden Set 评估** | RAG 管线必须有 Golden Set 召回率断言 ≥ 90%（对齐 4.2） |
 
 ---

@@ -60,9 +60,9 @@ SwiftPM 在当前受限环境内调用嵌套 `sandbox-exec` 会失败；上述�
 
 ## 运行入口
 
-- 单测：`make test-unit`，scheme 为 `ZhiYuUnitTests`。
-- iOS UI：`make test-ui`，scheme 为 `ZhiYuUITests`。
-- macOS 单测/UI：分别选择 `ZhiYuMacUnitTests`、`ZhiYuMacUITests` scheme。
+- 单测：`make test-unit`，scheme 为 ZhiYuUnitTests。
+- iOS UI：`make test-ui`，scheme 为 ZhiYuUITests。
+- macOS 单测/UI：分别选择 ZhiYuMacUnitTests、ZhiYuMacUITests scheme。
 - 隔离门禁回归：`python3 -m unittest discover -s Tools/Tests -v`。
 
 真实后端测试从测试 runner 的环境读取以下配置，凭据不得提交或写入报告：

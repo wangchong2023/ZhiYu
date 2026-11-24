@@ -24,8 +24,8 @@
 
 集成测试极易因为“静态全局单例”或“后台线程未停机任务”相互污染。智宇对此实施了**两重绝对隔离锁**：
 
-### 2.1 启动期分流隔离 (`AppLauncher` 机制)
-在测试运行期，`AppLauncher` 将通过探测 `XCTestCase` 类的存在，直接分流启动空壳的 `TestApp`，**彻底禁止真实主应用 `ZhiYuApp` 和 `AppEnvironment` 的实例化**。这阻断了任何后台 CloudKit 轮询、大模型静态解析或生产库数据库的连接。
+### 2.1 启动期物理宿主隔离 (`ProductionAppLauncher` / `UnitTestHostApp` 机制)
+在测试运行期，单测由独立的 `UnitTestHostApp` 空壳宿主承载，与正式应用入口 `ProductionAppLauncher` 物理分离，**彻底禁止真实主应用 `ZhiYuApp` 和 `AppEnvironment` 的自动实例化**。这阻断了任何后台 CloudKit 轮询、大模型静态解析或生产库数据库的连接。
 
 ### 2.2 用例级依赖容器重置
 在每个集成测试用例执行前后，强制调用 `ServiceContainer.shared.reset()` 重置依赖注入容器，保证每个用例的 `@Inject` 解析出来的都是绝对独立的 Mock 服务或纯净物理数据库连接，杜绝用例间数据污染。

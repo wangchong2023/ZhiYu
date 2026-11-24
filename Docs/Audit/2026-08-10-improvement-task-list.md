@@ -252,7 +252,7 @@
 - 新增 `Tests/Unit/App/ModuleRegistrarTests.swift`（11 个测试）：验证 `CoreModuleRegistrar`/`AppModuleRegistrar` 注册后服务可解析
 - 新增 `Tests/Unit/App/AppEnvironmentTests.swift`（10 个测试）：验证 `AppEnvironment.shared` 单例初始化后的状态完整性
 - `StorageModuleRegistrar` 依赖 `DatabaseManager.shared.dbWriter`（fatalError），不单独测试，由 `AppEnvironment` 集成测试覆盖
-- `ZhiYuApp`/`TestApp`/`AppLauncher` 是 `@main` 入口和 SwiftUI App 结构，难以单元测试，由 UI 测试覆盖
+- `ZhiYuApp`/`UnitTestHostApp`/`ProductionAppLauncher` 是 `@main` 入口和 SwiftUI App 结构，难以单元测试，由 UI 测试覆盖
 - `UITestRoute.fromLaunchArguments()` 读进程级 `CommandLine.arguments`，无法单元测试，由 UI 测试 launch argument 覆盖
 
 ---
