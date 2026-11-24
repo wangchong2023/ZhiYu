@@ -9,7 +9,7 @@
 //  核心职责：针对 DeepLink 开展自动化单元测试验证。
 //
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - 深度链接与快捷路由单元测试
 @MainActor

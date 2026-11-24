@@ -9,7 +9,7 @@
 
 import XCTest
 import UFPStorage
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 final class VectorDataChunkTests: XCTestCase {
 
@@ -20,7 +20,7 @@ final class VectorDataChunkTests: XCTestCase {
     override func setUp() async throws {
         try await super.setUp()
         dbQueue = try DatabaseQueue()
-        try await DatabaseManager.shared.setupForTesting(with: dbQueue)
+        try await DatabaseManager.shared.setupInMemory(with: dbQueue)
         vectorRepo = VectorDataRepository(dbWriter: dbQueue)
         knowledgeRepo = KnowledgePageRepository(dbWriter: dbQueue)
     }

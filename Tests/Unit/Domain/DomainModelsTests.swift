@@ -8,7 +8,7 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - PageSchema 单元测试
 

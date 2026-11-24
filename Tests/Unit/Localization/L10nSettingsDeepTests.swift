@@ -10,7 +10,7 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// Settings 表 L10n 扩展深度测试 — 全量属性覆盖
 final class L10nSettingsDeepTests: XCTestCase {

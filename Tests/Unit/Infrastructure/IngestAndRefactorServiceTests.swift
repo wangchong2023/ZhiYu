@@ -11,7 +11,7 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 import UFPCore
 
 // MARK: - Mock LLM Client（IngestAndRefactor 专用）

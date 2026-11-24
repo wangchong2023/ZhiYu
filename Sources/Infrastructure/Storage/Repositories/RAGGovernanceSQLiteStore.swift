@@ -527,8 +527,9 @@ final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterPro
             let completionTokens: Int = row[2] ?? 0
             let queryCount: Int = row[3] ?? 0
             let avgTokensPerQuery = queryCount > 0 ? Double(totalTokens) / Double(queryCount) : 0.0
-            let promptCost = Double(promptTokens) / 1_000_000.0 * AppConfig.AI.pricingPromptPer1M
-            let completionCost = Double(completionTokens) / 1_000_000.0 * AppConfig.AI.pricingCompletionPer1M
+            let tokensPerMillion: Double = 1_000_000.0
+            let promptCost = Double(promptTokens) / tokensPerMillion * AppConfig.AI.pricingPromptPer1M
+            let completionCost = Double(completionTokens) / tokensPerMillion * AppConfig.AI.pricingCompletionPer1M
             return TokenEfficiency(totalTokens: totalTokens, queryCount: queryCount,
                                    avgTokensPerQuery: avgTokensPerQuery, estimatedCostUSD: promptCost + completionCost)
         }

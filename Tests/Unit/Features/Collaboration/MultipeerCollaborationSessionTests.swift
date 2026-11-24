@@ -9,7 +9,7 @@
 import XCTest
 import Foundation
 import Network
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class MultipeerCollaborationSessionTests: XCTestCase {

@@ -12,7 +12,7 @@
 #if canImport(Vision)
 import XCTest
 import UIKit
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class IOSOCRServiceTests: XCTestCase {

@@ -11,7 +11,7 @@
 
 import XCTest
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// 系统设置与偏好存储单元测试类（SettingsStoreTests）
 /// 专职验证 `SettingsStore` 的数据读写持久化、观察者机制以及一键重置逻辑。

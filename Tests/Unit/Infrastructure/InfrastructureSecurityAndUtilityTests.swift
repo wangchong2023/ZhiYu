@@ -10,7 +10,7 @@ import XCTest
 import CryptoKit
 import UFPStorage
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - PluginLoader 签名校验与 hex 编解码测试
 
@@ -87,13 +87,13 @@ final class PluginLoaderSecurityLogicTests: XCTestCase {
 
     // MARK: - verifyPluginSignature
 
-    func testVerifySignatureTrustedLocalBypassesCheck() {
+    func testVerifySignatureTrustedLocalRejectsUnsignedLocal() {
         let manifest = PluginManifest(
             id: "local.test", version: "1.0",
             names: ["en": "Test"], descriptions: ["en": "Test plugin"]
         )
-        XCTAssertTrue(PluginLoader.verifyPluginSignature(
-            script: "console.log(1)", manifest: manifest, isTrustedLocal: true
+        XCTAssertFalse(PluginLoader.verifyPluginSignature(
+            script: "console.log(1)", manifest: manifest
         ))
     }
 
@@ -103,7 +103,7 @@ final class PluginLoaderSecurityLogicTests: XCTestCase {
             names: ["en": "Malicious"], descriptions: ["en": "Bad plugin"]
         )
         XCTAssertFalse(PluginLoader.verifyPluginSignature(
-            script: "console.log(1)", manifest: manifest, isTrustedLocal: false
+            script: "console.log(1)", manifest: manifest
         ))
     }
 
@@ -114,7 +114,7 @@ final class PluginLoaderSecurityLogicTests: XCTestCase {
             codeSignature: nil
         )
         XCTAssertFalse(PluginLoader.verifyPluginSignature(
-            script: "console.log(1)", manifest: manifest, isTrustedLocal: false
+            script: "console.log(1)", manifest: manifest
         ))
     }
 
@@ -125,7 +125,7 @@ final class PluginLoaderSecurityLogicTests: XCTestCase {
             codeSignature: ""
         )
         XCTAssertFalse(PluginLoader.verifyPluginSignature(
-            script: "console.log(1)", manifest: manifest, isTrustedLocal: false
+            script: "console.log(1)", manifest: manifest
         ))
     }
 
@@ -136,7 +136,7 @@ final class PluginLoaderSecurityLogicTests: XCTestCase {
             codeSignature: "not-hex-zzz"
         )
         XCTAssertFalse(PluginLoader.verifyPluginSignature(
-            script: "console.log(1)", manifest: manifest, isTrustedLocal: false
+            script: "console.log(1)", manifest: manifest
         ))
     }
 }

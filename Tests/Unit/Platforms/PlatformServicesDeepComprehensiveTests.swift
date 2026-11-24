@@ -13,7 +13,7 @@ import XCTest
 import PDFKit
 import Vision
 import Network
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 import UFPCore
 
 @MainActor

@@ -26,7 +26,7 @@ private enum DatabaseManagerConstants {
 /// 本类型保留业务装配与安全增强，作为业务层的唯一数据库入口。
 @MainActor
 final class DatabaseManager: TestStateResettable, @unchecked Sendable {
-    
+
     /// 全局唯一的线程安全单例实例。
     nonisolated static let shared = DatabaseManager()
 
@@ -40,25 +40,16 @@ final class DatabaseManager: TestStateResettable, @unchecked Sendable {
     /// - Returns: 默认沙盒数据库文件 URL。
     /// - Throws: 当 Application Support 目录不可用时抛出 `NSError`。
     func defaultSandboxDatabaseURL() throws -> URL {
-        guard let appSupport = FileManager.default.urls(
-            for: .applicationSupportDirectory,
-            in: .userDomainMask
-        ).first else {
-            throw NSError(
-                domain: CoreConstants.ErrorDomain.insight,
-                code: SystemConstants.ErrorCode.default
-            )
-        }
-        return appSupport.appendingPathComponent(AppConstants.Storage.databaseName)
+        ApplicationStorageLocation.applicationSupport.appendingPathComponent(AppConstants.Storage.databaseName)
     }
-    
+
     /// 数据库中枢当前的运行状态（业务状态，映射自引擎 GenericDatabaseState）。
     private(set) var state: DatabaseState = .uninitialized {
         didSet {
             NotificationCenter.default.post(name: .databaseStateDidChange, object: nil)
         }
     }
-    
+
     /// 事务门禁（Finding #18 修复）：用 actor 串行化事务计数，消除排空 TOCTOU 竞态。
     let transactionGatekeeper = TransactionGatekeeper()
 
@@ -76,7 +67,7 @@ final class DatabaseManager: TestStateResettable, @unchecked Sendable {
     func decrementActiveTransactions() async {
         await transactionGatekeeper.release()
     }
-    
+
     /// 专属笔记本数据库写入连接池（委托引擎）。
     var dbWriter: (any DatabaseWriter)? {
         get { engine.dbWriter }
@@ -94,13 +85,13 @@ final class DatabaseManager: TestStateResettable, @unchecked Sendable {
 
     /// 全局共享偏好配置库的物理沙盒文件 URL。
     var globalDBURL: URL? { engine.globalDBURL }
-    
-    /// 当前数据库管理器是否运行于 Unit Test 单元测试管道中。
-    var isInTesting: Bool {
-        get { engine.isInTesting }
-        set { engine.isInTesting = newValue }
+
+    /// 当前连接是否使用瞬态存储，避免执行持久化文件操作。
+    var usesTransientStorage: Bool {
+        get { engine.usesTransientStorage }
+        set { engine.usesTransientStorage = newValue }
     }
-    
+
     /// 私有化单例构造方法（nonisolated：仅注册测试重置注册表 + 建引擎，允许跨线程初始化）。
     nonisolated private init() {
         self.engine = GenericDatabaseManager()
@@ -118,24 +109,17 @@ final class DatabaseManager: TestStateResettable, @unchecked Sendable {
         engine.integrityVerifier = { url in
             let isVerified = await SecurityManager.shared.verifyIntegrity(for: url)
             if isVerified { return true }
-            #if DEBUG
-            await SecurityManager.shared.updateSignature(for: url)
-            return true
-            #else
             throw NSError(
                 domain: StorageConstants.ErrorDomain.databaseManager,
                 code: SystemConstants.HTTPStatusCode.forbidden,
                 userInfo: [NSLocalizedDescriptionKey: L10n.Security.targetIntegrityVerificationFailed]
             )
-            #endif
+
         }
 
         engine.integrityCheckHandler = { url in
             let isVerified = await SecurityManager.shared.verifyIntegrity(for: url)
             if !isVerified {
-                #if DEBUG
-                await SecurityManager.shared.updateSignature(for: url)
-                #else
                 Task { @MainActor in
                     NotificationCenter.default.post(
                         name: .databaseIntegrityCheckFailed,
@@ -143,7 +127,7 @@ final class DatabaseManager: TestStateResettable, @unchecked Sendable {
                         userInfo: [StorageConstants.JSONKey.url: url]
                     )
                 }
-                #endif
+
             }
         }
 
@@ -183,17 +167,17 @@ final class DatabaseManager: TestStateResettable, @unchecked Sendable {
         case .corrupted(let message): state = .corrupted(message)
         }
     }
-    
+
     // MARK: - 初始化方法组
-    
+
     /// 为数据库中枢注入自定义连接池（如内存数据库或外部 DatabaseWriter）。
     /// - Parameter writer: 自定义 DatabaseWriter。
     /// - Throws: SQLite Schema 架构自动化迁移异常。
     func setup(with writer: any DatabaseWriter) throws {
         configureEngineIfNeeded()
-        try engine.setupForTesting(with: writer)
+        try engine.setupInMemory(with: writer)
     }
-    
+
     /// 初始化激活默认专属数据库（vault.sqlite3）连接，并级联初始化 global.sqlite3。
     /// - Parameter url: 指向专属数据库的物理文件 URL 路径。
     /// - Throws: 目录授权、SQLite 实例化或专属 Schema 迁移失败。
@@ -201,13 +185,13 @@ final class DatabaseManager: TestStateResettable, @unchecked Sendable {
         configureEngineIfNeeded()
         try engine.setup(at: url, globalDatabaseName: AppConstants.Storage.globalDatabaseName)
     }
-    
+
     /// 物理热切换当前激活的专属笔记本数据库（Multi-Vault Switching）。
     func switchDatabase(to vaultID: UUID, at url: URL) async throws {
         configureEngineIfNeeded()
         try await engine.switchDatabase(to: vaultID, at: url)
     }
-    
+
     /// 重置并释放所有已挂载的数据库 Pool 连接资源。
     func reset() {
         configureEngineIfNeeded()
@@ -234,18 +218,7 @@ final class DatabaseManager: TestStateResettable, @unchecked Sendable {
             reset()
         }
     }
-    
-    // MARK: - 测试辅助方法
 
-    /// 设置排空状态（配合事务网关使用）。
-    func setDraining(_ value: Bool) async {
-        await transactionGatekeeper.setDrainingForTesting(value)
-    }
-
-    /// 重置排空状态（仅测试使用）。
-    func resetDrainingState() async {
-        await transactionGatekeeper.reset()
-    }
 }
 
 // MARK: - VaultDatabaseSwitcher 协议遵循

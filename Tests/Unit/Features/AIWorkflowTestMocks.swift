@@ -14,7 +14,7 @@ import XCTest
 import UFPCore
 import Combine
 import Dependencies
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - 测试专用 Equatable 一致性（仅测试 target 内生效，避免修改生产模型文件）
 

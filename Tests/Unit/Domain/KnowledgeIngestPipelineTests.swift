@@ -1,5 +1,5 @@
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// KnowledgeIngestPipeline 集成测试（通过 process() 公共接口验证管道流程）
 @MainActor

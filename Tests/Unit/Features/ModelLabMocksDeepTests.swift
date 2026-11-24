@@ -9,7 +9,7 @@
 
 import XCTest
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - 空响应 LLM Mock（强制 runSimulation 走 getMockResponse 离线路径）
 

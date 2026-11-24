@@ -252,7 +252,7 @@ struct RAGRetrievalPanel: View {
                     .stroke(color.gradient, style: StrokeStyle(lineWidth: RingStyle.lineWidth, lineCap: .round))
                     .rotationEffect(.degrees(RingStyle.rotationDegrees))
                     .frame(width: RingStyle.size, height: RingStyle.size)
-                    .animation(.easeInOut(duration: 0.8), value: score)
+                    .animation(.easeInOut(duration: DesignTokens.Animations.chartFillDuration), value: score)
                 VStack(spacing: 0) {
                     Text(String(format: FormatPattern.percentInt, score * FeatureConstants.PercentageBase.full))
                         .font(.system(size: FontSize.ringPercent, weight: .bold, design: .rounded)).foregroundStyle(color)

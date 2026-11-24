@@ -56,7 +56,7 @@ struct LockOverlayView: View {
                     .blur(radius: 80)
                     .offset(x: isAnimating ? -180 : 180, y: isAnimating ? 80 : -80)
             }
-            .animation(.easeInOut(duration: 10).repeatForever(autoreverses: true), value: isAnimating)
+            .animation(.easeInOut(duration: DesignTokens.Animations.ambientSlowDriftDuration).repeatForever(autoreverses: true), value: isAnimating)
             
             VStack(spacing: DesignTokens.ComponentSpacing.ultra) {
                 Spacer()
@@ -71,7 +71,7 @@ struct LockOverlayView: View {
                         )
                         .frame(width: DesignTokens.Metrics.ringSmallSize, height: DesignTokens.Metrics.ringSmallSize)
                         .rotationEffect(.degrees(isAnimating ? 360 : 0))
-                        .animation(.linear(duration: 20).repeatForever(autoreverses: false), value: isAnimating)
+                        .animation(.linear(duration: DesignTokens.Animations.ambientVerySlowDriftDuration).repeatForever(autoreverses: false), value: isAnimating)
                     
                     Circle()
                         .stroke(
@@ -80,7 +80,7 @@ struct LockOverlayView: View {
                         )
                         .frame(width: DesignTokens.Metrics.ringLargeSize, height: DesignTokens.Metrics.ringLargeSize)
                         .rotationEffect(.degrees(isAnimating ? -360 : 0))
-                        .animation(.linear(duration: 25).repeatForever(autoreverses: false), value: isAnimating)
+                        .animation(.linear(duration: DesignTokens.Animations.ambientUltraSlowDriftDuration).repeatForever(autoreverses: false), value: isAnimating)
 
                     VStack(spacing: DesignTokens.Spacing.wide) {
                         Image(systemName: DesignTokens.Icons.lockShieldFill)

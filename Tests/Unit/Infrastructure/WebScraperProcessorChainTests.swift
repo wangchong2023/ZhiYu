@@ -8,7 +8,7 @@
 
 import XCTest
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - WebScraper 专用 URLProtocol 拦截器
 

@@ -16,7 +16,7 @@ import XCTest
 import UFPCore
 import Combine
 import Dependencies
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - SynthesisStore 失败路径深度测试
 

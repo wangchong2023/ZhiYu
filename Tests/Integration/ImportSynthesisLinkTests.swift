@@ -10,7 +10,7 @@
 
 import XCTest
 import UFPStorage
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class ImportSynthesisLinkTests: XCTestCase {

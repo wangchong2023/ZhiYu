@@ -327,7 +327,8 @@ struct ImportRecordSection: View {
 
     private func loadRecords() async {
         let cat: String? = selectedCategory == FeatureConstants.CategoryFilter.all ? nil : selectedCategory
-        let fetched = (try? await repo.fetchAll(category: cat, limit: 50)) ?? []
+        let defaultFetchLimit = 50
+        let fetched = (try? await repo.fetchAll(category: cat, limit: defaultFetchLimit)) ?? []
         records = fetched.map { sanitizeRecordSize($0) }
     }
 

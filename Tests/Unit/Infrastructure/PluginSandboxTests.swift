@@ -9,7 +9,7 @@
 //  核心职责：针对 PluginSandbox 开展自动化单元测试验证。
 //
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 @testable import UFPCore
 
 /// 插件沙箱安全测试

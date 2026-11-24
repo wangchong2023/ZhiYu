@@ -130,7 +130,8 @@ struct DeveloperSettingsView: View {
                 Button {
                     dismiss()
                     Task {
-                        try? await Task.sleep(nanoseconds: 400_000_000)
+                        let resetDelayNs: UInt64 = 400_000_000
+                        try? await Task.sleep(nanoseconds: resetDelayNs)
                         onboardingService.reset()
                         SplashPresentationPolicy.resetSplashState(keyStore: keyStore)
                     }

@@ -7,7 +7,7 @@
 //
 
 import Foundation
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class MockCollaborationProviderDelegate: CollaborationProviderDelegate {

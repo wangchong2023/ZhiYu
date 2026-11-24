@@ -13,7 +13,7 @@
 import XCTest
 import UFPCore
 import UFPStorage
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 final class PageSchemaAndIngestPipelineTests: XCTestCase {
 

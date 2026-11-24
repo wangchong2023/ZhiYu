@@ -15,7 +15,7 @@ import Combine
 import GRDB
 import UFPCore
 import Dependencies
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - 测试错误辅助
 

@@ -10,7 +10,7 @@
 //
 import XCTest
 import Combine
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// 边界与异常测试 (Expert QA Item #4)
 /// 模拟极端环境下的 IngestQueue 表现。

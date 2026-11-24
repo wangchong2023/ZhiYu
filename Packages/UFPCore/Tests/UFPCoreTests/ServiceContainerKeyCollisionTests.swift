@@ -15,6 +15,7 @@
 //        故此处用 Foundation 类型 vs 自定义类型验证 makeKey 保留前缀的行为）。
 //
 
+import UFPCoreTestMocks
 import XCTest
 @testable import UFPCore
 

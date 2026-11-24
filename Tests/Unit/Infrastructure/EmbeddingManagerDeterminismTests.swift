@@ -9,7 +9,7 @@
 import XCTest
 import Accelerate
 import NaturalLanguage
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - EmbeddingManager 确定性与边界条件测试
 

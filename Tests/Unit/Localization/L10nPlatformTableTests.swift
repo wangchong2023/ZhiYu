@@ -10,7 +10,7 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// Platform 表 L10n 扩展测试（Watch/Widget/Platform）
 final class L10nPlatformTableTests: XCTestCase {

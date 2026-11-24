@@ -14,7 +14,7 @@ import Network
 #if canImport(WatchConnectivity)
 import WatchConnectivity
 #endif
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 import UFPCore
 
 @MainActor

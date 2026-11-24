@@ -11,16 +11,20 @@
 
 import Foundation
 import GRDB
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 extension DatabaseManager {
     /// 单元测试专用：为测试管道强制注入内存/临时物理数据库连接池
-    public func setupForTesting(with writer: any DatabaseWriter) throws {
+    public func setupInMemory(with writer: any DatabaseWriter) throws {
         try setup(with: writer)
     }
 
     /// 单元测试专用：设置事务网关排空状态
     public func setDrainingForTesting(_ value: Bool) async {
-        await setDraining(value)
+        await transactionGatekeeper.setDrainingForTesting(value)
+    }
+    /// 清理测试注入的排空状态。
+    public func resetDrainingState() async {
+        await transactionGatekeeper.reset()
     }
 }

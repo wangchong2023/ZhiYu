@@ -18,16 +18,14 @@ public struct SplashPresentationPolicy: Sendable {
 
     /// 评估冷启动时是否应当跳过闪屏页
     /// - Parameters:
-    ///   - isUITesting: 是否处于 UI 测试环境（--uitesting）
     ///   - hasSeenSplashBefore: 是否已持久化记录看过闪屏（非首次冷启动）
     ///   - isLoggedIn: 当前用户是否已处于登录状态
     /// - Returns: true 表示跳过闪屏，false 表示展示闪屏
     public static func shouldSkipSplash(
-        isUITesting: Bool,
         hasSeenSplashBefore: Bool,
         isLoggedIn: Bool
     ) -> Bool {
-        isUITesting || hasSeenSplashBefore || isLoggedIn
+        hasSeenSplashBefore || isLoggedIn
     }
 
     /// 检查持久化存储中是否已有看过闪屏的记录

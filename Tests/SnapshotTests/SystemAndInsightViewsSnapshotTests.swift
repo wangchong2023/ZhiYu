@@ -15,7 +15,7 @@ import SwiftUI
 import SnapshotTesting
 import UFPCore
 import Dependencies
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class SystemAndInsightViewsSnapshotTests: XCTestCase {

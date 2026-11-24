@@ -11,7 +11,7 @@ import SwiftUI
 import StoreKit
 import AuthenticationServices
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class StoreKitAndInfraServiceDeepTests: XCTestCase {
@@ -241,12 +241,12 @@ final class StoreKitAndInfraServiceDeepTests: XCTestCase {
             codeSignature: nil
         )
 
-        // isTrustedLocal = true 时跳过签名
-        let isTrusted = PluginLoader.verifyPluginSignature(script: "console.log('hi');", manifest: manifestTrusted, isTrustedLocal: true)
-        XCTAssertTrue(isTrusted)
+        // 本地开发插件也必须提供有效签名
+        let isTrusted = PluginLoader.verifyPluginSignature(script: "console.log('hi');", manifest: manifestTrusted)
+        XCTAssertFalse(isTrusted)
 
         // 外部 manifest 带有 local. 前缀视为可疑，拒绝加载
-        let isSuspicious = PluginLoader.verifyPluginSignature(script: "console.log('hi');", manifest: manifestTrusted, isTrustedLocal: false)
+        let isSuspicious = PluginLoader.verifyPluginSignature(script: "console.log('hi');", manifest: manifestTrusted)
         XCTAssertFalse(isSuspicious)
 
         // 外部插件缺少签名，拒绝加载
@@ -263,7 +263,7 @@ final class StoreKitAndInfraServiceDeepTests: XCTestCase {
             category: nil,
             codeSignature: nil
         )
-        let isRejected = PluginLoader.verifyPluginSignature(script: "console.log('test');", manifest: manifestNoSig, isTrustedLocal: false)
+        let isRejected = PluginLoader.verifyPluginSignature(script: "console.log('test');", manifest: manifestNoSig)
         XCTAssertFalse(isRejected)
     }
 

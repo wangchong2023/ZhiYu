@@ -209,8 +209,9 @@ final class PluginRuntime: @unchecked Sendable {
             pluginCallCounts[pluginID] = callCount + 1
 
             // 异步重置计数器 (简易窗口期)
+            let nanosecondsPerSecond: Double = 1_000_000_000
             Task { @MainActor in
-                try? await Task.sleep(nanoseconds: UInt64(throttlingWindow * 1_000_000_000))
+                try? await Task.sleep(nanoseconds: UInt64(throttlingWindow * nanosecondsPerSecond))
                 self.pluginCallCounts[pluginID] = 0
             }
 
@@ -270,8 +271,9 @@ final class PluginRuntime: @unchecked Sendable {
         aiCallCounts[pluginID] = count + 1
         if count == 0 {
             // 窗口起点调度一次归零，避免计数永久累积
+            let nanosecondsPerSecond: Double = 1_000_000_000
             Task { @MainActor in
-                try? await Task.sleep(nanoseconds: UInt64(throttlingWindow * 1_000_000_000))
+                try? await Task.sleep(nanoseconds: UInt64(throttlingWindow * nanosecondsPerSecond))
                 self.aiCallCounts[pluginID] = 0
             }
         }

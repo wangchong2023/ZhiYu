@@ -353,7 +353,8 @@ actor IngestService: IngestServiceProtocol {
                 group.addTask { [self, pageStore, type] in
                     // 智适应节流：低功耗模式下每个文件处理后强制休息，释放 CPU
                     if isLowPowerMode {
-                        try? await Task.sleep(nanoseconds: 200_000_000)
+                        let lowPowerCooldownNs: UInt64 = 200_000_000
+                        try? await Task.sleep(nanoseconds: lowPowerCooldownNs)
                     }
 
                     let page = await self.ingestDocument(at: fileURL, type: type, pageStore: pageStore)

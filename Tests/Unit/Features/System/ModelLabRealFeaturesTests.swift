@@ -10,7 +10,7 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 import UFPCore
 
 @MainActor

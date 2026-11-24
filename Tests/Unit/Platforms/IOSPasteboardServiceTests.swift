@@ -12,7 +12,7 @@
 #if os(iOS) && !os(watchOS)
 import UIKit
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class IOSPasteboardServiceTests: XCTestCase {

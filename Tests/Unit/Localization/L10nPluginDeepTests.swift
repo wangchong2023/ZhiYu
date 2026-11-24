@@ -10,7 +10,7 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// Plugin 表 L10n 扩展深度测试
 final class L10nPluginDeepTests: XCTestCase {

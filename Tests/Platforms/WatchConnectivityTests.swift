@@ -10,7 +10,7 @@
 //
 import XCTest
 import WatchConnectivity
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// 验证 WatchConnectivity 同步可靠性
 @MainActor

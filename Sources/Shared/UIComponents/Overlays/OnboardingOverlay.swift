@@ -50,6 +50,8 @@ struct OnboardingOverlay: View {
                             .background(Color.appAccent)
                             .clipShape(Capsule())
                     }
+                    // 自绘胶囊按钮在 macOS 上需关闭系统默认 bezel，否则出现双层按钮外框。
+                    .buttonStyle(.plain)
                     
                     Button(L10n.Onboarding.Action.skip) {
                         withAnimation {
@@ -58,6 +60,7 @@ struct OnboardingOverlay: View {
                     }
                     .font(.footnote)
                     .foregroundStyle(.appSecondary)
+                    .buttonStyle(.plain)
                 }
                 .padding(DesignTokens.Spacing.huge)
                 .background(Color.appCard)

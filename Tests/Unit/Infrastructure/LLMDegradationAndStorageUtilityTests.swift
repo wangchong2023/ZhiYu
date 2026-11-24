@@ -9,7 +9,7 @@
 import XCTest
 import UFPStorage
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - DemoPDFBuilder 纯逻辑测试
 
@@ -291,7 +291,7 @@ final class TagRepositoryMigrationTests: XCTestCase {
     override func setUp() async throws {
         try await super.setUp()
         dbQueue = try DatabaseQueue()
-        try await DatabaseManager.shared.setupForTesting(with: dbQueue)
+        try await DatabaseManager.shared.setupInMemory(with: dbQueue)
     }
 
     override func tearDown() async throws {
@@ -406,7 +406,7 @@ final class SQLiteStoreStorageStatsTests: XCTestCase {
     override func setUp() async throws {
         try await super.setUp()
         dbQueue = try DatabaseQueue()
-        try await DatabaseManager.shared.setupForTesting(with: dbQueue)
+        try await DatabaseManager.shared.setupInMemory(with: dbQueue)
         store = SQLiteStore(dbWriter: dbQueue)
     }
 

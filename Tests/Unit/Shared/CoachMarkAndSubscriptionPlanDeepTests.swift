@@ -13,7 +13,7 @@ import XCTest
 import SwiftUI
 import Dependencies
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class CoachMarkAndSubscriptionPlanDeepTests: XCTestCase {

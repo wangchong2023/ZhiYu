@@ -9,7 +9,7 @@
 
 import XCTest
 import UFPStorage
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 final class VaultRepoEdgeTests: XCTestCase {
 
@@ -19,7 +19,7 @@ final class VaultRepoEdgeTests: XCTestCase {
     override func setUp() async throws {
         try await super.setUp()
         globalQueue = try DatabaseQueue()
-        try await DatabaseManager.shared.setupForTesting(with: globalQueue)
+        try await DatabaseManager.shared.setupInMemory(with: globalQueue)
         // SQLiteVaultRepository 使用 globalWriter
         let writer: any DatabaseWriter = await DatabaseManager.shared.globalWriter ?? globalQueue
         vaultRepo = SQLiteVaultRepository(dbWriter: writer)

@@ -11,7 +11,7 @@
 import XCTest
 import SwiftUI
 import UFPStorage
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - 历史撤销与恢复 (UndoService) 单元测试
 @MainActor

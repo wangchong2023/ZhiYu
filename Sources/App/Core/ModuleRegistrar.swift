@@ -24,7 +24,9 @@ struct CoreModuleRegistrar {
         container.register(logger as any LoggerProtocol, for: (any LoggerProtocol).self)
 
         // 注册键值存储抽象层 (L0)
-        container.register(UserDefaultsKeyStore.shared as any KeyStoreProtocol, for: (any KeyStoreProtocol).self)
+        if container.resolveOptional((any KeyStoreProtocol).self) == nil {
+            container.register(UserDefaultsKeyStore.shared as any KeyStoreProtocol, for: (any KeyStoreProtocol).self)
+        }
         
         // 委托平台注册器注入平台特有服务（消除 15 个 #if os 宏，收敛为单一分发点）
         #if os(macOS)

@@ -59,6 +59,8 @@ watch: gen
 TIMEOUT ?= 600
 
 # 测试类过滤，可通过 make test-ui TEST_CLASS=ZhiYuMonkeyTests 仅运行指定测试类
+SWIFT_TEST_FLAGS ?=
+
 TEST_CLASS ?=
 
 # 动态查找可用 iOS 模拟器（优先最新 runtime 下的 iPhone 17 Pro，回退到任意最新 iPhone）
@@ -74,13 +76,13 @@ test-unit: gen
 	@echo "🧪 仅运行单元测试$(if $(TEST_CLASS), [$(TEST_CLASS)],)（超时保护 $(TIMEOUT)s）..."
 	@xcrun simctl shutdown "$(SIM_NAME)" 2>/dev/null || true
 	@mkdir -p build && grep -rc "^[[:space:]]*func test" Tests/ --include="*.swift" 2>/dev/null | awk -F: "{sum += \$$2} END {print sum}" > build/.test_count
-	@xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iOS Simulator,name=$(SIM_NAME)' $(if $(TEST_CLASS),-only-testing:ZhiYuTests/$(TEST_CLASS),-only-testing:ZhiYuTests) -derivedDataPath build/DerivedData-ios -disableAutomaticPackageResolution -test-timeouts-enabled YES -maximum-test-execution-time-allowance $(TIMEOUT) CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO 2>&1 | Tools/CI/run-test-progress.sh; exit $${PIPESTATUS[0]}
+	@xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYuUnitTests -destination 'platform=iOS Simulator,name=$(SIM_NAME)' $(if $(TEST_CLASS),-only-testing:ZhiYuTests/$(TEST_CLASS),-only-testing:ZhiYuTests) -derivedDataPath build/DerivedData-ios -disableAutomaticPackageResolution -test-timeouts-enabled YES -maximum-test-execution-time-allowance $(TIMEOUT) CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO 2>&1 | Tools/CI/run-test-progress.sh; exit $${PIPESTATUS[0]}
 
 test-ui: gen
 	@echo "🧪 仅运行 UI 测试$(if $(TEST_CLASS), [$(TEST_CLASS)],)（超时保护 $(TIMEOUT)s）..."
 	@xcrun simctl shutdown "$(SIM_NAME)" 2>/dev/null || true
 	@mkdir -p build && grep -rc "^[[:space:]]*func test" Tests/ --include="*.swift" 2>/dev/null | awk -F: "{sum += \$$2} END {print sum}" > build/.test_count
-	@xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iOS Simulator,name=$(SIM_NAME)' $(if $(TEST_CLASS),-only-testing:ZhiYuUITests/$(TEST_CLASS),-only-testing:ZhiYuUITests) -derivedDataPath build/DerivedData-ios -disableAutomaticPackageResolution -test-timeouts-enabled YES -maximum-test-execution-time-allowance $(TIMEOUT) CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO 2>&1 | Tools/CI/run-test-progress.sh; exit $${PIPESTATUS[0]}
+	@xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYuUITests -destination 'platform=iOS Simulator,name=$(SIM_NAME)' $(if $(TEST_CLASS),-only-testing:ZhiYuUITests/$(TEST_CLASS),-only-testing:ZhiYuUITests) -derivedDataPath build/DerivedData-ios -disableAutomaticPackageResolution -test-timeouts-enabled YES -maximum-test-execution-time-allowance $(TIMEOUT) CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO 2>&1 | Tools/CI/run-test-progress.sh; exit $${PIPESTATUS[0]}
 
 test-spm:
 	@if [ -z "$(PKG)" ]; then \
@@ -88,13 +90,13 @@ test-spm:
 		exit 1; \
 	fi
 	@echo "⚡️ 正在极速单测 Packages/$(PKG) ..."
-	@swift test --package-path Packages/$(PKG)
+	@swift test $(SWIFT_TEST_FLAGS) --package-path Packages/$(PKG)
 
 test-spm-all:
 	@echo "⚡️ 运行全量 SPM 本地包极速单测套件..."
 	@for pkg in UFPCore UFPStorage UFPDesignSystem ZhiYuDomain ZhiYuAICore ZhiYuFeatures; do \
 		echo "🧪 正在测试 Packages/$$pkg ..."; \
-		swift test --package-path Packages/$$pkg || exit 1; \
+		swift test $(SWIFT_TEST_FLAGS) --package-path Packages/$$pkg || exit 1; \
 	done
 	@echo "✅ 所有 SPM 本地包单测全部通过！"
 
@@ -109,6 +111,7 @@ audit:
 	"$$VENV_PY" Tools/ios/check-code-absolute-paths.py && \
 	"$$VENV_PY" Tools/ios/check-code-snapshot-environment.py --strict && \
 	"$$VENV_PY" Tools/ios/audit-dependency-key-test-value.py && \
+	"$$VENV_PY" Tools/ios/audit-debug-in-sources.py --strict && \
 	("$$VENV_PY" Tools/ios/check-code-test-coupling.py --strict || (echo "❌ 存在测试耦合反模式（生产代码内嵌测试分支/Mock 类型），请运行 '$$VENV_PY Tools/ios/check-code-test-coupling.py --strict' 查看详情并修复" && exit 1)) && \
 	("$$VENV_PY" Tools/ios/audit-test-naming-chinese.py || (echo "❌ 测试函数存在中文命名，请运行 '$$VENV_PY Tools/ios/audit-test-naming-chinese.py' 查看详情并重命名为英文" && exit 1)) && \
 	echo "📊 运行测试结构度量..." && \

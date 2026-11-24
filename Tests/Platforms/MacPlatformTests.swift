@@ -13,9 +13,9 @@ import XCTest
 import LocalAuthentication
 #if os(macOS)
 import AppKit
-@testable import ZhiYuMac
+@testable import ZhiYuMacUnitTestHost
 #else
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 #endif
 
 #if os(macOS)

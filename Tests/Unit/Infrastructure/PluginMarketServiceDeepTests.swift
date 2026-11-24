@@ -9,7 +9,7 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 import UFPCore
 
 #if canImport(JavaScriptCore) && !os(watchOS)
@@ -150,18 +150,16 @@ final class PluginMarketServiceDeepTests: XCTestCase {
 
     // MARK: - PluginLoader.verifyPluginSignature
 
-    /// isTrustedLocal=true 应跳过签名校验返回 true
-    func testVerifyPluginSignatureTrustedLocalReturnsTrue() {
+    func testVerifyPluginSignatureUnsignedLocalReturnsFalse() {
         let manifest = PluginManifest(
             id: "local.trusted",
             version: "1.0",
             names: ["en": "Trusted"],
             descriptions: ["en": "Trusted plugin"]
         )
-        XCTAssertTrue(PluginLoader.verifyPluginSignature(
+        XCTAssertFalse(PluginLoader.verifyPluginSignature(
             script: "console.log('test')",
-            manifest: manifest,
-            isTrustedLocal: true
+            manifest: manifest
         ))
     }
 
@@ -175,8 +173,7 @@ final class PluginMarketServiceDeepTests: XCTestCase {
         )
         XCTAssertFalse(PluginLoader.verifyPluginSignature(
             script: "console.log('test')",
-            manifest: manifest,
-            isTrustedLocal: false
+            manifest: manifest
         ))
     }
 
@@ -190,8 +187,7 @@ final class PluginMarketServiceDeepTests: XCTestCase {
         )
         XCTAssertFalse(PluginLoader.verifyPluginSignature(
             script: "console.log('test')",
-            manifest: manifest,
-            isTrustedLocal: false
+            manifest: manifest
         ))
     }
 
@@ -206,8 +202,7 @@ final class PluginMarketServiceDeepTests: XCTestCase {
         )
         XCTAssertFalse(PluginLoader.verifyPluginSignature(
             script: "console.log('test')",
-            manifest: manifest,
-            isTrustedLocal: false
+            manifest: manifest
         ))
     }
 
@@ -222,8 +217,7 @@ final class PluginMarketServiceDeepTests: XCTestCase {
         )
         XCTAssertFalse(PluginLoader.verifyPluginSignature(
             script: "console.log('test')",
-            manifest: manifest,
-            isTrustedLocal: false
+            manifest: manifest
         ))
     }
 
@@ -238,8 +232,7 @@ final class PluginMarketServiceDeepTests: XCTestCase {
         )
         XCTAssertFalse(PluginLoader.verifyPluginSignature(
             script: "console.log('test')",
-            manifest: manifest,
-            isTrustedLocal: false
+            manifest: manifest
         ))
     }
 

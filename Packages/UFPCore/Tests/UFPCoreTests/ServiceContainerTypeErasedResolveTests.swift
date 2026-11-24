@@ -7,6 +7,7 @@
 //           typeErasedResolve 使用 makeKey(forAny:)，必须与 makeKey(for:) 产生相同 key。
 //
 
+import UFPCoreTestMocks
 import XCTest
 @testable import UFPCore
 

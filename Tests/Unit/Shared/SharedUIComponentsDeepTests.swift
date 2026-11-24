@@ -12,7 +12,7 @@ import UFPStorage
 import UFPDesignSystem
 import XCTest
 
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class SharedUIComponentsDeepTests: XCTestCase {

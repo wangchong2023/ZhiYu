@@ -9,6 +9,7 @@
 //           需验证这是预期行为还是应返回 nil。
 //
 
+import UFPCoreTestMocks
 import XCTest
 @testable import UFPCore
 

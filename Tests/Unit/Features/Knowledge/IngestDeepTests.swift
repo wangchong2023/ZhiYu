@@ -11,7 +11,7 @@ import UFPCore
 import UFPStorage
 import XCTest
 
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 import ZhiYuDomain
 
 @MainActor

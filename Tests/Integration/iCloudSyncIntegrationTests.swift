@@ -11,7 +11,7 @@
 #if ICLOUD_ENABLED
 import XCTest
 import Combine
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class iCloudSyncIntegrationTests: XCTestCase {

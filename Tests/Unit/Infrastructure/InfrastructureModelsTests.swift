@@ -6,7 +6,7 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// PDFModels 单元测试
 /// 验证 PDFDocumentInfo / PDFHighlight 数据模型与 Codable 往返

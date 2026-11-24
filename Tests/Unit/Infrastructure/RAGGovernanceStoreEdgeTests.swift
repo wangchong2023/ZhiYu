@@ -9,7 +9,7 @@
 
 import XCTest
 import UFPStorage
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 final class RAGGovernanceStoreEdgeTests: XCTestCase {
 
@@ -19,7 +19,7 @@ final class RAGGovernanceStoreEdgeTests: XCTestCase {
     override func setUp() async throws {
         try await super.setUp()
         dbQueue = try DatabaseQueue()
-        try await DatabaseManager.shared.setupForTesting(with: dbQueue)
+        try await DatabaseManager.shared.setupInMemory(with: dbQueue)
         // RAGGovernanceSQLiteStore 使用动态属性从 DatabaseManager.shared.dbWriter 获取
         store = RAGGovernanceSQLiteStore()
     }

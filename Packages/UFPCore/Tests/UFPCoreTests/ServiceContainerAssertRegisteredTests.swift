@@ -10,6 +10,7 @@
 //           4. 协议存在性类型（any Protocol）与具体类型的 key 区分
 //
 
+import UFPCoreTestMocks
 import XCTest
 @testable import UFPCore
 

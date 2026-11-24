@@ -8,7 +8,7 @@
 
 import XCTest
 import CoreGraphics
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class AccessibilityServiceTests: XCTestCase {

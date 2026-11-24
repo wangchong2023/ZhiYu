@@ -7,7 +7,7 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 @testable import UFPCore
 
 @MainActor

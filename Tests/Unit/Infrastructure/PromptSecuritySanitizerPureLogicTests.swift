@@ -12,7 +12,7 @@
 import XCTest
 import Foundation
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - PromptSecuritySanitizer 越狱检测与沙箱包装
 

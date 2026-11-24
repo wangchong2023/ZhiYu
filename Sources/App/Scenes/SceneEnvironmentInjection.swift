@@ -42,5 +42,6 @@ struct SceneEnvironmentInjection: ViewModifier {
             .environmentObject(onboardingService)
             .environmentObject(MedalService.shared)
             .environment(\.locale, Localized.currentLocale)
+            .preferredColorScheme(themeManager.colorSchemeMode.preferredColorScheme)
     }
 }

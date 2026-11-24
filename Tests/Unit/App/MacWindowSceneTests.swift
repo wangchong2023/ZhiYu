@@ -11,8 +11,9 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
+@MainActor
 final class MacWindowSceneTests: XCTestCase {
     // MARK: - 登录态守卫纯函数断言
 

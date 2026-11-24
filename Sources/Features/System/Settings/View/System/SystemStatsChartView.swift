@@ -190,8 +190,9 @@ struct ChartView: View {
     }
     
     private func maxValue() -> Double {
-        let maxVal = stats.map { type == .requests ? Double($0.requests) : Double($0.tokens) }.max() ?? 100
-        return maxVal == 0 ? 100 : maxVal
+        let defaultChartMax: Double = 100
+        let maxVal = stats.map { type == .requests ? Double($0.requests) : Double($0.tokens) }.max() ?? defaultChartMax
+        return maxVal == 0 ? defaultChartMax : maxVal
     }
     
     private func formatDate(_ date: Date) -> String {

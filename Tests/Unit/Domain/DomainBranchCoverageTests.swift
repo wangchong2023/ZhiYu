@@ -10,7 +10,7 @@
 import XCTest
 import CryptoKit
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - 测试专用 EmbeddingProvider Mock
 
@@ -491,13 +491,8 @@ final class DomainFeatureGateManagerBranchTests: XCTestCase {
     func testGetQuotaLimitNoCacheGuestDisabledReturns0() throws {
         let manager = try XCTUnwrap(sut)
         manager.clearQuotasCache()
-        // DEBUG 模式下 isGuestModeAllowed = true，会返回 offlineColdStartQuotas
-        // 验证 DEBUG 模式下返回 Free 默认值
-        #if DEBUG
-        XCTAssertEqual(manager.getQuotaLimit(\.maxKnowledgePages), 1000, "DEBUG 模式无缓存应返回 Free 保底")
-        #else
         XCTAssertEqual(manager.getQuotaLimit(\.maxKnowledgePages), 0, "Release 模式无缓存禁用游客应返回 0")
-        #endif
+
     }
 
     // MARK: isFeatureEnabled 无缓存返回false（Release模式）
@@ -505,12 +500,8 @@ final class DomainFeatureGateManagerBranchTests: XCTestCase {
     func testIsFeatureEnabledNoCacheReturnsDefaultValue() throws {
         let manager = try XCTUnwrap(sut)
         manager.clearQuotasCache()
-        #if DEBUG
-        XCTAssertTrue(manager.isFeatureEnabled(\.customLocalLlmEnabled), "DEBUG 模式应返回 Free 保底 customLocalLlmEnabled = true")
-        XCTAssertFalse(manager.isFeatureEnabled(\.cloudLlmModelsEnabled), "DEBUG 模式应返回 Free 保底 cloudLlmModelsEnabled = false")
-        #else
         XCTAssertFalse(manager.isFeatureEnabled(\.customLocalLlmEnabled), "Release 模式无缓存应返回 false")
-        #endif
+
     }
 
     // MARK: clearQuotasCache 清空后 activeQuotas 为 nil

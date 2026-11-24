@@ -75,7 +75,7 @@ struct SubscriptionPurchaseFlow: View {
                 .padding(.horizontal, DesignTokens.Spacing.large)
         }
         .padding(.vertical, DesignTokens.Spacing.small)
-        .animation(.easeInOut(duration: 0.25), value: storeKitService.restoreMessage)
+        .animation(.appFast, value: storeKitService.restoreMessage)
     }
 
     // MARK: - 支付逻辑
@@ -130,7 +130,7 @@ struct SubscriptionPurchaseFlow: View {
         if success {
             // 仅在验证成功后才 finish 交易，避免 StoreKit 判定交易已完成导致无法重试
             await transaction.finish()
-            withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
+            withAnimation(.appProminent) {
                 isUpgradeSuccess = true
             }
             updateSessionToPro()
@@ -151,7 +151,7 @@ struct SubscriptionPurchaseFlow: View {
         let success = await storeKitService.restorePurchases()
         if success {
             if authService.currentUser?.isPro ?? false {
-                withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
+                withAnimation(.appProminent) {
                     isUpgradeSuccess = true
                 }
             }

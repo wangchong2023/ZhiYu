@@ -10,6 +10,7 @@
 //           4. 值类型 vs 引用类型注册差异
 //
 
+import UFPCoreTestMocks
 import XCTest
 @testable import UFPCore
 

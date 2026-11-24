@@ -16,7 +16,7 @@ import XCTest
 import UFPCore
 import Combine
 import Dependencies
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - SynthesisStore 导出/工具/Document 深度测试
 

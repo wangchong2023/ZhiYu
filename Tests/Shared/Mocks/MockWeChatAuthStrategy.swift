@@ -11,7 +11,7 @@
 
 import Foundation
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// 微信认证策略测试替身
 @MainActor

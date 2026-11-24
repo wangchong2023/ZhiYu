@@ -8,7 +8,7 @@
 
 import XCTest
 import UFPStorage
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class DatabaseWriterProviderTests: XCTestCase {
@@ -26,7 +26,7 @@ final class DatabaseWriterProviderTests: XCTestCase {
         // 保存状态，测试后恢复，避免污染其他测试
         savedDbWriter = DatabaseManager.shared.dbWriter
         savedGlobalWriter = DatabaseManager.shared.globalWriter
-        savedIsInTesting = DatabaseManager.shared.isInTesting
+        savedIsInTesting = DatabaseManager.shared.usesTransientStorage
         DatabaseManager.shared.reset()
     }
 
@@ -34,26 +34,26 @@ final class DatabaseWriterProviderTests: XCTestCase {
         // 恢复 DatabaseManager 的 writer 和测试标志
         DatabaseManager.shared.dbWriter = savedDbWriter
         DatabaseManager.shared.globalWriter = savedGlobalWriter
-        DatabaseManager.shared.isInTesting = savedIsInTesting
+        DatabaseManager.shared.usesTransientStorage = savedIsInTesting
         try? FileManager.default.removeItem(at: tempDir)
         tempDir = nil
         try await super.tearDown()
     }
 
-    // MARK: - Finding #17 修复验证：dbWriter 为 nil 时抛 ZhiYu.DatabaseError.notReady
+    // MARK: - Finding #17 修复验证：dbWriter 为 nil 时抛 ZhiYuUnitTestHost.DatabaseError.notReady
 
-    /// Finding #17 修复后：dbWriter 为 nil 时抛 ZhiYu.DatabaseError.notReady，而非静默降级创建内存库。
+    /// Finding #17 修复后：dbWriter 为 nil 时抛 ZhiYuUnitTestHost.DatabaseError.notReady，而非静默降级创建内存库。
     func testFinding17DbWriterNilThrowsNotReadyError() async {
         let provider = StubWriterProvider()
         XCTAssertNil(DatabaseManager.shared.dbWriter, "前置条件：dbWriter 应为 nil")
 
         do {
             _ = try await provider.dbWriter
-            XCTFail("Finding #17 修复后：dbWriter 为 nil 时应抛 ZhiYu.DatabaseError.notReady")
-        } catch ZhiYu.DatabaseError.notReady {
+            XCTFail("Finding #17 修复后：dbWriter 为 nil 时应抛 ZhiYuUnitTestHost.DatabaseError.notReady")
+        } catch ZhiYuUnitTestHost.DatabaseError.notReady {
             // 预期行为：抛错而非静默降级
         } catch {
-            XCTFail("应抛 ZhiYu.DatabaseError.notReady，实际：\(error)")
+            XCTFail("应抛 ZhiYuUnitTestHost.DatabaseError.notReady，实际：\(error)")
         }
     }
 
@@ -65,12 +65,12 @@ final class DatabaseWriterProviderTests: XCTestCase {
         for index in 0..<3 {
             do {
                 _ = try await provider.dbWriter
-                XCTFail("第 \(index) 次获取应抛 ZhiYu.DatabaseError.notReady")
+                XCTFail("第 \(index) 次获取应抛 ZhiYuUnitTestHost.DatabaseError.notReady")
             } catch {
-                if let dbError = error as? ZhiYu.DatabaseError, case .notReady = dbError {
+                if let dbError = error as? ZhiYuUnitTestHost.DatabaseError, case .notReady = dbError {
                     // 预期行为
                 } else {
-                    XCTFail("第 \(index) 次应抛 ZhiYu.DatabaseError.notReady，实际：\(error)")
+                    XCTFail("第 \(index) 次应抛 ZhiYuUnitTestHost.DatabaseError.notReady，实际：\(error)")
                 }
             }
         }
@@ -105,11 +105,11 @@ final class DatabaseWriterProviderTests: XCTestCase {
         // Finding #17 修复后：reset 后抛错而非降级
         do {
             _ = try await provider.dbWriter
-            XCTFail("reset 后 dbWriter 为 nil 时应抛 ZhiYu.DatabaseError.notReady")
-        } catch ZhiYu.DatabaseError.notReady {
+            XCTFail("reset 后 dbWriter 为 nil 时应抛 ZhiYuUnitTestHost.DatabaseError.notReady")
+        } catch ZhiYuUnitTestHost.DatabaseError.notReady {
             // 预期行为
         } catch {
-            XCTFail("应抛 ZhiYu.DatabaseError.notReady，实际：\(error)")
+            XCTFail("应抛 ZhiYuUnitTestHost.DatabaseError.notReady，实际：\(error)")
         }
     }
 }

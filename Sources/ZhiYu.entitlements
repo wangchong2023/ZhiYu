@@ -12,5 +12,10 @@
 	<true/>
 	<key>com.apple.security.network.client</key>
 	<true/>
+	<key>keychain-access-groups</key>
+	<array>
+		<string>$(AppIdentifierPrefix)top.izhiyu.app.mac</string>
+		<string>$(AppIdentifierPrefix)top.izhiyu.app</string>
+	</array>
 </dict>
 </plist>

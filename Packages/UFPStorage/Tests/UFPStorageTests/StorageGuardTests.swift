@@ -9,6 +9,7 @@
 //  核心职责：测试 SQLQuerySanitizer 通配符转义/空白防护，以及 TransactionGatekeeper 事务门禁排空语义。
 //
 
+import UFPStorageTestMocks
 import XCTest
 @testable import UFPStorage
 

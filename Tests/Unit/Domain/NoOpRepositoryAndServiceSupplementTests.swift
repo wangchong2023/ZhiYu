@@ -9,7 +9,7 @@
 
 import XCTest
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// Repository/Store/Service 相关 NoOp 实现补盲测试
 @MainActor

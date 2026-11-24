@@ -10,7 +10,7 @@
 //          覆盖完整链路 Bundle.infoDictionary → UI 展示字符串。
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 final class VersionInfoFormatterTests: XCTestCase {
 

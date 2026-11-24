@@ -11,7 +11,7 @@
 import XCTest
 import UFPCore
 import LocalAuthentication
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// Mock 生物识别提供者，用于控制测试环境下的认证结果
 @MainActor

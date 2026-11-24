@@ -16,7 +16,7 @@ import AppIntents
 #if os(watchOS)
 @testable import ZhiYuWatch
 #else
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 #endif
 
 /// 验证 watchOS SwiftUI 视图及表盘小组件 (Widget) 的加载和核心业务交互逻辑

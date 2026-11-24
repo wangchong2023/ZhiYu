@@ -9,7 +9,7 @@
 //  核心职责：PDF/Office 文档图片提取全覆盖测试
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class DocumentImageExtractorTests: XCTestCase {

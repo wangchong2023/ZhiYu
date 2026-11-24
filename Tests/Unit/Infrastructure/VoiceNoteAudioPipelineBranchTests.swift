@@ -13,7 +13,7 @@
 import XCTest
 import AVFoundation
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class VoiceNoteAudioPipelineBranchTests: XCTestCase {

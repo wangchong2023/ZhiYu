@@ -10,7 +10,7 @@
 //
 import XCTest
 import Network
-@preconcurrency @testable import ZhiYu
+@preconcurrency @testable import ZhiYuUnitTestHost
 @testable import UFPCore
 
 // MARK: - CollaborationService Tests

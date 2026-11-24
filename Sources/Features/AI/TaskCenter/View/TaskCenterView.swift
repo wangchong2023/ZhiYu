@@ -243,9 +243,9 @@ struct TaskCenterView: View {
             x: 0,
             y: isSelected ? DesignTokens.Spacing.small : DesignTokens.Spacing.tiny
         )
-        .scaleEffect(isSelected ? 1.03 : 1.0)
+        .scaleEffect(isSelected ? FeatureConstants.TaskCenterLayout.selectedScale : 1.0)
         // 当过滤了其他类型时，对未选中的卡片进行半透明度弱化
-        .opacity(isAnySelected && !isSelected ? 0.6 : 1.0)
+        .opacity(isAnySelected && !isSelected ? DesignTokens.Opacity.soft : 1.0)
         .animation(.fastAnimation, value: selectedFilterType)
         .contentShape(Rectangle())
         .onTapGesture {

@@ -13,7 +13,7 @@ import WatchConnectivity
 import WidgetKit
 import XCTest
 
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 import ZhiYuDomain
 
 @MainActor

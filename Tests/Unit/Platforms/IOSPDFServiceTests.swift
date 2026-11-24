@@ -12,7 +12,7 @@
 #if !os(watchOS)
 import XCTest
 import PDFKit
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class IOSPDFServiceTests: XCTestCase {

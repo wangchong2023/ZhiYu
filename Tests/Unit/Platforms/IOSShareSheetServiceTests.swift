@@ -12,7 +12,7 @@
 #if os(iOS) && !os(watchOS)
 import XCTest
 import UIKit
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class IOSShareSheetServiceTests: XCTestCase {

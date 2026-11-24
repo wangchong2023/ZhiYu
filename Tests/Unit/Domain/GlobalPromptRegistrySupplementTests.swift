@@ -11,7 +11,7 @@
 import XCTest
 import CryptoKit
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// GlobalPromptRegistry 与 PromptTemplateEngine 问题驱动深度补盲测试
 ///

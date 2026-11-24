@@ -11,7 +11,7 @@
 import XCTest
 import UFPCore
 import CryptoKit
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// Core/Security 6 组件问题驱动补充测试
 ///

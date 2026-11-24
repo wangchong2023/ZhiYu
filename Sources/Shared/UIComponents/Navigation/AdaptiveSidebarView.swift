@@ -18,6 +18,7 @@ import SwiftUI
 struct AdaptiveSidebarView: View {
     @Environment(AppStore.self) var store
     @Environment(Router.self) var router
+    @Environment(\.interfaceIdiom) private var idiom
     @Binding var selectedTab: AppTab
     
     var body: some View {
@@ -55,12 +56,20 @@ struct AdaptiveSidebarView: View {
                 VaultBadge()
             }
             #else
-            ToolbarItem(placement: .navigation) {
-                VaultBadge()
+            // macOS 端由 NavigationSplitView 的 appCustomSidebarToggle 统一按「折叠按钮 → VaultBadge」顺序渲染，
+            // 避免重复渲染及位置颠倒。
+            if idiom != .mac {
+                ToolbarItem(placement: .navigation) {
+                    VaultBadge()
+                }
             }
             #endif
-            ToolbarItem(placement: .automatic) {
-                UserProfileMenu()
+            // macOS 原生 NavigationSplitView 会把各列 toolbar 合并到窗口顶部，
+            // 内容区 appTabToolbar / appSubPageToolbar 已追加头像，此处不再重复注入。
+            if idiom != .mac {
+                ToolbarItem(placement: .automatic) {
+                    UserProfileMenu()
+                }
             }
         }
         .id(router.languageForceUpdate)

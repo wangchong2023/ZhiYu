@@ -14,7 +14,7 @@ import XCTest
 import UFPCore
 import Combine
 import Dependencies
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - AIWorkflowStore 建议深度测试（MARK 8-13：refactorSuggestions / removeRefactorSuggestion / potentialLinks / removePotentialLink / activePageAIResult / activeQuiz / insightStore）
 

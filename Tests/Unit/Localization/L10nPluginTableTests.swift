@@ -10,7 +10,7 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// Plugin 表 L10n 扩展测试（Plugin/Collaboration）
 final class L10nPluginTableTests: XCTestCase {

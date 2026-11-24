@@ -7,6 +7,7 @@
 //           以及 resetForTesting() 可逆重置生产链标记的修复行为。
 //
 
+import UFPCoreTestMocks
 import XCTest
 @testable import UFPCore
 

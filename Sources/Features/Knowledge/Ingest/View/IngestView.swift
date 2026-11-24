@@ -48,6 +48,7 @@ struct IngestView: View {
                 .padding(.horizontal)
                 .padding(.top, DesignTokens.Spacing.standardPadding)
                 .padding(.bottom, DesignTokens.Spacing.huge)
+                .appDesktopReadableWidth(DesignTokens.Metrics.macWideContentWidth)
             }
         }
         .appTabToolbar(title: L10n.Ingest.title)
@@ -229,7 +230,7 @@ struct IngestView: View {
                             HStack(spacing: DesignTokens.Spacing.small) {
                                 // 遍历用户可见页面类型，屏蔽 raw 选项
                                 ForEach(PageType.allVisibleCases, id: \.self) { type in
-                                    Button(action: { HapticFeedback.shared.trigger(.selection); withAnimation(.spring(response: 0.3)) { coordinator.newType = type } }) {
+                                    Button(action: { HapticFeedback.shared.trigger(.selection); withAnimation(.appStandard) { coordinator.newType = type } }) {
                                         HStack(spacing: DesignTokens.Spacing.tightPadding) { Image(systemName: type.icon); Text(type.displayName) }
                                         .font(.subheadline.weight(coordinator.newType == type ? .bold : .medium)).padding(.horizontal, DesignTokens.Spacing.medium).padding(.vertical, DesignTokens.Spacing.small)
                                         .background(coordinator.newType == type ? Color.fromModelColorName(type.colorName).opacity(DesignTokens.Opacity.medium) : Color.appCard.opacity(DesignTokens.Opacity.prominent))

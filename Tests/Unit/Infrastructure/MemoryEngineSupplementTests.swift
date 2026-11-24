@@ -12,7 +12,7 @@ import XCTest
 import UFPCore
 import Dependencies
 import Combine
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - NativeMemoryEngine / SwarmMemoryAdapter 补盲测试
 

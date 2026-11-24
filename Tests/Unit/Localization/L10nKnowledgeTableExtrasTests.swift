@@ -10,7 +10,7 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// Knowledge 表 L10n 扩展补充测试（Knowledge/Editor/Quiz/Vault）
 /// 已有 L10nKnowledgeTableTests 覆盖 Creation/Tag

@@ -14,7 +14,7 @@ import XCTest
 import UFPCore
 import Combine
 import Dependencies
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - SynthesisStore 持久化 CRUD 深度测试
 

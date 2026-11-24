@@ -10,7 +10,7 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// Dashboard 表 L10n 扩展深度测试
 final class L10nDashboardDeepTests: XCTestCase {

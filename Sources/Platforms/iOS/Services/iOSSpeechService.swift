@@ -54,7 +54,7 @@ final class iOSSpeechService: NSObject, SpeechServiceProtocol {
     override init() {
         super.init()
         loadSupportedLanguages()
-        checkPermission()
+        refreshPermissionStatus()
         loadRecordings()
     }
 
@@ -175,6 +175,7 @@ final class iOSSpeechService: NSObject, SpeechServiceProtocol {
     // MARK: - no-op 回退（非 Speech 平台）
 
 #if !canImport(Speech)
+    func refreshPermissionStatus() {}
     func checkPermission() {}
     func loadSupportedLanguages() {
         selectedLanguage = Self.detectPreferredSpeechLanguage()

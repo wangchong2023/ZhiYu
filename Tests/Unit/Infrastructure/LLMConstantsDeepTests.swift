@@ -13,7 +13,7 @@
 
 import XCTest
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - LLMConstants 常量完整性测试
 

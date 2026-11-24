@@ -10,7 +10,7 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// Knowledge 表 L10n 扩展测试（Creation/Tag）
 final class L10nKnowledgeTableTests: XCTestCase {

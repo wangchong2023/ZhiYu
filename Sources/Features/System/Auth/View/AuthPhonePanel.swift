@@ -19,23 +19,45 @@ struct AuthPhonePanel: View {
     @Binding var showTermsSheet: Bool
     var handleAuth: () -> Void
     @Environment(AuthService.self) var authService
+    @Environment(\.interfaceIdiom) private var idiom
 
     var body: some View {
-        VStack(spacing: DesignTokens.Spacing.large) {
-            // 手机号掩码显示：优先展示运营商 SDK 预取的掩码号，已登录后回退到 currentUser.phone
-            Text(authService.carrierMaskedPhone ?? authService.currentUser?.phone?.maskedPhoneNumber ?? L10n.Auth.phonePlaceholder)
-                .authHeroTextStyle()
+        let isDesktop = AuthView.isDesktopLayout(idiom)
+        Group {
+            if isDesktop {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.large) {
+                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
+                        Text(authService.carrierMaskedPhone ?? authService.currentUser?.phone?.maskedPhoneNumber ?? L10n.Auth.login)
+                            .font(.system(size: DesignTokens.Typography.titleFontSize, weight: .bold, design: .rounded))
+                            .foregroundStyle(.appText)
 
-            // 登录动作按钮
-            actionButton
+                        Text(L10n.Auth.overseasSubtitle)
+                            .font(.subheadline)
+                            .foregroundStyle(.appSecondary)
+                    }
 
-            Spacer().frame(height: DesignTokens.Spacing.large)
+                    actionButton
 
-            // 协议勾选（靠近卡片底部）
-            agreementSection
+                    agreementSection
+                }
+            } else {
+                VStack(spacing: DesignTokens.Spacing.large) {
+                    // 手机号掩码显示：优先展示运营商 SDK 预取的掩码号，已登录后回退到 currentUser.phone
+                    Text(authService.carrierMaskedPhone ?? authService.currentUser?.phone?.maskedPhoneNumber ?? L10n.Auth.phonePlaceholder)
+                        .authHeroTextStyle()
+
+                    // 登录动作按钮
+                    actionButton
+
+                    Spacer().frame(height: DesignTokens.Spacing.large)
+
+                    // 协议勾选（靠近卡片底部）
+                    agreementSection
+                }
+                .padding(DesignTokens.Spacing.wide)
+                .appContainer(cornerRadius: DesignTokens.Spacing.largeRadius)
+            }
         }
-        .padding(DesignTokens.Spacing.wide)
-        .appContainer(cornerRadius: DesignTokens.Spacing.largeRadius)
     }
 
     private var actionButton: some View {
@@ -52,6 +74,9 @@ struct AuthPhonePanel: View {
             }
             .authActionButtonStyle()
         }
+        // macOS 默认 Button 样式会在自定义胶囊背景外再套一层系统 bezel，
+        // 使用 plain 样式让 label 自绘的胶囊成为唯一可见外观。
+        .buttonStyle(.plain)
         .disabled(isLoading)
         .accessibilityIdentifier("oneClickLoginButton")
     }

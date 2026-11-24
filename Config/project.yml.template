@@ -131,8 +131,7 @@ targetTemplates:
       - package: GRDB
       - package: ZIPFoundation
 
-targets:
-  ZhiYu:
+  IOSApplicationTemplate:
     templates:
       - BaseAppTemplate
     type: application
@@ -145,6 +144,7 @@ targets:
           - "Platforms/iOS/Widgets/**"
           - "MacInfo.plist"
           - "Domain/Contracts/Generated/**"
+          - "App/Core/ProductionAppLauncher.swift"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: top.izhiyu.app
@@ -166,11 +166,10 @@ targets:
         product: SwiftJSONSanitizer
       - package: PartialJSON
         product: PartialJSON
-      - target: ZhiYuWidgets
       - framework: Frameworks/WechatOpenSDK.xcframework
       - framework: Frameworks/ATAuthSDK_D.xcframework
 
-  ZhiYuMac:
+  MacApplicationTemplate:
     templates:
       - BaseAppTemplate
     type: application
@@ -185,6 +184,7 @@ targets:
           - "Base.lproj/**"
           - "LaunchScreen.storyboard"
           - "Domain/Contracts/Generated/**"
+          - "App/Core/ProductionAppLauncher.swift"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: top.izhiyu.app.mac
@@ -207,6 +207,21 @@ targets:
         product: SwiftJSONSanitizer
       - package: PartialJSON
         product: PartialJSON
+
+targets:
+  ZhiYu:
+    templates:
+      - IOSApplicationTemplate
+    sources:
+      - path: Sources/App/Core/ProductionAppLauncher.swift
+    dependencies:
+      - target: ZhiYuWidgets
+
+  ZhiYuMac:
+    templates:
+      - MacApplicationTemplate
+    sources:
+      - path: Sources/App/Core/ProductionAppLauncher.swift
 
   ZhiYuWatch:
     templates:
@@ -311,6 +326,65 @@ targets:
       - package: UFPStorage
       - package: GRDB
 
+  # 测试源码只允许由以下独立应用编译，正式应用不依赖这些 target。
+  ZhiYuUnitTestHost:
+    templates:
+      - IOSApplicationTemplate
+    sources:
+      - path: Tests/Host/UnitTestHostApp.swift
+      - path: Tests/TestSupport
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: top.izhiyu.testing.unit
+        CODE_SIGN_ENTITLEMENTS: ""
+        SKIP_INSTALL: YES
+
+  ZhiYuUITestHost:
+    templates:
+      - IOSApplicationTemplate
+    sources:
+      - path: Tests/Host/UITestHostLauncher.swift
+      - path: Tests/Host/StorageIsolationProbeApp.swift
+      - path: Tests/TestSupport
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: top.izhiyu.testing.ui
+        CODE_SIGN_ENTITLEMENTS: ""
+        SKIP_INSTALL: YES
+
+  ZhiYuMacUnitTestHost:
+    templates:
+      - MacApplicationTemplate
+    sources:
+      - path: Tests/Host/UnitTestHostApp.swift
+      - path: Tests/TestSupport
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: top.izhiyu.testing.mac.unit
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGN_ENTITLEMENTS: ""
+        SKIP_INSTALL: YES
+      configs:
+        Release:
+          CODE_SIGN_ENTITLEMENTS: ""
+
+  ZhiYuMacUITestHost:
+    templates:
+      - MacApplicationTemplate
+    sources:
+      - path: Tests/Host/UITestHostLauncher.swift
+      - path: Tests/Host/StorageIsolationProbeApp.swift
+      - path: Tests/TestSupport
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: top.izhiyu.testing.mac.ui
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGN_ENTITLEMENTS: ""
+        SKIP_INSTALL: YES
+      configs:
+        Release:
+          CODE_SIGN_ENTITLEMENTS: ""
+
   ZhiYuTests:
     type: bundle.unit-test
     platform: iOS
@@ -319,6 +393,9 @@ targets:
         excludes:
           - "UITests/**"
           - "UI/**"
+          - "UI_Mac/**"
+          - "Host/**"
+          - "TestSupport/**"
           - "Platforms/Watch*.swift"
       - path: Sources
         includes:
@@ -336,12 +413,14 @@ targets:
           - "Platforms/iOS/Widgets/WidgetSharedViews.swift"
           - "Core/Base/Constants/AppConstants.swift"
           - "Platforms/Shared/PlatformConstants.swift"
+      - path: Packages/UFPCore/Sources/UFPCoreTestMocks/ServiceContainer+Testing.swift
+      - path: Packages/UFPStorage/Sources/UFPStorageTestMocks/TransactionGatekeeper+Testing.swift
     settings:
       base:
         SWIFT_STRICT_CONCURRENCY: minimal
         PRODUCT_BUNDLE_IDENTIFIER: top.izhiyu.app.ZhiYuTests
     dependencies:
-      - target: ZhiYu
+      - target: ZhiYuUnitTestHost
       - package: SnapshotTesting
 
   ZhiYuUITests:
@@ -351,9 +430,10 @@ targets:
       - path: Tests/UI
     settings:
       base:
+        TEST_TARGET_NAME: ZhiYuUITestHost
         PRODUCT_BUNDLE_IDENTIFIER: top.izhiyu.app.ZhiYuUITests
     dependencies:
-      - target: ZhiYu
+      - target: ZhiYuUITestHost
       - package: SnapshotTesting
 
   ZhiYuWatchTests:
@@ -384,7 +464,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: top.izhiyu.app.ZhiYuMacTests
     dependencies:
-      - target: ZhiYuMac
+      - target: ZhiYuMacUnitTestHost
 
   ZhiYuMacUITests:
     type: bundle.ui-testing
@@ -392,17 +472,19 @@ targets:
     deploymentTarget: "27.0"
     sources:
       - path: Tests/UI_Mac
+      - path: Tests/UI/StorageIsolationUITests.swift
     settings:
       base:
+        TEST_TARGET_NAME: ZhiYuMacUITestHost
         PRODUCT_BUNDLE_IDENTIFIER: top.izhiyu.app.ZhiYuMacUITests
     dependencies:
-      - target: ZhiYuMac
+      - target: ZhiYuMacUITestHost
 
 schemes:
   ZhiYu:
     build:
       targets:
-        ZhiYu: all
+        ZhiYu: [run, profile, archive, analyze]
       preActions:
         - script: "if [ -f \"$WORKSPACE_PATH/../Config/.env.local\" ]; then . \"$WORKSPACE_PATH/../Config/.env.local\"; fi"
           name: "[Auto-Sync] Load Environment"
@@ -418,7 +500,7 @@ schemes:
   ZhiYuMac:
     build:
       targets:
-        ZhiYuMac: all
+        ZhiYuMac: [run, profile, archive, analyze]
       preActions:
         - script: "if [ -f \"$WORKSPACE_PATH/../Config/.env.local\" ]; then . \"$WORKSPACE_PATH/../Config/.env.local\"; fi"
           name: "[Auto-Sync] Load Environment"
@@ -447,3 +529,35 @@ schemes:
         - ZhiYuWatchTests
     run:
       executable: ZhiYuWatch
+
+  ZhiYuUnitTests:
+    build:
+      targets:
+        ZhiYuUnitTestHost: [test]
+    test:
+      targets:
+        - ZhiYuTests
+
+  ZhiYuUITests:
+    build:
+      targets:
+        ZhiYuUITestHost: [test]
+    test:
+      targets:
+        - ZhiYuUITests
+
+  ZhiYuMacUnitTests:
+    build:
+      targets:
+        ZhiYuMacUnitTestHost: [test]
+    test:
+      targets:
+        - ZhiYuMacTests
+
+  ZhiYuMacUITests:
+    build:
+      targets:
+        ZhiYuMacUITestHost: [test]
+    test:
+      targets:
+        - ZhiYuMacUITests

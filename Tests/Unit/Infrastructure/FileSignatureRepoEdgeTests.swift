@@ -9,7 +9,7 @@
 
 import XCTest
 import UFPStorage
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 final class FileSignatureRepoEdgeTests: XCTestCase {
 
@@ -19,7 +19,7 @@ final class FileSignatureRepoEdgeTests: XCTestCase {
     override func setUp() async throws {
         try await super.setUp()
         dbQueue = try DatabaseQueue()
-        try await DatabaseManager.shared.setupForTesting(with: dbQueue)
+        try await DatabaseManager.shared.setupInMemory(with: dbQueue)
         // SQLiteFileSignatureRepository 持有传入的 dbWriter
         let writer = await DatabaseManager.shared.globalWriter
         guard let unwrappedWriter = writer else {

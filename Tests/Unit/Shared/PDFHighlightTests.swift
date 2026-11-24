@@ -8,7 +8,7 @@
 
 import XCTest
 import SwiftUI
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 final class PDFHighlightTests: XCTestCase {
 

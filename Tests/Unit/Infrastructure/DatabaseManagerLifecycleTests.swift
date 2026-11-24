@@ -10,7 +10,7 @@
 
 import XCTest
 import UFPStorage
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class DatabaseManagerLifecycleTests: XCTestCase {
@@ -28,7 +28,7 @@ final class DatabaseManagerLifecycleTests: XCTestCase {
         // 保存状态，测试后恢复，避免污染其他测试
         savedDbWriter = DatabaseManager.shared.dbWriter
         savedGlobalWriter = DatabaseManager.shared.globalWriter
-        savedIsInTesting = DatabaseManager.shared.isInTesting
+        savedIsInTesting = DatabaseManager.shared.usesTransientStorage
         // 重置事务门禁（Finding #18 修复后的新机制）
         await DatabaseManager.shared.transactionGatekeeper.reset()
         DatabaseManager.shared.reset()
@@ -38,7 +38,7 @@ final class DatabaseManagerLifecycleTests: XCTestCase {
         // 恢复 DatabaseManager 的 writer 和测试标志
         DatabaseManager.shared.dbWriter = savedDbWriter
         DatabaseManager.shared.globalWriter = savedGlobalWriter
-        DatabaseManager.shared.isInTesting = savedIsInTesting
+        DatabaseManager.shared.usesTransientStorage = savedIsInTesting
         await DatabaseManager.shared.transactionGatekeeper.reset()
         try? FileManager.default.removeItem(at: tempDir)
         tempDir = nil
@@ -108,12 +108,12 @@ final class DatabaseManagerLifecycleTests: XCTestCase {
         // 排空期间 acquire 应抛 draining
         do {
             try await DatabaseManager.shared.incrementActiveTransactions()
-            XCTFail("排空期间应抛 ZhiYu.DatabaseError.draining")
+            XCTFail("排空期间应抛 ZhiYuUnitTestHost.DatabaseError.draining")
         } catch {
-            if let dbError = error as? ZhiYu.DatabaseError, case .draining = dbError {
+            if let dbError = error as? ZhiYuUnitTestHost.DatabaseError, case .draining = dbError {
                 // 预期行为
             } else {
-                XCTFail("应抛 ZhiYu.DatabaseError.draining，实际：\(error)")
+                XCTFail("应抛 ZhiYuUnitTestHost.DatabaseError.draining，实际：\(error)")
             }
         }
         // 释放活跃事务，让 drain 完成
@@ -150,15 +150,15 @@ final class DatabaseManagerLifecycleTests: XCTestCase {
         // 模拟 Repository 通过 DatabaseWriterProvider 获取 writer
         let provider = TestWriterProvider()
 
-        // Finding #17 修复后：应抛 ZhiYu.DatabaseError.notReady，而非静默降级创建内存库
+        // Finding #17 修复后：应抛 ZhiYuUnitTestHost.DatabaseError.notReady，而非静默降级创建内存库
         do {
             _ = try await provider.dbWriter
-            XCTFail("Finding #17 修复后：dbWriter 为 nil 时应抛 ZhiYu.DatabaseError.notReady")
+            XCTFail("Finding #17 修复后：dbWriter 为 nil 时应抛 ZhiYuUnitTestHost.DatabaseError.notReady")
         } catch {
-            if let dbError = error as? ZhiYu.DatabaseError, case .notReady = dbError {
+            if let dbError = error as? ZhiYuUnitTestHost.DatabaseError, case .notReady = dbError {
                 // 预期行为：抛错而非降级
             } else {
-                XCTFail("应抛 ZhiYu.DatabaseError.notReady，实际：\(error)")
+                XCTFail("应抛 ZhiYuUnitTestHost.DatabaseError.notReady，实际：\(error)")
             }
         }
     }
@@ -215,13 +215,13 @@ final class DatabaseManagerLifecycleTests: XCTestCase {
     // MARK: - DatabaseError 新增 case
 
     func testDatabaseError_notReady() {
-        let error = ZhiYu.DatabaseError.notReady
-        XCTAssertNotNil(error, "ZhiYu.DatabaseError.notReady 应存在")
+        let error = ZhiYuUnitTestHost.DatabaseError.notReady
+        XCTAssertNotNil(error, "ZhiYuUnitTestHost.DatabaseError.notReady 应存在")
     }
 
     func testDatabaseError_draining() {
-        let error = ZhiYu.DatabaseError.draining
-        XCTAssertNotNil(error, "ZhiYu.DatabaseError.draining 应存在")
+        let error = ZhiYuUnitTestHost.DatabaseError.draining
+        XCTAssertNotNil(error, "ZhiYuUnitTestHost.DatabaseError.draining 应存在")
     }
 }
 

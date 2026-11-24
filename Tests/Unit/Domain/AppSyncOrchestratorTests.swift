@@ -11,7 +11,7 @@
 
 import XCTest
 import Combine
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// Mock 云存储提供商
 final class MockCloudStorageProvider: CloudStorageProvider, @unchecked Sendable {

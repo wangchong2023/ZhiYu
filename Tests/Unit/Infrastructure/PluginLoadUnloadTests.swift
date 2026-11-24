@@ -9,7 +9,7 @@
 //  核心职责：针对插件加载/卸载端到端流程开展自动化单元测试验证。
 //
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 @testable import UFPCore
 
 #if canImport(JavaScriptCore)

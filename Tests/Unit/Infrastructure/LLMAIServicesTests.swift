@@ -9,7 +9,7 @@
 //  核心职责：针对 LLMAIServices 开展自动化单元测试验证。
 //
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - Mock LLM Client
 final class MockLLMClient: LLMClientProtocol, @unchecked Sendable {

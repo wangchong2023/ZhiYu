@@ -27,14 +27,34 @@ extension DesignTokens {
 
         // MARK: - 2. 动画时长 (Durations)
 
+        /// 极速微交互时长 (0.1s)
+        public static let microDuration: Double = 0.1
         /// 标准线性动画时长 (0.2s)
         public static let standardDuration: Double = 0.2
         /// 快速动画时长 (0.2s)
         public static let fastDuration: Double = 0.2
         /// 慢速动画时长 (0.5s)
         public static let slowDuration: Double = 0.5
+        /// 指标填充动画时长 (0.8s)
+        public static let chartFillDuration: Double = 0.8
+        /// 单圈旋转动画时长 (1.0s)
+        public static let spinDuration: Double = 1.0
         /// 宽松动画时长 (1.5s)
         public static let looseDuration: Double = 1.5
+        /// 环境呼吸循环时长 (2.0s)
+        public static let ambientBreathDuration: Double = 2.0
+        /// 启动页长过渡时长 (3.0s)
+        public static let splashFadeOutDuration: Double = 3.0
+        /// 状态横幅循环时长 (4.0s)
+        public static let bannerLoopDuration: Double = 4.0
+        /// 环境轨道旋转时长 (6.0s)
+        public static let ambientOrbitDuration: Double = 6.0
+        /// 锁屏慢速漂移周期 (10.0s)
+        public static let ambientSlowDriftDuration: Double = 10.0
+        /// 锁屏极慢漂移周期 (20.0s)
+        public static let ambientVerySlowDriftDuration: Double = 20.0
+        /// 锁屏超慢漂移周期 (25.0s)
+        public static let ambientUltraSlowDriftDuration: Double = 25.0
 
         // MARK: - 3. 弹性动效参数 (Spring Parameters)
 

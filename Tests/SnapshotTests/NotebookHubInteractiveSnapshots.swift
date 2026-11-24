@@ -14,7 +14,7 @@ import XCTest
 import SwiftUI
 import SnapshotTesting
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class NotebookHubInteractiveSnapshots: XCTestCase {

@@ -11,7 +11,7 @@
 
 import XCTest
 import CoreGraphics
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 final class GraphCycleAndSelfLoopTests: XCTestCase {
 

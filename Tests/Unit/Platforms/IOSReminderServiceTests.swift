@@ -14,7 +14,7 @@
 #if !os(watchOS)
 import XCTest
 @preconcurrency import EventKit
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// 测试专用：包装非 Sendable 的 EKCalendar，使其可在 @Sendable 闭包中安全捕获。
 /// EKCalendar 在测试中为 mock 对象，不会真正跨线程共享，`@unchecked Sendable` 安全。

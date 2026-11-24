@@ -16,6 +16,7 @@
 //     （注意：竞态窗口极窄，此测试主要作为回归保护，不能保证 100% 复现 bug）
 //
 
+import UFPCoreTestMocks
 import XCTest
 @testable import UFPCore
 

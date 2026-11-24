@@ -7,6 +7,7 @@
 //           Service Locator 模式要求 Last-Write-Wins，且注册后立即可解析。
 //
 
+import UFPCoreTestMocks
 import XCTest
 @testable import UFPCore
 

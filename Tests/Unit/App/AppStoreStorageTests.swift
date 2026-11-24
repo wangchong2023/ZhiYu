@@ -10,7 +10,7 @@
 //
 import XCTest
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// 核心状态管理器测试 (Expert QA Item #4)
 /// 验证 AppStore 的 CRUD 逻辑、发布订阅一致性及内存状态安全。

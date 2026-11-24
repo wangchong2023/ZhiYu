@@ -37,7 +37,7 @@ open class MacBaseUITestCase: XCTestCase {
         }
 
         continueAfterFailure = false
-        app = XCUIApplication(bundleIdentifier: "top.izhiyu.app.mac")
+        app = XCUIApplication()
 
         // 游客模式：--uitesting 会令 ZhiYuApp 将 AuthSession 置为游客，直达主界面无需登录
         app.launchArguments = [

@@ -9,17 +9,20 @@
 //
 import SwiftUI
 import Dependencies
+import UFPCore
 import UFPDesignSystem
 
 /// 第三方 OAuth 登录面板
 struct AuthOAuthPanel: View {
     @Environment(AuthService.self) var authService
+    @Environment(\.interfaceIdiom) private var idiom
     @Binding var isLoading: Bool
     @Binding var isAgreementChecked: Bool
     @Binding var errorMessage: String?
     var handleThirdPartyLogin: (any AuthStrategy) -> Void
 
     var body: some View {
+        let isDesktop = AuthView.isDesktopLayout(idiom)
         VStack(spacing: DesignTokens.Spacing.large) {
             HStack {
                 Rectangle().fill(Color.appBorder.opacity(DesignTokens.Opacity.shadow)).frame(height: DesignTokens.Spacing.borderWidth)
@@ -32,14 +35,14 @@ struct AuthOAuthPanel: View {
                 Rectangle().fill(Color.appBorder.opacity(DesignTokens.Opacity.shadow)).frame(height: DesignTokens.Spacing.borderWidth)
             }
 
-            HStack(spacing: DesignTokens.Spacing.large) {
-                ThirdPartyIconButton(id: FeatureConstants.OAuthProviderId.apple, icon: DesignTokens.Icons.appleLogo, isSystem: true, color: .primary) {
+            HStack(spacing: isDesktop ? DesignTokens.Spacing.medium : DesignTokens.Spacing.large) {
+                ThirdPartyIconButton(id: FeatureConstants.OAuthProviderId.apple, icon: DesignTokens.Icons.appleLogo, isSystem: true, color: .primary, isDesktopStyle: isDesktop) {
                     handleThirdPartyLogin(AppleAuthStrategy())
                 }
-                ThirdPartyIconButton(id: FeatureConstants.OAuthProviderId.google, icon: DesignTokens.Icons.googleLogo, isSystem: false, color: Color.theme.blue) {
+                ThirdPartyIconButton(id: FeatureConstants.OAuthProviderId.google, icon: DesignTokens.Icons.googleLogo, isSystem: false, color: Color.theme.blue, isDesktopStyle: isDesktop) {
                     handleThirdPartyLogin(GoogleAuthStrategy())
                 }
-                ThirdPartyIconButton(id: FeatureConstants.OAuthProviderId.github, icon: DesignTokens.Icons.githubLogo, isSystem: false, color: .primary) {
+                ThirdPartyIconButton(id: FeatureConstants.OAuthProviderId.github, icon: DesignTokens.Icons.githubLogo, isSystem: false, color: .primary, isDesktopStyle: isDesktop) {
                     handleThirdPartyLogin(GitHubAuthStrategy())
                 }
             }
@@ -64,50 +67,79 @@ struct ThirdPartyIconButton: View {
     let icon: String
     let isSystem: Bool
     let color: Color
+    let isDesktopStyle: Bool
     let action: () -> Void
+    @State private var isHovered = false
 
-    init(id: String, icon: String, isSystem: Bool = true, color: Color, action: @escaping () -> Void) {
+    init(id: String, icon: String, isSystem: Bool = true, color: Color, isDesktopStyle: Bool = false, action: @escaping () -> Void) {
         self.id = id
         self.icon = icon
         self.isSystem = isSystem
         self.color = color
+        self.isDesktopStyle = isDesktopStyle
         self.action = action
     }
 
     var body: some View {
         Button(action: action) {
-            ZStack {
-                Circle()
-                    .fill(Color.appCard)
-                    .frame(width: DesignTokens.Spacing.Auth.thirdPartyIconContainerSize, height: DesignTokens.Spacing.Auth.thirdPartyIconContainerSize)
-                    .shadow(color: .primary.opacity(DesignTokens.Opacity.ghost), radius: DesignTokens.Spacing.tiny, y: DesignTokens.Spacing.atomic)
+            if isDesktopStyle {
+                let cardShape = RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius, style: .continuous)
+                ZStack {
+                    cardShape
+                        .fill(Color.appCard.opacity(isHovered ? DesignTokens.Opacity.prominent : DesignTokens.Opacity.medium))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: DesignTokens.Spacing.Auth.thirdPartyIconContainerSize)
+                        .overlay(
+                            cardShape
+                                .strokeBorder(
+                                    Color.appBorder.opacity(isHovered ? DesignTokens.Opacity.medium : DesignTokens.Opacity.soft),
+                                    lineWidth: DesignTokens.Spacing.borderWidth
+                                )
+                        )
 
-                if isSystem {
-                    Image(systemName: icon)
-                        .font(.system(size: DesignTokens.Spacing.Auth.thirdPartyIconFontSize))
-                        .foregroundStyle(color)
-                } else {
-                    if icon == FeatureConstants.AssetName.githubLogo {
-                        Image(icon)
-                            .renderingMode(.template)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: DesignTokens.Spacing.Auth.thirdPartyIconFontSize, height: DesignTokens.Spacing.Auth.thirdPartyIconFontSize)
-                            .foregroundStyle(color)
-                    } else {
-                        Image(icon)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: DesignTokens.Spacing.Auth.thirdPartyIconFontSize, height: DesignTokens.Spacing.Auth.thirdPartyIconFontSize)
-                    }
+                    providerIcon
                 }
+                .contentShape(cardShape)
+            } else {
+                ZStack {
+                    Circle()
+                        .fill(Color.appCard)
+                        .frame(width: DesignTokens.Spacing.Auth.thirdPartyIconContainerSize, height: DesignTokens.Spacing.Auth.thirdPartyIconContainerSize)
+                        .shadow(color: .primary.opacity(DesignTokens.Opacity.ghost), radius: DesignTokens.Spacing.tiny, y: DesignTokens.Spacing.atomic)
+
+                    providerIcon
+                }
+                .overlay(
+                    Circle()
+                        .stroke(color.opacity(DesignTokens.Opacity.soft), lineWidth: DesignTokens.Spacing.borderWidth)
+                )
             }
-            .overlay(
-                Circle()
-                    .stroke(color.opacity(DesignTokens.Opacity.soft), lineWidth: DesignTokens.Spacing.borderWidth)
-            )
         }
         .buttonStyle(.plain)
+        .onHoverIfAvailable { hovering in
+            isHovered = hovering
+        }
         .accessibilityIdentifier(id)
+    }
+
+    @ViewBuilder
+    private var providerIcon: some View {
+        if isSystem {
+            Image(systemName: icon)
+                .font(.system(size: DesignTokens.Spacing.Auth.thirdPartyIconFontSize))
+                .foregroundStyle(color)
+        } else if icon == FeatureConstants.AssetName.githubLogo {
+            Image(icon)
+                .renderingMode(.template)
+                .resizable()
+                .scaledToFit()
+                .frame(width: DesignTokens.Spacing.Auth.thirdPartyIconFontSize, height: DesignTokens.Spacing.Auth.thirdPartyIconFontSize)
+                .foregroundStyle(color)
+        } else {
+            Image(icon)
+                .resizable()
+                .scaledToFit()
+                .frame(width: DesignTokens.Spacing.Auth.thirdPartyIconFontSize, height: DesignTokens.Spacing.Auth.thirdPartyIconFontSize)
+        }
     }
 }

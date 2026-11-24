@@ -31,7 +31,7 @@ struct ScaleOnHoverModifier: ViewModifier {
         content
             .scaleEffect(isHovered ? scale : 1.0)
             .onHover { hovering in
-                withAnimation(.spring(response: 0.25, dampingFraction: 0.65)) {
+                withAnimation(.appProminent) {
                     isHovered = hovering
                 }
             }
@@ -91,7 +91,7 @@ struct GlowingNeonBorderModifier: ViewModifier {
                     )
                     // 渐变外光圈发光，营造呼吸高亮
                     .shadow(color: isGlowing ? (gradientColors.first ?? .blue).opacity(DesignTokens.Opacity.disabled) : .clear, radius: isGlowing ? 6 : 0)
-                    .animation(.easeInOut(duration: 0.35), value: isGlowing)
+                    .animation(.easeInOut(duration: DesignTokens.Animations.springResponse), value: isGlowing)
             )
     }
 }

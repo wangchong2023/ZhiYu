@@ -13,7 +13,7 @@ import WatchConnectivity
 #if os(watchOS)
 @testable import ZhiYuWatch
 #else
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 #endif
 
 // MARK: - 跨端同步测试载荷定义 (对齐 WATCHOS_DESIGN_GUIDELINES.md)

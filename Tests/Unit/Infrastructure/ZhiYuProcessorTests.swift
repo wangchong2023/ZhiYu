@@ -11,7 +11,7 @@
 import XCTest
 import SwiftUI
 import UFPStorage
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - 文档物理格式探测自动分类 (DocumentFormat) 单元测试
 @MainActor

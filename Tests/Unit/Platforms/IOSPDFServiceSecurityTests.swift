@@ -9,7 +9,7 @@
 import XCTest
 import Foundation
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 #if !os(watchOS)
 @MainActor

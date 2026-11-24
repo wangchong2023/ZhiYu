@@ -45,7 +45,7 @@
 	<key>NSCameraUsageDescription</key>
 	<string>ZhiYu needs camera access to scan document text (OCR).</string>
 	<key>NSFaceIDUsageDescription</key>
-	<string>We need Face ID to protect your private knowledge vault.</string>
+	<string>ZhiYu needs Face ID to protect your privacy vault.</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright © 2026 ZhiYu. All rights reserved.</string>
 	<key>NSMicrophoneUsageDescription</key>

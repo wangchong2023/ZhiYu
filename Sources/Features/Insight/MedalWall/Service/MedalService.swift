@@ -43,20 +43,27 @@ final class MedalService: ObservableObject, TestStateResettable {
     @Published var newlyEarnedMedal: Medal?
     @Published var earnedMedalIDs: Set<String> = []
 
+    private enum MedalThreshold {
+        static let first: Int = 1
+        static let bronze: Int = 5
+        static let silver: Int = 10
+        static let gold: Int = 100
+    }
+
     let allMedals: [Medal] = [
         // 1. 探索奖章
-        Medal(id: MedalConstants.MedalID.firstPage, titleKey: MedalConstants.L10nKey.firstPageTitle, descKey: MedalConstants.L10nKey.firstPageDesc, icon: DesignTokens.Icons.sparkles, colorHex: MedalConstants.ColorHex.gold, threshold: 1, category: .explore),
+        Medal(id: MedalConstants.MedalID.firstPage, titleKey: MedalConstants.L10nKey.firstPageTitle, descKey: MedalConstants.L10nKey.firstPageDesc, icon: DesignTokens.Icons.sparkles, colorHex: MedalConstants.ColorHex.gold, threshold: MedalThreshold.first, category: .explore),
 
         // 2. 积累奖章 (节点数)
-        Medal(id: MedalConstants.MedalID.nodes5, titleKey: MedalConstants.L10nKey.nodes5Title, descKey: MedalConstants.L10nKey.nodes5Desc, icon: DesignTokens.Icons.docBadgePlus, colorHex: MedalConstants.ColorHex.skyBlue, threshold: 5, category: .accumulation),
-        Medal(id: MedalConstants.MedalID.nodes10, titleKey: MedalConstants.L10nKey.nodes10Title, descKey: MedalConstants.L10nKey.nodes10Desc, icon: DesignTokens.Icons.booksVerticalFill, colorHex: MedalConstants.ColorHex.cyan, threshold: 10, category: .accumulation),
-        Medal(id: MedalConstants.MedalID.nodes100, titleKey: MedalConstants.L10nKey.nodes100Title, descKey: MedalConstants.L10nKey.nodes100Desc, icon: DesignTokens.Icons.archiveboxFill, colorHex: MedalConstants.ColorHex.mint, threshold: 100, category: .accumulation),
+        Medal(id: MedalConstants.MedalID.nodes5, titleKey: MedalConstants.L10nKey.nodes5Title, descKey: MedalConstants.L10nKey.nodes5Desc, icon: DesignTokens.Icons.docBadgePlus, colorHex: MedalConstants.ColorHex.skyBlue, threshold: MedalThreshold.bronze, category: .accumulation),
+        Medal(id: MedalConstants.MedalID.nodes10, titleKey: MedalConstants.L10nKey.nodes10Title, descKey: MedalConstants.L10nKey.nodes10Desc, icon: DesignTokens.Icons.booksVerticalFill, colorHex: MedalConstants.ColorHex.cyan, threshold: MedalThreshold.silver, category: .accumulation),
+        Medal(id: MedalConstants.MedalID.nodes100, titleKey: MedalConstants.L10nKey.nodes100Title, descKey: MedalConstants.L10nKey.nodes100Desc, icon: DesignTokens.Icons.archiveboxFill, colorHex: MedalConstants.ColorHex.mint, threshold: MedalThreshold.gold, category: .accumulation),
 
         // 3. 连接奖章 (链接数)
-        Medal(id: MedalConstants.MedalID.links5, titleKey: MedalConstants.L10nKey.links5Title, descKey: MedalConstants.L10nKey.links5Desc, icon: DesignTokens.Icons.link, colorHex: MedalConstants.ColorHex.pink, threshold: 5, category: .connection),
-        Medal(id: MedalConstants.MedalID.links10, titleKey: MedalConstants.L10nKey.links10Title, descKey: MedalConstants.L10nKey.links10Desc, icon: DesignTokens.Icons.linkBadgePlus, colorHex: MedalConstants.ColorHex.coral, threshold: 10, category: .connection),
+        Medal(id: MedalConstants.MedalID.links5, titleKey: MedalConstants.L10nKey.links5Title, descKey: MedalConstants.L10nKey.links5Desc, icon: DesignTokens.Icons.link, colorHex: MedalConstants.ColorHex.pink, threshold: MedalThreshold.bronze, category: .connection),
+        Medal(id: MedalConstants.MedalID.links10, titleKey: MedalConstants.L10nKey.links10Title, descKey: MedalConstants.L10nKey.links10Desc, icon: DesignTokens.Icons.linkBadgePlus, colorHex: MedalConstants.ColorHex.coral, threshold: MedalThreshold.silver, category: .connection),
         // 修正：将非法的系统图标 'hubball.fill' 替换为苹果原生支持的 'network'，以防勋章在界面上显示为隐形
-        Medal(id: MedalConstants.MedalID.links100, titleKey: MedalConstants.L10nKey.links100Title, descKey: MedalConstants.L10nKey.links100Desc, icon: DesignTokens.Icons.networkSymbol, colorHex: MedalConstants.ColorHex.periwinkle, threshold: 100, category: .connection)
+        Medal(id: MedalConstants.MedalID.links100, titleKey: MedalConstants.L10nKey.links100Title, descKey: MedalConstants.L10nKey.links100Desc, icon: DesignTokens.Icons.networkSymbol, colorHex: MedalConstants.ColorHex.periwinkle, threshold: MedalThreshold.gold, category: .connection)
     ]
 
     private init() {

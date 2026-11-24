@@ -462,9 +462,9 @@ extension AppConstants {
         /// 引用 SystemConstants.Version.defaultSemVer 作为默认值
         public static let semVer: String = SystemConstants.Version.defaultSemVer
         /// Git 短提交哈希（构建时自动注入）
-        public static let gitShortHash = "9b05a564"
+        public static let gitShortHash = "62e74233"
         /// 构建时间戳 ISO 8601（构建时自动注入）
-        public static let buildTimestamp = "2026-11-18T15:45:40Z"
+        public static let buildTimestamp = "2026-11-24T14:30:57Z"
     }
 
     /// 通用格式化常量

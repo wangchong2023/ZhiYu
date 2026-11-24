@@ -35,7 +35,7 @@ extension PluginDetailView {
 
                 VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
                     MarkdownRendererView(content: content, isPrivate: false, onLinkTap: { _ in }, isCompact: true)
-                        .frame(maxHeight: (showExpandButton && !isDescriptionExpanded) ? 180 : nil, alignment: .top)
+                        .frame(maxHeight: (showExpandButton && !isDescriptionExpanded) ? FeatureConstants.TaskCenterLayout.collapsedDescriptionHeight : nil, alignment: .top)
                         .clipped()
                         .overlay(
                             Group {
@@ -57,7 +57,7 @@ extension PluginDetailView {
                     if showExpandButton {
                         // 轻量级展开/折叠更多按钮
                         Button(action: {
-                            withAnimation(.spring(response: 0.45, dampingFraction: 0.85)) {
+                            withAnimation(.appStandard) {
                                 isDescriptionExpanded.toggle()
                             }
                         }) {

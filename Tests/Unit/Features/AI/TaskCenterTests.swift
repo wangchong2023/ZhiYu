@@ -12,7 +12,7 @@ import Testing
 import XCTest
 import UFPCore
 import ZhiYuDomain
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class TaskCenterTests: XCTestCase {

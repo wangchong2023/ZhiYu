@@ -85,10 +85,10 @@ public struct QuickActionRow: View {
         .simultaneousGesture(
             DragGesture(minimumDistance: 0)
                 .onChanged { _ in
-                    withAnimation(.easeInOut(duration: 0.1)) { isPressed = true }
+                    withAnimation(.easeInOut(duration: DesignTokens.Animations.microDuration)) { isPressed = true }
                 }
                 .onEnded { _ in
-                    withAnimation(.easeInOut(duration: 0.1)) { isPressed = false }
+                    withAnimation(.easeInOut(duration: DesignTokens.Animations.microDuration)) { isPressed = false }
                 }
         )
     }

@@ -9,7 +9,7 @@
 import XCTest
 import Foundation
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class LLMContextBuilderSecurityTests: XCTestCase {

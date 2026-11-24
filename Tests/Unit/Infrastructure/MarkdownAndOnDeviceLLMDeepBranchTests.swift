@@ -13,7 +13,7 @@
 import XCTest
 import UFPCore
 import ZhiYuAICore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class MarkdownAndOnDeviceLLMDeepBranchTests: XCTestCase {

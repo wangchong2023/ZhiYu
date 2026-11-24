@@ -9,7 +9,7 @@
 //  核心职责：针对 SecurityExpert 开展自动化单元测试验证。
 //
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// 安全防御与硬件辅助密钥管理单元测试套件
 @MainActor

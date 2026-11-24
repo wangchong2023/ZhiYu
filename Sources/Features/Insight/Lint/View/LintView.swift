@@ -119,7 +119,8 @@ struct LintViewContent: View {
         isRunning = true
         Task {
             // 模拟扫描耗时，增加视觉反馈
-            try? await Task.sleep(nanoseconds: 800_000_000)
+            let lintFeedbackDelayNs: UInt64 = 800_000_000
+            try? await Task.sleep(nanoseconds: lintFeedbackDelayNs)
             await aiStore.runLint()
             await MainActor.run {
                 isRunning = false

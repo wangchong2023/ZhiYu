@@ -208,8 +208,7 @@ public actor SQLiteStore: AnyPageStoreCapabilities {
         }
         
         // 3. 级联遍历扫描沙盒目录，累加其他非激活状态笔记本专属库大小
-        // swiftlint:disable:next force_unwrapping
-        let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let appSupport = ApplicationStorageLocation.applicationSupport
         let vaultsDir = appSupport.appendingPathComponent(AppConstants.Storage.vaultsDirectoryName)
         
         if let fileURLs = try? FileManager.default.contentsOfDirectory(at: vaultsDir, includingPropertiesForKeys: [.fileSizeKey], options: [.skipsHiddenFiles]) {

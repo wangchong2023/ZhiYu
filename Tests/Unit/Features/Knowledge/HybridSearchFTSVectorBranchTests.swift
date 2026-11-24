@@ -12,7 +12,7 @@
 import XCTest
 import UFPCore
 import Dependencies
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 private final class LocalMockEmbeddingProvider: EmbeddingProvider, @unchecked Sendable {
     var forcedResults: [(id: UUID, score: Float)] = []

@@ -15,7 +15,7 @@ import WidgetKit
 import ActivityKit
 import PDFKit
 import LocalAuthentication
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 import UFPCore
 
 @MainActor

@@ -22,6 +22,7 @@ public struct AIRainbowGlowBadge: View {
     @State private var modelManager = GlobalModelManager.shared
     
     @Environment(Router.self) private var router
+    @Environment(\.interfaceIdiom) private var idiom
     
     // MARK: - 动画与浮窗状态
     
@@ -49,11 +50,11 @@ public struct AIRainbowGlowBadge: View {
         .buttonStyle(.plain)
         .onAppear {
             // 启动呼吸光晕周期缩放动画
-            withAnimation(.easeInOut(duration: 2.2).repeatForever(autoreverses: true)) {
+            withAnimation(.easeInOut(duration: DesignTokens.Animations.ambientBreathDuration).repeatForever(autoreverses: true)) {
                 breathAnim = 1.0
             }
             // 启动彩虹霓虹渐变旋转动画
-            withAnimation(.linear(duration: 6.0).repeatForever(autoreverses: false)) {
+            withAnimation(.linear(duration: DesignTokens.Animations.ambientOrbitDuration).repeatForever(autoreverses: false)) {
                 rotateAnim = 360.0
             }
         }
@@ -239,11 +240,7 @@ public struct AIRainbowGlowBadge: View {
 
     /// AI 控制中枢弹窗宽度，按照不同平台与屏幕尺寸自适应
     private var controlCenterWidth: CGFloat {
-        #if os(iOS)
-        return UIDevice.current.userInterfaceIdiom == .pad ? 320 : 300
-        #else
-        return 300
-        #endif
+        idiom == .iPad ? 320 : 300
     }
     
     // MARK: - 辅助计算

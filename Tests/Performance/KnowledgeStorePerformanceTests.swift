@@ -13,7 +13,7 @@ import XCTest
 import UFPCore
 import Combine
 import UFPStorage
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// 知识库十万节点性能收敛测试类
 /// 验证系统在大规模数据量（100,000 个 Page，100,000 个 Link）下的写入事务性能与全文搜索/混合检索的响应时间收敛性。

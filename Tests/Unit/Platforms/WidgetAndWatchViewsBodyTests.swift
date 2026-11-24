@@ -12,7 +12,7 @@
 
 import XCTest
 import SwiftUI
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class WidgetAndWatchViewsBodyTests: XCTestCase {

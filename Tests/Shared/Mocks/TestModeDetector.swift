@@ -10,7 +10,7 @@
 //
 
 import Foundation
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// 测试模式检测器：集中管理所有测试模式判断，生产代码通过此工具类引用，不在各处散布 launch argument 检测。
 public enum TestModeDetector {

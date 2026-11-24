@@ -12,7 +12,7 @@
 
 import Foundation
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 extension KeychainService {
     /// 单元测试专用 override 属性：写入时向 DI 容器注册测试替身，置 nil 时注销

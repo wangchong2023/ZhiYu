@@ -12,7 +12,7 @@
 import XCTest
 import UFPCore
 @_spi(Internals) import Dependencies
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - GlobalModelManager 下载流程深度测试
 

@@ -228,6 +228,7 @@ extension FeatureConstants {
     // MARK: - 端侧性能基准跑分 (Model Benchmark)
     /// 端侧模型基准压测与性能评级常量
     enum Benchmark {
+        static let fullCircleDegrees: Double = 360.0
         static let placeholderValue: String = "--"
         static let defaultRounds: Int = 3
         static let excellentTPSThreshold: Double = 30.0
@@ -443,5 +444,25 @@ extension FeatureConstants {
         static let sampleArchChart: String = "arch_chart"
         static let sampleCityNight: String = "city_night"
         static let creativeTempSplit: Double = 0.65
+    }
+
+    // MARK: - 通用交互缩放与布局常量
+    enum TaskCenterLayout {
+        static let selectedScale: CGFloat = 1.03
+        static let pressedScale: CGFloat = 0.95
+        static let collapsedDescriptionHeight: CGFloat = 180
+        static let conflictSidebarWide: CGFloat = 240
+        static let conflictSidebarCompact: CGFloat = 180
+        static let donutInnerRadiusRatio: CGFloat = 0.65
+        static let iPadTabBarTopOffset: CGFloat = 48
+        static let iPadDetailTopOffset: CGFloat = 36
+    }
+
+    enum MedalAnimationScale {
+        static let glowMin: CGFloat = 0.8
+        static let glowMax: CGFloat = 1.2
+        static let iconMin: CGFloat = 0.9
+        static let iconMax: CGFloat = 1.1
+        static let cardMin: CGFloat = 0.5
     }
 }

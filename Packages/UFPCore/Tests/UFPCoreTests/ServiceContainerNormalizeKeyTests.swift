@@ -11,6 +11,7 @@
 //           5. 跨模块同名类型 key 必须不同（保留模块前缀）
 //
 
+import UFPCoreTestMocks
 import XCTest
 @testable import UFPCore
 

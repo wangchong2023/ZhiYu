@@ -53,6 +53,7 @@ struct ChatViewContent: View {
                 chatMessageList
 
                 chatInputBar
+                    .appDesktopReadableWidth(DesignTokens.Metrics.macReadableContentWidth)
             }
         }
         .appTabToolbar(title: "") {
@@ -92,7 +93,8 @@ struct ChatViewContent: View {
                 coordinator.inputText = prompt
                 
                 // 阻尼等待，保证过渡过渡的弹性动效平滑呈现
-                try? await Task.sleep(nanoseconds: 500_000_000)
+                let transitionDelayNs: UInt64 = 500_000_000
+                try? await Task.sleep(nanoseconds: transitionDelayNs)
                 
                 // 即刻触发 RAG 检索回答流
                 await coordinator.sendMessage(pages: store.pages)
@@ -105,46 +107,50 @@ struct ChatViewContent: View {
     private var chatMenu: some View {
         if idiom != .watch {
             Menu {
-                Section {
-                    Button(action: { }) {
-                        Label("\(coordinator.chatHistory.count) \(L10n.AI.LLM.messages)", systemImage: DesignTokens.Icons.chatBubble)
+                Group {
+                    Section {
+                        Button(action: { }) {
+                            Label("\(coordinator.chatHistory.count) \(L10n.AI.LLM.messages)", systemImage: DesignTokens.Icons.chatBubble)
+                        }
+                        .disabled(true)
+                        
+                        Button(role: .destructive, action: { 
+                            coordinator.showClearConfirmation = true
+                        }) {
+                            Label(L10n.AI.LLM.clearHistory, systemImage: DesignTokens.Icons.delete)
+                        }
                     }
-                    .disabled(true)
                     
-                    Button(role: .destructive, action: { 
-                        coordinator.showClearConfirmation = true
-                    }) {
-                        Label(L10n.AI.LLM.clearHistory, systemImage: DesignTokens.Icons.delete)
-                    }
-                }
-                
-                Section {
-                    NavigationLink(destination: PromptWorkshopView()) {
-                        Label(L10n.Settings.promptSettings, systemImage: DesignTokens.Icons.promptLibrary)
-                    }
-                }
-                
-                if !coordinator.chatHistory.isEmpty {
-                    Section(L10n.Chat.exportConversation) {
-                        Button(action: {
-                            coordinator.toggleSelectionMode()
-                        }) {
-                            Label(coordinator.isSelectionMode ? L10n.Common.done : L10n.Chat.selectToExport, systemImage: coordinator.isSelectionMode ? DesignTokens.Icons.checkCircle : DesignTokens.Icons.checklist)
+                    Section {
+                        NavigationLink(destination: PromptWorkshopView()) {
+                            Label(L10n.Settings.promptSettings, systemImage: DesignTokens.Icons.promptLibrary)
                         }
+                    }
+                    
+                    if !coordinator.chatHistory.isEmpty {
+                        Section(L10n.Chat.exportConversation) {
+                            Button(action: {
+                                coordinator.toggleSelectionMode()
+                            }) {
+                                Label(coordinator.isSelectionMode ? L10n.Common.done : L10n.Chat.selectToExport, systemImage: coordinator.isSelectionMode ? DesignTokens.Icons.checkCircle : DesignTokens.Icons.checklist)
+                            }
 
-                        Button(action: {
-                            Task { await coordinator.exportChat() }
-                        }) {
-                            Label(coordinator.isSelectionMode && !coordinator.selectedMessageIDs.isEmpty ? L10n.Chat.exportSelectedPDF : L10n.Chat.exportPDF, systemImage: DesignTokens.Icons.docRichtext)
+                            Button(action: {
+                                Task { await coordinator.exportChat() }
+                            }) {
+                                Label(coordinator.isSelectionMode && !coordinator.selectedMessageIDs.isEmpty ? L10n.Chat.exportSelectedPDF : L10n.Chat.exportPDF, systemImage: DesignTokens.Icons.docRichtext)
+                            }
                         }
                     }
                 }
+                .labelStyle(.titleAndIcon)
             } label: {
                 Image(systemName: DesignTokens.Icons.more)
                     .font(.callout.weight(.bold))
                     .foregroundStyle(.appSecondary)
+                    .appToolbarItemStandardFrame()
             }
-            .buttonStyle(.plain)  // 消除 Toolbar 中 Menu 的 bordered 白色背景
+            .appToolbarButtonStyle()
         }
     }
     
@@ -169,20 +175,21 @@ struct ChatViewContent: View {
                 }
                 .padding(.horizontal, DesignTokens.Spacing.tiny)
                 .padding(.bottom, DesignTokens.Spacing.standardPadding)
+                .appDesktopReadableWidth(DesignTokens.Metrics.macReadableContentWidth)
             }
             .scrollIndicators(.hidden)
             // 绑定测试标识符，便于自动化 UI 冒烟测试快速抓取
             .accessibilityIdentifier("ChatMessage_List")
             .onChange(of: coordinator.streamingContent) { _, _ in
                 // 在流式文本输入增长时，平滑滚动至焦点气泡，利用 easeOut 阻尼有效消除视图震颤
-                withAnimation(.easeOut(duration: 0.25)) {
+                withAnimation(.appFast) {
                     proxy.scrollTo("processing", anchor: .bottom)
                 }
             }
             .onChange(of: coordinator.isProcessing) { _, isProcessing in
                 if isProcessing {
                     // 开始生成时，将视图焦点以弹性动画推至处理气泡
-                    withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                    withAnimation(.appStandard) {
                         proxy.scrollTo("processing", anchor: .bottom)
                     }
                 }

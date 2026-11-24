@@ -12,7 +12,7 @@
 import UFPDesignSystem
 import XCTest
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class NotebookHubViewModelTests: XCTestCase {

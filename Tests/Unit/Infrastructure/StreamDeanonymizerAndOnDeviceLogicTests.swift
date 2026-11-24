@@ -6,7 +6,7 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - StreamDeanonymizer 流式端侧解密还原器测试
 //

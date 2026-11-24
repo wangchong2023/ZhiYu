@@ -543,6 +543,8 @@ struct Graph3DControlsOverlay: View {
                 .background(.ultraThinMaterial)
                 .clipShape(Circle())
         }
+        // 自绘圆形材质按钮需关闭 macOS 默认 bezel。
+        .buttonStyle(.plain)
         .accessibilityIdentifier(accessibilityID)
     }
 
@@ -614,6 +616,8 @@ struct Graph3DNodeInfoBar: View {
                     .background(Color.appAccent.opacity(DesignTokens.Opacity.glass))
                     .clipShape(Capsule())
             }
+            // 自绘胶囊按钮需关闭 macOS 默认 bezel，避免双层外框。
+            .buttonStyle(.plain)
             .accessibilityIdentifier("graph3d-view-page")
         }
         .padding()

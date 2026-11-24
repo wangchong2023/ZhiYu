@@ -13,7 +13,7 @@ import XCTest
 import Foundation
 import Dependencies
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - A-27 修复：NoOpDocumentExtractionService 已移入生产代码（DocumentExtractionServiceProtocol.swift）
 

@@ -23,13 +23,22 @@ class KeychainService: @unchecked Sendable {
         ServiceContainer.shared.resolveOptional(KeychainService.self) ?? _defaultShared
     }
     /// Keychain 服务标识符
-    private let serviceName = "com.zhiyu.keychain"
+    private let serviceName: String
 
-    /// 键值存储抽象，用于 Keychain entitlements 缺失时的 DEBUG 降级回退。
-    /// 使用 resolveOptional 优雅降级：DI 容器未就绪时返回 nil，避免启动/测试崩溃。
-    @Inject private var keyStore: (any KeyStoreProtocol)? // inject_exempt: @Inject 存量（Keychain 降级回退）
+    private enum Namespace {
+        static let production = "com.zhiyu.keychain"
+        static let fallbackPrefix = "com.zhiyu.keychain.fallback."
+    }
 
-    init() {}
+    /// 保持既有正式命名空间，独立应用可通过构造参数隔离凭据。
+    init(serviceName: String? = nil) {
+        self.serviceName = serviceName ?? Namespace.production
+    }
+
+    /// 本地无签名 / 缺失 keychain-access-groups entitlement 时的回退存储键
+    private func fallbackKey(for key: String) -> String {
+        "\(Namespace.fallbackPrefix)\(serviceName).\(key)"
+    }
 
     /// 存储敏感数据
     /// - Parameters:
@@ -43,19 +52,21 @@ class KeychainService: @unchecked Sendable {
         // 先删除旧项
         try? delete(key: key)
 
-        let query = KeychainQueryHelper.baseQuery(serviceName: serviceName, key: key).merging([
+        let extra: [String: Any] = [
             kSecValueData as String: data,
             // VULN-012 修复：改用 WhenUnlockedThisDeviceOnly，禁止 iCloud/itunes 备份提取
             kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlockedThisDeviceOnly
-        ]) { _, new in new }
+        ]
+        let query = KeychainQueryHelper.baseQuery(serviceName: serviceName, key: key)
+            .merging(extra) { _, new in new }
         let status = SecItemAdd(query as CFDictionary, nil)
+        // 无签名本地调试/测试宿主缺失 keychain-access-groups entitlement 时，
+        // 避免回退到传统登录钥匙串触发反复弹窗，改用本地隔离回退存储。
+        if status == errSecMissingEntitlement {
+            UserDefaults.standard.set(value, forKey: fallbackKey(for: key))
+            return
+        }
         guard status == errSecSuccess else {
-            if status == errSecMissingEntitlement {
-                #if DEBUG && !os(watchOS)
-                runOnMainSync { keyStore?.set(value, forKey: key) }
-                return
-                #endif
-            }
             Logger.shared.error(" [KeychainService]  (\(key)): \(status)")
             throw KeychainError.storeFailed(status)
         }
@@ -65,13 +76,18 @@ class KeychainService: @unchecked Sendable {
     /// - Parameter key: 键名
     /// - Returns: 存储的字符串，不存在则返回 nil
     func retrieve(key: String) throws -> String? {
-        let query = KeychainQueryHelper.baseQuery(serviceName: serviceName, key: key).merging([
+        let extra: [String: Any] = [
             kSecReturnData as String: true,
             kSecMatchLimit as String: kSecMatchLimitOne
-        ]) { _, new in new }
+        ]
+        let query = KeychainQueryHelper.baseQuery(serviceName: serviceName, key: key)
+            .merging(extra) { _, new in new }
 
         var result: AnyObject?
         let status = SecItemCopyMatching(query as CFDictionary, &result)
+        if status == errSecMissingEntitlement {
+            return UserDefaults.standard.string(forKey: fallbackKey(for: key))
+        }
 
         switch status {
         case errSecSuccess:
@@ -82,15 +98,6 @@ class KeychainService: @unchecked Sendable {
         case errSecItemNotFound:
             return nil
         default:
-            if status == errSecMissingEntitlement {
-                #if DEBUG && !os(watchOS)
-                if let val = runOnMainSync({ keyStore?.string(forKey: key) }) {
-                    return val
-                }
-                // keyStore 中也不存在该 key，降级返回 nil（表示"不存在"）
-                return nil
-                #endif
-            }
             throw KeychainError.retrieveFailed(status)
         }
     }
@@ -100,14 +107,11 @@ class KeychainService: @unchecked Sendable {
     func delete(key: String) throws {
         let query = KeychainQueryHelper.baseQuery(serviceName: serviceName, key: key)
         let status = SecItemDelete(query as CFDictionary)
-        #if DEBUG && !os(watchOS)
-        // 在 DEBUG 模式下，无论 Keychain 删除结果如何，都同步清理 KeyStore 回退缓存
-        runOnMainSync { keyStore?.removeObject(forKey: key) }
-        #endif
+        if status == errSecMissingEntitlement {
+            UserDefaults.standard.removeObject(forKey: fallbackKey(for: key))
+            return
+        }
         guard status == errSecSuccess || status == errSecItemNotFound else {
-            if status == errSecMissingEntitlement {
-                return
-            }
             throw KeychainError.deleteFailed(status)
         }
     }

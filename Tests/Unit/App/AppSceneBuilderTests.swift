@@ -8,7 +8,7 @@
 import SwiftUI
 import XCTest
 
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class AppSceneBuilderTests: XCTestCase {
@@ -21,7 +21,7 @@ final class AppSceneBuilderTests: XCTestCase {
     /// SceneEnvironmentInjection 注入链关键成员应存在（用 Mirror 断言字段完整性）
     func testSceneEnvironmentInjection_HasAllKeyMembers() {
         let injection = SceneEnvironmentInjection(
-            appEnv: AppEnvironment.shared,
+            appEnv: TestAppEnvironment.shared,
             appModel: ZhiYuAppModel(),
             dependencies: DependencyContainer(),
             themeManager: ThemeManager(),
@@ -38,7 +38,7 @@ final class AppSceneBuilderTests: XCTestCase {
     /// AppSceneBuilder 场景根分发类型应可编译构建（@SceneBuilder 产出 Scene）
     func testAppSceneBuilder_RootBuilds() {
         _ = AppSceneBuilder.root(
-            appEnv: AppEnvironment.shared,
+            appEnv: TestAppEnvironment.shared,
             appModel: ZhiYuAppModel(),
             dependencies: DependencyContainer(),
             themeManager: ThemeManager(),
@@ -50,7 +50,7 @@ final class AppSceneBuilderTests: XCTestCase {
     /// iOSSceneBuilder 主窗口场景应可编译构建
     func testiOSSceneBuilder_MainBuilds() {
         _ = iOSSceneBuilder.main(
-            appEnv: AppEnvironment.shared,
+            appEnv: TestAppEnvironment.shared,
             appModel: ZhiYuAppModel(),
             dependencies: DependencyContainer(),
             themeManager: ThemeManager(),

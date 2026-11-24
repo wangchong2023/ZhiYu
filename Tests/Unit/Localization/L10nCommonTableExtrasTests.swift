@@ -10,7 +10,7 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// Common 表 L10n 扩展补充测试（Shared/Graph）
 /// 已有 L10nCommonTableTests 覆盖 Action/Accessibility/Components/CoreModels/Log/Schema/Search

@@ -117,7 +117,8 @@ actor LinkService {
         // Step 1: 关键词检索
         let keywordResults = search(query: query, in: pages)
         // Step 2: 语义向量检索
-        let semanticScored = await embeddingProvider.search(query: query, topK: 50)
+        let semanticTopK = 50
+        let semanticScored = await embeddingProvider.search(query: query, topK: semanticTopK)
         let semanticResults = filterSemanticResults(semanticScored, query: query, pages: pages)
 
         let k = SearchConstants.rrfK
@@ -125,7 +126,9 @@ actor LinkService {
         var diagMap: [UUID: (fts: Int, vec: Int)] = [:]
 
         // Step 3: 动态权重 — 短查询（如"3D"）关键词匹配更可靠
-        let keywordWeight = query.count < SearchConstants.shortQueryThreshold ? 1.5 : 1.0
+        let shortQueryKeywordBoost: Double = 1.5
+        let defaultKeywordWeight: Double = 1.0
+        let keywordWeight = query.count < SearchConstants.shortQueryThreshold ? shortQueryKeywordBoost : defaultKeywordWeight
         let semanticWeight = 1.0
 
         // Step 4: RRF 分数累加 — 关键词结果

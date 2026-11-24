@@ -12,7 +12,7 @@
 import XCTest
 import GRDB
 import UFPStorage
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class VectorRepositoryFailureTests: XCTestCase {
@@ -24,7 +24,7 @@ final class VectorRepositoryFailureTests: XCTestCase {
     override func setUp() async throws {
         try await super.setUp()
         dbQueue = try DatabaseQueue()
-        try DatabaseManager.shared.setupForTesting(with: dbQueue)
+        try DatabaseManager.shared.setupInMemory(with: dbQueue)
         repository = VectorDataRepository(dbWriter: dbQueue)
         pageRepo = KnowledgePageRepository(dbWriter: dbQueue)
     }

@@ -12,7 +12,7 @@
 import XCTest
 import UFPCore
 import Dependencies
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class AppEnvironmentLifecycleTests: XCTestCase {
@@ -25,7 +25,7 @@ final class AppEnvironmentLifecycleTests: XCTestCase {
     // MARK: - 1. 核心状态与路由单例就绪分支
 
     func testAppEnvironment_Singletons_Initialized() {
-        let env = AppEnvironment.shared
+        let env = TestAppEnvironment.shared
 
         XCTAssertNotNil(env.router, "全局 Router 应当就绪")
         XCTAssertNotNil(env.themeManager, "全局 ThemeManager 应当就绪")

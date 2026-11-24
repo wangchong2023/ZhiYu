@@ -10,7 +10,7 @@ import SwiftUI
 import UFPCore
 import XCTest
 
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class KnowledgePageListDeepTests: XCTestCase {

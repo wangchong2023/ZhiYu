@@ -12,7 +12,7 @@
 import XCTest
 import UFPCore
 import Dependencies
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class AISynthesisServiceBranchTests: XCTestCase {

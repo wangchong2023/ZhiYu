@@ -96,7 +96,7 @@ public struct DownloadProgressRing: View {
                     style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
                 )
                 .rotationEffect(.degrees(rotationAngle))
-                .animation(.linear(duration: 1).repeatForever(autoreverses: false), value: rotationAngle)
+                .animation(.linear(duration: DesignTokens.Animations.spinDuration).repeatForever(autoreverses: false), value: rotationAngle)
         } else {
             Circle()
                 .trim(from: 0, to: clampedProgress)
@@ -152,7 +152,7 @@ public struct DownloadProgressRing: View {
 
     private func startSpinning() {
         guard isIndeterminate else { return }
-        withAnimation(.linear(duration: 1).repeatForever(autoreverses: false)) {
+        withAnimation(.linear(duration: DesignTokens.Animations.spinDuration).repeatForever(autoreverses: false)) {
             rotationAngle = 360
         }
     }

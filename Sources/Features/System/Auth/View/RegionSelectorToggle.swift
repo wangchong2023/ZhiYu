@@ -37,7 +37,7 @@ struct RegionSelectorToggle: View {
                         if currentRegion != region {
                             // 触发轻快触觉选择反馈
                             HapticFeedback.shared.trigger(.selection)
-                            withAnimation(.spring(response: 0.45, dampingFraction: 0.75)) {
+                            withAnimation(.appStandard) {
                                 currentRegion = region
                             }
                             onToggle()

@@ -10,7 +10,7 @@
 //
 
 import Foundation
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 extension NetworkClient {
     /// 单元测试专用：设置测试专用的 URLSession

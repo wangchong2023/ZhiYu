@@ -93,7 +93,8 @@ public final class StoreKitService {
                     try await StoreKit.AppStore.sync()
                 }
                 group.addTask {
-                    try await Task.sleep(nanoseconds: 5_000_000_000)
+                    let syncTimeoutNs: UInt64 = 5_000_000_000
+                    try await Task.sleep(nanoseconds: syncTimeoutNs)
                     throw StoreKitSyncTimeout()
                 }
                 try await group.next()

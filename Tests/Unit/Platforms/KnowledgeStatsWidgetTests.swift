@@ -10,7 +10,7 @@
 //
 import XCTest
 import WidgetKit
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 final class KnowledgeStatsWidgetTests: XCTestCase {
     

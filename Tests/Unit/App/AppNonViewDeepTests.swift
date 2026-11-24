@@ -11,7 +11,7 @@
 
 import XCTest
 import SwiftUI
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// App 层非 View 文件深度测试
 /// 覆盖 ViewFactory/AppEnvironment/AppModels/iOSAppEnvironment/AppModel

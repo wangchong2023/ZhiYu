@@ -16,7 +16,7 @@ import Combine
 import GRDB
 import UFPCore
 import Dependencies
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - SystemStatsCleanupDeepTests
 

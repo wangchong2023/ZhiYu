@@ -10,7 +10,7 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// Common 表 L10n 扩展测试（Action/Accessibility/Log/Schema/Components/CoreModels/Search）
 final class L10nCommonTableTests: XCTestCase {

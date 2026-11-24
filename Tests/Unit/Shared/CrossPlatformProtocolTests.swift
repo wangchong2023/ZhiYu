@@ -15,7 +15,7 @@ import UFPCore
 #if os(watchOS)
 @testable import ZhiYuWatch
 #else
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 #endif
 
 // MARK: - 测试 1：协议定义正确性

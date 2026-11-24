@@ -10,6 +10,7 @@
 //           4. Swift 内部修饰符（"(unknown context at ...)"）截断
 //
 
+import UFPCoreTestMocks
 import XCTest
 @testable import UFPCore
 

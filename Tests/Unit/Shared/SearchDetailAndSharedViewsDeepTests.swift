@@ -15,7 +15,7 @@ import SwiftUI
 import UFPCore
 import UFPDesignSystem
 import Dependencies
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class SearchDetailAndSharedViewsDeepTests: XCTestCase {

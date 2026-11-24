@@ -12,7 +12,7 @@ import XCTest
 import UFPCore
 import UFPStorage
 import Combine
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// 物理多笔记本高并发热插拔切换集成测试类 (MultiVaultSwitchTests)
 /// 本测试专注于并发与物理竞争场景下的持久化一致性与防死锁表现，全面补齐系统 TC-VLT-06 级核心用例。

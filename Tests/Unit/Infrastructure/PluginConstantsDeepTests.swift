@@ -9,7 +9,7 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - PluginConstants 常量完整性测试
 

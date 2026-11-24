@@ -10,7 +10,7 @@
 //
 
 import Foundation
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// 测试套件统一常量定义
 public enum TestConstants {

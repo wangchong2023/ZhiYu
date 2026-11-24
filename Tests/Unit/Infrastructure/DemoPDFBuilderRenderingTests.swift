@@ -7,7 +7,7 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 #if canImport(UIKit) && canImport(PDFKit) && !os(watchOS)
 final class DemoPDFBuilderRenderingTests: XCTestCase {

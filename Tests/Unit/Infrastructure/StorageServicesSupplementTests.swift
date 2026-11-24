@@ -13,7 +13,7 @@ import UFPStorage
 import UFPCore
 import LocalAuthentication
 import Dependencies
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class StorageServicesSupplementTests: XCTestCase {
@@ -85,7 +85,7 @@ final class StorageServicesSupplementTests: XCTestCase {
             try await gatekeeper.acquire()
             XCTFail("排空期间 acquire 应抛 DatabaseError.draining")
         } catch {
-            if let dbError = error as? ZhiYu.DatabaseError, case .draining = dbError {
+            if let dbError = error as? ZhiYuUnitTestHost.DatabaseError, case .draining = dbError {
                 // 预期行为
             } else {
                 XCTFail("应抛 DatabaseError.draining，实际：\(error)")

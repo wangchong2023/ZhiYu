@@ -15,6 +15,7 @@
 //           修复后：injectWrap 安全构造 Optional<Wrapped>.none，as? T 成功返回 nil
 //
 
+import UFPCoreTestMocks
 import XCTest
 @testable import UFPCore
 

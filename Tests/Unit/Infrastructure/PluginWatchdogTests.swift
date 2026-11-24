@@ -9,7 +9,7 @@
 //  核心职责：针对 PluginWatchdog 开展自动化单元测试验证。
 //
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 @testable import UFPCore
 
 // MARK: - 模拟拦截器插件

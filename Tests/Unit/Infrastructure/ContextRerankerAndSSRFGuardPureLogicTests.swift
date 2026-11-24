@@ -12,7 +12,7 @@
 import XCTest
 import Foundation
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - ContextReranker 二次语义重排序
 

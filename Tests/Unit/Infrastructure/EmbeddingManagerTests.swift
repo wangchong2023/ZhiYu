@@ -10,7 +10,7 @@
 //
 import XCTest
 import Accelerate
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - 向量仓库 Mock 类
 /// 线程安全的模拟向量仓库实现，以便于对 EmbeddingManager 进行单元测试隔离

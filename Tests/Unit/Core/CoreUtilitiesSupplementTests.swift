@@ -9,7 +9,7 @@
 
 import XCTest
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// Core/Other 工具类补盲测试
 ///

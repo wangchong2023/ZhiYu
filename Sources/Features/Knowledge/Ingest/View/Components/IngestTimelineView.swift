@@ -64,7 +64,7 @@ struct IngestTimelineView: View {
                             Rectangle()
                                 .fill(isCompleted(stage.id) ? stage.color : Color.appBorder)
                                 .frame(width: DesignTokens.Spacing.atomic)
-                                .frame(minHeight: isActive(stage.id) ? 30 : 16)
+                                .frame(minHeight: isActive(stage.id) ? DesignTokens.Spacing.loosePadding : DesignTokens.Spacing.medium)
                                 .padding(.vertical, DesignTokens.SystemSpacing.atomic)
                         }
                     }
@@ -84,7 +84,7 @@ struct IngestTimelineView: View {
                                 .lineLimit(1)
                                 .truncationMode(.tail)
                                 .transition(.opacity.combined(with: .move(edge: .top)))
-                                .animation(.easeOut(duration: 0.3), value: latestLog)
+                                .animation(.easeOut(duration: DesignTokens.Animations.springResponse), value: latestLog)
                         }
                     }
                     .padding(.bottom, index < stages.count - 1 ? DesignTokens.Spacing.small : 0)

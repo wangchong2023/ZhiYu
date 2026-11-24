@@ -10,7 +10,7 @@
 //
 import XCTest
 import CryptoKit
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 @testable import UFPCore
 
 private final class PluginMarketMockURLProtocol: URLProtocol {

@@ -11,7 +11,7 @@
 
 import XCTest
 import GRDB
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class SQLiteStoreFailureEdgeTests: XCTestCase {
@@ -23,7 +23,7 @@ final class SQLiteStoreFailureEdgeTests: XCTestCase {
         try await super.setUp()
         // 创建内存数据库并初始化 Schema
         dbQueue = try DatabaseQueue()
-        try DatabaseManager.shared.setupForTesting(with: dbQueue)
+        try DatabaseManager.shared.setupInMemory(with: dbQueue)
         store = SQLiteStore(dbWriter: dbQueue)
     }
 

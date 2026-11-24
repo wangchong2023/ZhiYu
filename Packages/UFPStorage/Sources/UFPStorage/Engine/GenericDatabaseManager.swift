@@ -63,7 +63,7 @@ public final class GenericDatabaseManager: TestStateResettable, @unchecked Senda
     public private(set) var globalDBURL: URL?
 
     /// 是否运行于 Unit Test 单元测试管道中。
-    public var isInTesting: Bool = false
+    public var usesTransientStorage: Bool = false
 
     // MARK: - 注入点（业务能力通过闭包注入，本类型零业务依赖）
 
@@ -147,12 +147,12 @@ public final class GenericDatabaseManager: TestStateResettable, @unchecked Senda
         }
     }
 
-    /// 为单元测试管道强制重连与注入内存/临时物理数据库连接池。
-    /// - Parameter writer: 由测试套件临时开辟的 DatabaseWriter。
+    /// 配置瞬态数据库连接及独立的内存全局库，供临时工作区使用。
+    /// - Parameter writer: 调用方持有的瞬态 DatabaseWriter。
     /// - Throws: Schema 迁移异常。
-    public func setupForTesting(with writer: any DatabaseWriter) throws {
+    public func setupInMemory(with writer: any DatabaseWriter) throws {
         self.dbWriter = writer
-        self.isInTesting = true
+        self.usesTransientStorage = true
 
         // 对专属瞬态内存主数据库执行迁移
         guard let vaultMigrator else {
@@ -322,8 +322,9 @@ public final class GenericDatabaseManager: TestStateResettable, @unchecked Senda
         config.maximumReaderCount = StorageConstants.maximumReaderCount
         config.qos = .userInitiated
 
+        let foreignKeysPragma = "PRAGMA foreign_keys = ON"
         config.prepareDatabase { db in
-            try db.execute(sql: "PRAGMA foreign_keys = ON")
+            try db.execute(sql: foreignKeysPragma)
             try db.execute(sql: "PRAGMA synchronous = \(StorageConstants.synchronousModeNormal)")
             try db.execute(sql: "PRAGMA temp_store = \(StorageConstants.tempStoreMemory)")
             try db.execute(sql: "PRAGMA cache_size = \(StorageConstants.cacheSizeBytes)")

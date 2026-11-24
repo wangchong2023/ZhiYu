@@ -10,7 +10,7 @@
 //
 import XCTest
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// 性能基准测试 (Expert QA Item #4)
 /// 监控向量检索、FTS5 全文检索和多笔记本热插拔在不同数据量级下的延迟。

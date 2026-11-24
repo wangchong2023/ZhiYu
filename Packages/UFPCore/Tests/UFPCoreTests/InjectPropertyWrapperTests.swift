@@ -10,6 +10,7 @@
 //           4. optionalNoneSentinel 的 unsafeBitCast 类型安全边界
 //
 
+import UFPCoreTestMocks
 import XCTest
 @testable import UFPCore
 

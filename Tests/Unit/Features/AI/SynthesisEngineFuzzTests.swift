@@ -13,7 +13,7 @@ import XCTest
 import UFPCore
 import ZhiYuAICore
 import Dependencies
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class SynthesisEngineFuzzTests: XCTestCase {

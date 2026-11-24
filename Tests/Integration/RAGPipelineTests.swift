@@ -10,7 +10,7 @@
 //
 import XCTest
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// 系统集成测试：全链路 RAG 管道
 /// 覆盖：导入 -> 向量化 -> 检索 -> AI 总结

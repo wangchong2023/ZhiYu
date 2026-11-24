@@ -9,7 +9,7 @@
 //  核心职责：验证 ImportRecord 模型、ImportCategory、ImportRecordStatus 的类型安全与常量正确性
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 final class ImportRecordModelTests: XCTestCase {
 

@@ -224,7 +224,7 @@ struct GraphInsightsPanel: View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.mediumRadius) {
             // Section header
             Button(action: {
-                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                withAnimation(.appStandard) {
                     if expandedSections.contains(id) {
                         expandedSections.remove(id)
                     } else {

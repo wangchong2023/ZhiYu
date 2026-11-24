@@ -10,8 +10,6 @@
 //
 
 import Foundation
-import UFPCore
-import UFPStorage
 
 /// 数据库引导配置策略协议
 @MainActor
@@ -25,15 +23,5 @@ public struct PersistentDatabaseBootstrapStrategy: DatabaseBootstrapStrategy {
     public init() {}
     public func setup(at defaultURL: URL) throws {
         try DatabaseManager.shared.setup(at: defaultURL)
-    }
-}
-
-/// 内存临时存储策略（供测试套件或临时沙箱隔离使用）
-@MainActor
-public struct EphemeralDatabaseBootstrapStrategy: DatabaseBootstrapStrategy {
-    public init() {}
-    public func setup(at defaultURL: URL) throws {
-        let memoryQueue = try DatabaseQueue()
-        try DatabaseManager.shared.setup(with: memoryQueue)
     }
 }

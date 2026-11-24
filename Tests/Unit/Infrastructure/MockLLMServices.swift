@@ -10,7 +10,7 @@
 //
 import Foundation
 @preconcurrency import Combine
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class MockChatLLMService: LLMChatServiceProtocol, @unchecked Sendable {

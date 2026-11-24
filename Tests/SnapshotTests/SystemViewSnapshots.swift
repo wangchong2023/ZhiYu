@@ -17,7 +17,7 @@ import SnapshotTesting
 import Combine
 import UFPStorage
 import Dependencies
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class SystemViewSnapshots: XCTestCase {

@@ -10,7 +10,7 @@ import XCTest
 import SwiftUI
 import UFPCore
 import UFPDesignSystem
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class SharedUIComponentsAdaptiveRenderTests: XCTestCase {

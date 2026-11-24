@@ -9,7 +9,7 @@
 //  核心职责：图片提取、URL 解析、大小限制、OCR 集成全覆盖
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 final class ImageExtractorTests: XCTestCase {
 

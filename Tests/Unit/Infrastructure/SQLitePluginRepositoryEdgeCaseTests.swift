@@ -9,7 +9,7 @@
 
 import XCTest
 import UFPStorage
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 final class PluginRepoEdgeTests: XCTestCase {
 
@@ -20,7 +20,7 @@ final class PluginRepoEdgeTests: XCTestCase {
     override func setUp() async throws {
         try await super.setUp()
         dbQueue = try DatabaseQueue()
-        try await DatabaseManager.shared.setupForTesting(with: dbQueue)
+        try await DatabaseManager.shared.setupInMemory(with: dbQueue)
         let writer: any DatabaseWriter = await DatabaseManager.shared.globalWriter ?? dbQueue
         // 缺陷 #9 已修复：globalMigrator 现已创建 plugin_records 表，无需手动建表
         pluginRepo = SQLitePluginRepository(dbWriter: writer)

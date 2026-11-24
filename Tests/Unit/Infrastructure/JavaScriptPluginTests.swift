@@ -9,7 +9,7 @@
 //  核心职责：针对 JavaScriptPlugin 开展自动化单元测试验证。
 //
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 #if canImport(JavaScriptCore)
 

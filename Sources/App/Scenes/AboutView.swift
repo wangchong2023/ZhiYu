@@ -14,6 +14,10 @@ import UFPDesignSystem
 /// 关于页面
 struct AboutView: View {
     @Environment(\.dismiss) private var dismiss
+    /// 独立页面展示时显示右上角「完成」按钮；嵌入 SettingsView 时隐藏
+    var showsDismissButton: Bool = true
+    /// 嵌入父容器时复用父级统一背景，避免重复叠加渐变与模糊层
+    var usesEmbeddedBackground: Bool = false
     
     var body: some View {
         ScrollView {
@@ -83,14 +87,20 @@ struct AboutView: View {
                     .padding(.bottom, DesignTokens.ComponentSpacing.ultra)
             }
         }
-        .background(PageBackgroundView(accentColor: .appAccent))
+        .background {
+            if !usesEmbeddedBackground {
+                PageBackgroundView(accentColor: .appAccent)
+            }
+        }
         .navigationTitle(L10n.Settings.Section.about)
         .appNavigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(false)
         .toolbar {
-            ToolbarItem(placement: .confirmationAction) {
-                Button(L10n.Common.done) {
-                    dismiss()
+            if showsDismissButton {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(L10n.Common.done) {
+                        dismiss()
+                    }
                 }
             }
         }

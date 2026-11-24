@@ -11,7 +11,7 @@
 import Testing
 import XCTest
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class AIWorkflowStoreTests: XCTestCase {

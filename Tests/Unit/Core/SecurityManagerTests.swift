@@ -11,7 +11,7 @@
 import XCTest
 import UFPCore
 import CryptoKit
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class SecurityManagerTests: XCTestCase {

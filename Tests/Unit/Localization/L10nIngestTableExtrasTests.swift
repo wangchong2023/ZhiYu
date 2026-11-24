@@ -10,7 +10,7 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// Ingest 表 L10n 扩展补充测试（Ingest/Backup/ICloud）
 /// 已有 L10nIngestTableTests 覆盖 Transfer

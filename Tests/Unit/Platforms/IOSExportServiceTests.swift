@@ -12,7 +12,7 @@
 #if canImport(WebKit)
 import XCTest
 import WebKit
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class IOSExportServiceTests: XCTestCase {

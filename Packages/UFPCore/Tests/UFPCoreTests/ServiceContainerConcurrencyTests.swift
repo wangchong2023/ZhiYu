@@ -7,6 +7,7 @@
 //           OSAllocatedUnfairLock 必须保证注册表操作的原子性，避免丢失更新。
 //
 
+import UFPCoreTestMocks
 import XCTest
 @testable import UFPCore
 

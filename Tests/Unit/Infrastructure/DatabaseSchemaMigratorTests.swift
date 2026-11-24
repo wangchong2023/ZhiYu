@@ -10,7 +10,7 @@
 //
 import XCTest
 import UFPStorage
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 final class DatabaseSchemaMigratorTests: XCTestCase {
 
@@ -30,7 +30,7 @@ final class DatabaseSchemaMigratorTests: XCTestCase {
 
     @MainActor func testMigratorCreatesVaultTables() throws {
         let manager = DatabaseManager.shared
-        manager.isInTesting = true
+        manager.usesTransientStorage = true
         
         // 执行迁移
         try manager.migrator.migrate(dbQueue)
@@ -46,7 +46,7 @@ final class DatabaseSchemaMigratorTests: XCTestCase {
 
     @MainActor func testGlobalMigratorCreatesGlobalTables() throws {
         let manager = DatabaseManager.shared
-        manager.isInTesting = true
+        manager.usesTransientStorage = true
         
         // 执行迁移
         try manager.globalMigrator.migrate(globalQueue)

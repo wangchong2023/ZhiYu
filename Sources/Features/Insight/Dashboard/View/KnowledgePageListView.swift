@@ -28,6 +28,7 @@ struct KnowledgePageListContent: View {
     @Environment(AppStore.self) var store
     @Environment(Router.self) var router
     @Environment(ThemeManager.self) var themeManager
+    @Environment(\.interfaceIdiom) private var idiom
     var filterType: PageType?
     
     /// 全局注入的平台设备环境
@@ -81,7 +82,8 @@ struct KnowledgePageListContent: View {
         
         searchTask = Task {
             // 防抖 150ms 确连贯输入体验与节省 SQLite 核心物理 FTS5 开销
-            try? await Task.sleep(for: .milliseconds(150))
+            let searchDebounceMs = 150
+            try? await Task.sleep(for: .milliseconds(searchDebounceMs))
             if Task.isCancelled { return }
             
             let results = await store.searchStore.performAdvancedSearch(query: cleanedQuery)
@@ -114,7 +116,8 @@ struct KnowledgePageListContent: View {
                 VStack(spacing: DesignTokens.Spacing.loosePadding) {
                     listView
                 }
-                .padding(.top, appEnv.screenClass != .compact ? 48 : 0) // 适配大屏设备（如 iPad / macOS），向下偏移避让顶部悬浮 TabBar，防止第一行内容重合遮挡
+                // 仅 iPad 悬浮 TabBar 需要 48pt 避让；macOS 已使用原生工具栏，偏移会造成顶部大片空白。
+                .padding(.top, idiom != .mac && appEnv.screenClass != .compact ? FeatureConstants.TaskCenterLayout.iPadTabBarTopOffset : 0)
             }
             .scrollIndicators(.hidden)
             

@@ -11,7 +11,7 @@ import UFPCore
 import UFPStorage
 import XCTest
 
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class PluginLoaderDeepTests: XCTestCase {
@@ -155,7 +155,7 @@ final class PluginLoaderDeepTests: XCTestCase {
             codeSignature: "1234567890abcdef"
         )
         // 外部 manifest 即使带 local. 前缀也必须被拦截
-        XCTAssertFalse(PluginLoader.verifyPluginSignature(script: script, manifest: spoofedManifest, isTrustedLocal: false))
+        XCTAssertFalse(PluginLoader.verifyPluginSignature(script: script, manifest: spoofedManifest))
     }
 
     func testVerifyPluginSignature_withTrustedLocal_isAllowed() {
@@ -169,8 +169,7 @@ final class PluginLoaderDeepTests: XCTestCase {
             descriptions: ["en": "User script"],
             codeSignature: nil
         )
-        // 内部 loadPluginFromRawJS 生成的标记为 isTrustedLocal 的允许跳过签名
-        XCTAssertTrue(PluginLoader.verifyPluginSignature(script: script, manifest: trustedManifest, isTrustedLocal: true))
+        XCTAssertFalse(PluginLoader.verifyPluginSignature(script: script, manifest: trustedManifest))
     }
 
     func testVerifyPluginSignature_withInvalidHexSignature_isRejected() {

@@ -115,7 +115,7 @@ public struct OnDeviceLLMSettingsView: View {
     // MARK: - Hero Header
     private var headerSection: some View {
         VStack(spacing: DesignTokens.Spacing.medium) {
-            Spacer(minLength: 4)
+            Spacer(minLength: DesignTokens.Spacing.tiny)
             Image(systemName: DesignTokens.Icons.cpuOutline)
                 .font(.system(size: DesignTokens.Reference.FontSize.mega))
                 .foregroundStyle(
@@ -132,7 +132,7 @@ public struct OnDeviceLLMSettingsView: View {
                 .foregroundStyle(.appSecondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
-            Spacer(minLength: 4)
+            Spacer(minLength: DesignTokens.Spacing.tiny)
         }
         .frame(maxWidth: .infinity, alignment: .center)
         .padding(.vertical, DesignTokens.Spacing.small)

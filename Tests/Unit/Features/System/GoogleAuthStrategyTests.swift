@@ -15,7 +15,7 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 import AuthenticationServices
 #if canImport(UIKit)
 import UIKit

@@ -10,7 +10,7 @@
 
 import XCTest
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - GlobalModelManager 路由决策深度测试
 

@@ -10,7 +10,7 @@
 //
 import XCTest
 import UFPStorage
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 final class KnowledgeRepositoryTests: XCTestCase {
     
@@ -22,7 +22,7 @@ final class KnowledgeRepositoryTests: XCTestCase {
         // 创建内存数据库进行测试
         dbQueue = try DatabaseQueue()
         // 执行真实数据库迁移以建立完整的物理表结构与触发器
-        try await DatabaseManager.shared.setupForTesting(with: dbQueue)
+        try await DatabaseManager.shared.setupInMemory(with: dbQueue)
         repository = KnowledgePageRepository(dbWriter: dbQueue)
     }
 

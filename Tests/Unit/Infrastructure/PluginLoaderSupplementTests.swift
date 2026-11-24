@@ -9,7 +9,7 @@
 import XCTest
 import CryptoKit
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class PluginLoaderSupplementTests: XCTestCase {
@@ -65,7 +65,7 @@ final class PluginLoaderSupplementTests: XCTestCase {
         )
 
         XCTAssertTrue(PluginLoader.verifyPluginSignature(
-            script: script, manifest: manifest, isTrustedLocal: false
+            script: script, manifest: manifest
         ), "有效 HMAC 签名应通过校验")
     }
 
@@ -83,7 +83,7 @@ final class PluginLoaderSupplementTests: XCTestCase {
         )
 
         XCTAssertFalse(PluginLoader.verifyPluginSignature(
-            script: script, manifest: manifest, isTrustedLocal: false
+            script: script, manifest: manifest
         ), "不匹配的 HMAC 签名应被拒绝")
     }
 

@@ -13,7 +13,7 @@ import XCTest
 import Foundation
 import Dependencies
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - DocumentExtractionService 补充测试
 

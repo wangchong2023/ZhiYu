@@ -100,7 +100,8 @@ final class SystemStatsCoordinator {
 
     /// 从导入记录中聚合来源统计（imported vs created），填充 provenance 属性
     private func fetchProvenanceStats() async {
-        let records = (try? await importRecordRepo.fetchAll(category: nil, limit: 2000)) ?? []
+        let statsFetchLimit = 2000
+        let records = (try? await importRecordRepo.fetchAll(category: nil, limit: statsFetchLimit)) ?? []
         var importedCount = 0
         var importedSize: Int64 = 0
         var createdCount = 0
@@ -184,7 +185,8 @@ final class SystemStatsCoordinator {
         let stats = await pageStore.getStorageStats()
         let allLogEntries = await logger.getLogEntries()
         
-        let records = (try? await importRecordRepo.fetchAll(category: nil, limit: 2000)) ?? []
+        let statsFetchLimit = 2000
+        let records = (try? await importRecordRepo.fetchAll(category: nil, limit: statsFetchLimit)) ?? []
         var voiceStats = AssetStats(count: 0, size: 0)
         var ocrStats = AssetStats(count: 0, size: 0)
         var fileStats = AssetStats(count: 0, size: 0)

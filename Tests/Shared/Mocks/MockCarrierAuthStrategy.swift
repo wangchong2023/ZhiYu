@@ -11,7 +11,7 @@
 
 import Foundation
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// 运营商一键登录测试替身
 @MainActor

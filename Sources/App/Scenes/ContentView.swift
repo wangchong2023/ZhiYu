@@ -26,6 +26,7 @@ struct ContentView: View {
     @Environment(AppEnvironment.self) var appEnvironment
     @Environment(SettingsStore.self) var settingsStore
     @Environment(\.colorScheme) var colorScheme
+    @Environment(\.interfaceIdiom) internal var idiom
     
     @StateObject internal var tooltipManager = TooltipManager.shared
     @Namespace internal var heroNamespace
@@ -39,6 +40,8 @@ struct ContentView: View {
     @Dependency(\.autoLoginPolicy) internal var autoLoginPolicy: any AutoLoginPolicyProtocol
 
     @State internal var showSidebar = false
+    @State internal var splitColumnVisibility: NavigationSplitViewVisibility = .all
+    @State internal var isKnowledgeSidebarVisible = true
     // Bug #71 修复：AuthSession 是 @Observable，@State 包装单例语义错误且不保证
     // 内部属性变化触发重绘。改为直接引用单例，@Observable 会自动追踪。
     internal var authSession = AuthSession.shared
@@ -60,7 +63,13 @@ struct ContentView: View {
             // 主内容层
             mainContainer(tintColor: tintColor)
                 .onToggleSidebar {
-                    showSidebar.toggle()
+                    if appEnv.screenClass == .compact {
+                        showSidebar.toggle()
+                    } else {
+                        withAnimation(DesignTokens.Animation.Config.prominentSpring) {
+                            splitColumnVisibility = (splitColumnVisibility == .detailOnly) ? .all : .detailOnly
+                        }
+                    }
                 }
             
             // 数据库损坏或降级警告横幅

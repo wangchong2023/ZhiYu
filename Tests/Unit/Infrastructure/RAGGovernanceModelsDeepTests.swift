@@ -9,7 +9,7 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - RAGGovernanceModels 测试
 

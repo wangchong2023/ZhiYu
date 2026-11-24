@@ -60,16 +60,8 @@ final class PluginLoader {
     /// - Parameters:
     ///   - script: 插件 JS 脚本内容
     ///   - manifest: 插件清单（含 codeSignature 字段）
-    ///   - isTrustedLocal: 是否为内部生成的可信本地插件（loadPluginFromRawJS 路径）
     /// - Returns: true 表示签名有效或为内置信任插件；false 表示签名缺失或不匹配
-    static func verifyPluginSignature(script: String, manifest: PluginManifest, isTrustedLocal: Bool = false) -> Bool {
-        // 审查修复 HIGH-2: local. 豁免仅限 loadPluginFromRawJS 内部生成路径
-        // 外部 manifest（.zyplugin / 明文目录）的 local. 前缀视为可疑，强制要求签名
-        if isTrustedLocal {
-            Logger.shared.warning("[PluginRegistry] \(manifest.id): 内部本地开发插件跳过签名校验")
-            return true
-        }
-
+    static func verifyPluginSignature(script: String, manifest: PluginManifest) -> Bool {
         // 外部 manifest 的 local. 前缀视为可疑，拒绝加载
         if manifest.id.hasPrefix(PluginConstants.DefaultManifest.idPrefix) {
             Logger.shared.error("[PluginRegistry] \(manifest.id): 外部插件使用 local. 前缀，视为可疑，拒绝加载")
@@ -388,44 +380,13 @@ final class PluginLoader {
         #endif
     }
 
-    // MARK: - 裸 .js 加载（兼容旧格式，仅 DEBUG 模式允许跳过签名）
+    // MARK: - 裸脚本加载防护
 
+    /// 未携带 manifest 签名的脚本在所有构建配置中均拒绝加载。
     private func loadPluginFromRawJS(_ fileURL: URL) {
-        // 安全红线：裸 .js 无 manifest 签名，Release 模式下拒绝加载，防止恶意 JS 投递
-        #if !DEBUG
-        Logger.shared.error("[PluginRegistry] Release 模式禁止加载未签名裸 .js: \(fileURL.lastPathComponent)")
-        return
-        #else
-        do {
-            let scriptContent = try String(contentsOf: fileURL, encoding: .utf8)
-            let displayName = fileURL.deletingPathExtension().lastPathComponent
-            let manifest = PluginManifest(
-                id: "\(PluginConstants.DefaultManifest.idPrefix)\(displayName)",
-                version: PluginConstants.DefaultManifest.version,
-                author: PluginConstants.DefaultManifest.author,
-                permissions: PluginConstants.DefaultManifest.permissions,
-                names: [CoreConstants.LanguageCode.en: displayName],
-                descriptions: [CoreConstants.LanguageCode.en: PluginConstants.DefaultManifest.descriptionEn]
-            )
-
-            // 🛡️ VULN-001 修复 + 审查修复 HIGH-2: DEBUG 模式下本地 .js 插件通过 isTrustedLocal 豁免签名
-            // 仅此路径（内部生成 id）允许豁免，外部 manifest 的 local. 前缀会被拒绝
-            guard Self.verifyPluginSignature(script: scriptContent, manifest: manifest, isTrustedLocal: true) else {
-                Logger.shared.error("[PluginRegistry] 拒绝加载未签名 .js: \(displayName)")
-                return
-            }
-
-            #if canImport(JavaScriptCore) && !os(watchOS)
-            if let jsPlugin = JavaScriptPlugin(script: scriptContent, manifest: manifest) {
-                registry?.loadPlugin(jsPlugin)
-                Logger.shared.info("[PluginRegistry] Loaded legacy .js: \(displayName)")
-            }
-            #endif
-        } catch {
-            Logger.shared.error("[PluginRegistry] Failed to load .js: \(fileURL.lastPathComponent)", error: error)
-        }
-        #endif
+        Logger.shared.error("[PluginRegistry] Unsigned script rejected: \(fileURL.lastPathComponent)")
     }
+
 }
 
 // MARK: - 辅助扩展

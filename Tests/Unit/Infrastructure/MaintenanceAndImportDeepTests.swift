@@ -10,7 +10,7 @@ import XCTest
 import UFPStorage
 import UFPCore
 import Dependencies
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - MaintenanceService 补盲测试
 

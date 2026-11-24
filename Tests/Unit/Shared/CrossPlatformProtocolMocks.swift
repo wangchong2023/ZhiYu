@@ -14,7 +14,7 @@ import Foundation
 #if os(watchOS)
 @testable import ZhiYuWatch
 #else
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 #endif
 
 // MARK: - Mock DeviceInfoService

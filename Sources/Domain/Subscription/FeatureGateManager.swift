@@ -9,12 +9,19 @@
 //
 
 import Foundation
+import UFPCore
 import Combine
 
 /// C 端集中式能力门禁与配额管理者 (Domain Layer L1.5)
 public final class FeatureGateManager: @unchecked Sendable {
 
-    public static let shared = FeatureGateManager()
+    private static let defaultInstance = FeatureGateManager()
+
+    /// 应用组装层可以注入独立的配额策略实例，默认策略始终禁用游客访问。
+    public static var shared: FeatureGateManager {
+        // inject_exempt: 应用级领域策略覆盖，未注入时使用严格默认实例
+        ServiceContainer.shared.resolveOptional(FeatureGateManager.self) ?? defaultInstance
+    }
 
     private let cacheKey = "zhiyu_cached_plan_quotas"
     private let userDefaults: UserDefaults
@@ -31,16 +38,13 @@ public final class FeatureGateManager: @unchecked Sendable {
 
     // MARK: - 生产环境游客模式红线 (Guest Mode Guard)
 
-    /// 正式上线环境开关：生产环境部署时必须置为 false 禁用匿名游客访问
-    #if DEBUG
-    public static let isGuestModeAllowed: Bool = true // 测试期临时允许
-    #else
-    public static let isGuestModeAllowed: Bool = false // 正式上线红线：禁用匿名游客
-    #endif
+    /// 游客访问默认禁用，所有构建配置遵循同一权限规则
+    private let allowsGuestAccess: Bool
 
     // MARK: - Initializer
 
-    public init(userDefaults: UserDefaults = .standard) {
+    public init(userDefaults: UserDefaults = .standard, allowsGuestAccess: Bool = false) {
+        self.allowsGuestAccess = allowsGuestAccess
         self.userDefaults = userDefaults
         // 冷启动时优先从本地持久化缓存恢复上次联网成功拉取的套餐 (Cache-First)
         self.activeQuotas = loadCachedQuotas()
@@ -71,7 +75,7 @@ public final class FeatureGateManager: @unchecked Sendable {
             return cached
         }
         // 正式环境禁用游客模式时，无登录缓存则返回 nil 拦截跳转登录页
-        guard Self.isGuestModeAllowed else { return nil }
+        guard allowsGuestAccess else { return nil }
         return Self.offlineColdStartQuotas
     }
 

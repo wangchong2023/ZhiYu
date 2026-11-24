@@ -12,7 +12,7 @@ import XCTest
 import UFPCore
 import UFPStorage
 import Dependencies
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 final class ZhiYuDomainTests: XCTestCase {
     

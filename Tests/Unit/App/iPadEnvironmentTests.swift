@@ -10,7 +10,7 @@
 //
 import XCTest
 import UIKit
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// Mock 设备环境实现，用于单元测试中强制模拟大屏（iPadOS）环境，打通各分支逻辑覆盖
 @MainActor

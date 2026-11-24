@@ -38,7 +38,8 @@ extension GraphLayoutProcessor {
         let orphans = orphanNodes(nodes: nodes, edges: edges)
 
         // 2. 低内聚力社区检测
-        let sparse = lowCohesionCommunities(nodes: nodes, threshold: 0.15)
+        let lowCohesionThreshold: Double = 0.15
+        let sparse = lowCohesionCommunities(nodes: nodes, threshold: lowCohesionThreshold)
 
         // 3. 桥接节点检测（连接多个社区的节点）
         let bridges = detectBridgeNodes(nodes: nodes, edges: edges, nodeMap: nodeMap)

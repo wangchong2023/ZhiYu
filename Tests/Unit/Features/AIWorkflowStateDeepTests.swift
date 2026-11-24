@@ -13,7 +13,7 @@ import XCTest
 import UFPCore
 import Combine
 import Dependencies
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - AIWorkflowStore 状态深度测试（MARK 1-7：初始状态 / isLLMEnabled / lintIssues / healthMetrics / lastLintScore / isScanningAI / isProcessingPageAI）
 

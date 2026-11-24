@@ -9,7 +9,7 @@
 //  核心职责：属于 AI 模块，提供相关的结构体或工具支撑。
 //
 import Foundation
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// RAG 自动化评估引擎
 /// 用于计算 AI 检索结果与黄金数据集的匹配度

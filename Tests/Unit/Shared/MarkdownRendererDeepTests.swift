@@ -11,7 +11,7 @@ import UFPCore
 import UFPStorage
 import XCTest
 
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class MarkdownRendererDeepTests: XCTestCase {

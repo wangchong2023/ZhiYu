@@ -9,7 +9,7 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 import UFPCore
 
 #if canImport(JavaScriptCore) && !os(watchOS)

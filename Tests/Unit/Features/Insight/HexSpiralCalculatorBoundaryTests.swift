@@ -12,7 +12,7 @@
 import XCTest
 import CoreGraphics
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 final class HexSpiralCalculatorBoundaryTests: XCTestCase {
 

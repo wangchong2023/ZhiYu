@@ -156,6 +156,9 @@ extension FeatureConstants {
     enum GraphComponentsScale {
         static let linkCountSizeFactor: CGFloat = 1.5
         static let auraSizeMultiplier: CGFloat = 2.2
+        static let auraMinScale: CGFloat = 0.9
+        static let auraMaxScale: CGFloat = 1.1
+        static let pulseMaxScale: CGFloat = 1.8
     }
 
     // MARK: - 摄入限制 (Ingest Limit)

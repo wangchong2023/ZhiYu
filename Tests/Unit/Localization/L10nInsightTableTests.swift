@@ -10,7 +10,7 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// Insight 表 L10n 扩展测试（Insight）
 final class L10nInsightTableTests: XCTestCase {

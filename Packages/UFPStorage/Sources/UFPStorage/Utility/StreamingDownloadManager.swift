@@ -198,7 +198,8 @@ public actor StreamingDownloadManager {
         if let data = resumeData {
             persistResumeData(data, for: taskID, errorPrefix: StreamingDownloadConstants.sandboxAllocationFailedPrefix)
         } else {
-            updateState(for: taskID, to: .failed(error: "resume data generation failed"))
+            let resumeGenFailed = "resume data generation failed"
+            updateState(for: taskID, to: .failed(error: resumeGenFailed))
         }
 
         activeTasks[taskID] = nil
@@ -210,7 +211,8 @@ public actor StreamingDownloadManager {
         let fileURL = resumeDataURL(for: taskID)
         guard FileManager.default.fileExists(atPath: fileURL.path),
               let data = try? Data(contentsOf: fileURL) else {
-            updateState(for: taskID, to: .failed(error: "no resume data"))
+            let noResumeDataMessage = "no resume data"
+            updateState(for: taskID, to: .failed(error: noResumeDataMessage))
             return
         }
 
@@ -251,7 +253,8 @@ public actor StreamingDownloadManager {
             continuations[taskID] = (token, continuation)
 
             // 首次订阅时推送当前已有状态
-            let currentState = states[taskID] ?? .failed(error: "Idle")
+            let idleStateMessage = "Idle"
+            let currentState = states[taskID] ?? .failed(error: idleStateMessage)
             continuation.yield(currentState)
 
             // 订阅断开时自动清理 — 仅当当前槽位 token 仍与本订阅匹配时才删除，
@@ -460,8 +463,9 @@ internal final class StreamingDownloadDelegateHelper: NSObject, URLSessionDownlo
 
         do {
             try FileManager.default.moveItem(at: location, to: safeTempURL)
+            let defaultVerificationFailedMessage = "verification failed"
             Task {
-                await manager.completeDownload(for: taskID, tempFileURL: safeTempURL, verificationFailedMessage: "verification failed")
+                await manager.completeDownload(for: taskID, tempFileURL: safeTempURL, verificationFailedMessage: defaultVerificationFailedMessage)
             }
         } catch {
             Task {

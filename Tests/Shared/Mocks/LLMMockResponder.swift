@@ -10,7 +10,7 @@
 //
 
 import Foundation
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// UI 自动化测试 Mock 响应生成器
 /// 集中管理 `--uitesting` 自愈分支的非流式、RAG 与流式 Mock 响应构造。

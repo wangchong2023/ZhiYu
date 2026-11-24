@@ -12,7 +12,7 @@
 #if os(iOS) || targetEnvironment(macCatalyst)
 import UIKit
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class IOSAccessibilityServiceTests: XCTestCase {

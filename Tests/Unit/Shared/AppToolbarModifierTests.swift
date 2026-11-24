@@ -12,7 +12,7 @@
 import XCTest
 import SwiftUI
 import Dependencies
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// 工具栏修饰符及头像图标布局单元测试套件
 @MainActor
@@ -73,5 +73,19 @@ final class AppToolbarModifierTests: XCTestCase {
             .environment(themeManager)
 
         XCTAssertNotNil(content, "UserProfileMenu 弹出气泡内容应成功初始化")
+    }
+
+    /// TC-TLB-04: 验证 appToolbarItemStandardFrame 修饰符构建成功
+    func testAppToolbarItemStandardFrameConstruction() {
+        let testIcon = Image(systemName: "sparkles")
+            .appToolbarItemStandardFrame()
+        XCTAssertNotNil(testIcon, "appToolbarItemStandardFrame 应成功构建视图")
+    }
+
+    /// TC-TLB-05: 验证 appToolbarAdaptiveTouchTarget 修饰符构建成功
+    func testAppToolbarAdaptiveTouchTargetConstruction() {
+        let testIcon = Image(systemName: "person.crop.circle")
+            .appToolbarAdaptiveTouchTarget()
+        XCTAssertNotNil(testIcon, "appToolbarAdaptiveTouchTarget 应成功构建视图")
     }
 }

@@ -13,7 +13,7 @@ import LocalAuthentication
 #if os(watchOS)
 @testable import ZhiYuWatch
 #else
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 #endif
 
 /// 验证 watchOS 专有平台能力降级类 (Stub) 的行为

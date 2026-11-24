@@ -14,7 +14,7 @@ import XCTest
 import SwiftUI
 import UFPCore
 import Dependencies
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class AuthViewLayoutTraitTests: XCTestCase {
@@ -61,6 +61,44 @@ final class AuthViewLayoutTraitTests: XCTestCase {
 
         XCTAssertEqual(rotateStateCount, 1, "rotateDegrees 状态应单一来源，两布局共享而非重复声明")
         XCTAssertEqual(regionStateCount, 1, "displayedRegion 状态应单一来源，两布局共享而非重复声明")
+    }
+
+    // MARK: - 3. 语言菜单平铺勾选与无边框样式修饰符
+
+    func testAuthView_LanguageSelectionPredicate_MatchesOnlyActiveMode() {
+        let activeModes: [LanguageMode] = [.auto, .chinese, .english]
+        for current in activeModes {
+            for candidate in LanguageMode.allCases {
+                let expected = (candidate == current)
+                XCTAssertEqual(
+                    AuthView.isLanguageSelected(candidate, current: current),
+                    expected,
+                    "当前语言为 \(current.rawValue) 时，\(candidate.rawValue) 的勾选状态应为 \(expected)"
+                )
+            }
+        }
+    }
+
+    func testAuthView_PlainMenuStyleModifier_PreservesRenderableViewAcrossIdioms() {
+        let styledMenu = Menu {
+            ForEach(LanguageMode.allCases) { mode in
+                Toggle(mode.displayName, isOn: .constant(mode == .auto))
+            }
+        } label: {
+            Text(LanguageMode.auto.displayName)
+        }
+        .plainMenuStyleIfMac()
+
+        for idiom in [InterfaceIdiom.mac, InterfaceIdiom.iPhone] {
+            let menuHost = UIHostingController(
+                rootView: AnyView(styledMenu.environment(\.interfaceIdiom, idiom))
+            )
+            menuHost.view.layoutIfNeeded()
+            XCTAssertNotNil(menuHost.view)
+
+            let authHost = render(idiom: idiom)
+            XCTAssertNotNil(authHost.view)
+        }
     }
 
     // MARK: - 辅助

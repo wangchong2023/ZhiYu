@@ -19,6 +19,7 @@
 //  injectWrap(nil) 返回 .none，最终 @Inject var x: Int?? = nil
 //
 
+import UFPCoreTestMocks
 import XCTest
 @testable import UFPCore
 

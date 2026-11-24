@@ -9,6 +9,7 @@
 //  核心职责：封装特定平台的 SwiftUI View Modifiers，解耦 Feature 层的宏依赖。
 //
 import SwiftUI
+import UFPDesignSystem
 #if canImport(UIKit)
 import UIKit
 #endif
@@ -285,5 +286,151 @@ public extension View {
         #else
         self
         #endif
+    }
+
+    // MARK: - 菜单样式适配
+
+    /// 在 macOS 上移除 Menu 默认按钮外框与系统下拉箭头，避免与自定义胶囊/图标标签叠加双层外框；
+    /// iOS/iPadOS/watchOS 保持原样，不影响现有布局与视觉快照。
+    @ViewBuilder
+    func plainMenuStyleIfMac() -> some View {
+        #if os(macOS)
+        self
+            .menuStyle(.button)
+            .buttonStyle(.plain)
+            .menuIndicator(.hidden)
+            .fixedSize()
+        #else
+        self
+        #endif
+    }
+
+    // MARK: - 工具栏尺寸适配
+
+    /// 工具栏纯图标按钮尺寸自适应：
+    /// 在 macOS 下为工具栏图标按钮提供舒展的最小尺寸（28x28），防止因固定 20pt 宽度在工具栏中被左右挤压变形；
+    /// 在 iOS/iPadOS/watchOS 下保持内容自适应大小。
+    @ViewBuilder
+    func appToolbarItemStandardFrame() -> some View {
+        #if os(macOS)
+        self
+            .frame(minWidth: DesignTokens.Spacing.largeIconSize, minHeight: DesignTokens.Spacing.largeIconSize)
+            .contentShape(Rectangle())
+        #else
+        self
+        #endif
+    }
+
+    /// 用户头像及工具栏触控目标适配：
+    /// iOS/iPadOS/watchOS: 保持 HIG 44x44 触控热区
+    /// macOS: 遵循 macOS 工具栏 28x28 标准最小尺寸，保证舒展比例且不失衡
+    @ViewBuilder
+    func appToolbarAdaptiveTouchTarget() -> some View {
+        #if os(macOS)
+        self
+            .frame(minWidth: DesignTokens.Spacing.largeIconSize, minHeight: DesignTokens.Spacing.largeIconSize)
+            .contentShape(Rectangle())
+        #else
+        self.higTouchTarget()
+        #endif
+    }
+
+    /// 工具栏按钮样式跨平台适配：
+    /// macOS 工具栏保留原生按钮样式，避免 `.buttonStyle(.plain)` 剥离系统水平内边距导致图标按钮被左右挤压；
+    /// iOS/iPadOS/watchOS 保持 `.plain` 样式。
+    @ViewBuilder
+    func appToolbarButtonStyle() -> some View {
+        #if os(macOS)
+        self
+        #else
+        self.buttonStyle(.plain)
+        #endif
+    }
+
+    /// 跨平台分组表单样式：macOS 使用 `.grouped` 对齐系统设置卡片风格，与列表页面主题统一
+    @ViewBuilder
+    func appGroupedFormStyle() -> some View {
+        #if os(macOS)
+        self.formStyle(.grouped)
+        #else
+        self
+        #endif
+    }
+
+    /// 桌面宽屏/全屏居中限宽容器：仅在 `.mac` 桌面形态下限制内容最大宽度并居中，
+    /// 避免超宽屏全屏时单列内容被拉成横跨整屏的长条；iOS/iPadOS/watchOS 保持原样。
+    func appDesktopReadableWidth(_ maxWidth: CGFloat) -> some View {
+        modifier(DesktopReadableWidthModifier(maxWidth: maxWidth))
+    }
+
+    /// macOS NavigationSplitView 侧边栏列移除系统默认 sidebarToggle（仅在 sidebar 列上生效）
+    @ViewBuilder
+    func appHideSystemSidebarToggle() -> some View {
+        #if os(macOS)
+        self.toolbar(removing: .sidebarToggle)
+        #else
+        self
+        #endif
+    }
+
+    /// macOS NavigationSplitView 右侧 detail 窗体导航栏：
+    /// 挂载于 detail 列，按「主侧边栏折叠 →（可选）知识库二级导航折叠 → VaultBadge」顺序排列，
+    /// 始终紧贴右侧主窗体左缘，随分栏展开/折叠平滑跟随。
+    @ViewBuilder
+    func appCustomSidebarToggle(
+        visibility: Binding<NavigationSplitViewVisibility>,
+        secondaryVisibility: Binding<Bool>? = nil
+    ) -> some View {
+        #if os(macOS)
+        self
+            .toolbar {
+                ToolbarItemGroup(placement: .navigation) {
+                    Button {
+                        withAnimation(DesignTokens.Animation.Config.prominentSpring) {
+                            visibility.wrappedValue = (visibility.wrappedValue == .detailOnly) ? .all : .detailOnly
+                        }
+                    } label: {
+                        Image(systemName: DesignTokens.Icons.sidebarToggle)
+                            .appToolbarItemStandardFrame()
+                    }
+                    .help(L10n.Common.Sidebar.toggle)
+                    .accessibilityIdentifier("toggleSidebarButton")
+
+                    if let secondaryVisibility {
+                        Button {
+                            withAnimation(DesignTokens.Animation.Config.prominentSpring) {
+                                secondaryVisibility.wrappedValue.toggle()
+                            }
+                        } label: {
+                            Image(systemName: DesignTokens.Icons.listBulletIndent)
+                                .foregroundStyle(secondaryVisibility.wrappedValue ? .appAccent : .appSecondary)
+                                .appToolbarItemStandardFrame()
+                        }
+                        .help(L10n.Common.Sidebar.title)
+                        .accessibilityIdentifier("toggleKnowledgeSidebarButton")
+                    }
+
+                    VaultBadge()
+                }
+            }
+        #else
+        self
+        #endif
+    }
+}
+
+/// 桌面端宽屏阅读最大宽度修饰符（基于运行时 Trait `interfaceIdiom`，零平台宏）
+private struct DesktopReadableWidthModifier: ViewModifier {
+    @Environment(\.interfaceIdiom) private var idiom
+    let maxWidth: CGFloat
+
+    func body(content: Content) -> some View {
+        if idiom == .mac {
+            content
+                .frame(maxWidth: maxWidth)
+                .frame(maxWidth: .infinity)
+        } else {
+            content
+        }
     }
 }

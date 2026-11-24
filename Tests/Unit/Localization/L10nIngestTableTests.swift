@@ -10,7 +10,7 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// Ingest 表 L10n 扩展测试（Transfer）
 final class L10nIngestTableTests: XCTestCase {

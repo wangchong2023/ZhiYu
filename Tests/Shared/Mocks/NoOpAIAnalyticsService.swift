@@ -10,7 +10,7 @@
 //
 
 import Foundation
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// 测试用空操作 AI 指标分析服务
 public final class NoOpAIAnalyticsService: AIAnalyticsServiceProtocol, @unchecked Sendable {

@@ -80,7 +80,9 @@ actor KnowledgeIngestPipeline {
             // 分块与 Q&A
             await self.updateProgress(stage: .chunking, progress: 0.40, log: L10n.Ingest.Status.chunking)
             
-            let parentConfig = TextChunkerProcessor.Config(chunkSize: 1000, chunkOverlap: 200, separators: TextChunkerProcessor.default.separators)
+            let parentChunkSize = 1000
+            let parentChunkOverlap = 200
+            let parentConfig = TextChunkerProcessor.Config(chunkSize: parentChunkSize, chunkOverlap: parentChunkOverlap, separators: TextChunkerProcessor.default.separators)
             let parentChunks = self.chunker.split(text: content, config: parentConfig)
             
             for (pIndex, pChunk) in parentChunks.enumerated() {
@@ -159,7 +161,9 @@ actor KnowledgeIngestPipeline {
     ) async throws -> [PageChunk] {
         var chunkBatch: [PageChunk] = []
         let parentChunkID = "p_\(pageID.uuidString)_\(pIndex)"
-        let childConfig = TextChunkerProcessor.Config(chunkSize: 300, chunkOverlap: 50, separators: TextChunkerProcessor.default.separators)
+        let childChunkSize = 300
+        let childChunkOverlap = 50
+        let childConfig = TextChunkerProcessor.Config(chunkSize: childChunkSize, chunkOverlap: childChunkOverlap, separators: TextChunkerProcessor.default.separators)
 
         // 1. 保存父块
         let parentRecord = PageChunk(

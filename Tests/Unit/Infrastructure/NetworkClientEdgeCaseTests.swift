@@ -8,7 +8,7 @@
 
 import XCTest
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - NetworkClient 边界分支测试
 

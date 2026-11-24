@@ -9,7 +9,7 @@
 import XCTest
 import SwiftUI
 import Dependencies
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 final class ThemeManagerTests: XCTestCase {
 

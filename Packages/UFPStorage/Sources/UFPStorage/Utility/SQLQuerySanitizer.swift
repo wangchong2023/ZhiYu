@@ -14,16 +14,24 @@ import Foundation
 
 /// 通用存储引擎：SQL 查询清洗工具。
 public enum SQLQuerySanitizer {
+    private enum EscapeTokens {
+        static let backslash = "\\"
+        static let escapedBackslash = "\\\\"
+        static let percent = "%"
+        static let escapedPercent = "\\%"
+        static let underscore = "_"
+        static let escapedUnderscore = "\\_"
+    }
 
     /// 转义 SQL LIKE 查询中的通配符（`%`, `_`, `\`），防止用户输入特殊字符引发意外全表扫描或误匹配
     /// - Parameter query: 原始搜索词
     /// - Returns: 转义后的安全模糊匹配字面量（两端包裹 `%`）
     public static func makeLikePattern(_ query: String) -> String {
         let escaped = query
-            .replacingOccurrences(of: "\\", with: "\\\\")
-            .replacingOccurrences(of: "%", with: "\\%")
-            .replacingOccurrences(of: "_", with: "\\_")
-        return "%\(escaped)%"
+            .replacingOccurrences(of: EscapeTokens.backslash, with: EscapeTokens.escapedBackslash)
+            .replacingOccurrences(of: EscapeTokens.percent, with: EscapeTokens.escapedPercent)
+            .replacingOccurrences(of: EscapeTokens.underscore, with: EscapeTokens.escapedUnderscore)
+        return "\(EscapeTokens.percent)\(escaped)\(EscapeTokens.percent)"
     }
 
     /// 校验搜索词是否有效（非空且去除空白后具有最小有效检索长度）

@@ -13,7 +13,7 @@ import XCTest
 import UFPCore
 import Combine
 import Dependencies
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - AIWorkflowStore 清理与一致性深度测试（MARK 18-21：clearAll / AppEventBus / 多次操作 / 边界场景）
 

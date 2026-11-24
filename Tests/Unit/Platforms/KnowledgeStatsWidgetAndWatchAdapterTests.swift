@@ -12,7 +12,7 @@
 import XCTest
 import SwiftUI
 import WidgetKit
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 final class KnowledgeStatsWidgetAndWatchAdapterTests: XCTestCase {
 

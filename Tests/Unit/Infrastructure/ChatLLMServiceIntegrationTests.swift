@@ -9,7 +9,7 @@
 import XCTest
 import UFPStorage
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - ChatLLMService 专用 URLProtocol 拦截器
 

@@ -98,8 +98,8 @@ public struct NotebookCoverView: View {
         )
         .cornerRadius(12)
         .shadow(color: Color.theme.black.opacity(DesignTokens.Opacity.glass), radius: 8, x: 0, y: 4)
-        .scaleEffect(isPressed ? 0.95 : 1.0)
-        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isPressed)
+        .scaleEffect(isPressed ? FeatureConstants.TaskCenterLayout.pressedScale : 1.0)
+        .animation(.appProminent, value: isPressed)
     }
     
     /// 将 16 进制颜色字符串数组解析为 SwiftUI Color 数组

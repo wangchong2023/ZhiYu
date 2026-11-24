@@ -157,21 +157,51 @@ extension ContentView {
         @Bindable var store = store
         @Bindable var router = router
         Group {
-            if router.selectedTab == .knowledge {
-                NavigationSplitView {
+            if idiom == .mac {
+                // macOS 统一使用单一 2 栏 NavigationSplitView，消除切 Tab 重建闪烁；
+                // 知识库二级导航内嵌在 detail 左侧，由独立的 secondaryVisibility 按钮平滑折叠/展开。
+                NavigationSplitView(columnVisibility: $splitColumnVisibility) {
                     AdaptiveSidebarView(selectedTab: $router.selectedTab)
                         .macSidebarColumnWidth()
+                        .appHideSystemSidebarToggle()
+                } detail: {
+                    HStack(spacing: 0) {
+                        if router.selectedTab == .knowledge && isKnowledgeSidebarVisible {
+                            SidebarView(heroNamespace: heroNamespace, selection: $router.sidebarSelection)
+                                .frame(width: DesignTokens.Metrics.macSidebarWidth)
+                                .transition(.move(edge: .leading).combined(with: .opacity))
+
+                            Divider()
+                                .background(Color.appBorder.opacity(DesignTokens.Opacity.soft))
+                        }
+
+                        AdaptiveDetailView(selectedTab: $router.selectedTab, selection: $router.sidebarSelection, heroNamespace: heroNamespace)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
+                    .appCustomSidebarToggle(
+                        visibility: $splitColumnVisibility,
+                        secondaryVisibility: router.selectedTab == .knowledge ? $isKnowledgeSidebarVisible : nil
+                    )
+                }
+            } else if router.selectedTab == .knowledge {
+                NavigationSplitView(columnVisibility: $splitColumnVisibility) {
+                    AdaptiveSidebarView(selectedTab: $router.selectedTab)
+                        .macSidebarColumnWidth()
+                        .appHideSystemSidebarToggle()
                 } content: {
                     SidebarView(heroNamespace: heroNamespace, selection: $router.sidebarSelection)
                 } detail: {
                     AdaptiveDetailView(selectedTab: $router.selectedTab, selection: $router.sidebarSelection, heroNamespace: heroNamespace)
+                        .appCustomSidebarToggle(visibility: $splitColumnVisibility)
                 }
             } else {
-                NavigationSplitView {
+                NavigationSplitView(columnVisibility: $splitColumnVisibility) {
                     AdaptiveSidebarView(selectedTab: $router.selectedTab)
                         .macSidebarColumnWidth()
+                        .appHideSystemSidebarToggle()
                 } detail: {
                     AdaptiveDetailView(selectedTab: $router.selectedTab, selection: $router.sidebarSelection, heroNamespace: heroNamespace)
+                        .appCustomSidebarToggle(visibility: $splitColumnVisibility)
                 }
             }
         }

@@ -89,6 +89,7 @@ public struct UserProfileView: View {
                         statisticsSection
                     }
                     .padding(DesignTokens.Spacing.medium)
+                    .appDesktopReadableWidth(DesignTokens.Metrics.macReadableContentWidth)
                 }
 
             }
@@ -194,7 +195,7 @@ public struct UserProfileView: View {
             )
             .onAppear {
                 // 开启无限循环的呼吸缓动动画，控制发光强弱
-                withAnimation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true)) {
+                withAnimation(.easeInOut(duration: DesignTokens.Animations.ambientBreathDuration).repeatForever(autoreverses: true)) {
                     isAnimatingGlow = true
                 }
             }
@@ -383,7 +384,8 @@ public struct UserProfileView: View {
             if success {
                 presentToast(L10n.Auth.saveSuccess)
                 // 延迟 1.2 秒后自动关闭 Sheet
-                try? await Task.sleep(for: .seconds(1.2))
+                let autoDismissDelaySeconds: Double = 1.2
+                try? await Task.sleep(for: .seconds(autoDismissDelaySeconds))
                 dismiss()
             } else {
                 presentToast(L10n.Auth.saveFailed)
@@ -398,7 +400,8 @@ public struct UserProfileView: View {
             showToastOverlay = true
         }
         Task {
-            try? await Task.sleep(for: .seconds(2.0))
+            let toastDisplayDurationSeconds: Double = 2.0
+            try? await Task.sleep(for: .seconds(toastDisplayDurationSeconds))
             withAnimation {
                 showToastOverlay = false
                 toastMessage = nil

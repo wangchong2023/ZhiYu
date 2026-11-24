@@ -10,7 +10,7 @@
 
 import XCTest
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class AuthLoginDeepTests: XCTestCase {

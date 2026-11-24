@@ -13,7 +13,7 @@
 import XCTest
 import UFPCore
 import UFPStorage
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 final class StorageAndVectorResilienceTests: XCTestCase {
 
@@ -163,8 +163,8 @@ final class StorageAndVectorResilienceTests: XCTestCase {
         do {
             try await gatekeeper.acquire()
             XCTFail("排空期间 acquire 必须抛出 DatabaseError.draining 错误")
-        } catch let error as ZhiYu.DatabaseError {
-            XCTAssertEqual(error, ZhiYu.DatabaseError.draining)
+        } catch let error as ZhiYuUnitTestHost.DatabaseError {
+            XCTAssertEqual(error, ZhiYuUnitTestHost.DatabaseError.draining)
         } catch {
             XCTFail("捕获到非预期的错误类型: \(error)")
         }

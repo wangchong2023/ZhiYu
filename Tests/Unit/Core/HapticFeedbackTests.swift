@@ -13,7 +13,7 @@
 import XCTest
 import UFPCore
 import SwiftUI
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class HapticFeedbackTests: XCTestCase {

@@ -13,7 +13,7 @@ import XCTest
 import SwiftUI
 import UFPCore
 import Dependencies
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class AppLaunchAndEnvironmentDeepAuditTests: XCTestCase {
@@ -35,7 +35,7 @@ final class AppLaunchAndEnvironmentDeepAuditTests: XCTestCase {
     // MARK: - 2. AppEnvironment 初始化链路与 Store 单例持有
 
     func testAppEnvironment_InitializationChain() {
-        let env = AppEnvironment.shared
+        let env = TestAppEnvironment.shared
 
         XCTAssertNotNil(env.router)
         XCTAssertNotNil(env.themeManager)

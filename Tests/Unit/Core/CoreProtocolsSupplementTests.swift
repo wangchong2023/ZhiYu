@@ -10,7 +10,7 @@
 import XCTest
 import UFPCore
 import LocalAuthentication
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// Core/Protocols 协议 Stub/NoOp 实现补盲测试
 ///

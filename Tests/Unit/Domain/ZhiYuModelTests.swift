@@ -12,7 +12,7 @@ import XCTest
 import SwiftUI
 import UFPStorage
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - 知识页面模型单元测试
 @MainActor

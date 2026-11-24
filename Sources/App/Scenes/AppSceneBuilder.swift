@@ -29,8 +29,14 @@ enum AppSceneBuilder {
             appEnv: appEnv, appModel: appModel, dependencies: dependencies,
             themeManager: themeManager, onboardingService: onboardingService
         )
-        MacSceneBuilder.settings()
-        MacSceneBuilder.windows()
+        MacSceneBuilder.settings(
+            appEnv: appEnv, appModel: appModel, dependencies: dependencies,
+            themeManager: themeManager, onboardingService: onboardingService
+        )
+        MacSceneBuilder.windows(
+            appEnv: appEnv, appModel: appModel, dependencies: dependencies,
+            themeManager: themeManager, onboardingService: onboardingService
+        )
         #else
         iOSSceneBuilder.main(
             appEnv: appEnv, appModel: appModel, dependencies: dependencies,

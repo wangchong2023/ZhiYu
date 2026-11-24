@@ -10,7 +10,7 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// System 表 L10n 扩展测试（Shortcuts/Workflow/Coachmark/Reminder）
 final class L10nSystemTableTests: XCTestCase {

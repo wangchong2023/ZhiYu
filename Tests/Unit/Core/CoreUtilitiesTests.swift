@@ -6,7 +6,7 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// PageContentUtility 单元测试
 /// 验证字数统计与标签提取算法

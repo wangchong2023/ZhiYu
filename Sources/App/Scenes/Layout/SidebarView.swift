@@ -113,6 +113,7 @@ extension View {
 
 /// 侧边栏工具栏修饰符 (大屏和小屏专属自适应)
 struct SidebarToolbarModifier: ViewModifier {
+    @Environment(\.interfaceIdiom) private var idiom
     let title: String
     let appEnv: any AppEnvironmentProtocol
     
@@ -125,20 +126,24 @@ struct SidebarToolbarModifier: ViewModifier {
             content.appTabToolbar(title: title)
         } else {
             // 在 iPad/Mac (Regular/Expansive) 下：侧边栏只保留 VaultBadge
-            // UserProfileMenu 已在内容区顶部工具栏（AppSubPageToolbarModifier）中自动追加，无需重复放置
+            // macOS 三栏工具栏会合并各列标题，第二列不设 navigationTitle 以免与子页面标题重复显示。
             content
-                .navigationTitle(title)
+                .navigationTitle(idiom == .mac ? "" : title)
                 .appNavigationBarTitleDisplayMode(.inline)
                 .toolbar {
-                    #if os(watchOS)
-                    ToolbarItem(placement: .automatic) {
-                        VaultBadge()
+                    // macOS 三栏工具栏会合并各列内容：第一列已提供 VaultBadge，
+                    // 此处只保留导航标题，避免窗口顶部出现两个「项目调研」选择器。
+                    if idiom != .mac {
+                        #if os(watchOS)
+                        ToolbarItem(placement: .automatic) {
+                            VaultBadge()
+                        }
+                        #else
+                        ToolbarItem(placement: .principal) {
+                            VaultBadge()
+                        }
+                        #endif
                     }
-                    #else
-                    ToolbarItem(placement: .principal) {
-                        VaultBadge()
-                    }
-                    #endif
                 }
         }
     }

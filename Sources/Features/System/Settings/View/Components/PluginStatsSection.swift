@@ -56,7 +56,7 @@ struct PluginStatsSection: View {
                             Chart(sortedUsage, id: \.key) { id, usage in
                                 SectorMark(
                                     angle: .value("Time", usage.totalExecutionTime),
-                                    innerRadius: .ratio(0.65),
+                                    innerRadius: .ratio(FeatureConstants.TaskCenterLayout.donutInnerRadiusRatio),
                                     angularInset: DesignTokens.Spacing.atomic
                                 )
                                 .foregroundStyle(by: .value("Plugin", displayName(for: id)))

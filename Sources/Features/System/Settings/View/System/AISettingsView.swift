@@ -23,14 +23,18 @@ struct AISettingsView: View {
     /// 作为独立页面（appFullScreenCover）弹出时显示；嵌入 SettingsView 的 detailColumn 时隐藏，
     /// 由 SettingsView 统一管理工具栏，避免出现冗余的「完成」按钮。
     var showsDismissButton: Bool = true
+    /// 嵌入父容器时复用父级统一背景，避免重复叠加 MeshGradient 与模糊层
+    var usesEmbeddedBackground: Bool = false
 
     @State private var selectedTab = 0
 
     var body: some View {
         ZStack {
-            // 在最外层统一渲染背景，并忽略安全区，确保子视图无需重复制做
-            themeManager.pageBackground()
-                .ignoresSafeArea()
+            if !usesEmbeddedBackground {
+                // 在最外层统一渲染背景，并忽略安全区，确保子视图无需重复制做
+                themeManager.pageBackground()
+                    .ignoresSafeArea()
+            }
             
             VStack(spacing: 0) {
                 // 使用系统 Picker(.segmented) 保证 hit testing 稳定可靠

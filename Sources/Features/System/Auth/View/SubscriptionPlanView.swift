@@ -120,6 +120,7 @@ public struct SubscriptionPlanView: View {
                     }
                 }
                 .padding(DesignTokens.Spacing.medium)
+                .appDesktopReadableWidth(DesignTokens.Metrics.macReadableContentWidth)
             }
 
             // 全屏购买 Loading 覆盖

@@ -10,7 +10,7 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// AI 表 L10n 扩展测试（AI/Chat/Voice 三个子命名空间）
 final class L10nAITableTests: XCTestCase {

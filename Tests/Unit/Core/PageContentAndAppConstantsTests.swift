@@ -7,7 +7,7 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - PageContentUtility.extractAllTags 边界问题验证
 

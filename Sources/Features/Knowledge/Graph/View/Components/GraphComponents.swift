@@ -122,8 +122,8 @@ struct GraphNodeView: View {
                     .fill(nodeBaseColor.opacity(DesignTokens.Colors.Opacity.glassOpacity))
                     .frame(width: nodeSize * FeatureConstants.GraphComponentsScale.auraSizeMultiplier, height: nodeSize * FeatureConstants.GraphComponentsScale.auraSizeMultiplier)
                     .blur(radius: DesignTokens.Spacing.cardRadius)
-                    .scaleEffect(isAnimating ? 1.1 : 0.9)
-                    .animation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true), value: isAnimating)
+                    .scaleEffect(isAnimating ? FeatureConstants.GraphComponentsScale.auraMaxScale : FeatureConstants.GraphComponentsScale.auraMinScale)
+                    .animation(.easeInOut(duration: DesignTokens.Animations.ambientBreathDuration).repeatForever(autoreverses: true), value: isAnimating)
             }
 
             // 2. 核心脉冲 (Core Pulse)
@@ -131,9 +131,9 @@ struct GraphNodeView: View {
                 Circle()
                     .stroke(nodeBaseColor.opacity(DesignTokens.SystemOpacity.disabled), lineWidth: DesignTokens.SystemStroke.divider)
                     .frame(width: nodeSize, height: nodeSize)
-                    .scaleEffect(isAnimating ? 1.8 : 1.0)
+                    .scaleEffect(isAnimating ? FeatureConstants.GraphComponentsScale.pulseMaxScale : 1.0)
                     .opacity(isAnimating ? 0 : 1)
-                    .animation(.easeOut(duration: 1.2).repeatForever(autoreverses: false), value: isAnimating)
+                    .animation(.easeOut(duration: DesignTokens.Animations.pulseDuration).repeatForever(autoreverses: false), value: isAnimating)
             }
 
             // 3. 节点本体 (Node Body)
@@ -164,7 +164,7 @@ struct GraphNodeView: View {
                         .stroke(.appGloss.opacity(DesignTokens.SystemOpacity.glassStrong), lineWidth: DesignTokens.Spacing.borderWidth)
                 )
                 .shadow(color: nodeBaseColor.opacity(isSelected ? DesignTokens.SystemOpacity.textSecondary : DesignTokens.SystemOpacity.disabled), radius: isSelected ? DesignTokens.Spacing.standardPadding : DesignTokens.SystemSpacing.small)
-                .scaleEffect(isSelected ? 1.1 : 1.0)
+                .scaleEffect(isSelected ? FeatureConstants.GraphComponentsScale.auraMaxScale : 1.0)
 
             // 4. 类型图标
             Image(systemName: node.pageType.icon)
@@ -221,7 +221,9 @@ struct GraphNodeLabel: View {
     /// 动态字号计算：针对不同屏幕尺寸进行微调
     /// 大屏幕（iPad）下字号从 11pt 提升到 9pt，手机端保持 8pt，确保视觉比例和谐
     private var fontSize: CGFloat {
-        horizontalSizeClass == .regular ? 10 : 8
+        let regularFontSize: CGFloat = 10
+        let compactFontSize: CGFloat = 8
+        return horizontalSizeClass == .regular ? regularFontSize : compactFontSize
     }
 
     var body: some View {
@@ -293,7 +295,7 @@ struct GraphZoomControls: View {
                 accessibilityLabel: L10n.Graph.accessibility.fitToScreenLabel,
                 accessibilityHint: L10n.Graph.accessibility.fitToScreenHint
             ) {
-                withAnimation(.spring(response: 0.5)) { onFitToScreen() }
+                withAnimation(.appSlow) { onFitToScreen() }
             }
 
             zoomDivider()
@@ -304,7 +306,7 @@ struct GraphZoomControls: View {
                 accessibilityLabel: L10n.Graph.accessibility.relayoutLabel,
                 accessibilityHint: L10n.Graph.accessibility.relayoutHint
             ) {
-                withAnimation(.spring(response: 0.6)) { onRelayout() }
+                withAnimation(.appSlow) { onRelayout() }
             }
 
             zoomDivider()

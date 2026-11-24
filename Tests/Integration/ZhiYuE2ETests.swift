@@ -13,7 +13,7 @@ import XCTest
 import UFPCore
 import Network
 import UFPStorage
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - E2E: Complete Knowledge Page Workflow Tests
 /// 覆盖从创建→编辑→链接→健康检查→删除的完整页面生命周期
@@ -31,7 +31,7 @@ final class KnowledgePageWorkflowTests: XCTestCase {
         // 1. 重置全局状态 (核心隔离逻辑)
         ServiceContainer.shared.reset()
         DatabaseManager.shared.reset()
-        DatabaseManager.shared.isInTesting = true
+        DatabaseManager.shared.usesTransientStorage = true
         
         // 2. 初始化测试专用服务 (使用内存数据库)
         let dbQueue = try DatabaseQueue()
@@ -241,7 +241,7 @@ final class SearchFilterWorkflowTests: XCTestCase {
         resetPersistentTestState()
         ServiceContainer.shared.reset()
         DatabaseManager.shared.reset()
-        DatabaseManager.shared.isInTesting = true
+        DatabaseManager.shared.usesTransientStorage = true
         
         let dbQueue = try DatabaseQueue()
         let sqliteStore = SQLiteStore(dbWriter: dbQueue)

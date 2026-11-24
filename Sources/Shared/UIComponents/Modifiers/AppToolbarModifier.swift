@@ -14,6 +14,7 @@ import UFPDesignSystem
 // MARK: - Root Tab Toolbar
 /// 主标签页工具栏修饰符 (用于根页面)
 struct AppTabToolbarModifier<Trailing: View>: ViewModifier {
+    @Environment(\.interfaceIdiom) private var idiom
     let title: String
     let trailingItems: Trailing
     let showVaultBadge: Bool
@@ -39,7 +40,9 @@ struct AppTabToolbarModifier<Trailing: View>: ViewModifier {
                     }
                 }
                 #else
-                if showVaultBadge {
+                // macOS 的 NavigationSplitView 会把第一列 AdaptiveSidebarView 的 VaultBadge
+                // 合并进窗口工具栏，内容区不再重复渲染，避免出现两个知识库选择器。
+                if showVaultBadge && idiom != .mac {
                     ToolbarItem(placement: .principal) {
                         VaultBadge()
                     }
@@ -63,6 +66,7 @@ struct AppTabToolbarModifier<Trailing: View>: ViewModifier {
 // MARK: - Sub Page Toolbar
 /// 子页面工具栏修饰符 (解决返回按钮重叠)
 struct AppSubPageToolbarModifier<Trailing: View>: ViewModifier {
+    @Environment(\.interfaceIdiom) private var idiom
     let title: String
     let trailingItems: Trailing
     let showVaultBadge: Bool
@@ -78,6 +82,7 @@ struct AppSubPageToolbarModifier<Trailing: View>: ViewModifier {
     /// - Returns: 返回值
     func body(content: Content) -> some View {
         content
+            .navigationTitle(idiom == .mac ? title : "")
             .appNavigationBarTitleDisplayMode(.inline)
             .toolbar {
                 #if os(watchOS)
@@ -87,16 +92,20 @@ struct AppSubPageToolbarModifier<Trailing: View>: ViewModifier {
                         .foregroundStyle(.appText)
                 }
                 #else
-                ToolbarItem(placement: .principal) {
-                    VStack(spacing: 0) {
-                        Text(title)
-                            .font(.headline.weight(.bold))
-                            .foregroundStyle(.appText)
-                        
-                        if showVaultBadge {
-                            VaultBadge()
-                                .scaleEffect(0.85)
-                                .padding(.top, -4)
+                // macOS 原生工具栏将 .principal 包裹成玻璃胶囊，直接使用 .navigationTitle(title) 呈现标准窗口标题；
+                // iOS/iPadOS 保留 .principal 居中标题与可选 VaultBadge。
+                if idiom != .mac {
+                    ToolbarItem(placement: .principal) {
+                        VStack(spacing: 0) {
+                            Text(title)
+                                .font(.headline.weight(.bold))
+                                .foregroundStyle(.appText)
+                            
+                            if showVaultBadge {
+                                VaultBadge()
+                                    .scaleEffect(0.85)
+                                    .padding(.top, -4)
+                            }
                         }
                     }
                 }

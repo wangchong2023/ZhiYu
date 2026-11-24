@@ -41,7 +41,7 @@ public actor TransactionGatekeeper {
     public private(set) var activeCount: Int = 0
 
     /// 是否正在排空（Vault 热切换中）。
-    public private(set) var draining: Bool = false
+    public internal(set) var draining: Bool = false
 
     /// 排空完成时的延续回调队列，用于唤醒等待中的 `drain()`。
     private var drainWaiters: [DrainWaiter] = []
@@ -69,11 +69,13 @@ public actor TransactionGatekeeper {
         }
     }
 
+    public static let defaultDrainTimeoutMs: Int = 1500
+
     /// 排空所有活跃事务（Vault 热切换前调用）。
     ///
     /// - Parameter maxWaitTime: 最大等待时间，超时后强制返回（调用方决定是否强制关闭连接）。
     /// - Returns: 是否在超时前成功排空所有事务。
-    public func drain(maxWaitTime: Duration = .milliseconds(1500)) async -> Bool {
+    public func drain(maxWaitTime: Duration = .milliseconds(TransactionGatekeeper.defaultDrainTimeoutMs)) async -> Bool {
         draining = true
         let deadline = ContinuousClock().now.advanced(by: maxWaitTime)
 
@@ -108,11 +110,6 @@ public actor TransactionGatekeeper {
         activeCount = 0
         draining = false
         resumeAllDrainWaiters()
-    }
-
-    /// 设置排空状态（仅测试使用）。
-    public func setDrainingForTesting(_ value: Bool) {
-        draining = value
     }
 
     /// 唤醒所有 drain 等待者并清空队列（消除 release 与 reset 重复）。

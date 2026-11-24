@@ -46,7 +46,8 @@ struct PageDetailMetadataSection: View {
                                     copiedUrl = sourceURL
                                 }
                                 Task {
-                                    try? await Task.sleep(nanoseconds: 2_000_000_000)
+                                    let copyFeedbackDurationNs: UInt64 = 2_000_000_000
+                                    try? await Task.sleep(nanoseconds: copyFeedbackDurationNs)
                                     withAnimation(.spring()) {
                                         if copiedUrl == sourceURL {
                                             copiedUrl = nil

@@ -154,7 +154,7 @@ struct ConflictDiffView: View {
                     }
                     .listStyle(.plain)
                 }
-                .frame(width: isWide ? 240 : 180)
+                .frame(width: isWide ? FeatureConstants.TaskCenterLayout.conflictSidebarWide : FeatureConstants.TaskCenterLayout.conflictSidebarCompact)
                 .background(Color.appCard.opacity(DesignTokens.Opacity.glass))
                 
                 Divider()

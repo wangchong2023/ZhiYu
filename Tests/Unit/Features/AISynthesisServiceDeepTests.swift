@@ -17,7 +17,7 @@ import XCTest
 import UFPCore
 import Combine
 import Dependencies
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - 可控 LLM Mock（支持按调用返回不同结果 / 抛错 / 记录调用）
 

@@ -14,6 +14,9 @@ import Dependencies
 import UFPDesignSystem
 
 struct FeedbackView: View {
+    /// 嵌入 SettingsView 详情栏时为 true：复用父级 NavigationStack 与背景，避免嵌套导航栏及重复背景绘制
+    var isEmbedded: Bool = false
+
     @Dependency(\.toastService) private var toastManager
     @Environment(ThemeManager.self) var themeManager
     @State private var selectedTab = 0
@@ -33,29 +36,38 @@ struct FeedbackView: View {
     }()
 
     var body: some View {
-        NavigationStack {
-            ZStack {
-                themeManager.pageBackground().ignoresSafeArea()
-                
-                VStack(spacing: 0) {
-                    Picker("", selection: $selectedTab) {
-                        Text(L10n.Settings.Feedback.submit).tag(0)
-                    Text(L10n.Settings.Feedback.history).tag(1)
+        Group {
+            if isEmbedded {
+                feedbackContent
+            } else {
+                NavigationStack {
+                    ZStack {
+                        themeManager.pageBackground().ignoresSafeArea()
+                        feedbackContent
+                    }
+                    .navigationTitle(L10n.Settings.Feedback.title)
+                    .doneDismissToolbar()
                 }
-                .pickerStyle(.segmented)
-                .commonContentPadding(horizontal: DesignTokens.Spacing.standardPadding, vertical: DesignTokens.Spacing.standardPadding)
-
-                if selectedTab == 0 {
-                    submitForm
-                } else {
-                    historyList
-                }
-            }
-            .navigationTitle(L10n.Settings.Feedback.title)
-            .doneDismissToolbar()
             }
         }
         .task { await loadHistory() }
+    }
+
+    private var feedbackContent: some View {
+        VStack(spacing: 0) {
+            Picker("", selection: $selectedTab) {
+                Text(L10n.Settings.Feedback.submit).tag(0)
+                Text(L10n.Settings.Feedback.history).tag(1)
+            }
+            .pickerStyle(.segmented)
+            .commonContentPadding(horizontal: DesignTokens.Spacing.standardPadding, vertical: DesignTokens.Spacing.standardPadding)
+
+            if selectedTab == 0 {
+                submitForm
+            } else {
+                historyList
+            }
+        }
     }
 
     // MARK: - 提交表单
@@ -131,6 +143,7 @@ struct FeedbackView: View {
             }
             .appListRowBackground()
         }
+        .appGroupedFormStyle()
         .scrollContentBackground(.hidden)
         .tint(Color.appAccent)
     }
@@ -161,7 +174,8 @@ struct FeedbackView: View {
     // MARK: - Actions
 
     private func loadHistory() async {
-        history = (try? await repo.fetchAll(limit: 50)) ?? []
+        let historyLimit = 50
+        history = (try? await repo.fetchAll(limit: historyLimit)) ?? []
     }
 
     private func submit() {

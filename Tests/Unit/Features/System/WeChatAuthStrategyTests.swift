@@ -13,7 +13,7 @@
 //    - Release 模式下微信未安装的异常降级验证
 //
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class WeChatAuthStrategyTests: XCTestCase {

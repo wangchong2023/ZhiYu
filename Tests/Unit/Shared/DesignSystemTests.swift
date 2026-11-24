@@ -12,7 +12,7 @@
 import XCTest
 import SwiftUI
 import UFPDesignSystem
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 final class DesignSystemTests: XCTestCase {
 

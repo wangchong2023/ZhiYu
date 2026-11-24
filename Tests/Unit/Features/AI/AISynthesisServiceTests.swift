@@ -20,7 +20,7 @@
 import XCTest
 import UFPCore
 import Combine
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class AISynthesisServicePureLogicTests: XCTestCase {

@@ -9,7 +9,7 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - CoreConstants 常量完整性测试
 

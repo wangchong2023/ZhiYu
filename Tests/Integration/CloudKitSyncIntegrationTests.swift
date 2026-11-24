@@ -11,7 +11,7 @@
 
 #if ICLOUD_ENABLED
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// 模拟云存储服务驱动器以验证网络断连/重连与冲突合并 (REQ-SYNC-02)
 final class MockCloudStorageProvider: CloudStorageProvider, @unchecked Sendable {

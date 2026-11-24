@@ -16,7 +16,7 @@
 
 import XCTest
 import AuthenticationServices
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class GitHubAuthStrategyDeepTests: XCTestCase {

@@ -7,7 +7,7 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 #if !os(watchOS)
 import JavaScriptCore

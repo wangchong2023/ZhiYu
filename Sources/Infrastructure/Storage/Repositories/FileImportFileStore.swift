@@ -25,7 +25,7 @@ final class FileImportFileStore: ImportFileStore, @unchecked Sendable {
         let fm = FileManager.default
         let categoryDirName = category.directoryName
         
-        let appSupport = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first ?? fm.temporaryDirectory
+        let appSupport = ApplicationStorageLocation.applicationSupport
         
         // KeyStore reads require @MainActor due to KeyStoreProtocol isolation;
         // use assumeIsolated in @unchecked Sendable class where runtime context is known-safe

@@ -14,7 +14,7 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class PrivacySecurityFeatureTests: XCTestCase {

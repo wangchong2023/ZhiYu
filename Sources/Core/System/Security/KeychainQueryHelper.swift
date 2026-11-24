@@ -20,12 +20,21 @@ enum KeychainQueryHelper {
     /// - Parameters:
     ///   - serviceName: Keychain 服务标识符
     ///   - key: 账户键名
+    ///   - useDataProtection: 是否启用 Data Protection Keychain（默认 true；在 macOS 上可避免每次重编触发传统登录钥匙串密码弹窗）
     /// - Returns: 基础查询字典，调用方可追加额外字段
-    static func baseQuery(serviceName: String, key: String) -> [String: Any] {
-        return [
+    static func baseQuery(
+        serviceName: String,
+        key: String,
+        useDataProtection: Bool = true
+    ) -> [String: Any] {
+        var query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: serviceName,
             kSecAttrAccount as String: key
         ]
+        if useDataProtection {
+            query[kSecUseDataProtectionKeychain as String] = true
+        }
+        return query
     }
 }

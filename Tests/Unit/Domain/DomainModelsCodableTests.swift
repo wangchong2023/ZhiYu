@@ -8,7 +8,7 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - AgentSkill 单元测试
 

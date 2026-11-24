@@ -10,7 +10,7 @@
 //
 import XCTest
 import UFPStorage
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 final class WidgetDatabaseServiceTests: XCTestCase {
 
@@ -19,7 +19,7 @@ final class WidgetDatabaseServiceTests: XCTestCase {
     override func setUp() async throws {
         try await super.setUp()
         dbQueue = try DatabaseQueue()
-        try await DatabaseManager.shared.setupForTesting(with: dbQueue)
+        try await DatabaseManager.shared.setupInMemory(with: dbQueue)
     }
 
     override func tearDown() async throws {

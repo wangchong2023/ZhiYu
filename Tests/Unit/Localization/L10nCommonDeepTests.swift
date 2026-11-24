@@ -10,7 +10,7 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// Common 表 L10n 扩展深度测试
 /// 覆盖 Demo/Tags/Misc/InitialNotebook/Spatial/Splash/Palette/Perf/Sidebar/Tab/Global/Empty/Log.Status 等嵌套 enum

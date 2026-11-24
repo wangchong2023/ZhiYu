@@ -10,7 +10,7 @@
 //
 import SwiftUI
 import Dependencies
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - 快照测试公共配置
 
@@ -59,7 +59,7 @@ extension View {
             .environment(Router.shared)
             .environment(VaultService.shared)
             .environment(AuthService.shared)
-            .environment(AppEnvironment.shared)
+            .environment(TestAppEnvironment.shared)
             .environment(SettingsStore())
             .environment(knowledgeStore ?? KnowledgeStore())
             .environment(IngestStore())

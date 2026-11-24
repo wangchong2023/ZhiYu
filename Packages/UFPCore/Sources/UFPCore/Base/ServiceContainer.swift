@@ -14,7 +14,14 @@ import os
 
 // MARK: - DI 诊断专用日志子系统
 /// 使用 os_log .fault 级别确保诊断信息在崩溃时写入系统日志，避免 Logger 异步刷新丢失
-private let diLog = OSLog(subsystem: "com.zhiyu.app", category: "DI-Container")
+private enum DILogConstants {
+    static let subsystem = "com.zhiyu.app"
+    static let category = "DI-Container"
+    static let anyPrefix = "any "
+    static let allPrefix = "all "
+}
+
+private let diLog = OSLog(subsystem: DILogConstants.subsystem, category: DILogConstants.category)
 
 /// 依赖注入容器 (L2 层：解耦中枢)
 /// 遵循 Service Locator 模式，支持 Mock 替换 (@SR-04: 受权限管控的插件访问基础)
@@ -23,22 +30,22 @@ public final class ServiceContainer: @unchecked Sendable {
     public static let shared = ServiceContainer()
 
     /// 服务注册表
-    private var services: [String: Any] = [:]
+    var services: [String: Any] = [:]
 
     /// 并发保护锁 (OSAllocatedUnfairLock)
     /// Swift 5.9+ 封装 os_unfair_lock，Sendable 安全，无需手动 allocate/deallocate
-    private let lock = OSAllocatedUnfairLock()
+    let lock = OSAllocatedUnfairLock()
 
     /// 诊断计数器：累计 resolve 调用次数，用于定位全量测试中第几次 resolve 触发崩溃
-    private var resolveCallCount: Int = 0
+    var resolveCallCount: Int = 0
 
     /// 诊断计数器：累计 register 调用次数
-    private var registerCallCount: Int = 0
+    var registerCallCount: Int = 0
 
     /// 上次 reset 的诊断信息
-    private var lastResetInfo: String?
+    var lastResetInfo: String?
     /// 上次 reset 的时间戳
-    private var lastResetTimestamp: Date?
+    var lastResetTimestamp: Date?
 
     /// 可注入的致命失败处理器（缺陷 #5 修复）
     /// - 生产环境：默认 nil，走 assertionFailure + fatalError（fail-fast 契约）
@@ -81,7 +88,7 @@ public final class ServiceContainer: @unchecked Sendable {
     }
 
     /// 标记是否由生产注册链（AppEnvironment）完成初始化，防止测试误清
-    private var isProductionChainPopulated = false
+    var isProductionChainPopulated = false
 
     /// 标记生产链已完成，禁止 reset() 清空 / 标记 DI 生命周期就绪
     /// 并发安全：isProductionChainPopulated 的写入在 lock 内，消除与 reset() 的竞态
@@ -119,7 +126,8 @@ public final class ServiceContainer: @unchecked Sendable {
     /// 消除与 markProductionChainComplete() 的竞态窗口（问题 #8 真正修复）
     /// 注意：之前的修复（两次 lock 调用）仍有竞态窗口，因为 mark 可能在两次 lock 之间执行。
     public func reset() {
-        let callSite = Thread.callStackSymbols.prefix(5).joined(separator: "\n")
+        let resetCallStackDepth = 5
+        let callSite = Thread.callStackSymbols.prefix(resetCallStackDepth).joined(separator: "\n")
         let (shouldBlock, removedCount, removedKeys): (Bool, Int, [String]) = lock.withLock {
             if isProductionChainPopulated {
                 return (true, 0, [])
@@ -138,27 +146,6 @@ public final class ServiceContainer: @unchecked Sendable {
         lastResetInfo = "Removed \(removedCount) services: \(removedKeys.sorted().joined(separator: ", "))"
         lastResetTimestamp = Date()
         os_log(.info, log: diLog, "%{public}@", "[ServiceContainer] reset() executed. \(lastResetInfo ?? "N/A")")
-    }
-
-    /// 强制重置（仅供测试套件隔离使用）
-    /// 与 `reset()` 的区别：会同时清空 `isProductionChainPopulated` 标记，
-    /// 解决 `markProductionChainComplete()` 不可逆导致 `shared` 单元被永久污染、
-    /// 后续测试 `reset()` 全部静默失效的隔离破坏问题。
-    /// 生产代码严禁调用此方法。
-    /// 并发安全：isProductionChainPopulated 的清空与 services 的清空在同一次 lock 内原子执行（问题 #8 真正修复）
-    public func resetForTesting() {
-        let callSite = Thread.callStackSymbols.prefix(5).joined(separator: "\n")
-        os_log(.info, log: diLog, "%{public}@", "[ServiceContainer] resetForTesting() called. Call site:\n\(callSite)")
-        let (removedCount, removedKeys) = lock.withLock { () -> (Int, [String]) in
-            isProductionChainPopulated = false
-            let count = services.count
-            let keys = Array(services.keys)
-            services.removeAll()
-            return (count, keys)
-        }
-        lastResetInfo = "Removed \(removedCount) services: \(removedKeys.sorted().joined(separator: ", "))"
-        lastResetTimestamp = Date()
-        os_log(.info, log: diLog, "%{public}@", "[ServiceContainer] resetForTesting() executed. \(lastResetInfo ?? "N/A")")
     }
 
     /// resolve 诊断快照（避免 large_tuple 违规，元组成员不超过 2）
@@ -268,19 +255,6 @@ public final class ServiceContainer: @unchecked Sendable {
         return (errorSummary, diagBlock)
     }
 
-    /// 测试辅助：构造当前 DI 状态的 resolve 快照（不触发 resolve 计数器递增）
-    /// 仅供单元测试 buildResolveFailureDiagnostics 使用
-    internal func makeResolveSnapshotForTesting() -> ResolveSnapshot {
-        lock.withLock {
-            ResolveSnapshot(
-                instance: nil,
-                registeredKeys: Array(services.keys),
-                callCount: resolveCallCount,
-                regCallCount: registerCallCount
-            )
-        }
-    }
-
     /// 尝试解析服务，如果未注册则返回 nil，不会触发断言或崩溃
     ///
     /// 并发安全：读取在 lock 内
@@ -326,10 +300,10 @@ public final class ServiceContainer: @unchecked Sendable {
         var typeString = "\(type)"
 
         // 移除 "any " 或 "all " 前缀（existential type 标记，非类型身份的一部分）
-        if typeString.hasPrefix("any ") {
-            typeString.removeFirst(4)
-        } else if typeString.hasPrefix("all ") {
-            typeString.removeFirst(4)
+        if typeString.hasPrefix(DILogConstants.anyPrefix) {
+            typeString.removeFirst(DILogConstants.anyPrefix.count)
+        } else if typeString.hasPrefix(DILogConstants.allPrefix) {
+            typeString.removeFirst(DILogConstants.allPrefix.count)
         }
 
         return typeString

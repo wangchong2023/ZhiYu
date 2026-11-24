@@ -80,7 +80,7 @@ struct AIProcessingStatusBanner: View {
     }
     
     private func startAnimation() {
-        withAnimation(.linear(duration: 4).repeatForever(autoreverses: false)) {
+        withAnimation(.linear(duration: DesignTokens.Animations.bannerLoopDuration).repeatForever(autoreverses: false)) {
             rotationAngle = 360
         }
     }

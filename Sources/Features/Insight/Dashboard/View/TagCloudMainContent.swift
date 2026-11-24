@@ -60,45 +60,53 @@ extension TagCloudViewContent {
     // MARK: - 悬浮控制舱
 
     private func unifiedToolbar(isExp: Bool) -> some View {
-        HStack(spacing: DesignTokens.SystemSpacing.medium) {
+        HStack(spacing: DesignTokens.SystemSpacing.element) {
             Spacer()
 
-            // 右侧动作按钮组：升级为带文字与图标的胶囊型按钮
-            HStack(spacing: DesignTokens.SystemSpacing.element) {
-                if !coordinator.isEditMode {
-                    // ➕ 新建按钮
-                    toolbarCapsuleButton(
-                        icon: DesignTokens.Icons.plus,
-                        title: L10n.Tag.Management.addNew,
-                        foregroundColor: Color.theme.white,
-                        action: { coordinator.showAddTagDialog = true }
-                    )
-                }
-
-                // ✏️ 管理/编辑按钮 (匹配选择)
+            if !coordinator.isEditMode {
+                // ➕ 新建按钮：主操作使用强调色填充 + 白色文字，深浅色模式下均清晰高对比
                 toolbarCapsuleButton(
-                    icon: coordinator.isEditMode ? "checkmark" : "list.bullet.indent",
-                    title: coordinator.isEditMode ? L10n.Common.ok : L10n.Tag.Management.manageTitle,
-                    foregroundColor: coordinator.isEditMode ? .green : Color.theme.white,
-                    action: {
-                        coordinator.isEditMode.toggle()
-                        if !coordinator.isEditMode { coordinator.selectedTagsForBulk.removeAll() }
-                    }
+                    icon: DesignTokens.Icons.plus,
+                    title: L10n.Tag.Management.addNew,
+                    foregroundColor: Color.theme.white,
+                    backgroundColor: Color.appAccent,
+                    borderColor: Color.appAccent,
+                    action: { coordinator.showAddTagDialog = true }
                 )
             }
+
+            // ✏️ 管理/编辑按钮：次操作使用语义化 .appText + 卡片背景，适配浅色/深色主题
+            toolbarCapsuleButton(
+                icon: coordinator.isEditMode ? DesignTokens.Icons.check : DesignTokens.Icons.listBulletIndent,
+                title: coordinator.isEditMode ? L10n.Common.ok : L10n.Tag.Management.manageTitle,
+                foregroundColor: coordinator.isEditMode ? Color.theme.green : .appText,
+                backgroundColor: coordinator.isEditMode
+                    ? Color.theme.green.opacity(DesignTokens.Opacity.glass)
+                    : Color.appCard.opacity(DesignTokens.Opacity.prominent),
+                borderColor: coordinator.isEditMode
+                    ? Color.theme.green.opacity(DesignTokens.Opacity.soft)
+                    : Color.appBorder.opacity(DesignTokens.Opacity.soft),
+                action: {
+                    coordinator.isEditMode.toggle()
+                    if !coordinator.isEditMode { coordinator.selectedTagsForBulk.removeAll() }
+                }
+            )
         }
-        .padding(.horizontal, DesignTokens.SystemSpacing.medium)
-        .padding(.vertical, DesignTokens.SystemSpacing.element)
-        .background(BlurView().background(Color.appCard.opacity(toolbarBgOpacity)))
-        .clipShape(RoundedRectangle(cornerRadius: toolbarCornerRadius))
-        .overlay(RoundedRectangle(cornerRadius: toolbarCornerRadius).stroke(Color.appBorder.opacity(toolbarBorderOpacity), lineWidth: DesignTokens.SystemStroke.divider))
         .padding(.horizontal, isExp ? DesignTokens.Spacing.wide : DesignTokens.Spacing.medium)
-        .padding(.vertical, DesignTokens.SystemSpacing.element)
+        .padding(.top, DesignTokens.Spacing.medium)
+        .padding(.bottom, DesignTokens.SystemSpacing.element)
     }
 
-    /// 工具栏胶囊按钮：图标 + 文本 + 统一胶囊样式
+    /// 工具栏胶囊按钮：图标 + 文本 + 统一语义化胶囊样式
     @ViewBuilder
-    private func toolbarCapsuleButton(icon: String, title: String, foregroundColor: Color, action: @escaping () -> Void) -> some View {
+    private func toolbarCapsuleButton(
+        icon: String,
+        title: String,
+        foregroundColor: Color,
+        backgroundColor: Color,
+        borderColor: Color,
+        action: @escaping () -> Void
+    ) -> some View {
         Button(action: action) {
             HStack(spacing: DesignTokens.SystemSpacing.small) {
                 Image(systemName: icon)
@@ -109,9 +117,10 @@ extension TagCloudViewContent {
             .foregroundStyle(foregroundColor)
             .padding(.horizontal, DesignTokens.SystemSpacing.medium)
             .frame(height: actionBtnDiameter)
-            .background(Color.appCard.opacity(actionBtnBgOpacity))
+            .background(backgroundColor)
             .clipShape(Capsule())
-            .overlay(Capsule().stroke(Color.appBorder.opacity(actionBtnBorderOpacity), lineWidth: DesignTokens.SystemStroke.divider))
+            .overlay(Capsule().stroke(borderColor, lineWidth: DesignTokens.SystemStroke.divider))
+            .contentShape(Capsule())
         }
         .buttonStyle(.plain)
     }

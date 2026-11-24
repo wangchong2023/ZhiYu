@@ -11,7 +11,7 @@
 import XCTest
 import UFPCore
 import UFPStorage
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class ImportSynthesisE2ETests: XCTestCase {
@@ -23,7 +23,7 @@ final class ImportSynthesisE2ETests: XCTestCase {
         resetPersistentTestState()
         setupFullMockEnvironment()
         dbQueue = try DatabaseQueue()
-        try DatabaseManager.shared.setupForTesting(with: dbQueue)
+        try DatabaseManager.shared.setupInMemory(with: dbQueue)
         store = AppStore()
     }
 

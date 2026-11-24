@@ -11,7 +11,7 @@
 
 import XCTest
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 final class SplashPresentationPolicyTests: XCTestCase {
 
@@ -47,7 +47,6 @@ final class SplashPresentationPolicyTests: XCTestCase {
     func testShouldSkipSplash_firstLaunchNotLoggedIn_returnsFalse() {
         // 首次打开、未登录、非 UI 测试：应当展示闪屏 (返回 false)
         let shouldSkip = SplashPresentationPolicy.shouldSkipSplash(
-            isUITesting: false,
             hasSeenSplashBefore: false,
             isLoggedIn: false
         )
@@ -57,7 +56,6 @@ final class SplashPresentationPolicyTests: XCTestCase {
     func testShouldSkipSplash_nonFirstLaunchSeenBefore_returnsTrue() {
         // 非首次冷启动（已在持久化中记录看过）：应当跳过闪屏快速进入主界面 (返回 true)
         let shouldSkip = SplashPresentationPolicy.shouldSkipSplash(
-            isUITesting: false,
             hasSeenSplashBefore: true,
             isLoggedIn: false
         )
@@ -67,21 +65,19 @@ final class SplashPresentationPolicyTests: XCTestCase {
     func testShouldSkipSplash_userLoggedIn_returnsTrue() {
         // 用户已处于登录状态（首次或恢复会话）：应当跳过闪屏快速进入主界面 (返回 true)
         let shouldSkip = SplashPresentationPolicy.shouldSkipSplash(
-            isUITesting: false,
             hasSeenSplashBefore: false,
             isLoggedIn: true
         )
         XCTAssertTrue(shouldSkip, "用户已登录状态下应直接跳过闪屏")
     }
 
-    func testShouldSkipSplash_uiTesting_returnsTrue() {
-        // UI 测试环境下：始终跳过闪屏，防止遮挡测试视图 (返回 true)
+    func testShouldSkipSplash_preparedLaunchState_returnsTrue() {
+        // 测试侧预先持久化看过闪屏状态，生产策略应直接跳过
         let shouldSkip = SplashPresentationPolicy.shouldSkipSplash(
-            isUITesting: true,
-            hasSeenSplashBefore: false,
+            hasSeenSplashBefore: true,
             isLoggedIn: false
         )
-        XCTAssertTrue(shouldSkip, "UI 测试环境下应跳过闪屏")
+        XCTAssertTrue(shouldSkip, "已准备过的启动状态应跳过闪屏")
     }
 
     // MARK: - 持久化与状态重置测试

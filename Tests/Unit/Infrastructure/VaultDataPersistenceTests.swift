@@ -11,7 +11,7 @@
 import XCTest
 import UFPCore
 import UFPStorage
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class VaultDataPersistenceTests: XCTestCase {

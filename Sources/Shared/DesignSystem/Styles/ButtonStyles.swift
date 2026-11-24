@@ -32,6 +32,6 @@ struct AppCardButtonStyle: ButtonStyle {
             // 按下时透明度略微调降以提供亮度衰减层面的视觉暗示
             .opacity(configuration.isPressed ? DesignTokens.Colors.Opacity.pressedOpacity : DesignTokens.Colors.Opacity.fullOpacity)
             // 绑定苹果设备物理质感的欠阻尼弹簧曲线，实现干脆而又带微小惯性回弹的完美手感
-            .animation(.spring(response: 0.25, dampingFraction: 0.6), value: configuration.isPressed)
+            .animation(.appProminent, value: configuration.isPressed)
     }
 }

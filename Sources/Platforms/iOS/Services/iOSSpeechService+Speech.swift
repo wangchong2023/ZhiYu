@@ -33,21 +33,29 @@ extension iOSSpeechService {
         let box = SpeechServiceBox(self)
         SFSpeechRecognizer.requestAuthorization { status in
             Task { @MainActor in
-                let service = box.value
-                service.hasPermission = status == .authorized
-                switch status {
-                case .authorized:
-                    service.statusMessage = L10n.Voice.Speech.Status.ready
-                case .denied:
-                    service.statusMessage = L10n.Voice.Speech.Status.denied
-                case .restricted:
-                    service.statusMessage = L10n.Voice.Speech.Status.restricted
-                case .notDetermined:
-                    service.statusMessage = L10n.Voice.Speech.Status.notDetermined
-                @unknown default:
-                    service.statusMessage = L10n.Voice.Speech.Status.unknown
-                }
+                box.value.updatePermissionStatus(status)
             }
+        }
+    }
+
+    /// 初始化仅查询既有授权，不在服务注册阶段弹出系统权限窗口。
+    func refreshPermissionStatus() {
+        updatePermissionStatus(SFSpeechRecognizer.authorizationStatus())
+    }
+
+    private func updatePermissionStatus(_ status: SFSpeechRecognizerAuthorizationStatus) {
+        hasPermission = status == .authorized
+        switch status {
+        case .authorized:
+            statusMessage = L10n.Voice.Speech.Status.ready
+        case .denied:
+            statusMessage = L10n.Voice.Speech.Status.denied
+        case .restricted:
+            statusMessage = L10n.Voice.Speech.Status.restricted
+        case .notDetermined:
+            statusMessage = L10n.Voice.Speech.Status.notDetermined
+        @unknown default:
+            statusMessage = L10n.Voice.Speech.Status.unknown
         }
     }
 

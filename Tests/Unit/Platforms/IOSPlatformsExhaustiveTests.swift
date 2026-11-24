@@ -16,7 +16,7 @@ import XCTest
 import SwiftUI
 import UFPCore
 import Dependencies
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 #if os(iOS) && !targetEnvironment(macCatalyst)
 import ActivityKit

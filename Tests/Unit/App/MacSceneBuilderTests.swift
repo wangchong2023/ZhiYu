@@ -13,7 +13,7 @@
 import SwiftUI
 import XCTest
 
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class MacSceneBuilderTests: XCTestCase {
@@ -32,7 +32,7 @@ final class MacSceneBuilderTests: XCTestCase {
     /// MacSceneBuilder 主窗口场景应可编译构建
     func testMacSceneBuilder_MainBuilds() {
         _ = MacSceneBuilder.main(
-            appEnv: AppEnvironment.shared,
+            appEnv: TestAppEnvironment.shared,
             appModel: ZhiYuAppModel(),
             dependencies: DependencyContainer(),
             themeManager: ThemeManager(),

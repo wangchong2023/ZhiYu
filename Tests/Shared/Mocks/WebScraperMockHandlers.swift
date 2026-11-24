@@ -8,7 +8,7 @@
 //
 
 import Foundation
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - 测试夹具常量
 

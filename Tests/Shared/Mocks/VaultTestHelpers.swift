@@ -10,7 +10,7 @@
 //
 
 import Foundation
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// 测试用可自定义决策的笔记本选择策略
 public struct MockVaultSelectionPolicy: VaultSelectionPolicyProtocol {

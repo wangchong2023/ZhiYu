@@ -47,7 +47,7 @@ struct VaultBadge: View {
         // UI 测试模式：附加一个透明直通按钮绕过 SwiftUI Menu（XCUITest 对 Menu 交互不可靠）
         if usesPassthroughButton {
             Button {
-                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                withAnimation(.appStandard) {
                     vaultService.exitVault()
                 }
             } label: {
@@ -57,7 +57,7 @@ struct VaultBadge: View {
         } else {
             Menu {
                 Button(action: {
-                    withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                    withAnimation(.appStandard) {
                         vaultService.exitVault()
                     }
                 }) {

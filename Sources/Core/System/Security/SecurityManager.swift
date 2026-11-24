@@ -57,7 +57,7 @@ class SecurityManager: @unchecked Sendable {
     // MARK: - 辅助方法
     
     /// 统一获取或生成安全密钥的核心逻辑 (@SR-02)
-    /// 支持：Keychain 优先 -> Debug 模式下的 UserDefaults 兜底 -> 自动生成 -> 持久化
+    /// 支持：Keychain 优先 -> 自动生成 -> 安全持久化
     private func getOrGenerateKey(
         forKey key: String,
         errorMessage: String,
@@ -67,14 +67,7 @@ class SecurityManager: @unchecked Sendable {
         if let existing = try? KeychainService.shared.retrieve(key: key) {
             return existing
         }
-        
-        #if DEBUG && !os(watchOS)
-        // 2. DEBUG 模式下，尝试从 KeyStore 兜底 (用于模拟器环境)
-        if let fallback = runOnMainSync({ keyStore?.string(forKey: key) }) {
-            return fallback
-        }
-        #endif
-        
+
         // 3. 生成新密钥
         let newValue = generator()
         
@@ -83,15 +76,11 @@ class SecurityManager: @unchecked Sendable {
             try KeychainService.shared.store(key: key, value: newValue)
             return newValue
         } catch {
-            #if DEBUG && !os(watchOS)
-            runOnMainSync { keyStore?.set(newValue, forKey: key) }
-            return newValue
-            #else
             // 生产环境下安全存储故障：记录严重错误并返回内存中的临时密钥，
             // 避免 fatalError 导致白屏崩溃，但此密钥不会持久化（重启后丢失）。
             assertionFailure(" [SecurityManager] \(errorMessage)")
             return newValue
-            #endif
+
         }
     }
 
@@ -183,18 +172,12 @@ class SecurityManager: @unchecked Sendable {
             }
             try await repo.saveSignature(signature, forFilePath: filePath, salt: currentSalt)
         } catch {
-            #if DEBUG
-            // 仅在 DEBUG 下允许降级到 KeyStore，用于模拟器未签名环境
-            Logger.shared.debug(" [SecurityManager] HMAC fallback to KeyStore: \(error.localizedDescription)")
-            let fileName = URL(fileURLWithPath: filePath).lastPathComponent
-            keyStore?.set(signature, forKey: signatureKeyPrefix + fileName)
-            #else
             // 生产环境：签名持久化失败属于严重安全错误，不允许明文降级
             SecurityLogHelper.logError(
                 target: CoreConstants.SecurityLogTarget.securityManager,
                 details: "\(CoreConstants.SecurityLogDetails.criticalFailed) to persist HMAC signature securely: \(error.localizedDescription)"
             )
-            #endif
+
         }
     }
     
@@ -218,21 +201,13 @@ class SecurityManager: @unchecked Sendable {
         }
         
         // VULN-004 修复：无签名时 fail-closed（返回 false），而非 fail-open（返回 true）
-        // 审查修复 LOW-4: DEBUG 放行仅限模拟器，避免 DEBUG 构建在真机上放行
         guard let expectedSig = finalStoredSig else {
-            #if DEBUG && targetEnvironment(simulator)
-            guard FileManager.default.fileExists(atPath: fileURL.path) else {
-                return false
-            }
-            Logger.shared.debug("[SecurityManager] 无签名记录，模拟器 DEBUG 模式下放行: \(fileURL.lastPathComponent)")
-            return true
-            #else
             SecurityLogHelper.logError(
                 target: CoreConstants.SecurityLogTarget.securityManager,
                 details: "Integrity check failed: no signature on file: \(fileURL.lastPathComponent)"
             )
             return false
-            #endif
+
         }
         
         do {

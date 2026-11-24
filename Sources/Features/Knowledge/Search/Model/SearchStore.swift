@@ -74,7 +74,8 @@ public final class SearchStore {
             if Task.isCancelled { return }
             isSearching = true
             // 300ms 防抖
-            try? await Task.sleep(nanoseconds: 300_000_000)
+            let debounceDelayNs: UInt64 = 300_000_000
+            try? await Task.sleep(nanoseconds: debounceDelayNs)
             if Task.isCancelled {
                 // Bug #128 修复：取消时重置 isSearching，避免卡在 true
                 isSearching = false

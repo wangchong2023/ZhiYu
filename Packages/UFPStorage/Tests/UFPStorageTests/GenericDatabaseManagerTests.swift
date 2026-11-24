@@ -151,12 +151,12 @@ final class GenericDatabaseManagerTests: XCTestCase {
         let dbQueue = try DatabaseQueue()
 
         // When
-        try engine.setupForTesting(with: dbQueue)
+        try engine.setupInMemory(with: dbQueue)
 
         // Then — 专属与全局库均已挂载
         XCTAssertNotNil(engine.dbWriter, "setupForTesting 应挂载专属库连接")
         XCTAssertNotNil(engine.globalWriter, "setupForTesting 应挂载全局库连接")
-        XCTAssertTrue(engine.isInTesting, "setupForTesting 应标记 isInTesting")
+        XCTAssertTrue(engine.usesTransientStorage, "setupForTesting 应标记 usesTransientStorage")
         // 通过迁移器创建的 test_items 表应可用
         let count = try dbQueue.read { db in
             try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM test_items") ?? 0

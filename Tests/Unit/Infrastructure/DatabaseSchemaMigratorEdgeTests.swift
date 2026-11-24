@@ -9,7 +9,7 @@
 
 import XCTest
 import UFPStorage
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class DatabaseSchemaMigratorEdgeTests: XCTestCase {
@@ -19,7 +19,7 @@ final class DatabaseSchemaMigratorEdgeTests: XCTestCase {
     override func setUp() async throws {
         try await super.setUp()
         dbQueue = try DatabaseQueue()
-        try DatabaseManager.shared.setupForTesting(with: dbQueue)
+        try DatabaseManager.shared.setupInMemory(with: dbQueue)
     }
 
     override func tearDown() async throws {

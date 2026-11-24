@@ -10,7 +10,7 @@ import XCTest
 import UFPCore
 import Dependencies
 import UFPDesignSystem
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class WorkflowServiceTests: XCTestCase {

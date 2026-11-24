@@ -10,7 +10,7 @@
 //
 
 import Foundation
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 extension Localized {
     /// 单元测试专用：重置本地化状态供测试隔离使用

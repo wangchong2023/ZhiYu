@@ -12,7 +12,7 @@ import XCTest
 import UFPCore
 import Combine
 import Dependencies
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - AIWorkflowStore Lint/Health 深度测试（MARK 14-17：runLint / runAIScan / findSimilarPages / fetchFixSuggestion）
 

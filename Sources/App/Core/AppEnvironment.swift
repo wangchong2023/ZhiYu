@@ -36,16 +36,13 @@ final class AppEnvironment {
     var llmService: LLMService { LLMService.shared }
     var llmConfig: LLMConfigManager   // var：init 中先赋初值，DI 就绪后重新解析
 
-    private init() {
+    init(startsBackgroundServices: Bool = true) {
         // ── 0. 仅初始化不依赖 DI 的 stored properties（Swift 要求在调用 self 方法前完成）──
         self.router = Router.shared
         self.themeManager = ThemeManager(keyStore: ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)) // inject_exempt: DI 核心初始化代码
         self.llmConfig = LLMConfigManager()
 
         Logger.shared.info("[AppEnvironment] Starting initialization...")
-
-        // 检测是否运行于 XCTest 单元测试环境
-        let isRunningInUnitTests = NSClassFromString("XCTestCase") != nil
 
         // 1. 准备底层物理存储 (@P0: 确保护航数据库在注册前就绪)
         prepareDatabase()
@@ -80,14 +77,13 @@ final class AppEnvironment {
         // 2.2 DI 就绪后立即加载本地化语言偏好缓存（避免后续跨 actor 访问 keyStore）
         Localized.loadCachedLanguageMode()
 
-        // 🧪 Unit Test 环境：注册所有服务但不锁定 DI 容器，允许测试 reset() 后重新注册 Mock
-        if isRunningInUnitTests {
-            // 测试环境仍需实例化 Store（测试可能访问），DI 已就绪
+        // 前台独立环境仅建立服务与状态，不启动后台生命周期或锁定共享容器。
+        if !startsBackgroundServices {
             self.ingestStore = IngestStore()
             self.synthesisStore = SynthesisStore()
             self.store = AppStore()
             registerStoresToContainer()
-            Logger.shared.info("[AppEnvironment] DI services registered (test mode, chain NOT locked).")
+            Logger.shared.info("[AppEnvironment] Foreground services initialized.")
             return
         }
 
@@ -155,6 +151,11 @@ final class AppEnvironment {
     private func prepareDatabase() {
         do {
             let fileManager = FileManager.default
+            // 显式存储策略必须先于路径迁移执行，避免触碰默认持久化容器。
+            if let strategy = ServiceContainer.shared.resolveOptional((any DatabaseBootstrapStrategy).self) { // inject_exempt: 引导层存储策略解析
+                try strategy.setup(at: DatabaseManager.shared.defaultSandboxDatabaseURL())
+                return
+            }
             let appGroupIdentifier = AppConstants.Storage.appGroupIdentifier
 
             // 旧的沙盒独立路径
@@ -187,8 +188,7 @@ final class AppEnvironment {
                 }
             }
             
-            let strategy = ServiceContainer.shared.resolveOptional((any DatabaseBootstrapStrategy).self) ?? PersistentDatabaseBootstrapStrategy() // inject_exempt: 引导层默认降级语义
-            try strategy.setup(at: dbURL)
+            try PersistentDatabaseBootstrapStrategy().setup(at: dbURL)
             Logger.shared.info("[AppEnvironment] Core database ready: \(dbURL.lastPathComponent)")
         } catch {
             Logger.shared.error("[AppEnvironment] Critical: Database initialization failed", error: error)

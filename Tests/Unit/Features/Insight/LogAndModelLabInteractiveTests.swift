@@ -10,7 +10,7 @@ import UFPDesignSystem
 import XCTest
 import SwiftUI
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class LogAndModelLabInteractiveTests: XCTestCase {

@@ -18,7 +18,7 @@ import XCTest
 import SwiftUI
 import UFPCore
 import Dependencies
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class ProcessorsBranchExhaustiveTests: XCTestCase {

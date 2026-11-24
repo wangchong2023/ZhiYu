@@ -12,7 +12,7 @@
 import XCTest
 import Foundation
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - DumbExtractorHandler HTML 提取器
 

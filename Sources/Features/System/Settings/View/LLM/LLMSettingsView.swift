@@ -189,7 +189,7 @@ struct LLMSettingsView: View {
                     }
                 }
                 .disabled(testing || config.apiKey.isEmpty || (config.provider == .custom && config.baseURL.isEmpty))
-                .opacity(config.apiKey.isEmpty ? 0.6 : 1.0)
+                .opacity(config.apiKey.isEmpty ? DesignTokens.Opacity.soft : 1.0)
                 
                 if let result = testResult {
                     VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {

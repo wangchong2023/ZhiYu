@@ -56,58 +56,71 @@ struct AuthView: View {
 
     // MARK: - 运行时 Trait 分派的登录布局
 
-    /// 桌面形态居中布局：左品牌区 + 右表单区，保留 3D 翻转卡片动画
+    /// 桌面形态双栏画报布局（方案 B）：全窗统一协调背景 + 居中黄金比例双栏舞台（全屏超宽屏不再拉散）
     private var desktopLoginLayout: some View {
-        ZStack {
-            // 背景层
+        ZStack(alignment: .topTrailing) {
+            // 整窗统一连续背景层，消除左右栏色差割裂
             themeManager.pageBackground()
                 .ignoresSafeArea()
 
-            HStack(spacing: 0) {
-                // 左侧品牌展示区
-                heroHeader
-                    .frame(maxWidth: DesignTokens.Metrics.authHeroWidth)
-                    .padding(.leading, DesignTokens.Spacing.huge)
+            // 全屏/宽屏自适应居中双栏舞台：限制最大宽高保持 42%:58% 黄金视觉比例
+            GeometryReader { proxy in
+                let stageHeight = min(
+                    max(proxy.size.height - DesignTokens.Spacing.huge * 2, DesignTokens.Metrics.minWindowHeight),
+                    DesignTokens.Metrics.macAuthStageMaxHeight
+                )
+                HStack(spacing: DesignTokens.Spacing.huge) {
+                    // 左侧内嵌品牌渐变画报卡
+                    desktopBrandPanel
+                        .frame(maxWidth: DesignTokens.Metrics.authHeroWidth, maxHeight: .infinity)
 
-                Divider()
-                    .background(Color.appBorder.opacity(DesignTokens.Opacity.shadow))
-
-                // 右侧登录表单区
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: DesignTokens.Spacing.large) {
-                        topControlBar
-
-                        // 卡片登录承载容器 (保留3D翻转动画)
-                        Group {
-                            if displayedRegion == .china {
-                                AuthPhonePanel(
-                                    isLoading: $isLoading,
-                                    isAgreementChecked: $isAgreementChecked,
-                                    showPrivacySheet: $showPrivacySheet,
-                                    showTermsSheet: $showTermsSheet,
-                                    handleAuth: handleAuth
-                                )
-                            } else {
-                                OverseasLoginCardView()
-                                    .id(Localized.currentLanguage)
-                                    .rotation3DEffect(.degrees(180), axis: (x: 0, y: 1.0, z: 0.0))
+                    // 右侧通透垂直居中登录流
+                    ScrollView(showsIndicators: false) {
+                        VStack(spacing: DesignTokens.Spacing.giant) {
+                            // 卡片登录承载容器 (保留 3D 翻转动画)
+                            Group {
+                                if displayedRegion == .china {
+                                    AuthPhonePanel(
+                                        isLoading: $isLoading,
+                                        isAgreementChecked: $isAgreementChecked,
+                                        showPrivacySheet: $showPrivacySheet,
+                                        showTermsSheet: $showTermsSheet,
+                                        handleAuth: handleAuth
+                                    )
+                                } else {
+                                    OverseasLoginCardView()
+                                        .id(Localized.currentLanguage)
+                                        .rotation3DEffect(.degrees(180), axis: (x: 0, y: 1.0, z: 0.0))
+                                }
                             }
-                        }
-                        .rotation3DEffect(.degrees(rotateDegrees), axis: (x: 0, y: 1.0, z: 0.0))
+                            .rotation3DEffect(.degrees(rotateDegrees), axis: (x: 0, y: 1.0, z: 0.0))
 
-                        AuthOAuthPanel(
-                            isLoading: $isLoading,
-                            isAgreementChecked: $isAgreementChecked,
-                            errorMessage: $errorMessage,
-                            handleThirdPartyLogin: handleThirdPartyLogin
-                        )
-                        AuthGuestSection()
+                            AuthOAuthPanel(
+                                isLoading: $isLoading,
+                                isAgreementChecked: $isAgreementChecked,
+                                errorMessage: $errorMessage,
+                                handleThirdPartyLogin: handleThirdPartyLogin
+                            )
+
+                            AuthGuestSection()
+                        }
+                        .frame(maxWidth: DesignTokens.Metrics.authFormWidth)
+                        .padding(.horizontal, DesignTokens.Spacing.wide)
+                        .padding(.vertical, DesignTokens.Spacing.giant)
+                        .frame(maxWidth: .infinity, minHeight: stageHeight)
                     }
-                    .frame(maxWidth: DesignTokens.Metrics.authFormWidth)
-                    .padding(DesignTokens.Spacing.wide)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
-                .frame(maxWidth: .infinity)
+                .frame(maxWidth: DesignTokens.Metrics.macAuthStageMaxWidth, maxHeight: stageHeight)
+                .padding(.horizontal, DesignTokens.Spacing.huge)
+                .padding(.vertical, DesignTokens.Spacing.giant)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
+
+            // 窗口右上角低调悬浮控制条（区域切换 + 语言胶囊）
+            desktopTopControlBar
+                .padding(.horizontal, DesignTokens.Spacing.giant)
+                .padding(.top, DesignTokens.Spacing.large)
         }
         .policySheet(
             isPresented: $showPrivacySheet,
@@ -119,6 +132,202 @@ struct AuthView: View {
             title: L10n.Auth.termsOfServiceTitle,
             content: L10n.Auth.termsOfServiceContent
         )
+    }
+
+    /// 桌面形态左侧内嵌品牌画报卡：同色系深邃极光渐变 + 干净书本图标 + 无框极简特性行
+    private var desktopBrandPanel: some View {
+        let posterShape = RoundedRectangle(cornerRadius: DesignTokens.Spacing.chipRadius, style: .continuous)
+        return VStack(alignment: .leading, spacing: DesignTokens.Spacing.huge) {
+            // 顶部品牌徽章（干净圆角方块 + 无外圈书本图标，告别「方套圆」）
+            HStack(spacing: DesignTokens.Spacing.medium) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius, style: .continuous)
+                        .fill(Color.theme.white.opacity(DesignTokens.Opacity.glass))
+                        .frame(width: DesignTokens.Spacing.iconDisplay, height: DesignTokens.Spacing.iconDisplay)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius, style: .continuous)
+                                .strokeBorder(
+                                    Color.theme.white.opacity(DesignTokens.Opacity.soft),
+                                    lineWidth: DesignTokens.Spacing.borderWidth
+                                )
+                        )
+
+                    Image(systemName: DesignTokens.Icons.library)
+                        .font(.system(size: DesignTokens.Typography.headlineFontSize, weight: .semibold))
+                        .foregroundStyle(.white)
+                }
+
+                Text(L10n.Common.appName)
+                    .font(.system(size: DesignTokens.Typography.titleFontSize, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
+                    .tracking(DesignTokens.Reference.Spacing.one)
+            }
+
+            Spacer(minLength: DesignTokens.Spacing.large)
+
+            // 品牌主标语
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
+                Text(L10n.Onboarding.subtitle)
+                    .font(.system(size: DesignTokens.Typography.titleFontSize, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Text(L10n.Onboarding.pathTitle)
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(Color.theme.white.opacity(DesignTokens.Opacity.prominent))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            // 三条无框极简特性短语（去掉灰色小盒，保持画报克制与通透）
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.large) {
+                desktopFeatureRow(
+                    icon: DesignTokens.Icons.folderFill,
+                    title: L10n.Onboarding.Step.vault.title,
+                    description: L10n.Onboarding.Step.vault.desc
+                )
+                desktopFeatureRow(
+                    icon: DesignTokens.Icons.mindmap,
+                    title: L10n.Onboarding.Step.graph.title,
+                    description: L10n.Onboarding.Step.graph.desc
+                )
+                desktopFeatureRow(
+                    icon: DesignTokens.Icons.sparkles,
+                    title: L10n.Onboarding.Step.aiLab.title,
+                    description: L10n.Onboarding.Step.aiLab.desc
+                )
+            }
+
+            Spacer(minLength: DesignTokens.Spacing.medium)
+        }
+        .padding(DesignTokens.Spacing.huge)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        .background(desktopBrandPosterBackground)
+        .clipShape(posterShape)
+        .overlay(
+            posterShape
+                .strokeBorder(
+                    Color.theme.white.opacity(DesignTokens.Opacity.glass),
+                    lineWidth: DesignTokens.Spacing.borderWidth
+                )
+        )
+        .shadow(
+            color: Color.theme.indigo.opacity(DesignTokens.Opacity.glass),
+            radius: DesignTokens.Spacing.wide,
+            y: DesignTokens.Spacing.small
+        )
+    }
+
+    /// 左侧品牌画报协调深邃渐变背景
+    private var desktopBrandPosterBackground: some View {
+        ZStack {
+            LinearGradient(
+                colors: [Color.theme.indigo, .appAccent, .appConcept],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+
+            // 柔和深色渐变叠层，保证任意强调色下均具备高雅深邃质感与高对比白色文字
+            LinearGradient(
+                colors: [
+                    Color.theme.black.opacity(DesignTokens.Opacity.soft),
+                    Color.theme.black.opacity(DesignTokens.Opacity.medium)
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+
+            // 左上微光氛围点缀
+            RadialGradient(
+                colors: [
+                    Color.theme.white.opacity(DesignTokens.Opacity.glass),
+                    .clear
+                ],
+                center: .topLeading,
+                startRadius: 0,
+                endRadius: DesignTokens.Metrics.backgroundDecorativeSize
+            )
+        }
+    }
+
+    /// 桌面形态品牌画报单条无框特性行
+    private func desktopFeatureRow(icon: String, title: String, description: String) -> some View {
+        HStack(alignment: .top, spacing: DesignTokens.Spacing.medium) {
+            ZStack {
+                Circle()
+                    .fill(Color.theme.white.opacity(DesignTokens.Opacity.glass))
+                    .frame(width: DesignTokens.IconSize.huge, height: DesignTokens.IconSize.huge)
+
+                Image(systemName: icon)
+                    .font(.callout.weight(.semibold))
+                    .foregroundStyle(.white)
+            }
+
+            VStack(alignment: .leading, spacing: DesignTokens.Spacing.atomic) {
+                Text(title)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.white)
+
+                Text(description)
+                    .font(.caption)
+                    .foregroundStyle(Color.theme.white.opacity(DesignTokens.Opacity.prominent))
+                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Spacer(minLength: 0)
+        }
+    }
+
+    /// 桌面形态顶部控制条：低调居于右上角，不干扰主视觉
+    private var desktopTopControlBar: some View {
+        HStack(spacing: DesignTokens.Spacing.medium) {
+            Spacer()
+
+            RegionSelectorToggle(currentRegion: $currentRegion) {
+                triggerRegionFlip()
+            }
+            .overlay(
+                Capsule()
+                    .strokeBorder(
+                        Color.appBorder.opacity(DesignTokens.Opacity.soft),
+                        lineWidth: DesignTokens.Spacing.borderWidth
+                    )
+            )
+
+            desktopLanguageMenu
+        }
+    }
+
+    /// 桌面形态语言切换菜单胶囊（无额外外边距，确保右缘对齐）
+    private var desktopLanguageMenu: some View {
+        Menu {
+            ForEach(LanguageMode.allCases) { mode in
+                Toggle(isOn: languageSelectionBinding(for: mode)) {
+                    Text(mode.displayName)
+                }
+            }
+        } label: {
+            HStack(spacing: DesignTokens.SystemSpacing.tiny) {
+                Image(systemName: DesignTokens.Icons.globe)
+                    .font(.subheadline)
+                Text(selectedLanguage.displayName)
+                    .font(.caption.weight(.medium))
+            }
+            .foregroundStyle(.appSecondary)
+            .padding(.horizontal, DesignTokens.SystemSpacing.medium)
+            .padding(.vertical, DesignTokens.SystemSpacing.small)
+            .background(.ultraThinMaterial)
+            .clipShape(Capsule())
+            .overlay(
+                Capsule()
+                    .strokeBorder(
+                        Color.appBorder.opacity(DesignTokens.Opacity.soft),
+                        lineWidth: DesignTokens.Spacing.borderWidth
+                    )
+            )
+            .contentShape(Capsule())
+        }
+        .plainMenuStyleIfMac()
     }
 
     /// 紧凑形态布局：原纵向单列布局，保留 3D 翻转卡片动画
@@ -200,7 +409,7 @@ struct AuthView: View {
 
     /// 触发 3D 卡片翻转动效
     private func triggerRegionFlip() {
-        withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+        withAnimation(.appSlow) {
             rotateDegrees += FeatureConstants.AuthFlip.rotationDegrees
         }
         Task {
@@ -216,15 +425,9 @@ struct AuthView: View {
         HStack {
             Spacer()
             Menu {
-                Picker("", selection: Binding(
-                    get: { selectedLanguage },
-                    set: { mode in
-                        selectedLanguage = mode
-                        Localized.languageMode = mode
-                    }
-                )) {
-                    ForEach(LanguageMode.allCases) { mode in
-                        Text(mode.displayName).tag(mode)
+                ForEach(LanguageMode.allCases) { mode in
+                    Toggle(isOn: languageSelectionBinding(for: mode)) {
+                        Text(mode.displayName)
                     }
                 }
             } label: {
@@ -239,10 +442,28 @@ struct AuthView: View {
                 .padding(.vertical, DesignTokens.SystemSpacing.small)
                 .background(.ultraThinMaterial)
                 .clipShape(Capsule())
+                .contentShape(Capsule())
             }
+            .plainMenuStyleIfMac()
         }
         .padding(.trailing, DesignTokens.Spacing.medium)
         .padding(.top, DesignTokens.Spacing.tiny)
+    }
+
+    /// 判断指定语言是否为当前选中项
+    static func isLanguageSelected(_ mode: LanguageMode, current: LanguageMode) -> Bool {
+        mode == current
+    }
+
+    /// 为单个语言项生成顶层菜单勾选绑定，避免 macOS 上 Menu 内嵌 Picker 产生空白二级子菜单
+    private func languageSelectionBinding(for mode: LanguageMode) -> Binding<Bool> {
+        Binding(
+            get: { AuthView.isLanguageSelected(mode, current: selectedLanguage) },
+            set: { _ in
+                selectedLanguage = mode
+                Localized.languageMode = mode
+            }
+        )
     }
 
     private var heroHeader: some View {

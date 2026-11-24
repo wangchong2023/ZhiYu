@@ -12,7 +12,7 @@
 import XCTest
 import UFPCore
 import UFPStorage
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// 物理笔记本数据强隔离功能单元测试类（VaultDataIsolationTests）
 /// 专职验证系统核心功能：当物理切换不同的知识金库（Vault）时，底层的物理 SQLite 数据库能够实现强力物理数据隔离与完整性保护。

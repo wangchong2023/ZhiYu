@@ -11,7 +11,7 @@
 import XCTest
 import UFPCore
 import CommonCrypto
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 final class ModelStoreConfigTests: XCTestCase {
     

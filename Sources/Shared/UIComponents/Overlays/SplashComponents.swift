@@ -189,7 +189,7 @@ struct SplashBackgroundView: View {
                             )
                             .opacity(nodeGlow ? DesignTokens.SystemOpacity.overlay : DesignTokens.SystemOpacity.glass) // 0.6, 0.1
                             .animation(
-                                .easeOut(duration: 3.0)
+                                .easeOut(duration: DesignTokens.Animations.splashFadeOutDuration)
                                 .repeatForever(autoreverses: false)
                                 .delay(Double(i) * 0.4),
                                 value: nodeGlow

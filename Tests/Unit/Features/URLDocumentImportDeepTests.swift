@@ -13,7 +13,7 @@ import UFPCore
 import UIKit
 import XCTest
 
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class URLDocumentImportDeepTests: XCTestCase {

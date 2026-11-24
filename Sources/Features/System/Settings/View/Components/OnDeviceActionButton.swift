@@ -44,6 +44,8 @@ struct OnDeviceActionButton: View {
             .background(background)
             .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius))
         }
+        // 自绘圆角按钮需关闭 macOS 默认 bezel，避免双层外框。
+        .buttonStyle(.plain)
         .disabled(isDisabled)
     }
 }

@@ -9,7 +9,7 @@
 //  核心职责：针对 AppleAuthStrategy 开展自动化单元测试验证。
 //
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class AppleAuthStrategyTests: XCTestCase {

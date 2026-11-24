@@ -13,7 +13,7 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class PluginSignatureMutationTests: XCTestCase {
@@ -36,9 +36,6 @@ final class PluginSignatureMutationTests: XCTestCase {
 
     // MARK: - 变异 S1：外部 manifest 使用 local. 前缀应被拒绝
     //
-    // 危险点：`if manifest.id.hasPrefix("local.") { return false }` 仅在 isTrustedLocal=false 生效。
-    // 若 isTrustedLocal 判断顺序有误（如 local. 检查在 isTrustedLocal 检查之前），
-    // isTrustedLocal=false 的外部插件使用 local. 前缀可能绕过被信任。
     // 若此测试 FAIL → 安全漏洞：外部插件可伪造 local. 前缀绕过签名检查
     func testMutation_ExternalManifestWithLocalPrefix_IsRejected() {
         let evilManifests = [
@@ -50,8 +47,7 @@ final class PluginSignatureMutationTests: XCTestCase {
         for manifest in evilManifests {
             let result = PluginLoader.verifyPluginSignature(
                 script: "console.log('evil')",
-                manifest: manifest,
-                isTrustedLocal: false  // 外部插件
+                manifest: manifest
             )
             XCTAssertFalse(
                 result,
@@ -70,8 +66,7 @@ final class PluginSignatureMutationTests: XCTestCase {
 
         let result = PluginLoader.verifyPluginSignature(
             script: "console.log('test')",
-            manifest: manifest,
-            isTrustedLocal: false
+            manifest: manifest
         )
         XCTAssertFalse(result, "空字符串签名应被拒绝，但通过了校验 → 安全漏洞！")
     }
@@ -84,8 +79,7 @@ final class PluginSignatureMutationTests: XCTestCase {
 
         let result = PluginLoader.verifyPluginSignature(
             script: "console.log('test')",
-            manifest: manifest,
-            isTrustedLocal: false
+            manifest: manifest
         )
         XCTAssertFalse(result, "nil 签名应被拒绝，但通过了校验 → 安全漏洞！")
     }
@@ -108,8 +102,7 @@ final class PluginSignatureMutationTests: XCTestCase {
             let manifest = makeManifest(id: "com.zhiyu.plugin.remote.test", codeSignature: sig)
             let result = PluginLoader.verifyPluginSignature(
                 script: "console.log('test')",
-                manifest: manifest,
-                isTrustedLocal: false
+                manifest: manifest
             )
             XCTAssertFalse(
                 result,
@@ -118,11 +111,9 @@ final class PluginSignatureMutationTests: XCTestCase {
         }
     }
 
-    // MARK: - 变异 S5：isTrustedLocal=true 应跳过所有检查（即使 codeSignature 为 nil）
     //
-    // 这是设计预期行为：内部生成的本地插件（如 .loadPluginFromRawJS 路径）不需要签名。
-    // 若此测试 FAIL → Bug：isTrustedLocal 分支被错误删除，内部插件无法加载
-    func testMutation_TrustedLocal_BypassesAllChecks() {
+    // 本地来源不再代表可信，所有缺失有效签名的本地插件都应拒绝。
+    func testMutation_TrustedLocal_RejectsUnsignedLocal() {
         let manifests = [
             makeManifest(id: "local.internal-plugin", codeSignature: nil),
             makeManifest(id: "local.internal-plugin", codeSignature: ""),
@@ -132,12 +123,11 @@ final class PluginSignatureMutationTests: XCTestCase {
         for manifest in manifests {
             let result = PluginLoader.verifyPluginSignature(
                 script: "console.log('internal')",
-                manifest: manifest,
-                isTrustedLocal: true  // 内部信任
+                manifest: manifest
             )
-            XCTAssertTrue(
+            XCTAssertFalse(
                 result,
-                "isTrustedLocal=true 时应跳过所有检查，直接返回 true，manifest.id='\(manifest.id)'"
+                "本地插件缺少有效签名时必须返回 false，manifest.id='\(manifest.id)'"
             )
         }
     }

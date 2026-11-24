@@ -153,6 +153,8 @@ struct PDFReaderView: View {
                                     .stroke(Color.appText, lineWidth: highlightColor == color ? DesignTokens.SystemStroke.selected : DesignTokens.SystemStroke.none)
                             )
                     }
+                    // 自绘圆形色块需关闭 macOS 默认 bezel。
+                    .buttonStyle(.plain)
                 }
                 Spacer()
             }
@@ -170,6 +172,8 @@ struct PDFReaderView: View {
                     .background(Color.appAccent)
                     .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius))
             }
+            // 自绘圆角按钮需关闭 macOS 默认 bezel，避免双层外框。
+            .buttonStyle(.plain)
         }
         .padding(DesignTokens.Spacing.medium)
         .background(Color.appCard)

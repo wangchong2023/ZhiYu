@@ -10,7 +10,7 @@
 //
 
 import Foundation
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 extension DependencyContainer {
     /// 测试用的全 mock 依赖工厂

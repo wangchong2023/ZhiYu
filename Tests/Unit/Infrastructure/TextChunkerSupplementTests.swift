@@ -13,7 +13,7 @@ import XCTest
 import Foundation
 import Dependencies
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - TextChunkerProcessor 补充测试
 

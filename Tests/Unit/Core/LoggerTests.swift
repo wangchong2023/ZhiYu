@@ -11,7 +11,7 @@
 
 import XCTest
 import Combine
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 final class SystemLoggerTests: XCTestCase {
     

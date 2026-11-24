@@ -80,46 +80,53 @@ public struct PageDetailAIMenuButton: View {
     #if !os(watchOS)
     private var fullMenu: some View {
         Menu {
-            Button(action: onGenerateSummary) {
-                Label(L10n.Knowledge.Page.AI.summary, systemImage: DesignTokens.Icons.aiSummary)
-            }
-            Button(action: onExtractActions) {
-                Label(L10n.Knowledge.Page.AI.extractActions, systemImage: DesignTokens.Icons.aiExtract)
-            }
+            Group {
+                Button(action: onGenerateSummary) {
+                    Label(L10n.Knowledge.Page.AI.summary, systemImage: DesignTokens.Icons.aiSummary)
+                }
+                Button(action: onExtractActions) {
+                    Label(L10n.Knowledge.Page.AI.extractActions, systemImage: DesignTokens.Icons.aiExtract)
+                }
 
-            Menu {
-                Button(action: onMindmap) {
-                    Label(L10n.Knowledge.Page.AI.mindmap, systemImage: DesignTokens.Icons.mindmap)
+                Menu {
+                    Group {
+                        Button(action: onMindmap) {
+                            Label(L10n.Knowledge.Page.AI.mindmap, systemImage: DesignTokens.Icons.mindmap)
+                        }
+                        Button(action: onQuiz) {
+                            Label(L10n.Knowledge.Page.AI.quiz, systemImage: DesignTokens.Icons.quiz)
+                        }
+                        Button(action: onSlides) {
+                            Label(L10n.Knowledge.Page.AI.slides, systemImage: DesignTokens.Icons.slides)
+                        }
+                        Button(action: onReport) {
+                            Label(L10n.Knowledge.Page.AI.report, systemImage: DesignTokens.Icons.report)
+                        }
+                        Button(action: onInfographic) {
+                            Label(L10n.Knowledge.Page.AI.infographic, systemImage: DesignTokens.Icons.infographic)
+                        }
+                    }
+                    .labelStyle(.titleAndIcon)
+                } label: {
+                    Label(L10n.Knowledge.Page.AI.lab, systemImage: DesignTokens.Icons.lab)
                 }
-                Button(action: onQuiz) {
-                    Label(L10n.Knowledge.Page.AI.quiz, systemImage: DesignTokens.Icons.quiz)
-                }
-                Button(action: onSlides) {
-                    Label(L10n.Knowledge.Page.AI.slides, systemImage: DesignTokens.Icons.slides)
-                }
-                Button(action: onReport) {
-                    Label(L10n.Knowledge.Page.AI.report, systemImage: DesignTokens.Icons.report)
-                }
-                Button(action: onInfographic) {
-                    Label(L10n.Knowledge.Page.AI.infographic, systemImage: DesignTokens.Icons.infographic)
-                }
-            } label: {
-                Label(L10n.Knowledge.Page.AI.lab, systemImage: DesignTokens.Icons.lab)
-            }
 
-            Divider()
-            Button(action: onShowSnapshotHistory) {
-                Label(L10n.Knowledge.Page.History.title, systemImage: DesignTokens.Icons.history)
+                Divider()
+                Button(action: onShowSnapshotHistory) {
+                    Label(L10n.Knowledge.Page.History.title, systemImage: DesignTokens.Icons.history)
+                }
+                Button(action: onExpandContent) {
+                    Label(L10n.Knowledge.Page.expandStub, systemImage: DesignTokens.Icons.expandStub)
+                }
+                Button(action: onFindRelatedLinks) {
+                    Label(L10n.Knowledge.Page.findLinks, systemImage: DesignTokens.Icons.findLinks)
+                }
             }
-            Button(action: onExpandContent) {
-                Label(L10n.Knowledge.Page.expandStub, systemImage: DesignTokens.Icons.expandStub)
-            }
-            Button(action: onFindRelatedLinks) {
-                Label(L10n.Knowledge.Page.findLinks, systemImage: DesignTokens.Icons.findLinks)
-            }
+            .labelStyle(.titleAndIcon)
         } label: {
             Image(systemName: DesignTokens.Icons.sparkles)
                 .foregroundStyle(.appAccent)
+                .appToolbarItemStandardFrame()
         }
         .disabled(isDisabled)
     }

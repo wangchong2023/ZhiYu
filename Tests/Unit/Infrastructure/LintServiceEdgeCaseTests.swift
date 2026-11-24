@@ -12,7 +12,7 @@ import UFPDesignSystem
 import XCTest
 import SwiftUI
 import UFPStorage
-@preconcurrency @testable import ZhiYu
+@preconcurrency @testable import ZhiYuUnitTestHost
 @testable import UFPCore
 
 // MARK: - LintService Edge Cases

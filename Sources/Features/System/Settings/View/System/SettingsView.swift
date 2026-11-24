@@ -105,6 +105,8 @@ struct SettingsView: View {
     @State private var showUpgradeSheet = false
     /// 当前大屏布局下选中的设置分类，默认选中“外观”
     @State private var selectedSection: SettingsSection? = .appearance
+    /// 当前悬停的设置分类（用于桌面端即时悬停反馈）
+    @State private var hoveredSection: SettingsSection?
     
     var body: some View {
         @Bindable var router = router
@@ -148,7 +150,6 @@ struct SettingsView: View {
         .environment(\.locale, router.currentLocale)
         // 绑定当前主题对应的 preferredColorScheme，使深色模式和浅色模式切换能立即在该视图层实时生效
         .preferredColorScheme(themeManager.colorSchemeMode.preferredColorScheme)
-        .id(themeManager.colorSchemeMode)
         .appToast()
         .alert(L10n.Settings.injectConfirm.title, isPresented: $showInjectConfirmation) {
             Button(L10n.Common.confirm) {
@@ -157,7 +158,8 @@ struct SettingsView: View {
                     let result = await store.generateInitialNotebooks()
                     isInjecting = false
 
-                    try? await Task.sleep(nanoseconds: 300_000_000)
+                    let feedbackDelayNs: UInt64 = 300_000_000
+                    try? await Task.sleep(nanoseconds: feedbackDelayNs)
 
                     HapticFeedback.shared.trigger(result.total > 0 ? .success : .error)
                     let total = result.total
@@ -214,33 +216,44 @@ struct SettingsView: View {
         .scrollContentBackground(.hidden)
     }
 
-    /// 构建大屏左侧分类侧边栏（气泡圆角卡片样式，具备呼吸感与选中高亮）
+    /// 构建大屏左侧分类侧边栏（气泡圆角卡片样式，具备全行热区、悬停反馈与选中高亮）
     private var sidebarColumn: some View {
         ScrollView {
             VStack(spacing: DesignTokens.SystemSpacing.small) {
                 ForEach(SettingsSection.allCases) { section in
+                    let isSelected = selectedSection == section
+                    let isHovered = hoveredSection == section
+                    let rowShape = RoundedRectangle(cornerRadius: DesignTokens.Spacing.mediumRadius, style: .continuous)
                     Button(action: {
-                        HapticFeedback.shared.trigger(.selection)
-                        selectedSection = section
+                        if selectedSection != section {
+                            selectedSection = section
+                        }
                     }) {
                         HStack(spacing: DesignTokens.Spacing.medium) {
                             Image(systemName: section.iconName)
                                 .font(.subheadline)
-                                .foregroundStyle(selectedSection == section ? .white : .appAccent)
+                                .foregroundStyle(isSelected ? .white : .appAccent)
                                 .frame(width: DesignTokens.IconSize.standard, alignment: .center)
                             Text(section.displayName)
                                 .font(.body.weight(.medium))
-                                .foregroundStyle(selectedSection == section ? .white : .appText)
+                                .foregroundStyle(isSelected ? .white : .appText)
                             Spacer()
                         }
                         .padding(.horizontal, DesignTokens.SystemSpacing.content)
                         .padding(.vertical, DesignTokens.SystemSpacing.medium)
                         .background(
-                            RoundedRectangle(cornerRadius: DesignTokens.Spacing.mediumRadius, style: .continuous)
-                                .fill(selectedSection == section ? Color.appAccent : Color.clear)
+                            rowShape.fill(
+                                isSelected
+                                    ? Color.appAccent
+                                    : (isHovered ? Color.appAccent.opacity(DesignTokens.Opacity.glass) : Color.clear)
+                            )
                         )
+                        .contentShape(rowShape)
                     }
                     .buttonStyle(.plain)
+                    .onHoverIfAvailable { hovering in
+                        hoveredSection = hovering ? section : (hoveredSection == section ? nil : hoveredSection)
+                    }
                 }
             }
             .padding(.horizontal, DesignTokens.SystemSpacing.medium)
@@ -259,14 +272,14 @@ struct SettingsView: View {
             Group {
                 switch section {
                 case .about:
-                    AboutView()
+                    AboutView(showsDismissButton: false, usesEmbeddedBackground: true)
                 case .feedback:
-                    FeedbackView()
+                    FeedbackView(isEmbedded: true)
                         .environment(themeManager)
                 case .plugins:
                     PluginExtensionsDetailView()
                 case .ai:
-                    AISettingsView(showsDismissButton: false)
+                    AISettingsView(showsDismissButton: false, usesEmbeddedBackground: true)
                         .environment(themeManager)
                 #if DEBUG
                 case .developer:

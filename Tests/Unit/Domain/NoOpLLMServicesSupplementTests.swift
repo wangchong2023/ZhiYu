@@ -9,7 +9,7 @@
 
 import XCTest
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// LLM 相关 NoOp 服务补盲测试
 @MainActor

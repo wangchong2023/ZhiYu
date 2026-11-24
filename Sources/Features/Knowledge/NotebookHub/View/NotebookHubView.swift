@@ -57,6 +57,7 @@ public struct NotebookHubView: View {
                     notebookGridSection
                 }
                 .padding(.bottom, DesignTokens.Spacing.huge)
+                .appDesktopReadableWidth(DesignTokens.Metrics.macWideContentWidth)
             }
             .scrollIndicators(.hidden)
             .accessibilityIdentifier("NotebookHubView")
@@ -202,9 +203,9 @@ public struct NotebookHubView: View {
             Image(systemName: DesignTokens.Icons.sparkles)
                 .font(.callout.weight(.bold))
                 .foregroundStyle(.appAccent)
-                .padding(.leading, DesignTokens.SystemSpacing.tiny)
+                .appToolbarItemStandardFrame()
         }
-        .buttonStyle(.plain)
+        .appToolbarButtonStyle()
     }
     
     private var displayModeButton: some View {
@@ -212,30 +213,31 @@ public struct NotebookHubView: View {
             Image(systemName: viewModel.displayMode.icon)
                 .font(.system(size: DesignTokens.Typography.bodyFontSize))
                 .foregroundStyle(.appSecondary)
+                .appToolbarItemStandardFrame()
         }
-        .buttonStyle(.plain)
+        .appToolbarButtonStyle()
     }
     
     @ViewBuilder
     private var sortMenu: some View {
         Menu {
-            Button {
-                viewModel.sortOption = .date
-            } label: {
-                Label(L10n.Vault.sort.date, systemImage: DesignTokens.Icons.sortDate)
+            Group {
+                Button(L10n.Vault.sort.date, systemImage: DesignTokens.Icons.sortDate) {
+                    viewModel.sortOption = .date
+                }
+                
+                Button(L10n.Vault.sort.name, systemImage: DesignTokens.Icons.sortName) {
+                    viewModel.sortOption = .name
+                }
             }
-            
-            Button {
-                viewModel.sortOption = .name
-            } label: {
-                Label(L10n.Vault.sort.name, systemImage: DesignTokens.Icons.sortName)
-            }
+            .labelStyle(.titleAndIcon)
         } label: {
             Image(systemName: DesignTokens.Icons.sortUpDown)
                 .font(.system(size: DesignTokens.Typography.bodyFontSize))
                 .foregroundStyle(.appSecondary)
+                .appToolbarItemStandardFrame()
         }
-        .buttonStyle(.plain)
+        .appToolbarButtonStyle()
         .visibleOniOSOrMac()
     }
 }

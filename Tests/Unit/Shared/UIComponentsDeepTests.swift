@@ -11,7 +11,7 @@ import UFPCore
 import UFPDesignSystem
 import XCTest
 
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class UIComponentsDeepTests: XCTestCase {

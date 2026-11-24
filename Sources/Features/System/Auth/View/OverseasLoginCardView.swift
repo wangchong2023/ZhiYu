@@ -19,6 +19,7 @@ struct OverseasLoginCardView: View {
     @Dependency(\.toastService) private var toastManager
     /// 身份认证后台数据服务
     @Environment(AuthService.self) var authService
+    @Environment(\.interfaceIdiom) private var idiom
     /// 加载中状态
     @State private var isLoading: Bool = false
     /// 协议勾选状态
@@ -30,36 +31,46 @@ struct OverseasLoginCardView: View {
     var body: some View {
         // swiftlint:disable:next redundant_discardable_let
         let _ = (showTermsSheet, showPrivacySheet)
-        VStack(spacing: DesignTokens.Spacing.large) {
-            // 1. 顶部占位文案（与大陆版手机号掩码 `authService.currentUser?.phone?.maskedPhoneNumber` 等高对齐）
-            //    使用 L10n 国际化文案，避免在 View 中硬编码任何字符串字面量；
-            //    字号 / 字重 / 字体设计 / 顶部 padding 与大陆版保持完全一致，
-            //    确保 3D 翻转时两侧卡片视觉高度一致，避免下方 OAuth / 游客模式跳变。
-            Text(L10n.Auth.overseasWelcome)
-                .authHeroTextStyle()
+        let isDesktop = AuthView.isDesktopLayout(idiom)
+        Group {
+            if isDesktop {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.large) {
+                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
+                        Text(L10n.Auth.overseasWelcome)
+                            .font(.system(size: DesignTokens.Typography.titleFontSize, weight: .bold, design: .rounded))
+                            .foregroundStyle(.appText)
 
-            // 2. Passkey 一键生物免密注册/登录按钮 (海外首选安全通道)
-            Button(action: handlePasskeyLogin) {
-                HStack(spacing: DesignTokens.Spacing.small) {
-                    Image(systemName: DesignTokens.Icons.personBadgeKeyFill)
-                        .font(.headline)
-                    Text(L10n.Auth.continueWithPasskey)
-                        .font(.headline.weight(.semibold))
+                        Text(L10n.Auth.overseasSubtitle)
+                            .font(.subheadline)
+                            .foregroundStyle(.appSecondary)
+                    }
+
+                    passkeyButton
+
+                    agreementSection
                 }
-                .foregroundStyle(.white)
-                .authActionButtonStyle()
-            }
-            .disabled(isLoading)
-            .accessibilityIdentifier("auth.overseas.passkeyButton")
-            
-            // 协议勾选
-            agreementSection
+            } else {
+                VStack(spacing: DesignTokens.Spacing.large) {
+                    // 1. 顶部占位文案（与大陆版手机号掩码 `authService.currentUser?.phone?.maskedPhoneNumber` 等高对齐）
+                    //    使用 L10n 国际化文案，避免在 View 中硬编码任何字符串字面量；
+                    //    字号 / 字重 / 字体设计 / 顶部 padding 与大陆版保持完全一致，
+                    //    确保 3D 翻转时两侧卡片视觉高度一致，避免下方 OAuth / 游客模式跳变。
+                    Text(L10n.Auth.overseasWelcome)
+                        .authHeroTextStyle()
 
-            // 底部 Spacer：与大陆版第 34 行完全一致，保证切换瞬间高度稳定
-            Spacer().frame(height: DesignTokens.Spacing.large)
+                    // 2. Passkey 一键生物免密注册/登录按钮 (海外首选安全通道)
+                    passkeyButton
+
+                    // 协议勾选
+                    agreementSection
+
+                    // 底部 Spacer：与大陆版第 34 行完全一致，保证切换瞬间高度稳定
+                    Spacer().frame(height: DesignTokens.Spacing.large)
+                }
+                .padding(DesignTokens.Spacing.wide)
+                .appContainer(cornerRadius: DesignTokens.Spacing.largeRadius)
+            }
         }
-        .padding(DesignTokens.Spacing.wide)
-        .appContainer(cornerRadius: DesignTokens.Spacing.largeRadius)
         .policySheet(
             isPresented: $showTermsSheet,
             title: L10n.Auth.termsOfServiceTitle,
@@ -70,6 +81,23 @@ struct OverseasLoginCardView: View {
             title: L10n.Auth.privacyPolicyTitle,
             content: L10n.Auth.privacyPolicyContent
         )
+    }
+
+    private var passkeyButton: some View {
+        Button(action: handlePasskeyLogin) {
+            HStack(spacing: DesignTokens.Spacing.small) {
+                Image(systemName: DesignTokens.Icons.personBadgeKeyFill)
+                    .font(.headline)
+                Text(L10n.Auth.continueWithPasskey)
+                    .font(.headline.weight(.semibold))
+            }
+            .foregroundStyle(.white)
+            .authActionButtonStyle()
+        }
+        // 与国内版一致：避免 macOS 默认 Button bezel 叠加在自绘按钮外。
+        .buttonStyle(.plain)
+        .disabled(isLoading)
+        .accessibilityIdentifier("auth.overseas.passkeyButton")
     }
     
     // MARK: - 协议勾选
@@ -98,7 +126,8 @@ struct OverseasLoginCardView: View {
         isLoading = true
         
         Task {
-            try? await Task.sleep(nanoseconds: 1_200_000_000)
+            let simulatedLoginDelayNs: UInt64 = 1_200_000_000
+            try? await Task.sleep(nanoseconds: simulatedLoginDelayNs)
             
             await MainActor.run {
                 isLoading = false

@@ -16,7 +16,7 @@ import XCTest
 import SwiftUI
 import UFPCore
 import Dependencies
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - 测试用协同数据代理
 

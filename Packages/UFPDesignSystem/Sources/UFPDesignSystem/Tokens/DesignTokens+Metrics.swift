@@ -74,6 +74,26 @@ extension DesignTokens {
         public static let macMainWindowWidth: CGFloat = 1200
         /// Mac 主窗口默认高度 (800pt)
         public static let macMainWindowHeight: CGFloat = 800
+        /// Mac 设置窗口默认宽度 (820pt)
+        public static let macSettingsWindowWidth: CGFloat = 820
+        /// Mac 设置窗口默认高度 (600pt)
+        public static let macSettingsWindowHeight: CGFloat = 600
+        /// Mac 个人信息窗口默认宽度 (560pt)
+        public static let macProfileWindowWidth: CGFloat = 560
+        /// Mac 个人信息窗口默认高度 (680pt)
+        public static let macProfileWindowHeight: CGFloat = 680
+        /// Mac 套餐管理窗口默认宽度 (720pt)
+        public static let macPlanWindowWidth: CGFloat = 720
+        /// Mac 套餐管理窗口默认高度 (680pt)
+        public static let macPlanWindowHeight: CGFloat = 680
+        /// Mac 插件中心窗口默认宽度 (760pt)
+        public static let macPluginsWindowWidth: CGFloat = 760
+        /// Mac 插件中心窗口默认高度 (620pt)
+        public static let macPluginsWindowHeight: CGFloat = 620
+        /// Mac 笔记本中心窗口默认宽度 (920pt)
+        public static let macNotebookHubWindowWidth: CGFloat = 920
+        /// Mac 笔记本中心窗口默认高度 (640pt)
+        public static let macNotebookHubWindowHeight: CGFloat = 640
         /// Mac 侧边栏宽度 (260pt)
         public static let macSidebarWidth: CGFloat = 260
         /// 笔记本名称最大长度限制 (24字符)
@@ -135,6 +155,14 @@ extension DesignTokens {
         public static let authHeroWidth: CGFloat = 420
         /// Mac 登录页登录表单最大宽度 (420pt)
         public static let authFormWidth: CGFloat = 420
+        /// Mac 全屏登录双栏舞台最大宽度 (1080pt)
+        public static let macAuthStageMaxWidth: CGFloat = 1080
+        /// Mac 全屏登录双栏舞台最大高度 (700pt)
+        public static let macAuthStageMaxHeight: CGFloat = 700
+        /// Mac 桌面单列阅读/表单最佳最大宽度 (860pt)
+        public static let macReadableContentWidth: CGFloat = 860
+        /// Mac 桌面宽幅工作台/网格最大宽度 (1120pt)
+        public static let macWideContentWidth: CGFloat = 1120
 
         // MARK: - 快照测试设备与布局尺寸 Token
         /// iPhone 13/14/15 Pro 竖屏逻辑宽度 (375pt)

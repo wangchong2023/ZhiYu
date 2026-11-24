@@ -10,7 +10,7 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// 中小 L10n 扩展文件批量深度测试
 final class L10nMediumFilesDeepTests: XCTestCase {

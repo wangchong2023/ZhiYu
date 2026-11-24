@@ -97,8 +97,10 @@ public struct OnDeviceTestView: View {
                 )
             )
             .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius))
-            .shadow(color: Color.appAccent.opacity(onDeviceService.isGenerating ? 0 : 0.2), radius: DesignTokens.SystemShadow.radiusMedium, y: DesignTokens.SystemShadow.offsetSmall)
+            .shadow(color: Color.appAccent.opacity(onDeviceService.isGenerating ? 0 : DesignTokens.Opacity.glass), radius: DesignTokens.SystemShadow.radiusMedium, y: DesignTokens.SystemShadow.offsetSmall)
         }
+        // 自绘渐变胶囊按钮需关闭 macOS 默认 bezel，避免双层外框。
+        .buttonStyle(.plain)
         .disabled(onDeviceService.isGenerating || prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
     }
     
@@ -172,7 +174,7 @@ public struct OnDeviceTestView: View {
         Task {
             do {
                 let generated = try await onDeviceService.generate(prompt: prompt)
-                withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) {
+                withAnimation(.appStandard) {
                     result = generated
                 }
             } catch {
@@ -269,7 +271,7 @@ public struct OnDeviceModelRow: View {
         )
         .contentShape(Rectangle())
         .onTapGesture {
-            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+            withAnimation(.appStandard) {
                 onSelect()
             }
         }

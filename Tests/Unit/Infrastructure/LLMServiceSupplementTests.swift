@@ -13,7 +13,7 @@ import XCTest
 import UFPCore
 import Dependencies
 import Combine
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - LLMService 属性降级测试
 

@@ -10,7 +10,7 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// Insight 表 L10n 扩展补充测试（Dashboard）
 /// 已有 L10nInsightTableTests 覆盖 Insight 命名空间

@@ -17,7 +17,7 @@
 import XCTest
 import UFPCore
 import Dependencies
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - 可捕获 ChatService Mock
 

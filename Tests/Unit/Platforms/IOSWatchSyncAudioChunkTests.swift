@@ -8,7 +8,7 @@
 
 import XCTest
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 #if os(iOS) && !os(watchOS)
 @MainActor

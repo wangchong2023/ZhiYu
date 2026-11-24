@@ -10,7 +10,7 @@
 import XCTest
 import CryptoKit
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 final class SecureEnclaveCryptoSupplementTests: XCTestCase {
 

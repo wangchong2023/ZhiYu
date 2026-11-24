@@ -1,6 +1,6 @@
 import XCTest
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// KnowledgePage processor 协议测试（不依赖 DI）
 final class KnowledgePageProcessorTests: XCTestCase {

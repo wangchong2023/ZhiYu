@@ -10,7 +10,7 @@
 //
 
 import Foundation
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 extension GlobalModelManager {
     /// 单元测试专用：重置响应式状态用于测试隔离

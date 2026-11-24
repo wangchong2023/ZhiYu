@@ -8,7 +8,7 @@
 
 import UFPDesignSystem
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 final class DesignSystemSystemTests: XCTestCase {
 

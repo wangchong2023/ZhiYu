@@ -10,7 +10,7 @@
 import XCTest
 import UFPCore
 import UFPStorage
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 #if canImport(UIKit) && !os(watchOS)
 import UIKit

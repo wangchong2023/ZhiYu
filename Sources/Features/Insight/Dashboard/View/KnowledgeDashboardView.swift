@@ -9,21 +9,8 @@
 //  核心职责：构建 KnowledgeDashboard 界面的 UI 视图层组件。
 //
 import SwiftUI
-import Charts
 import Dependencies
 import UFPDesignSystem
-
-// 仪表盘业务阈值常量
-private enum InsightBusinessConstants {
-    /// 图表轴标签名称前缀最大长度
-    static let axisNamePrefixLength = 12
-
-    /// 密度图表柱状条语义标签
-    enum DensityLabel {
-        static let outbound = "Outbound"
-        static let inbound = "Inbound"
-    }
-}
 
 struct KnowledgeDashboardView: View {
     @Dependency(\.toastService) private var toastManager
@@ -134,27 +121,8 @@ struct KnowledgeDashboardView: View {
                 if coordinator.densityData.isEmpty {
                     emptyView
                 } else {
-                    // 💡 密度图表重塑：双物理指示直角 Canvas 双箭头坐标轴系统 (去除了所有冗余 layout，彻底对齐 Y 轴与图间距，拉开底轴空气留白)
-                    Chart(coordinator.densityData) { item in
-                        densityBarMark(value: item.outbound, label: InsightBusinessConstants.DensityLabel.outbound, pageName: item.name, color: .appAccent)
-                        densityBarMark(value: item.inbound, label: InsightBusinessConstants.DensityLabel.inbound, pageName: item.name, color: Color.theme.purple)
-                    }
-                    .frame(height: DesignTokens.Metrics.chartHeight + DesignTokens.Spacing.medium)
-                    .chartXAxis(.hidden) // 彻底删除冗余“0个关联”等繁杂文案，回归极其大气的物理大厂留白
-                    .chartYAxis {
-                        AxisMarks(position: .leading) { value in
-                            AxisValueLabel {
-                                if let name = value.as(String.self) {
-                                    // 正常完整展示具体的页面文案内容（最多支持 12 个汉字，完美适应 iPhone 屏幕宽度，超过时以 "..." 雅致折叠）
-                                    Text(name.prefix(InsightBusinessConstants.axisNamePrefixLength) + (name.count > InsightBusinessConstants.axisNamePrefixLength ? "..." : ""))
-                                        .font(.system(size: DesignTokens.Typography.captionFontSize, weight: .medium, design: .rounded))
-                                        .foregroundStyle(.appSource)
-                                }
-                            }
-                        }
-                    }
-                    .chartLegend(.hidden)
-                    .padding(.bottom, DesignTokens.Spacing.small) // 额外物理扩展图表底部外边距，形成高级空气流动美感
+                    ConnectionDensityChartView(items: coordinator.densityData)
+                        .padding(.bottom, DesignTokens.Spacing.tiny)
                     
                     // 💡 完美的「图例与 X 轴含义说明单行看板」 (Legend & X-Axis Note Panel)
                     // 左右完美对称，信息量饱满且布局轻盈开阔，彻底移除了沉重的胶囊和重复的“纵轴说明”
@@ -178,7 +146,6 @@ struct KnowledgeDashboardView: View {
                             axisLegend(icon: DesignTokens.Icons.arrowRight, text: L10n.Dashboard.axisRelations)
                         }
                     }
-                    .padding(.top, -DesignTokens.Spacing.tiny)
                     .padding(.bottom, DesignTokens.Spacing.tiny)
                 }
             }
@@ -311,21 +278,6 @@ struct KnowledgeDashboardView: View {
                 .font(.system(size: DesignTokens.Typography.caption2FontSize, weight: .bold, design: .rounded))
                 .foregroundStyle(.appSecondary)
         }
-    }
-
-    /// 密度图表柱状条
-    @ChartContentBuilder
-    private func densityBarMark(value: Double, label: String, pageName: String, color: Color) -> some ChartContent {
-        BarMark(
-            x: .value(label, value),
-            y: .value("Page", pageName)
-        )
-        .cornerRadius(DesignTokens.Radius.small)
-        .foregroundStyle(LinearGradient(
-            colors: [color, color.opacity(DesignTokens.Opacity.dim)],
-            startPoint: .leading,
-            endPoint: .trailing
-        ))
     }
 }
 

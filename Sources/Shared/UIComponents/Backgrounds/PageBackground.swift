@@ -27,7 +27,7 @@ public struct MeshGradientView: View {
                 if size.width > 1 && size.height > 1 {
                     if #available(iOS 18.0, macOS 15.0, *) {
                         #if os(watchOS)
-                        watchOSCanvasBackground(size: size)
+                        legacyCanvasBackground(size: size)
                         #else
                         MeshGradient(
                             width: 3,
@@ -54,13 +54,6 @@ public struct MeshGradientView: View {
             .ignoresSafeArea()
         }
     }
-    
-    #if os(watchOS)
-    @ViewBuilder
-    private func watchOSCanvasBackground(size: CGSize) -> some View {
-        canvasGridBackground(size: size)
-    }
-    #endif
     
     @ViewBuilder
     private func legacyCanvasBackground(size: CGSize) -> some View {
@@ -142,5 +135,6 @@ public struct PageBackgroundView: View {
         }
         .ignoresSafeArea()
         .background(Color.appBackground)
+        .drawingGroup()
     }
 }

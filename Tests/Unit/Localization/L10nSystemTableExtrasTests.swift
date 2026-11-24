@@ -10,7 +10,7 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// System 表 L10n 扩展补充测试（Auth/Settings/Onboarding/Security/Network/Lint）
 /// 已有 L10nSystemTableTests 覆盖 Coachmark/Reminder/Shortcuts/Workflow

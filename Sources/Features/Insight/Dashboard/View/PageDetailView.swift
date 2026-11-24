@@ -23,6 +23,7 @@ struct PageDetailView: View {
     @Environment(AppStore.self) var store
     @Environment(AIWorkflowStore.self) var aiStore
     @Environment(Router.self) var router
+    @Environment(\.interfaceIdiom) private var idiom
     @State private var recommendations: [KnowledgePage] = []
     @State private var copiedUrl: String?
 
@@ -248,7 +249,8 @@ struct PageDetailView: View {
                 .padding(.top, router.navigationHistory.isEmpty ? DesignSystem.Layout.tightPadding : 0)
                 .background(.ultraThinMaterial)
         }
-        .padding(.top, appEnv.screenClass != .compact ? 36 : 0)
+        // 36pt 是 iPad 悬浮 TabBar 的避让量；macOS 原生工具栏下会增加无谓留白。
+        .padding(.top, idiom != .mac && appEnv.screenClass != .compact ? FeatureConstants.TaskCenterLayout.iPadDetailTopOffset : 0)
         .frame(maxWidth: DesignSystem.Layout.maxReadWidth)
         .overlay(
             Divider().background(Color.appBorder),
@@ -354,7 +356,8 @@ struct PageDetailView: View {
                     self.copiedUrl = url
                 }
                 Task {
-                    try? await Task.sleep(nanoseconds: 2_000_000_000)
+                    let copyFeedbackDurationNs: UInt64 = 2_000_000_000
+                    try? await Task.sleep(nanoseconds: copyFeedbackDurationNs)
                     withAnimation(.spring()) {
                         if self.copiedUrl == url {
                             self.copiedUrl = nil

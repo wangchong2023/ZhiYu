@@ -12,7 +12,7 @@ import XCTest
 import UFPCore
 import SwiftUI
 import UFPStorage
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - 多轮对话会话缓存 (ChatHistoryStore) 单元测试
 @MainActor

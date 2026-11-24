@@ -357,7 +357,7 @@ struct SystemStatsView: View {
             Chart(coordinator.storageCategories) { category in
                 SectorMark(
                     angle: .value("Size", Double(category.value)),
-                    innerRadius: .ratio(0.65),
+                    innerRadius: .ratio(FeatureConstants.TaskCenterLayout.donutInnerRadiusRatio),
                     angularInset: 3
                 )
                 .cornerRadius(6)

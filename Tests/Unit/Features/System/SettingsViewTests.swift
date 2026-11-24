@@ -12,7 +12,7 @@
 import XCTest
 import SwiftUI
 import Dependencies
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// 系统设置视图单元测试类
 /// 专职验证 `SettingsView` 的依赖解析，防止由于 SwiftUI 环境（Environment）缺失导致运行时发生致命的 Coredump 崩溃。
@@ -33,7 +33,7 @@ final class SettingsViewTests: XCTestCase {
     func testSettingsViewInstantiationAndDependencyResolution() {
         let store = AppStore()
         let router = Router.shared
-        let appEnvironment = AppEnvironment.shared
+        let appEnvironment = TestAppEnvironment.shared
         let onboardingService = OnboardingService()
         
         // 模拟实例化 SettingsView 并链式注入所有关联的环境变量与环境对象

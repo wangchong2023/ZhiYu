@@ -100,7 +100,7 @@ struct SourceDetailBodyView: View {
                             width: DesignTokens.Spacing.small,
                             height: CGFloat(wave) * Self.waveMaxHeight * CGFloat(scale)
                         )
-                        .animation(.easeInOut(duration: 0.2), value: scale)
+                        .animation(.easeInOut(duration: DesignTokens.Animations.fastDuration), value: scale)
                 }
             }
             .frame(height: Self.waveMaxHeight)

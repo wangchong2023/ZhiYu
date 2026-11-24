@@ -74,58 +74,65 @@ struct UserProfileMenu: View {
         }
         #elseif os(macOS)
         // macOS：设置走原生 SettingsLink，个人资料/订阅/插件走辅助窗口，退出走 authService.logout()
+        // macOS 27+ 默认隐藏 Menu 内部普通 Button 的 SF Symbol，必须在 Menu 内容内部显式应用 .labelStyle(.titleAndIcon) 强制渲染图标。
         Menu {
-            Button(action: {
-                HapticFeedback.shared.trigger(.selection)
-                guard UserProfileMenu.canOpenAuxWindow(
-                    isLoggedIn: AuthSession.shared.isLoggedIn,
-                    isGuest: AuthSession.shared.isGuest
-                ) else { return }
-                openWindow(id: "profile")
-            }) {
-                Label(authService.currentUser?.name ?? L10n.Auth.profileAndQuota, systemImage: "person.crop.circle.fill")
+            Group {
+                Button(action: {
+                    HapticFeedback.shared.trigger(.selection)
+                    guard UserProfileMenu.canOpenAuxWindow(
+                        isLoggedIn: AuthSession.shared.isLoggedIn,
+                        isGuest: AuthSession.shared.isGuest
+                    ) else { return }
+                    openWindow(id: "profile")
+                }) {
+                    Label(
+                        authService.currentUser?.name ?? L10n.Auth.profileAndQuota,
+                        systemImage: DesignTokens.Icons.personCropFill
+                    )
+                }
+
+                Divider()
+
+                SettingsLink {
+                    Label(L10n.Common.settings, systemImage: DesignTokens.Icons.settings)
+                }
+                .accessibilityIdentifier("settingsMenuButton")
+
+                Button(action: {
+                    guard UserProfileMenu.canOpenAuxWindow(
+                        isLoggedIn: AuthSession.shared.isLoggedIn,
+                        isGuest: AuthSession.shared.isGuest
+                    ) else { return }
+                    openWindow(id: "plan")
+                }) {
+                    Label(L10n.Auth.subscription, systemImage: "creditcard.fill")
+                }
+
+                Button(action: {
+                    guard UserProfileMenu.canOpenAuxWindow(
+                        isLoggedIn: AuthSession.shared.isLoggedIn,
+                        isGuest: AuthSession.shared.isGuest
+                    ) else { return }
+                    openWindow(id: "plugins")
+                }) {
+                    Label(L10n.Plugin.title, systemImage: "puzzlepiece.extension.fill")
+                }
+
+                Divider()
+
+                Button(role: .destructive, action: {
+                    HapticFeedback.shared.trigger(.selection)
+                    authService.logout()
+                }) {
+                    Label(L10n.Common.logout, systemImage: DesignTokens.Icons.logout)
+                }
+                .accessibilityIdentifier("logoutButton")
             }
-
-            Divider()
-
-            SettingsLink {
-                Label(L10n.Common.settings, systemImage: "gearshape.fill")
-            }
-            .accessibilityIdentifier("settingsMenuButton")
-
-            Button(action: {
-                guard UserProfileMenu.canOpenAuxWindow(
-                    isLoggedIn: AuthSession.shared.isLoggedIn,
-                    isGuest: AuthSession.shared.isGuest
-                ) else { return }
-                openWindow(id: "plan")
-            }) {
-                Label(L10n.Auth.subscription, systemImage: "creditcard.fill")
-            }
-
-            Button(action: {
-                guard UserProfileMenu.canOpenAuxWindow(
-                    isLoggedIn: AuthSession.shared.isLoggedIn,
-                    isGuest: AuthSession.shared.isGuest
-                ) else { return }
-                openWindow(id: "plugins")
-            }) {
-                Label(L10n.Plugin.title, systemImage: "puzzlepiece.extension.fill")
-            }
-
-            Divider()
-
-            Button(role: .destructive, action: {
-                HapticFeedback.shared.trigger(.selection)
-                authService.logout()
-            }) {
-                Label(L10n.Common.logout, systemImage: DesignTokens.Icons.logout)
-            }
-            .accessibilityIdentifier("logoutButton")
+            .labelStyle(.titleAndIcon)
         } label: {
             profileLabel
         }
-        .buttonStyle(.plain)
+        .appToolbarButtonStyle()
         .accessibilityIdentifier("userProfileMenuButton")
         #else
         // iOS/iPadOS：使用原生 Menu 控件，彻底解决 ToolbarItem 内部 popover 状态失效导致的点击无响应问题
@@ -203,7 +210,7 @@ struct UserProfileMenu: View {
             }
         }
         .foregroundStyle(.appAccent)
-        .higTouchTarget()
+        .appToolbarAdaptiveTouchTarget()
     }
     
     private var aboutStack: some View {

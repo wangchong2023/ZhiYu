@@ -7,7 +7,7 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - LLMContextBuilder Prompt 构建测试
 

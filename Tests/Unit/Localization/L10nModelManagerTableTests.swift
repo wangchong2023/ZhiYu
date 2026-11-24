@@ -10,7 +10,7 @@
 //
 
 import XCTest
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// ModelManager 表 L10n 扩展测试
 final class L10nModelManagerTableTests: XCTestCase {

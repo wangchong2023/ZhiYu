@@ -18,7 +18,7 @@
       </PreActions>
       <BuildActionEntries>
          <BuildActionEntry
-            buildForTesting = "YES"
+            buildForTesting = "NO"
             buildForRunning = "YES"
             buildForProfiling = "YES"
             buildForArchiving = "YES"
@@ -42,9 +42,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "67D028F10F307E1351F7262E"
-            BuildableName = "ZhiYu.app"
-            BlueprintName = "ZhiYu"
+            BlueprintIdentifier = "CA36AA72CE67A8D6DE96055E"
+            BuildableName = "ZhiYuTests.xctest"
+            BlueprintName = "ZhiYuTests"
             ReferencedContainer = "container:ZhiYu.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

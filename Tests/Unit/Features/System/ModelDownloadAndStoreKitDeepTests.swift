@@ -13,7 +13,7 @@ import XCTest
 import SwiftUI
 import StoreKit
 import AuthenticationServices
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 import UFPCore
 
 @MainActor

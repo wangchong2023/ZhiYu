@@ -10,7 +10,6 @@
 //
 
 import Foundation
-@testable import ZhiYu
 
 /// 自动化 UI 测试笔记本选择策略
 public struct UITestVaultSelectionPolicy: VaultSelectionPolicyProtocol {

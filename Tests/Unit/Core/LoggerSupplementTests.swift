@@ -10,7 +10,7 @@
 import XCTest
 import Combine
 import UFPCore
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 /// Logger 深度测试
 ///

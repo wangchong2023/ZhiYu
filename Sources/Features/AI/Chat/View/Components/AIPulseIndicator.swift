@@ -131,10 +131,11 @@ struct AIPulseIndicator: View {
     }
     
     private func startHapticPulse() {
+        let nanosecondsPerSecond: Double = 1_000_000_000
         Task {
             while isActive {
                 HapticFeedback.shared.trigger(.pulse)
-                try? await Task.sleep(nanoseconds: UInt64(DesignTokens.Animation.AI.pulseInterval * 1_000_000_000))
+                try? await Task.sleep(nanoseconds: UInt64(DesignTokens.Animation.AI.pulseInterval * nanosecondsPerSecond))
             }
         }
     }

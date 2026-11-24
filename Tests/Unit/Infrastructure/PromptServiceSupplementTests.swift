@@ -12,7 +12,7 @@ import XCTest
 import UFPCore
 import Dependencies
 import Combine
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - PromptService 补盲测试
 

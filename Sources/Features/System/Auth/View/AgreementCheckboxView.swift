@@ -28,6 +28,8 @@ struct AgreementCheckboxView: View {
                     .foregroundStyle(isAgreementChecked ? Color.appAccent : Color.appSecondary)
                     .font(.system(size: DesignTokens.Spacing.smallIconSize))
             }
+            // macOS 默认 Button 样式会在勾选图标外绘制系统灰底方块，plain 样式只保留图标本身。
+            .buttonStyle(.plain)
             .accessibilityIdentifier("agreementCheckbox")
             .accessibilityValue(isAgreementChecked ? "checked" : "unchecked")
 

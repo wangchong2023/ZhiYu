@@ -86,7 +86,7 @@ struct MedalRewardPopup: View {
                         .fill(baseColor.opacity(DesignTokens.Colors.Opacity.dimmedOpacity))
                         .frame(width: DesignSystem.Gallery.displayIconSize, height: DesignSystem.Gallery.displayIconSize)
                         .blur(radius: DesignSystem.Gallery.blurRadius)
-                        .scaleEffect(isAnimating ? 1.2 : 0.8)
+                        .scaleEffect(isAnimating ? FeatureConstants.MedalAnimationScale.glowMax : FeatureConstants.MedalAnimationScale.glowMin)
                     
                     Image(systemName: medal.icon)
                         .font(.system(size: DesignSystem.Gallery.mainIconSize, weight: .black))
@@ -98,7 +98,7 @@ struct MedalRewardPopup: View {
                             )
                         )
                         .shadow(color: baseColor.opacity(DesignTokens.Reference.Opacity.fifty), radius: DesignTokens.Spacing.loosePadding, y: DesignTokens.Spacing.standardPadding) // 0.5, 20, 10
-                        .scaleEffect(isAnimating ? 1.1 : 0.9)
+                        .scaleEffect(isAnimating ? FeatureConstants.MedalAnimationScale.iconMax : FeatureConstants.MedalAnimationScale.iconMin)
                 }
                 .padding(.top, DesignSystem.Gallery.blurRadius)
                 
@@ -132,7 +132,7 @@ struct MedalRewardPopup: View {
                         .shadow(color: baseColor.opacity(DesignTokens.Colors.Opacity.disabledOpacity), radius: DesignTokens.SystemRadius.small, y: DesignTokens.SystemSpacing.small) // 0.3, 10, 6
                 }
                 .padding(.bottom, DesignSystem.Gallery.blurRadius)
-                .scaleEffect(isAnimating ? 1 : 0.9)
+                .scaleEffect(isAnimating ? 1 : FeatureConstants.MedalAnimationScale.iconMin)
             }
             .background(
                 RoundedRectangle(cornerRadius: DesignSystem.Gallery.containerRadius)
@@ -143,11 +143,11 @@ struct MedalRewardPopup: View {
                     )
             )
             .padding(DesignSystem.Gallery.containerPadding)
-            .scaleEffect(isAnimating ? 1 : 0.5)
+            .scaleEffect(isAnimating ? 1 : FeatureConstants.MedalAnimationScale.cardMin)
             .opacity(isAnimating ? 1 : 0)
         }
         .onAppear {
-            withAnimation(.spring(response: 0.6, dampingFraction: 0.7, blendDuration: 0)) {
+            withAnimation(.appProminent) {
                 isAnimating = true
             }
         }

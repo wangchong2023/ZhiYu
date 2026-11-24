@@ -8,7 +8,7 @@
 
 import XCTest
 import Foundation
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 #if canImport(CoreSpotlight)
 @MainActor

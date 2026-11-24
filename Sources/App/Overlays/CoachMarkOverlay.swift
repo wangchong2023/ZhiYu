@@ -90,7 +90,7 @@ struct CoachMarkOverlay: View {
             .padding(DesignTokens.Spacing.giant)
         }
         .onAppear {
-            withAnimation(.spring(response: DesignTokens.Animation.standardDuration, dampingFraction: 0.7)) {
+            withAnimation(.spring(response: DesignTokens.Animation.standardDuration, dampingFraction: DesignTokens.Animations.springDamping)) {
                 isAnimating = true
             }
         }

@@ -12,7 +12,7 @@
 import UFPDesignSystem
 import XCTest
 import SwiftUI
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 import UFPCore
 
 @MainActor

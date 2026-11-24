@@ -13,6 +13,7 @@
 //       因此只验证 assertionFailure 触发，不验证 fatalError 后续行为。
 //
 
+import UFPCoreTestMocks
 import XCTest
 @testable import UFPCore
 

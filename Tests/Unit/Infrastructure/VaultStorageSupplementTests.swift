@@ -13,7 +13,7 @@ import UFPStorage
 import UFPCore
 import LocalAuthentication
 import Dependencies
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 @MainActor
 final class VaultStorageSupplementTests: XCTestCase {

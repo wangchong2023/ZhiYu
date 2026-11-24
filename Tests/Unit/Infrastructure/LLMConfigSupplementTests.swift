@@ -13,7 +13,7 @@ import XCTest
 import UFPCore
 import Dependencies
 import Combine
-@testable import ZhiYu
+@testable import ZhiYuUnitTestHost
 
 // MARK: - LLMConfigManager 补盲测试
 
