@@ -80,6 +80,7 @@ struct CommandPaletteView: View {
                 }
             }
             .listStyle(.plain)
+            .scrollContentBackground(.hidden)
             .frame(height: DesignTokens.Metrics.commandPaletteHeight)
             .background(Color.appCard)
             .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius, style: .continuous))

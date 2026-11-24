@@ -17,6 +17,7 @@ import UFPDesignSystem
 /// 插件中心 (Stub: 为未来生态预留位置)
 struct PluginCenterView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.interfaceIdiom) private var idiom
     @Environment(Router.self) var router
     @Dependency(\.pluginRegistry) var registry
     @StateObject private var marketService: PluginMarketService
@@ -54,11 +55,14 @@ struct PluginCenterView: View {
             
             // 3. 内容主体
             ScrollView {
-                if selectedTab == 0 {
-                    marketSection
-                } else {
-                    myPluginsSection
+                Group {
+                    if selectedTab == 0 {
+                        marketSection
+                    } else {
+                        myPluginsSection
+                    }
                 }
+                .appDesktopReadableWidth(DesignTokens.Metrics.macWideContentWidth)
             }
         }
         .background(PageBackgroundView(accentColor: .appAccent))
@@ -87,9 +91,11 @@ struct PluginCenterView: View {
             Text(L10n.Plugin.safeModeWarningMessage)
         }
         .toolbar {
-            ToolbarItem(placement: .confirmationAction) {
-                Button(L10n.Common.done) {
-                    dismiss()
+            if idiom != .mac {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(L10n.Common.done) {
+                        dismiss()
+                    }
                 }
             }
         }

@@ -33,14 +33,39 @@ struct MacMenuCommands: Commands {
             .keyboardShortcut("p", modifiers: .command)
         }
 
-        // 查看：切换侧边栏 (⌃⌘S)
-        // macOS 主窗口侧边栏由系统默认控制，当前 NavigationSplitView 布局暂无 toggleSidebar 消费者；
-        // 保留此通用菜单语义，系统在有可用响应时（如未来 NavigationView 路径）自动生效。
+        // 查看：切换侧边栏 (⌃⌘S) 与主工作区快捷切换 (⌘1–⌘5)
         CommandGroup(after: .toolbar) {
             Button(L10n.Common.Sidebar.toggle) {
                 NotificationCenter.default.post(name: .toggleSidebar, object: nil)
             }
             .keyboardShortcut("s", modifiers: [.command, .control])
+
+            Divider()
+
+            Button(AppTab.knowledge.displayTitle) { @MainActor in
+                router.selectedTab = .knowledge
+            }
+            .keyboardShortcut("1", modifiers: .command)
+
+            Button(AppTab.chat.displayTitle) { @MainActor in
+                router.selectedTab = .chat
+            }
+            .keyboardShortcut("2", modifiers: .command)
+
+            Button(AppTab.ingest.displayTitle) { @MainActor in
+                router.selectedTab = .ingest
+            }
+            .keyboardShortcut("3", modifiers: .command)
+
+            Button(AppTab.synthesis.displayTitle) { @MainActor in
+                router.selectedTab = .synthesis
+            }
+            .keyboardShortcut("4", modifiers: .command)
+
+            Button(AppTab.graph.displayTitle) { @MainActor in
+                router.selectedTab = .graph
+            }
+            .keyboardShortcut("5", modifiers: .command)
         }
 
         // 窗口：打开笔记本中心（匹配 MacSceneBuilder.windows() 的 notebook-hub 场景）
@@ -52,7 +77,9 @@ struct MacMenuCommands: Commands {
 
         // 帮助：官网链接
         CommandGroup(replacing: .help) {
-            Link(L10n.Common.help, destination: URL(string: "https://izhiyu.top")!)
+            if let helpURL = URL(string: AppConstants.URLs.officialWebsite) {
+                Link(L10n.Common.help, destination: helpURL)
+            }
         }
     }
 }

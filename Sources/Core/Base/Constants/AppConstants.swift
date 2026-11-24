@@ -104,8 +104,10 @@ public struct AppConstants {
         }
     }
     
-    // MARK: - 外部 OAuth 端点 URL
+    // MARK: - 外部端点与官网 URL
     public struct URLs {
+        /// 智宇官方网站 / 帮助中心
+        public static let officialWebsite: String = "https://izhiyu.top"
         /// Google OIDC 授权端点
         public static let googleAuthorizationEndpoint: String = "https://accounts.google.com/o/oauth2/v2/auth"
         /// Google OIDC 令牌端点

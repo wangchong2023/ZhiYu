@@ -94,6 +94,7 @@ struct SynthesisView: View {
         .scrollContentBackground(.hidden)
         .scrollIndicators(.hidden)
         .padding(.top, DesignTokens.Spacing.widePadding)
+        .appDesktopReadableWidth(DesignTokens.Metrics.macWideContentWidth)
     }
 
     private var runningTasksContainer: some View {
