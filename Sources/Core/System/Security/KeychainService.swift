@@ -24,15 +24,20 @@ class KeychainService: @unchecked Sendable {
     }
     /// Keychain 服务标识符
     private let serviceName: String
+    /// 缺失 keychain entitlement 时的独立隔离套件存储（避免直接访问 UserDefaults.standard）
+    private let fallbackDefaults: UserDefaults
 
     private enum Namespace {
         static let production = "com.zhiyu.keychain"
         static let fallbackPrefix = "com.zhiyu.keychain.fallback."
+        static let fallbackSuiteSuffix = ".fallback"
     }
 
     /// 保持既有正式命名空间，独立应用可通过构造参数隔离凭据。
     init(serviceName: String? = nil) {
-        self.serviceName = serviceName ?? Namespace.production
+        let resolvedName = serviceName ?? Namespace.production
+        self.serviceName = resolvedName
+        self.fallbackDefaults = UserDefaults(suiteName: resolvedName + Namespace.fallbackSuiteSuffix) ?? UserDefaults()
     }
 
     /// 本地无签名 / 缺失 keychain-access-groups entitlement 时的回退存储键
@@ -63,7 +68,7 @@ class KeychainService: @unchecked Sendable {
         // 无签名本地调试/测试宿主缺失 keychain-access-groups entitlement 时，
         // 避免回退到传统登录钥匙串触发反复弹窗，改用本地隔离回退存储。
         if status == errSecMissingEntitlement {
-            UserDefaults.standard.set(value, forKey: fallbackKey(for: key))
+            fallbackDefaults.set(value, forKey: fallbackKey(for: key))
             return
         }
         guard status == errSecSuccess else {
@@ -86,7 +91,7 @@ class KeychainService: @unchecked Sendable {
         var result: AnyObject?
         let status = SecItemCopyMatching(query as CFDictionary, &result)
         if status == errSecMissingEntitlement {
-            return UserDefaults.standard.string(forKey: fallbackKey(for: key))
+            return fallbackDefaults.string(forKey: fallbackKey(for: key))
         }
 
         switch status {
@@ -108,7 +113,7 @@ class KeychainService: @unchecked Sendable {
         let query = KeychainQueryHelper.baseQuery(serviceName: serviceName, key: key)
         let status = SecItemDelete(query as CFDictionary)
         if status == errSecMissingEntitlement {
-            UserDefaults.standard.removeObject(forKey: fallbackKey(for: key))
+            fallbackDefaults.removeObject(forKey: fallbackKey(for: key))
             return
         }
         guard status == errSecSuccess || status == errSecItemNotFound else {
