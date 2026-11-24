@@ -7,18 +7,13 @@ Gatekeeper: 检查源码中的测试耦合反模式 — 生产代码不应包含
 Accessibility Identifier 等方式实现，而非在视图/服务层用 `if isUITesting` 分叉渲染。
 
 规则：
-1. Sources/ 目录（排除 @main 入口与平台适配层）中禁止出现测试耦合标识：
+1. Sources/ 与本地包生产 target 中禁止出现测试耦合标识：
    - `isUITesting` 计算属性
    - `NSClassFromString("XCTest")` / `NSClassFromString("XCTestCase")`
    - `ProcessInfo.processInfo.environment["UITesting"]`
    - `CommandLine.arguments.contains("--uitesting")`
    - `--uitesting` / `--reset-state` / `--stay-on-hub` 等 UI 测试 launch argument 字面量
-2. 允许的豁免位置：
-   - `Sources/App/ZhiYuApp.swift`（@main 入口，解析 launch argument 跳转路由）
-   - `Sources/App/AppEnvironment.swift`（环境初始化，可能根据测试模式跳过数据库）
-   - `Sources/Platforms/`（平台适配层，可能含测试专用配置）
-   - `Tests/`（测试目录本身）
-   - `Sources/Core/System/`（Logger 等系统服务可能需要区分测试环境）
+2. 正式入口和平台层不再整文件豁免。测试逻辑仅放在 Tests/ 或独立测试替身 target。
 
 用法：python3 Tools/ios/check-code-test-coupling.py [--strict]
       --strict: 违规视为构建失败（CI 模式）
@@ -30,6 +25,8 @@ import sys
 from pathlib import Path
 from dataclasses import dataclass
 from typing import List
+
+from production_swift_files import production_swift_files
 
 # ── ANSI 颜色代码常量 ──
 COLOR_RED = 91
@@ -44,11 +41,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 SOURCES_ROOT = REPO_ROOT / "Sources"
 
 # ── 豁免目录/文件（这些位置允许出现测试耦合代码）──
-EXEMPT_PATHS = {
-    "Sources/App/Core/ZhiYuApp.swift",    # @main 入口，解析 launch argument
-    "Sources/App/Core/AppEnvironment.swift",  # 环境初始化
-    "Sources/Platforms",                   # 平台适配层
-}
+EXEMPT_PATHS = set()
 
 # ── 底层业务目录：不允许出现测试专用 Mock 类型定义 ──
 # 产品演示数据 / UI 文案等 Mock 概念（如 LLMConstants UITesting mock 常量、
@@ -59,12 +52,18 @@ BOTTOM_LAYER_PREFIXES = (
     "Sources/Infrastructure/",
     "Sources/Domain/",
     "Sources/Core/",
+    "Packages/",
 )
 
 
 
 # ── 测试耦合反模式正则 ──
 PATTERNS = [
+    (
+        "test_launch_literal",
+        re.compile(r'"(?:--uitesting|--reset-auth-state|-UITest_MockData|UITest_InjectAccessToken|UITesting)"|\b(?:UITestRoute|TestApp|EphemeralDatabaseBootstrapStrategy)\b'),
+        "测试参数或专用类型不得进入生产 target，应移至独立测试宿主",
+    ),
     (
         "isUITesting_property",
         re.compile(r'\bprivate\s+var\s+isUITesting\b|\bvar\s+isUITesting\b'),
@@ -250,7 +249,7 @@ def main() -> int:
     args = parser.parse_args()
 
     all_findings: List[Finding] = []
-    for fp in SOURCES_ROOT.rglob("*.swift"):
+    for fp in production_swift_files(REPO_ROOT):
         all_findings.extend(scan_file(fp))
 
     if not all_findings:
@@ -263,7 +262,7 @@ def main() -> int:
     if args.strict:
         print(f"\n❌ STRICT 模式：{len(all_findings)} 处测试耦合反模式，构建失败。")
         print("   修复建议：")
-        print("   1. 将 launch argument 解析移至 Sources/App/ZhiYuApp.swift（@main 入口）")
+        print("   1. 将测试启动参数解析移至 Tests/Host/ 独立测试宿主")
         print("   2. 视图层用 Accessibility Identifier 标识元素，而非 `if isUITesting` 分叉")
         print("   3. 测试侧用 Page Object 封装导航，不依赖源码测试分支")
         return 1

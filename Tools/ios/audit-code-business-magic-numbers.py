@@ -39,7 +39,15 @@ SCAN_DIRS = [
     "Sources/Infrastructure",
     "Sources/Core",
     "Sources/Features",
+    "Packages/UFPCore/Sources",
+    "Packages/UFPStorage/Sources",
+    "Packages/ZhiYuDomain/Sources",
+    "Packages/ZhiYuAICore/Sources",
+    "Packages/ZhiYuFeatures/Sources",
 ]
+
+# ── 统一 Swift 数字字面量模式（支持下划线分隔符，如 1_000_000 / 0.001 / -32.5）──
+SWIFT_NUM_PATTERN = r"-?\d[\d_]*(?:\.\d[\d_]*)?"
 
 # ── 排除目录 ──
 EXCLUDE_DIRS = {".git", "build", "DerivedData", ".build", "Frameworks", "__pycache__"}
@@ -201,11 +209,11 @@ def _is_single_value_constant(line: str) -> bool:
     """
     stripped = line.strip()
     # 匹配 `[access] [static] let/var xxx[: Type] = <single_number>`
-    # 右侧只允许：单个数字（可带负号/小数点），不能有运算符 * / + - 等
+    # 右侧只允许：单个数字（可带负号/小数点/下划线分隔符），不能有运算符 * / + - 等
     pattern = (
         r"^(?:public\s+|private\s+|internal\s+|fileprivate\s+)?"
-        r"(?:static\s+)?(let|var)\s+\w+(?:\s*:\s*\w+)?\s*=\s*"
-        r"(-?\d+\.?\d*)\s*$"
+        r"(?:static\s+)?(let|var)\s+\w+(?:\s*:\s*[\w.?]+)?\s*=\s*"
+        rf"({SWIFT_NUM_PATTERN})\s*$"
     )
     return bool(re.match(pattern, stripped))
 
@@ -215,12 +223,12 @@ def _extract_numbers_from_line(line: str) -> List[str]:
 
     检测模式：
     1. 比较运算符后的数字：``> 0.7`` / ``<= 200`` / ``== 0.5``
-    2. prefix/maxLength/maxCount 等函数参数中的数字：``prefix(200)`` / ``limit: 3000``
+    2. prefix/maxLength/temperature/topP/maxTokens 等函数参数中的数字
     3. 赋值语句中的数字：``let timeout = 3000`` / ``progress = 0.75``
     4. 函数默认参数中的数字：``timeout: TimeInterval = 30``
-    5. 复合表达式常量定义中的数字：``private let x = 5 * 1024 * 1024``
-       （单值常量 ``static let x = 60`` 跳过，已有语义名）
+    5. 复合表达式常量定义中的数字：``private let x = 5 * 1024 * 1024`` / ``* 1_000_000``
     6. 数组字面量中的裸数字：``[7, 30, 90]`` / ``[0.6, 0.8, 0.4]``
+    7. 三元运算符中的裸数字：``isE4B ? 32.5 : 45.8`` / ``flag ? 45 : 30``
 
     :param line: 原始代码行
     :return: 提取出的数字字符串列表（去重）
@@ -232,7 +240,7 @@ def _extract_numbers_from_line(line: str) -> List[str]:
     # 替换为空字符串占位，保留字符串边界以便后续模式匹配不受影响
     code_part = re.sub(r'"[^"]*"', '""', code_part)
 
-    # 单值常量定义整体跳过（static let xxx = 60 已有语义名）
+    # 单值常量定义整体跳过（static let xxx = 60 / 1_000_000 已有语义名）
     if _is_single_value_constant(code_part):
         return []
 
@@ -243,6 +251,7 @@ def _extract_numbers_from_line(line: str) -> List[str]:
     numbers.update(_extract_default_param_numbers(code_part))
     numbers.update(_extract_compound_expression_numbers(code_part))
     numbers.update(_extract_array_literal_numbers(code_part))
+    numbers.update(_extract_ternary_numbers(code_part))
 
     return list(numbers)
 
@@ -250,7 +259,7 @@ def _extract_numbers_from_line(line: str) -> List[str]:
 def _extract_comparison_numbers(code_part: str) -> set:
     """模式 1: 比较运算符后的数字 — < 0.7 / >= 200 / == 0.5 / != 0"""
     numbers = set()
-    for m in re.finditer(r"[<>!]=?\s*(\-?\d+\.?\d*)\b|==\s*(\-?\d+\.?\d*)\b", code_part):
+    for m in re.finditer(rf"[<>!]=?\s*({SWIFT_NUM_PATTERN})\b|==\s*({SWIFT_NUM_PATTERN})\b", code_part):
         num = m.group(1) or m.group(2)
         if num:
             numbers.add(num)
@@ -258,9 +267,15 @@ def _extract_comparison_numbers(code_part: str) -> set:
 
 
 def _extract_function_param_numbers(code_part: str) -> set:
-    """模式 2: prefix(\\d+) / suffix(\\d+) / maxLen(\\d+) 等函数参数"""
+    """模式 2: prefix(\\d+) / temperature: 0.7 / maxTokens: 2048 等业务命名参数"""
     numbers = set()
-    for m in re.finditer(r"\b(?:prefix|suffix|maxLength|minLength|maxCount|minCount|maxRetries|limit|timeout|delay|interval|batchSize|chunkSize|windowSize|topN|topK)\s*\(?\s*(\-?\d+\.?\d*)\b", code_part):
+    param_names = (
+        r"prefix|suffix|maxLength|minLength|maxCount|minCount|maxRetries|retries|"
+        r"limit|timeout|delay|interval|batchSize|chunkSize|windowSize|topN|topK|topP|"
+        r"temperature|maxTokens|minTokens|nanoseconds|seconds|milliseconds|"
+        r"threshold|ratio|weight|score|capacity|bufferSize|dimension|sampleInterval|rounds"
+    )
+    for m in re.finditer(rf"\b(?:{param_names})\s*[:\(]\s*({SWIFT_NUM_PATTERN})\b", code_part):
         numbers.add(m.group(1))
     return numbers
 
@@ -272,7 +287,7 @@ def _extract_assignment_numbers(code_part: str) -> set:
     注意：单值常量定义已在上文跳过，这里会处理复合表达式（5 * 1024 * 1024）。
     """
     numbers = set()
-    for m in re.finditer(r"(?<![=<>!])=\s*(\-?\d+\.?\d*)\b", code_part):
+    for m in re.finditer(rf"(?<![=<>!])=\s*({SWIFT_NUM_PATTERN})\b", code_part):
         numbers.add(m.group(1))
     return numbers
 
@@ -280,19 +295,19 @@ def _extract_assignment_numbers(code_part: str) -> set:
 def _extract_default_param_numbers(code_part: str) -> set:
     """模式 4: 函数默认参数 — timeout: TimeInterval = 30 / limit: Int = 200"""
     numbers = set()
-    for m in re.finditer(r":\s*\w+\s*=\s*(\-?\d+\.?\d*)\b", code_part):
+    for m in re.finditer(rf":\s*[\w.?]+\s*=\s*({SWIFT_NUM_PATTERN})\b", code_part):
         numbers.add(m.group(1))
     return numbers
 
 
 def _extract_compound_expression_numbers(code_part: str) -> set:
-    """模式 5: 复合表达式中的裸数字 — 5 * 1024 * 1024 / 1 << 24 / value & 0xFF
+    """模式 5: 复合表达式中的裸数字 — 5 * 1024 * 1024 / * 1_000_000 / 1 << 24
 
     检测乘法/除法/位运算/移位运算中的数字（这些通常是换算常量或位掩码，应抽为命名常量）。
     排除已被模式 1-4 覆盖的比较/赋值场景。
     """
     numbers = set()
-    for m in re.finditer(r"[*\/%<>]\s*(\-?\d+\.?\d*)\b", code_part):
+    for m in re.finditer(rf"[*\/%<>]\s*({SWIFT_NUM_PATTERN})\b", code_part):
         numbers.add(m.group(1))
     return numbers
 
@@ -306,10 +321,24 @@ def _extract_array_literal_numbers(code_part: str) -> set:
     numbers = set()
     for m in re.finditer(r"\[([^\[\]]*\d[^\[\]]*)\]", code_part):
         inner = m.group(1)
-        inner_numbers = re.findall(r"(?<!\w)(\-?\d+\.?\d*)\b", inner)
+        inner_numbers = re.findall(rf"(?<!\w)({SWIFT_NUM_PATTERN})\b", inner)
         if len(inner_numbers) >= 2:
             for num in inner_numbers:
                 numbers.add(num)
+    return numbers
+
+
+def _extract_ternary_numbers(code_part: str) -> set:
+    """模式 7: 三元运算符中的裸数字 — isE4B ? 32.5 : 45.8 / flag ? 45 : 30"""
+    if "?" not in code_part or ":" not in code_part:
+        return set()
+    numbers = set()
+    for m in re.finditer(rf"\?\s*({SWIFT_NUM_PATTERN})\s*:\s*({SWIFT_NUM_PATTERN})\b", code_part):
+        numbers.add(m.group(1))
+        numbers.add(m.group(2))
+    # 兼容一侧为变量、一侧为裸数字的三元表达式（如 cond ? variable : 30）
+    for m in re.finditer(rf"\?\s*({SWIFT_NUM_PATTERN})\s*:", code_part):
+        numbers.add(m.group(1))
     return numbers
 
 

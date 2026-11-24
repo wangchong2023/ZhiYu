@@ -143,7 +143,7 @@ run_check "文档漂移检测" \
 # 1.9 业务层魔鬼数字/硬编码 Prompt 审计（阻断——AGENTS.md 红线 #4）
 # 短字符串检测按层逐步启用：当前 LLM + Processors + Storage + Plugins + Features 层已修复
 run_check "业务层魔鬼数字审计" \
-    "python3 Tools/ios/audit-code-business-magic-numbers.py --strict --magic-string-scope Sources/Infrastructure/LLM --magic-string-scope Sources/Infrastructure/Processors --magic-string-scope Sources/Infrastructure/Storage --magic-string-scope Sources/Infrastructure/Plugins --magic-string-scope Sources/Features" \
+    "python3 Tools/ios/audit-code-business-magic-numbers.py --strict --magic-string-scope Sources/Infrastructure/LLM --magic-string-scope Sources/Infrastructure/Processors --magic-string-scope Sources/Infrastructure/Storage --magic-string-scope Sources/Infrastructure/Plugins --magic-string-scope Sources/Features --magic-string-scope Packages/UFPCore --magic-string-scope Packages/UFPStorage --magic-string-scope Packages/ZhiYuDomain --magic-string-scope Packages/ZhiYuAICore --magic-string-scope Packages/ZhiYuFeatures" \
     || exit 1
 
 # 1.10 UFPCore 纯净化审计（阻断——通用基础能力不应泄漏到业务层）
@@ -184,6 +184,16 @@ run_check "废弃注入审计" \
 # 1.17 开源库内部依赖本地化审计（阻断——离线优先原则，开源库自身 Package.swift 不得引用远端 URL）
 run_check "开源库内部依赖本地化审计" \
     "python3 Tools/ios/check-arch-opensource-internal-deps.py" \
+    || exit 1
+
+# 1.18 业务/领域层平台宏与 canImport 守卫（阻断——含 SPM 包）
+run_check "业务层平台宏隔离审计" \
+    "python3 Tools/ios/check-code-platform-macros.py" \
+    || exit 1
+
+# 1.19 全局平台宏文件白名单与总数棘轮审计（阻断——含 SPM 包，只减不增）
+run_check "全局平台宏分布与预算审计" \
+    "python3 Tools/ios/audit-platform-macro-distribution.py" \
     || exit 1
 
 # quick 模式在此结束

@@ -14,7 +14,6 @@ Gatekeeper: 检查 Sources/ 生产代码中不当的 #if DEBUG 测试分支与 M
    - SwiftUI 官方预览 #Preview 块
    - 纯调试日志输出（Logger）
    - 底层平台安全兼容（Keychain / 自签名 HTTPS 证书 / 数据库签名自愈）
-   - 顶层 @main 进程入口（启动参数检测）
    - 带有 `// debug_exempt: <具体原因>` 显式注释的代码行
 
 用法：
@@ -29,6 +28,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional, Tuple
 
+from production_swift_files import production_swift_files
+
 COLOR_RED = "\033[91m"
 COLOR_YELLOW = "\033[93m"
 COLOR_GREEN = "\033[92m"
@@ -42,24 +43,20 @@ MAX_SNIPPET_LENGTH = 120
 
 # ── 允许使用 #if DEBUG 的文件白名单及明确理由 ──
 FILE_WHITELIST = {
-    # @main 应用引导入口：仅用于检测启动参数禁用动画或清除测试会话
-    "Sources/App/Core/ZhiYuApp.swift": "应用启动引导层",
     "Sources/App/Core/AppEnvironment.swift": "启动环境诊断日志",
     # 系统级服务：日志仅在 Debug 输出
     "Sources/Core/System/Logger/Logger.swift": "调试日志输出",
-    "Sources/Core/System/Security/SecurityManager.swift": "模拟器与底层安全证书兼容",
-    "Sources/Core/System/Security/KeychainService.swift": "watchOS 与模拟器 Keychain 兼容",
     # 基础设施：开发环境本地 DB 完整性自愈
-    "Sources/Infrastructure/Storage/Persistence/DatabaseManager.swift": "开发调试模式数据库签名自愈",
     # 业务功能与表现：开发者设置分类与 DI 容器状态诊断
     "Sources/Features/Knowledge/System/Model/KnowledgeStore.swift": "DI 容器诊断日志",
+    "Packages/UFPCore/Sources/UFPCore/Base/ServiceContainer.swift": "DI 注册诊断日志",
+    "Packages/UFPCore/Sources/UFPCore/System/Logger.swift": "调试日志输出",
     "Sources/Features/System/Settings/View/System/SettingsView.swift": "设置中心开发者调试菜单项",
-    "Sources/Domain/Subscription/FeatureGateManager.swift": "编译期匿名游客 Feature Flag",
 }
 
 # ── 非法特征词（出现在 #if DEBUG 块中直接判定违规） ──
 FORBIDDEN_DEBUG_PATTERNS = [
-    (re.compile(r'\b(mock_|mock[A-Z]|Mock[A-Z]|fake_|stub_)\b'), "包含 Mock/Fake/Stub 伪造逻辑或假凭据"),
+    (re.compile(r'\b(?:mock|Mock|fake|stub)[A-Za-z0-9_]*\b'), "包含 Mock/Fake/Stub 伪造逻辑或假凭据"),
     (re.compile(r'\b\w+ForTesting\b'), "暴露测试专用后门方法 (*ForTesting)"),
     (re.compile(r'\bTestModeDetector\b'), "在业务中直接探查 TestModeDetector 测试模式"),
     (re.compile(r'\b(testSession|forceMock\w*|isMock\w*|testOverride)\b'), "声明或读取测试专用后门属性"),
@@ -85,11 +82,11 @@ def is_file_whitelisted(filepath: Path) -> Tuple[bool, str]:
 
 
 def is_preview_block(lines: List[str], debug_line_idx: int) -> bool:
-    """检查是否属于 SwiftUI #Preview 预览块。"""
-    end_idx = min(len(lines), debug_line_idx + PREVIEW_LOOKAHEAD_LINES)
-    for j in range(debug_line_idx + 1, end_idx):
-        if "#Preview" in lines[j]:
-            return True
+    """预览豁免仅适用于条件编译之后的第一个有效语句。"""
+    for line in lines[debug_line_idx + 1:]:
+        stripped = line.strip()
+        if stripped and not stripped.startswith("//"):
+            return stripped.startswith("#Preview")
     return False
 
 
@@ -137,6 +134,22 @@ def _handle_debug_start(filepath: Path, rel_path: str, lines: List[str], idx: in
     return True, finding
 
 
+def _update_conditions(filepath: Path, rel_path: str, lines: List[str], idx: int, directive, conditions: List[bool]) -> Optional[Finding]:
+    """逐层更新条件编译栈，嵌套结束指令不影响外层 DEBUG 状态。"""
+    kind, expression = directive.groups()
+    is_debug = bool(re.search(r"\bDEBUG\b", expression))
+    if kind == "if":
+        conditions.append(is_debug)
+    elif kind == "elseif" and conditions:
+        conditions[-1] = conditions[-1] or is_debug
+    elif kind == "endif" and conditions:
+        conditions.pop()
+    if kind in ("if", "elseif") and is_debug:
+        _, finding = _handle_debug_start(filepath, rel_path, lines, idx, lines[idx], lines[idx].strip())
+        return finding
+    return None
+
+
 def scan_file(filepath: Path) -> List[Finding]:
     """扫描单个 Swift 文件中的 #if DEBUG 语法块与测试代码侵入。"""
     findings: List[Finding] = []
@@ -148,26 +161,17 @@ def scan_file(filepath: Path) -> List[Finding]:
         return findings
 
     lines = content.splitlines()
-    in_debug_block = False
-
+    conditions: List[bool] = []
     for idx, raw_line in enumerate(lines):
-        stripped = raw_line.strip()
-
-        if re.match(r'^\s*#if\s+DEBUG\b', raw_line):
-            in_debug, finding = _handle_debug_start(filepath, rel_path, lines, idx, raw_line, stripped)
-            in_debug_block = in_debug
-            if finding:
-                findings.append(finding)
-            continue
-
-        if in_debug_block and re.match(r'^\s*#endif\b', raw_line):
-            in_debug_block = False
-            continue
-
-        if in_debug_block:
-            pattern_finding = _check_forbidden_patterns(rel_path, idx + 1, raw_line, stripped)
-            if pattern_finding:
-                findings.append(pattern_finding)
+        directive = re.match(r"^\s*#(if|elseif|else|endif)\b(.*)", raw_line)
+        if directive:
+            finding = _update_conditions(filepath, rel_path, lines, idx, directive, conditions)
+        elif any(conditions):
+            finding = _check_forbidden_patterns(rel_path, idx + 1, raw_line, raw_line.strip())
+        else:
+            finding = None
+        if finding:
+            findings.append(finding)
 
     return findings
 
@@ -184,7 +188,7 @@ def main() -> int:
     args = parser.parse_args()
 
     all_findings: List[Finding] = []
-    for fp in SOURCES_ROOT.rglob("*.swift"):
+    for fp in production_swift_files(REPO_ROOT):
         all_findings.extend(scan_file(fp))
 
     if not all_findings:

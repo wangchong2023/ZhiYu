@@ -160,8 +160,17 @@ def check_swift_layout(raw, path, line_no, s):
     _check_frame_and_opacity(raw, path, line_no, s, res)
     _check_spacing_and_layout_params(raw, path, line_no, s, res)
     _check_magic_math(raw, path, line_no, s, res)
+    _check_animation_params(raw, path, line_no, s, res)
     _check_business_threshold(raw, path, line_no, s, res)
     return res
+
+
+def _check_animation_params(raw, path, line_no, s, res):
+    """检查 SwiftUI 动效参数中的硬编码时长与弹性系数（duration/response/dampingFraction）。"""
+    if re.search(r'\.(?:easeInOut|easeIn|easeOut|linear)\([^)]*\bduration:\s*\d+(?:\.\d+)?\b', raw):
+        res.append(('hardcoded animation duration', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
+    if re.search(r'\.spring\([^)]*\b(?:response|dampingFraction):\s*\d+(?:\.\d+)?\b', raw):
+        res.append(('hardcoded spring animation param', path, line_no, s[:MAX_LINE_PREVIEW_LEN]))
 
 
 def _check_business_threshold(raw, path, line_no, s, res):

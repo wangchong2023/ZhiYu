@@ -8,101 +8,162 @@
 #  Copyright © 2026 WangChong. All rights reserved.
 #
 #  系统层级：[Tools/ios] 守卫网关
-#  核心职责：检查 Sources/Features/ 和 Sources/Domain/ 层禁止使用 #if os() 平台宏。
-#           正确做法：通过 L0 协议 + PlatformRegistrar DI 注入，而非在业务层直接判断平台。
+#  核心职责：检查 Features 与 Domain 层（含 SPM 本地包）禁止使用 #if os() / macCatalyst 平台宏，
+#           禁止 Domain 层使用 #if canImport(UIKit/AppKit/WatchKit/WidgetKit/ActivityKit)，
+#           并对 Features 层存量 #if canImport(UIKit/AppKit/WatchKit) 实施只减不增文件级基线卡控。
 #
 
-import sys
+from __future__ import annotations
+
 import re
+import sys
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-SOURCES_DIR = PROJECT_ROOT / "Sources"
 
-# 需要检查的目录（禁止使用 #if os）
-CHECK_DIRS = [
-    SOURCES_DIR / "Features",
-    SOURCES_DIR / "Domain",
+# 禁止使用 #if os() / macCatalyst 的业务与领域目录（含 SPM 本地包）
+OS_FORBIDDEN_DIRS = [
+    PROJECT_ROOT / "Sources" / "Features",
+    PROJECT_ROOT / "Sources" / "Domain",
+    PROJECT_ROOT / "Packages" / "ZhiYuDomain" / "Sources",
+    PROJECT_ROOT / "Packages" / "ZhiYuFeatures" / "Sources",
 ]
 
-# 拦截平台条件编译宏的正则表达式
-# 覆盖形式：#if os( / #if !os( / #elseif os( / #elseif !os( / 复合条件中含 !os( / targetEnvironment(macCatalyst)
-# 允许形式：#if canImport( 框架依赖判断 / #if targetEnvironment(simulator) 运行环境判断
-OS_MACRO_PATTERNS = [
-    re.compile(r'#if\s+os\('),
-    re.compile(r'#if\s+!os\('),
-    re.compile(r'#elseif\s+os\('),
-    re.compile(r'#elseif\s+!os\('),
-    re.compile(r'#if\s+.*&&\s*!os\('),
-    re.compile(r'#if\s+.*\|\|\s*!os\('),
-    re.compile(r'#elseif\s+.*&&\s*!os\('),
-    re.compile(r'#elseif\s+.*\|\|\s*!os\('),
-    re.compile(r'#if\s+targetEnvironment\(\s*macCatalyst\s*\)'),
-    re.compile(r'#elseif\s+targetEnvironment\(\s*macCatalyst\s*\)'),
+# 禁止使用 UI/平台框架 #if canImport(...) 的纯领域目录
+DOMAIN_CANIMPORT_FORBIDDEN_DIRS = [
+    PROJECT_ROOT / "Sources" / "Domain",
+    PROJECT_ROOT / "Packages" / "ZhiYuDomain" / "Sources",
 ]
 
+# Features 层监控 #if canImport(UIKit/AppKit/WatchKit) 扩张的目录
+FEATURES_CANIMPORT_DIRS = [
+    PROJECT_ROOT / "Sources" / "Features",
+    PROJECT_ROOT / "Packages" / "ZhiYuFeatures" / "Sources",
+]
 
-def _scan_directory(check_dir: Path) -> list[tuple[Path, list[tuple[int, str]]]]:
-    """
-    扫描指定目录下所有 Swift 文件中的 #if os() 宏。
-    
-    :param check_dir: 需要扫描的目录路径
-    :return: (文件路径, 违规列表) 的列表
-    """
-    results = []
-    if not check_dir.exists():
-        return results
-    for swift_file in check_dir.rglob("*.swift"):
-        violations = []
-        try:
-            with open(swift_file, 'r') as f:
-                for i, line in enumerate(f, 1):
-                    for pattern in OS_MACRO_PATTERNS:
-                        if pattern.search(line):
-                            violations.append((i, line.strip()))
-                            break  # 同一行不重复记录
-        except Exception:
-            pass
-        if violations:
-            rel_path = swift_file.relative_to(PROJECT_ROOT)
-            results.append((rel_path, violations))
+# Features 层存量允许使用 #if canImport(UIKit/AppKit/WatchKit) 的冻结基线（只减不增）
+FEATURES_CANIMPORT_BASELINE = {
+    "Sources/Features/Insight/Dashboard/View/TagCloudSupport.swift",
+    "Sources/Features/Knowledge/Graph/View/Components/Graph3DComponents.swift",
+    "Sources/Features/Knowledge/Ingest/Coordinator/IngestFileHandler.swift",
+    "Sources/Features/Knowledge/Ingest/View/Components/ImportRecordSection.swift",
+    "Sources/Features/Knowledge/Ingest/View/Components/ZoomableOCRImageView.swift",
+    "Sources/Features/System/Auth/Strategy/AppAuthGoogleProvider.swift",
+    "Sources/Features/System/Auth/Strategy/AppleAuthStrategy.swift",
+    "Sources/Features/System/Auth/Strategy/CarrierAuthStrategy.swift",
+    "Sources/Features/System/Auth/Strategy/GitHubAuthStrategy.swift",
+    "Sources/Features/System/Auth/Strategy/WeChatAuthStrategy.swift",
+    "Sources/Features/System/ModelManager/Utility/LabAudioRecorder.swift",
+    "Sources/Features/System/ModelManager/Utility/LabAudioSampleProvider.swift",
+    "Sources/Features/System/ModelManager/Utility/LabVisualSampleProvider.swift",
+    "Sources/Features/System/ModelManager/Utility/MobileActionExecutor.swift",
+    "Sources/Features/System/ModelManager/View/Sections/InstantMediaSearchPanel.swift",
+    "Sources/Features/System/ModelManager/View/Sections/ModelLabInputsPanel.swift",
+}
+
+# 统一平台宏正则（去注释后匹配，拦截正向/反向/括号/复合条件中的 os() 与 macCatalyst）
+OS_MACRO_PATTERN = re.compile(
+    r"^\s*#(if|elseif)\b.*(\bos\s*\(|\btargetEnvironment\s*\(\s*macCatalyst\s*\))"
+)
+
+# 平台 UI 框架 canImport 正则
+UI_CANIMPORT_PATTERN = re.compile(
+    r"^\s*#(if|elseif)\b.*\bcanImport\s*\(\s*(UIKit|AppKit|WatchKit|WidgetKit|ActivityKit)\s*\)"
+)
+
+
+def strip_line_comment(line: str) -> str:
+    """去除 Swift 单行注释，避免文档/说明注释触发误报。"""
+    return line.split("//", 1)[0]
+
+
+def scan_pattern_in_dirs(
+    dirs: list[Path],
+    pattern: re.Pattern[str],
+    root: Path = PROJECT_ROOT,
+) -> list[tuple[str, list[tuple[int, str]]]]:
+    """扫描目录列表中命中正则的 Swift 文件与行号。"""
+    results: list[tuple[str, list[tuple[int, str]]]] = []
+    for check_dir in dirs:
+        if not check_dir.exists():
+            continue
+        for swift_file in sorted(check_dir.rglob("*.swift")):
+            hits = _scan_file(swift_file, pattern)
+            if hits:
+                rel = swift_file.relative_to(root).as_posix()
+                results.append((rel, hits))
     return results
 
 
-def _report_failure(files_with_violations: list, total_count: int) -> int:
-    """
-    打印平台宏违规报告并返回退出码 1。
-    
-    :param files_with_violations: 违规文件列表
-    :param total_count: 违规总数
-    :return: 退出码 1
-    """
-    print(f"❌ FAIL: 发现 {total_count} 处 #if os() 平台宏在 {len(files_with_violations)} 个文件中")
-    print()
-    print("业务层应通过 L0 协议 + @Inject DI 注入替代平台宏：")
-    print("  Core/Base/Protocols/  → 定义跨平台协议")
-    print("  Platforms/{platform}/  → 实现具体平台逻辑")
-    print("  PlatformRegistrar      → 注册到 DI 容器")
-    print("  @Inject var xxx: any XxxProtocol → 业务层消费")
-    print()
-    for rel_path, violations in files_with_violations:
-        print(f"  {rel_path}:")
-        for line_no, content in violations:
-            print(f"    L{line_no}: {content}")
-    return 1
+def _scan_file(swift_file: Path, pattern: re.Pattern[str]) -> list[tuple[int, str]]:
+    """扫描单个 Swift 文件，返回命中的 (行号, 原行文本) 列表。"""
+    hits: list[tuple[int, str]] = []
+    try:
+        content = swift_file.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        return hits
+    for idx, line in enumerate(content.splitlines(), 1):
+        if pattern.search(strip_line_comment(line)):
+            hits.append((idx, line.strip()))
+    return hits
 
 
-def main():
-    """扫描 Features/Domain 层是否包含 #if os() 平台宏并报告结果。"""
-    all_violations = []
-    for check_dir in CHECK_DIRS:
-        all_violations.extend(_scan_directory(check_dir))
-    total_count = sum(len(v[1]) for v in all_violations)
+def _report_os_violations(violations: list[tuple[str, list[tuple[int, str]]]]) -> None:
+    """输出 #if os() / macCatalyst 违规详情。"""
+    total = sum(len(lines) for _, lines in violations)
+    print(f"❌ FAIL: 发现 {total} 处禁止的 #if os() / macCatalyst 平台宏（{len(violations)} 个文件）")
+    print("  正确做法：使用 L0 协议 + PlatformRegistrar DI，或运行时 Trait (@Environment(\\.interfaceIdiom))。")
+    for rel, lines in violations:
+        print(f"  {rel}:")
+        for line_no, text in lines:
+            print(f"    L{line_no}: {text}")
 
-    if total_count == 0:
-        print("✅ PASS: Features/Domain 层无 #if os() 平台宏")
-        return 0
-    return _report_failure(all_violations, total_count)
+
+def _report_canimport_violations(
+    domain_hits: list[tuple[str, list[tuple[int, str]]]],
+    new_feature_hits: list[tuple[str, list[tuple[int, str]]]],
+) -> None:
+    """输出 Domain 层禁止或 Features 层新增的 UI canImport 违规详情。"""
+    if domain_hits:
+        print(f"❌ FAIL: Domain 层禁止使用平台 UI 框架 #if canImport(...)（{len(domain_hits)} 个文件）")
+        for rel, lines in domain_hits:
+            for line_no, text in lines:
+                print(f"  {rel}:{line_no}: {text}")
+    if new_feature_hits:
+        print(
+            f"❌ FAIL: Features 层新增了不在冻结基线内的 #if canImport(UIKit/AppKit/WatchKit)（{len(new_feature_hits)} 个文件）"
+        )
+        print("  请将平台差异收敛到 CrossPlatform / PlatformModifiers 或 L0 协议。")
+        for rel, lines in new_feature_hits:
+            for line_no, text in lines:
+                print(f"  {rel}:{line_no}: {text}")
+
+
+def main() -> int:
+    """执行 Features/Domain 层（含 SPM 包）平台宏与 canImport 守卫检查。"""
+    os_violations = scan_pattern_in_dirs(OS_FORBIDDEN_DIRS, OS_MACRO_PATTERN)
+    domain_canimport = scan_pattern_in_dirs(DOMAIN_CANIMPORT_FORBIDDEN_DIRS, UI_CANIMPORT_PATTERN)
+    feature_canimport = scan_pattern_in_dirs(FEATURES_CANIMPORT_DIRS, UI_CANIMPORT_PATTERN)
+    new_feature_canimport = [
+        item for item in feature_canimport if item[0] not in FEATURES_CANIMPORT_BASELINE
+    ]
+
+    failed = False
+    if os_violations:
+        _report_os_violations(os_violations)
+        failed = True
+    if domain_canimport or new_feature_canimport:
+        _report_canimport_violations(domain_canimport, new_feature_canimport)
+        failed = True
+
+    if failed:
+        return 1
+
+    print(
+        f"✅ PASS: Features/Domain 层（含 SPM 包）无 #if os() 平台宏，"
+        f"Domain 无 UI canImport，Features canImport 存量受控（{len(feature_canimport)}/{len(FEATURES_CANIMPORT_BASELINE)} 文件）"
+    )
+    return 0
 
 
 if __name__ == "__main__":

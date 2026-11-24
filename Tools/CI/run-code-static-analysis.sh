@@ -87,7 +87,7 @@ run_parallel_task "DI Registration" "di_registration" "$PYTHON3 Tools/ios/check-
 run_parallel_task "Inject Safety" "inject_safety" "$PYTHON3 Tools/ios/check-code-inject-safety.py --strict" & pid28=$!
 run_parallel_task "Doc Drift" "doc_drift" "$PYTHON3 Tools/CI/check-doc-drift.py --strict" "full" & pid29=$!
 run_parallel_task "Exemption Stale" "exemption_stale" "$PYTHON3 Tools/CI/exemption_registry.py check-stale --strict" & pid30=$!
-run_parallel_task "Business Magic Numbers" "business_magic" "$PYTHON3 Tools/ios/audit-code-business-magic-numbers.py --strict --magic-string-scope Sources/Infrastructure/LLM --magic-string-scope Sources/Infrastructure/Processors --magic-string-scope Sources/Infrastructure/Storage --magic-string-scope Sources/Infrastructure/Plugins --magic-string-scope Sources/Features" & pid31=$!
+run_parallel_task "Business Magic Numbers" "business_magic" "$PYTHON3 Tools/ios/audit-code-business-magic-numbers.py --strict --magic-string-scope Sources/Infrastructure/LLM --magic-string-scope Sources/Infrastructure/Processors --magic-string-scope Sources/Infrastructure/Storage --magic-string-scope Sources/Infrastructure/Plugins --magic-string-scope Sources/Features --magic-string-scope Packages/UFPCore --magic-string-scope Packages/UFPStorage --magic-string-scope Packages/ZhiYuDomain --magic-string-scope Packages/ZhiYuAICore --magic-string-scope Packages/ZhiYuFeatures" & pid31=$!
 run_parallel_task "UFPCore Purity" "ufpcore_purity" "$PYTHON3 Tools/ios/audit-arch-ufpcore-purity.py" & pid32=$!
 run_parallel_task "Test Coupling Anti-Pattern" "test_coupling" "$PYTHON3 Tools/ios/check-code-test-coupling.py --strict" & pid33=$!
 run_parallel_task "Singleton Frozen" "singleton_frozen" "$PYTHON3 Tools/ios/audit-singleton-frozen.py" & pid34=$!
@@ -98,6 +98,7 @@ run_parallel_task "OpenSource Internal Deps" "opensource_internal_deps" "$PYTHON
 run_parallel_task "OWASP MASVS Security Scan" "owasp_masvs" "$PYTHON3 Tools/ios/check-security-owasp-masvs.py --strict" & pid39=$!
 run_parallel_task "Design Token Naming" "token_naming" "$PYTHON3 Tools/ios/audit-design-token-arithmetic.py" & pid40=$!
 run_parallel_task "Design Token Budget" "token_budget" "$PYTHON3 Tools/ios/audit-design-token-budget.py" & pid41=$!
+run_parallel_task "Platform Macro Distribution" "platform_macro_dist" "$PYTHON3 Tools/ios/audit-platform-macro-distribution.py" & pid42=$!
 
 # 等待所有后台任务，并收拢退出状态
 wait $pid1 || EXIT_CODE=1
@@ -140,6 +141,7 @@ wait $pid38 || EXIT_CODE=1
 wait $pid39 || EXIT_CODE=1
 wait $pid40 || EXIT_CODE=1
 wait $pid41 || EXIT_CODE=1
+wait $pid42 || EXIT_CODE=1
 
 
 echo ""

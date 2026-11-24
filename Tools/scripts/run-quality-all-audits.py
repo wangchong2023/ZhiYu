@@ -19,8 +19,12 @@ PROJECT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."
 
 # 全量门禁审计步骤定义 (名称, 执行命令行)
 GATEKEEPER_AUDIT_STEPS = [
+    ("生产测试耦合隔离审计", ["python3", "Tools/ios/check-code-test-coupling.py", "--strict"]),
+    ("DEBUG 分支纯净化审计", ["python3", "Tools/ios/audit-debug-in-sources.py", "--strict"]),
     ("SwiftLint 静态规范审计", ["bash", "Tools/ios/assert-code-swiftlint.sh"]),
     ("Domain Purity 领域层纯净化审计", ["python3", "Tools/ios/audit-arch-domain-purity.py"]),
+    ("业务层平台宏隔离审计", ["python3", "Tools/ios/check-code-platform-macros.py"]),
+    ("全局平台宏分布与预算审计", ["python3", "Tools/ios/audit-platform-macro-distribution.py"]),
     ("L10n 本地化合规审计", ["python3", "Tools/ios/check-code-localization.py"]),
     ("Prompt 治理与安全合规审计", ["python3", "Tools/ios/check-code-prompt-governance.py"]),
     ("存储层常量提取审计", ["python3", "Tools/ios/check-code-storage-constants.py"]),
