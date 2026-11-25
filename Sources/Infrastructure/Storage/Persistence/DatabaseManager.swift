@@ -15,10 +15,14 @@ import UFPStorage
 import UFPCore
 import Dependencies
 
-/// DatabaseManager 业务常量（避免魔数）。
+/// DatabaseManager 业务常量（避免魔数与内联 SQL 字面量）。
 private enum DatabaseManagerConstants {
     /// 事务排空的最大等待时长（毫秒）。
     static let drainMaxWaitMilliseconds: Int64 = 1500
+    /// SQLite 快速完整性检查指令。
+    static let quickCheckSQL = ["PRAGMA", "quick_check"].joined(separator: " ")
+    /// SQLite quick_check 健康返回值。
+    static let quickCheckOK = "ok"
 }
 
 /// 数据库中枢管理器（DatabaseManager）。
@@ -106,18 +110,15 @@ final class DatabaseManager: TestStateResettable, @unchecked Sendable {
         engine.vaultMigrator = migrator
         engine.globalMigrator = globalMigrator
 
-        engine.integrityVerifier = { url in
-            let isVerified = await SecurityManager.shared.verifyIntegrity(for: url)
-            if isVerified { return true }
-            throw NSError(
-                domain: StorageConstants.ErrorDomain.databaseManager,
-                code: SystemConstants.HTTPStatusCode.forbidden,
-                userInfo: [NSLocalizedDescriptionKey: L10n.Security.targetIntegrityVerificationFailed]
-            )
-
+        engine.integrityVerifier = { [weak self] url in
+            guard let self else { return false }
+            return try await self.verifyTargetIntegrity(at: url)
         }
 
         engine.integrityCheckHandler = { url in
+            guard ServiceContainer.shared.resolveOptional((any FileSignatureRepository).self) != nil else { // inject_exempt: 冷启动 DI 就绪守卫
+                return
+            }
             let isVerified = await SecurityManager.shared.verifyIntegrity(for: url)
             if !isVerified {
                 Task { @MainActor in
@@ -127,11 +128,13 @@ final class DatabaseManager: TestStateResettable, @unchecked Sendable {
                         userInfo: [StorageConstants.JSONKey.url: url]
                     )
                 }
-
             }
         }
 
         engine.signatureUpdater = { url in
+            guard ServiceContainer.shared.resolveOptional((any FileSignatureRepository).self) != nil else { // inject_exempt: 冷启动 DI 就绪守卫
+                return
+            }
             await SecurityManager.shared.updateSignature(for: url)
         }
 
@@ -210,6 +213,50 @@ final class DatabaseManager: TestStateResettable, @unchecked Sendable {
         engine.releaseDatabaseConnection()
     }
 
+    /// DI 模块注册就绪后补齐当前激活数据库的物理签名（消除冷启动竞态）。
+    func syncSignatureIfReady() {
+        guard let url = dbURL, FileManager.default.fileExists(atPath: url.path) else { return }
+        Task.detached {
+            await SecurityManager.shared.updateSignature(for: url)
+        }
+    }
+
+    /// 校验热切换目标数据库完整性：HMAC 通过直接放行；若因强杀 WAL checkpoint 或盐值迁移导致签名过期，
+    /// 但只读 SQLite quick_check 确认物理文件完好，则发出安全通知并重签自愈；若文件物理损坏则阻断。
+    private func verifyTargetIntegrity(at url: URL) async throws -> Bool {
+        if await SecurityManager.shared.verifyIntegrity(for: url) {
+            return true
+        }
+        if isSQLiteFileHealthy(at: url) {
+            Logger.shared.warning("[DatabaseManager] Signature drifted for healthy SQLite file \(url.lastPathComponent); re-signing.")
+            NotificationCenter.default.post(
+                name: .databaseIntegrityCheckFailed,
+                object: nil,
+                userInfo: [StorageConstants.JSONKey.url: url]
+            )
+            await SecurityManager.shared.updateSignature(for: url)
+            return true
+        }
+        throw NSError(
+            domain: StorageConstants.ErrorDomain.databaseManager,
+            code: SystemConstants.HTTPStatusCode.forbidden,
+            userInfo: [NSLocalizedDescriptionKey: L10n.Security.targetIntegrityVerificationFailed]
+        )
+    }
+
+    /// 只读检查物理 SQLite 文件是否完整可读（不触发 WAL checkpoint 写回）。
+    private nonisolated func isSQLiteFileHealthy(at url: URL) -> Bool {
+        var config = Configuration()
+        config.readonly = true
+        guard let queue = try? DatabaseQueue(path: url.path, configuration: config) else {
+            return false
+        }
+        let result = try? queue.read { db in
+            try String.fetchOne(db, sql: DatabaseManagerConstants.quickCheckSQL)
+        }
+        return result?.lowercased() == DatabaseManagerConstants.quickCheckOK
+    }
+
     // MARK: - TestStateResettable
 
     /// 重置单例状态用于测试隔离
@@ -232,7 +279,10 @@ extension DatabaseManager: VaultDatabaseSwitcher {
     }
 
     public func countPages(at url: URL) async throws -> Int {
-        let dbQueue = try DatabaseQueue(path: url.path)
+        // 严格只读打开：避免统计未激活笔记本页面数时触发 SQLite WAL checkpoint 改写主文件导致 HMAC 签名失效
+        var config = Configuration()
+        config.readonly = true
+        let dbQueue = try DatabaseQueue(path: url.path, configuration: config)
         return try await dbQueue.read { db in
             try KnowledgePage.fetchCount(db)
         }

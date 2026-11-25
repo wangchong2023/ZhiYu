@@ -50,6 +50,8 @@ final class AppEnvironment {
         // 2. 执行模块化注册 (L0 - L3) — 必须在 Store 实例化前完成
         //    Store 的 @Inject 属性首次访问时会解析 DI 容器，故 DI 必须先就绪
         registerDIModules()
+        // FileSignatureRepository 已注册就绪，补齐冷启动默认库签名
+        DatabaseManager.shared.syncSignatureIfReady()
 
         // 2.1 DI 就绪断言：验证 Store 依赖的关键服务已全部注册
         //     仅校验 ModuleRegistrar 注册的服务；Store 自注册的服务（TagStore/KnowledgeStore 等）

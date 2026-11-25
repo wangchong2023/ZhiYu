@@ -197,6 +197,52 @@ final class GenericDatabaseManagerTests: XCTestCase {
         XCTAssertNil(engine.dbWriter, "releaseDatabaseConnection 后 dbWriter 应为 nil")
     }
 
+    /// 回归测试：写入数据后调用 releaseDatabaseConnection 触发 WAL checkpoint 改写主文件，
+    /// 随后立即 switchDatabase 切回同一库时，签名必须已刷新且校验通过（防止 Mac 示例笔记本哈希不匹配）。
+    func testReleaseDatabaseConnection_RefreshesSignatureBeforeSubsequentSwitch() async throws {
+        // Given — 使用真实文件字节摘要作为签名存储，完整复现 WAL checkpoint 后主文件变更
+        let storedDigest = Box<[String: Data]>([:])
+        engine.signatureUpdater = { url in
+            if let data = try? Data(contentsOf: url) {
+                storedDigest.value[url.path] = data
+            }
+        }
+        engine.integrityVerifier = { url in
+            guard let expected = storedDigest.value[url.path],
+                  let current = try? Data(contentsOf: url) else {
+                return false
+            }
+            return expected == current
+        }
+
+        let vaultPath = tempDir.appendingPathComponent("wal_reenter_vault.sqlite3")
+        try engine.setup(at: vaultPath, globalDatabaseName: "global.sqlite3")
+        try await engine.dbWriter?.write { db in
+            try db.execute(sql: "INSERT INTO test_items (name) VALUES (?)", arguments: ["demo-note"])
+        }
+
+        // When — 模拟退出笔记本（触发 WAL checkpoint）后立刻重新进入同一笔记本
+        engine.releaseDatabaseConnection()
+        let verifiedOnReenter = Box<Bool>(false)
+        engine.integrityVerifier = { url in
+            guard let expected = storedDigest.value[url.path],
+                  let current = try? Data(contentsOf: url) else {
+                return false
+            }
+            let matched = (expected == current)
+            verifiedOnReenter.value = matched
+            return matched
+        }
+        try await engine.switchDatabase(to: UUID(), at: vaultPath)
+
+        // Then — 释放连接后必须已刷新签名，重入校验应通过且数据完好
+        XCTAssertTrue(verifiedOnReenter.value, "releaseDatabaseConnection 刷新 WAL 签名后，重入同一库必须校验通过")
+        let count = try await engine.dbWriter?.read { db in
+            try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM test_items")
+        }
+        XCTAssertEqual(count, 1, "重入同一笔记本后先前写入的数据应完整保留")
+    }
+
     // MARK: - switchDatabase 热切换
 
     /// 验证 switchDatabase 切换新库并广播回调、触发完整性校验与签名更新。

@@ -65,6 +65,9 @@ public final class GenericDatabaseManager: TestStateResettable, @unchecked Senda
     /// 是否运行于 Unit Test 单元测试管道中。
     public var usesTransientStorage: Bool = false
 
+    /// 挂起的异步签名刷新任务（保证 releaseDatabaseConnection / setup 与后续 switchDatabase 串行，消除 WAL 签名竞态）。
+    private var pendingSignatureTask: Task<Void, Never>?
+
     // MARK: - 注入点（业务能力通过闭包注入，本类型零业务依赖）
 
     /// 完整性校验闭包（多库热切换前调用）。返回是否通过；失败时应自行抛出业务错误。
@@ -185,9 +188,11 @@ public final class GenericDatabaseManager: TestStateResettable, @unchecked Senda
         }
     }
 
-    /// 异步刷新物理签名。
+    /// 异步刷新物理签名（串行排队，避免并发切库时竞态）。
     private func scheduleSignatureUpdate(for url: URL) {
-        Task.detached { [weak self] in
+        let previousTask = pendingSignatureTask
+        pendingSignatureTask = Task.detached { [weak self] in
+            await previousTask?.value
             await self?.signatureUpdater?(url)
         }
     }
@@ -234,6 +239,10 @@ public final class GenericDatabaseManager: TestStateResettable, @unchecked Senda
     /// - Important: `async throws`，通过注入的事务排空闭包消除主线程信号量等待死锁隐患。
     public func switchDatabase(to vaultID: UUID, at url: URL) async throws {
         MinimalLogger.shared.info(" [GenericDatabaseManager] Starting physical multi-database hot swap => Target: \(url.lastPathComponent)")
+
+        // 等待前一次释放连接或初始化触发的签名更新落盘，消除 exitVault → selectVault 竞态
+        await pendingSignatureTask?.value
+        pendingSignatureTask = nil
 
         // 0. 切换前对目标专属库进行完整性校验
         if FileManager.default.fileExists(atPath: url.path), let integrityVerifier {
@@ -356,10 +365,17 @@ public final class GenericDatabaseManager: TestStateResettable, @unchecked Senda
         try vaultMigrator.migrate(writer)
     }
 
-    /// 确定性物理关闭 DatabasePool 连接池，强刷写 WAL 并释放文件描述符。
+    /// 确定性物理关闭 DatabasePool 连接池，强刷写 WAL 并释放文件描述符，随后刷新该文件签名。
     public func releaseDatabaseConnection() {
+        let closedURL = self.dbURL
         closeWriter(self.dbWriter)
         self.dbWriter = nil
+        self.dbURL = nil
+        // WAL checkpoint 在 closeWriter 完成后才会改写主 .sqlite3 文件，必须在关闭后立即刷新签名，
+        // 否则下次 switchDatabase 回到同一笔记本时会触发 HMAC 哈希不匹配。
+        if let closedURL, FileManager.default.fileExists(atPath: closedURL.path) {
+            scheduleSignatureUpdate(for: closedURL)
+        }
     }
 
     /// 物理关闭写入连接（强刷 WAL 并释放文件句柄）。
