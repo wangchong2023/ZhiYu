@@ -312,34 +312,7 @@ struct AuthView: View {
 
     /// 桌面形态语言切换菜单胶囊（无额外外边距，确保右缘对齐）
     private var desktopLanguageMenu: some View {
-        Menu {
-            ForEach(LanguageMode.allCases) { mode in
-                Toggle(isOn: languageSelectionBinding(for: mode)) {
-                    Text(mode.displayName)
-                }
-            }
-        } label: {
-            HStack(spacing: DesignTokens.SystemSpacing.tiny) {
-                Image(systemName: DesignTokens.Icons.globe)
-                    .font(.subheadline)
-                Text(selectedLanguage.displayName)
-                    .font(.caption.weight(.medium))
-            }
-            .foregroundStyle(.appSecondary)
-            .padding(.horizontal, DesignTokens.SystemSpacing.medium)
-            .padding(.vertical, DesignTokens.SystemSpacing.small)
-            .background(.ultraThinMaterial)
-            .clipShape(Capsule())
-            .overlay(
-                Capsule()
-                    .strokeBorder(
-                        Color.appBorder.opacity(DesignTokens.Opacity.soft),
-                        lineWidth: DesignTokens.Spacing.borderWidth
-                    )
-            )
-            .contentShape(Capsule())
-        }
-        .plainMenuStyleIfMac()
+        languageMenuCapsule(showBorder: true)
     }
 
     /// 紧凑形态布局：原纵向单列布局，保留 3D 翻转卡片动画

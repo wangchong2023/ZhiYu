@@ -11,19 +11,24 @@
 import Foundation
 import Combine
 
-final class StubWatchSyncService: NSObject, WatchSyncProtocol {
-    @Published var lastReceivedText: String = ""
-    @Published var latestBriefing: String?
-    @Published var isBriefingLoading: Bool = false
+@MainActor
+public final class StubWatchSyncService: NSObject, WatchSyncProtocol {
+    @Published public var lastReceivedText: String = ""
+    @Published public var latestBriefing: String?
+    @Published public var isBriefingLoading: Bool = false
+
+    public override init() {
+        super.init()
+    }
 
     /// 发送Content
     /// - Parameter text: text
-    func sendContent(_ text: String) {}
+    public func sendContent(_ text: String) {}
     
     /// 请求DailyBriefing
-    func requestDailyBriefing() {}
+    public func requestDailyBriefing() {}
 
     /// 处理BriefingResponse
     /// /// - Parameter text: text
-    func handleBriefingResponse(_ text: String) {}
+    public func handleBriefingResponse(_ text: String) {}
 }

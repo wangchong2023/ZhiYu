@@ -124,13 +124,10 @@ def check_no_misplaced_platform_files() -> list[str]:
         PROJECT_DIR / "Sources" / "App" / "Environment",
     ]
     platform_file_re = re.compile(r"^(?:iOS|Mac|Watch).+\.swift$")
-    allowed_names = {"WatchSyncProtocol.swift"}
     for root in guarded_dirs:
         if not root.is_dir():
             continue
         for swift_file in sorted(root.rglob("*.swift")):
-            if swift_file.name in allowed_names:
-                continue
             if platform_file_re.match(swift_file.name):
                 rel = swift_file.relative_to(PROJECT_DIR)
                 errors.append(f"平台专属文件错位（请归位至 Sources/Platforms/）: {rel}")

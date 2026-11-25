@@ -10,13 +10,16 @@
 //
 import Foundation
 
-final class StubBackgroundTaskProvider: BackgroundTaskProtocol {
+@MainActor
+public final class StubBackgroundTaskProvider: BackgroundTaskProtocol {
+
+    public init() {}
 
     /// 注册
     /// - Parameter handler: handler
     /// - Returns: 返回值
-    func register(handler: @escaping @Sendable @MainActor () -> Void) {}
+    public func register(handler: @escaping @Sendable @MainActor () -> Void) {}
 
     /// 调度
-    func schedule() {}
+    public func schedule() {}
 }

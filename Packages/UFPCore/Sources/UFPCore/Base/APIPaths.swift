@@ -6,7 +6,7 @@
 //  核心职责：后端 API 路径与外部服务 URL 常量集（认证/用户/订阅/OAuth/LLM 提供商等）。
 //
 
-import UFPCore
+import Foundation
 
 /// 后端 API 路径与外部服务 URL 常量集
 public enum APIPaths {

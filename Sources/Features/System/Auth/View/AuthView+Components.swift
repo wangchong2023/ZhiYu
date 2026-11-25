@@ -50,30 +50,46 @@ extension AuthView {
     var languageSwitcher: some View {
         HStack {
             Spacer()
-            Menu {
-                ForEach(LanguageMode.allCases) { mode in
-                    Toggle(isOn: languageSelectionBinding(for: mode)) {
-                        Text(mode.displayName)
-                    }
-                }
-            } label: {
-                HStack(spacing: DesignTokens.SystemSpacing.tiny) {
-                    Image(systemName: DesignTokens.Icons.globe)
-                        .font(.subheadline)
-                    Text(selectedLanguage.displayName)
-                        .font(.caption)
-                }
-                .foregroundStyle(.appSecondary)
-                .padding(.horizontal, DesignTokens.SystemSpacing.medium)
-                .padding(.vertical, DesignTokens.SystemSpacing.small)
-                .background(.ultraThinMaterial)
-                .clipShape(Capsule())
-                .contentShape(Capsule())
-            }
-            .plainMenuStyleIfMac()
+            languageMenuCapsule(showBorder: false)
         }
         .padding(.trailing, DesignTokens.Spacing.medium)
         .padding(.top, DesignTokens.Spacing.tiny)
+    }
+
+    /// 通用语言切换菜单胶囊（紧凑态与桌面态共用，避免重复构建 Menu）
+    func languageMenuCapsule(showBorder: Bool) -> some View {
+        Menu {
+            ForEach(LanguageMode.allCases) { mode in
+                Toggle(isOn: languageSelectionBinding(for: mode)) {
+                    Text(mode.displayName)
+                }
+            }
+        } label: {
+            HStack(spacing: DesignTokens.SystemSpacing.tiny) {
+                Image(systemName: DesignTokens.Icons.globe)
+                    .font(.subheadline)
+                Text(selectedLanguage.displayName)
+                    .font(.caption.weight(.medium))
+            }
+            .foregroundStyle(.appSecondary)
+            .padding(.horizontal, DesignTokens.SystemSpacing.medium)
+            .padding(.vertical, DesignTokens.SystemSpacing.small)
+            .background(.ultraThinMaterial)
+            .clipShape(Capsule())
+            .overlay(
+                Group {
+                    if showBorder {
+                        Capsule()
+                            .strokeBorder(
+                                Color.appBorder.opacity(DesignTokens.Opacity.soft),
+                                lineWidth: DesignTokens.Spacing.borderWidth
+                            )
+                    }
+                }
+            )
+            .contentShape(Capsule())
+        }
+        .plainMenuStyleIfMac()
     }
 
     /// 判断指定语言是否为当前选中项
