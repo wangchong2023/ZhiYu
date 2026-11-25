@@ -9,12 +9,12 @@
 //  核心职责：Model Lab 视觉问答 (Ask Image) 真实样本提供者与图像元数据解析算子。
 //
 
+import CoreGraphics
 import Foundation
+import ImageIO
 import SwiftUI
-#if canImport(UIKit)
-import UIKit
-#endif
 import UFPCore
+import UniformTypeIdentifiers
 
 /// 图像元数据
 struct VisualMetadata: Sendable, Equatable {
@@ -63,17 +63,56 @@ final class LabVisualSampleProvider: Sendable {
 
     private init() {}
 
-    /// 解析任意图片数据的真实元数据与分辨率
+    private enum BitmapSpec {
+        static let bitsPerComponent = 8
+        static let bytesPerPixel = 4
+        static let destinationImageCount = 1
+    }
+
+    /// 解析任意图片数据的真实元数据与分辨率（纯 ImageIO 跨平台实现）
     func extractMetadata(from data: Data) -> VisualMetadata? {
-        guard !data.isEmpty else { return nil }
-        #if canImport(UIKit)
-        guard let uiImage = UIImage(data: data) else { return nil }
-        let pixelWidth = Int(uiImage.size.width * uiImage.scale)
-        let pixelHeight = Int(uiImage.size.height * uiImage.scale)
+        guard !data.isEmpty,
+              let source = CGImageSourceCreateWithData(data as CFData, nil),
+              let props = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any],
+              let pixelWidth = props[kCGImagePropertyPixelWidth] as? Int,
+              let pixelHeight = props[kCGImagePropertyPixelHeight] as? Int else {
+            return nil
+        }
         return VisualMetadata(width: pixelWidth, height: pixelHeight, byteSize: data.count)
-        #else
-        return nil
-        #endif
+    }
+
+    /// 跨平台 CoreGraphics 离屏绘制并编码为 PNG 数据（顶部原点坐标系对齐 UIKit）
+    private func renderPNG(width: Int, height: Int, draw: (CGContext) -> Void) -> Data? {
+        let colorSpace = CGColorSpaceCreateDeviceRGB()
+        let bitmapInfo = CGImageAlphaInfo.premultipliedLast.rawValue
+        guard let context = CGContext(
+            data: nil,
+            width: width,
+            height: height,
+            bitsPerComponent: BitmapSpec.bitsPerComponent,
+            bytesPerRow: width * BitmapSpec.bytesPerPixel,
+            space: colorSpace,
+            bitmapInfo: bitmapInfo
+        ) else {
+            return nil
+        }
+        context.translateBy(x: 0, y: CGFloat(height))
+        context.scaleBy(x: 1, y: -1)
+        draw(context)
+
+        guard let cgImage = context.makeImage() else { return nil }
+        let mutableData = NSMutableData()
+        guard let destination = CGImageDestinationCreateWithData(
+            mutableData,
+            UTType.png.identifier as CFString,
+            BitmapSpec.destinationImageCount,
+            nil
+        ) else {
+            return nil
+        }
+        CGImageDestinationAddImage(destination, cgImage, nil)
+        guard CGImageDestinationFinalize(destination) else { return nil }
+        return mutableData as Data
     }
 
     /// 预置高保真多模态实测样例集合
@@ -90,10 +129,7 @@ final class LabVisualSampleProvider: Sendable {
     private func createSmartDeskSample() -> VisualSampleItem? {
         let sampleWidth = FeatureConstants.ModelLabSimulation.sampleImageWidth
         let sampleHeight = FeatureConstants.ModelLabSimulation.sampleImageHeight
-        #if canImport(UIKit)
-        let renderer = UIGraphicsImageRenderer(size: CGSize(width: sampleWidth, height: sampleHeight))
-        let image = renderer.image { ctx in
-            let cg = ctx.cgContext
+        guard let pngData = renderPNG(width: sampleWidth, height: sampleHeight, draw: { cg in
             // 桌面底色
             cg.setFillColor(red: 0.15, green: 0.16, blue: 0.20, alpha: 1.0)
             cg.fill(CGRect(x: 0, y: 0, width: sampleWidth, height: sampleHeight))
@@ -119,9 +155,8 @@ final class LabVisualSampleProvider: Sendable {
             cg.fillEllipse(in: CGRect(x: 500, y: 380, width: 50, height: 50))
             cg.setFillColor(red: 0.2, green: 0.8, blue: 0.4, alpha: 1.0)
             cg.fillEllipse(in: CGRect(x: 40, y: 340, width: 70, height: 90))
-        }
+        }) else { return nil }
 
-        guard let pngData = image.pngData() else { return nil }
         return VisualSampleItem(
             id: "smart_desk",
             title: L10n.ModelManager.Lab.AskImage.sampleSmartDesk,
@@ -131,18 +166,12 @@ final class LabVisualSampleProvider: Sendable {
             byteSize: pngData.count,
             imageData: pngData
         )
-        #else
-        return nil
-        #endif
     }
 
     private func createArchitectureSample() -> VisualSampleItem? {
         let sampleWidth = FeatureConstants.ModelLabSimulation.sampleImageWidth
         let sampleHeight = FeatureConstants.ModelLabSimulation.sampleImageHeight
-        #if canImport(UIKit)
-        let renderer = UIGraphicsImageRenderer(size: CGSize(width: sampleWidth, height: sampleHeight))
-        let image = renderer.image { ctx in
-            let cg = ctx.cgContext
+        guard let pngData = renderPNG(width: sampleWidth, height: sampleHeight, draw: { cg in
             // 背景
             cg.setFillColor(red: 0.08, green: 0.10, blue: 0.16, alpha: 1.0)
             cg.fill(CGRect(x: 0, y: 0, width: sampleWidth, height: sampleHeight))
@@ -163,9 +192,8 @@ final class LabVisualSampleProvider: Sendable {
                 cg.setLineWidth(2.5)
                 cg.stroke(CGRect(x: 80, y: yPos, width: 480, height: 70))
             }
-        }
+        }) else { return nil }
 
-        guard let pngData = image.pngData() else { return nil }
         return VisualSampleItem(
             id: "arch_chart",
             title: L10n.ModelManager.Lab.AskImage.sampleArchChart,
@@ -175,18 +203,12 @@ final class LabVisualSampleProvider: Sendable {
             byteSize: pngData.count,
             imageData: pngData
         )
-        #else
-        return nil
-        #endif
     }
 
     private func createCityNightSample() -> VisualSampleItem? {
         let sampleWidth = FeatureConstants.ModelLabSimulation.sampleImageWidth
         let sampleHeight = FeatureConstants.ModelLabSimulation.sampleImageHeight
-        #if canImport(UIKit)
-        let renderer = UIGraphicsImageRenderer(size: CGSize(width: sampleWidth, height: sampleHeight))
-        let image = renderer.image { ctx in
-            let cg = ctx.cgContext
+        guard let pngData = renderPNG(width: sampleWidth, height: sampleHeight, draw: { cg in
             // 深夜天空渐变
             cg.setFillColor(red: 0.05, green: 0.05, blue: 0.12, alpha: 1.0)
             cg.fill(CGRect(x: 0, y: 0, width: sampleWidth, height: sampleHeight))
@@ -215,9 +237,8 @@ final class LabVisualSampleProvider: Sendable {
                     cg.fill(CGRect(x: b.originX + 40, y: wy, width: 12, height: 18))
                 }
             }
-        }
+        }) else { return nil }
 
-        guard let pngData = image.pngData() else { return nil }
         return VisualSampleItem(
             id: "city_night",
             title: L10n.ModelManager.Lab.AskImage.sampleCityNight,
@@ -227,8 +248,5 @@ final class LabVisualSampleProvider: Sendable {
             byteSize: pngData.count,
             imageData: pngData
         )
-        #else
-        return nil
-        #endif
     }
 }

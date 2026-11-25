@@ -12,9 +12,6 @@
 
 import SwiftUI
 import PhotosUI
-#if canImport(UIKit)
-import UIKit
-#endif
 import UFPCore
 import UFPDesignSystem
 
@@ -134,9 +131,8 @@ extension ModelLabView {
     /// 已选图片展示卡片
     private func selectedImageCard(data: Data) -> some View {
         HStack(spacing: DesignTokens.Spacing.medium) {
-            #if canImport(UIKit)
-            if let uiImg = UIImage(data: data) {
-                Image(uiImage: uiImg)
+            if let appImg = AppImage(data: data) {
+                Image(appImage: appImg)
                     .resizable()
                     .scaledToFill()
                     .frame(width: DesignTokens.Metrics.sourceCardWidth + DesignTokens.Spacing.tiny, height: DesignTokens.Metrics.boxHeight)
@@ -149,9 +145,6 @@ extension ModelLabView {
             } else {
                 imagePlaceholder
             }
-            #else
-            imagePlaceholder
-            #endif
 
             VStack(alignment: .leading, spacing: DesignTokens.SystemSpacing.small) {
                 Text(L10n.ModelManager.Lab.AskImage.metaFormat(selectedImageResolution, selectedImageSize))

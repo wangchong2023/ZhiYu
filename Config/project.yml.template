@@ -244,7 +244,7 @@ targets:
       - path: Sources/Core/Base/Services/UserDefaultsKeyStore.swift
       # L0 系统服务：Logger、Haptic、Routing、AudioSplitter、SecurityReinforcement、Notifications
       - path: Sources/Core/System/Logger/Logger.swift
-      - path: Sources/Core/System/Haptic/WatchHapticService.swift
+      - path: Sources/Platforms/watchOS/Services/WatchHapticService.swift
       - path: Sources/Core/System/Routing/AppLinkProcessor.swift
       - path: Sources/Core/System/Workflow/AudioSplitter.swift
       - path: Sources/Core/System/Security/SecurityReinforcement.swift

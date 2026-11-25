@@ -116,6 +116,27 @@ def check_infrastructure_zero_platform_macros() -> list[str]:
     return [f"Sources/Infrastructure/ 禁止出现 #if os()（共 {len(hits)} 处）：" + ", ".join(hits)]
 
 
+def check_no_misplaced_platform_files() -> list[str]:
+    """确保 Sources/Core 与 Sources/App/Environment 不再出现平台专属实现文件（应归位 Sources/Platforms/）。"""
+    errors: list[str] = []
+    guarded_dirs = [
+        PROJECT_DIR / "Sources" / "Core",
+        PROJECT_DIR / "Sources" / "App" / "Environment",
+    ]
+    platform_file_re = re.compile(r"^(?:iOS|Mac|Watch).+\.swift$")
+    allowed_names = {"WatchSyncProtocol.swift"}
+    for root in guarded_dirs:
+        if not root.is_dir():
+            continue
+        for swift_file in sorted(root.rglob("*.swift")):
+            if swift_file.name in allowed_names:
+                continue
+            if platform_file_re.match(swift_file.name):
+                rel = swift_file.relative_to(PROJECT_DIR)
+                errors.append(f"平台专属文件错位（请归位至 Sources/Platforms/）: {rel}")
+    return errors
+
+
 def main() -> int:
     """主入口：执行三平台隔离与桌面弹窗门禁审计。"""
     os.chdir(PROJECT_DIR)
@@ -129,6 +150,7 @@ def main() -> int:
     errors.extend(check_watch_lightweight_dependencies(template_text))
     errors.extend(check_macos_sheet_sizing())
     errors.extend(check_infrastructure_zero_platform_macros())
+    errors.extend(check_no_misplaced_platform_files())
 
     if errors:
         print("❌ [Cross-Platform Isolation Audit] 发现以下跨平台隔离/弹窗规范违规：")

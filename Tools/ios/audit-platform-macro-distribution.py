@@ -35,7 +35,7 @@ CHECK_DIRS = [
 ]
 
 # 宏总数棘轮上限（只减不增；收敛清理后请同步调低此阈值）
-MAX_TOTAL_MACROS = 180
+MAX_TOTAL_MACROS = 169
 
 # 统一平台宏正则（去注释后匹配，拦截正向/反向/括号/复合条件中的 os() 与 macCatalyst）
 OS_MACRO_PATTERN = re.compile(
@@ -57,11 +57,6 @@ DISPATCH_FILES = {
     "Sources/App/Scenes/AppSceneBuilder.swift",
     "Sources/App/Core/AppEnvironment.swift",
     "Sources/App/Core/ZhiYuApp.swift",
-    "Sources/App/Environment/MacAppEnvironment.swift",
-    "Sources/App/Environment/iOSAppEnvironment.swift",
-    "Sources/Core/System/Haptic/MacHapticService.swift",
-    "Sources/Core/System/Haptic/WatchHapticService.swift",
-    "Sources/Core/System/Haptic/iOSHapticService.swift",
 }
 
 # 3) 平台能力与 watchOS 基础设施隔离白名单（精确文件级）
@@ -111,10 +106,6 @@ KNOWN_EXEMPTIONS = {
     "Sources/Core/System/Security/JailbreakDetector.swift": (
         {12, 82},
         "越狱检测依赖 UIApplication.shared.open 的 success Bool（VULN-010 安全路径）。",
-    ),
-    "Sources/Infrastructure/Processors/ImageExtractor.swift": (
-        {14, 154},
-        "L14 import UIKit 用于 AppImage(data:)；L154 为 iOS OCR 平台分支（已走 ocrService 协议注入）。",
     ),
 }
 
