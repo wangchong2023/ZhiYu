@@ -9,6 +9,7 @@
 //  核心职责：AC 自动机 / Trie 树政治、黄色、暴恐合规检测引擎与 3 级非合规处置逻辑。
 //
 import Foundation
+import UFPCore
 
 /// 违规合规分类
 public enum ComplianceCategory: String, CaseIterable, Sendable {

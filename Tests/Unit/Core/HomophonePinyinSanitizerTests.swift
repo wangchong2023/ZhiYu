@@ -7,6 +7,7 @@
 //
 
 import XCTest
+import UFPCore
 @testable import ZhiYuUnitTestHost
 
 final class HomophonePinyinSanitizerTests: XCTestCase {
