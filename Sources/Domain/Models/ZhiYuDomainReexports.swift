@@ -32,3 +32,5 @@ public typealias PluginRecord = ZhiYuDomain.PluginRecord
 public typealias ToolItem = ZhiYuDomain.ToolItem
 public typealias PromptConstants = ZhiYuDomain.PromptConstants
 public typealias MemoryEngineType = ZhiYuDomain.MemoryEngineType
+public typealias PlanQuotasVo = ZhiYuDomain.PlanQuotasVo
+public typealias SubscriptionQuotaConstants = ZhiYuDomain.SubscriptionQuotaConstants

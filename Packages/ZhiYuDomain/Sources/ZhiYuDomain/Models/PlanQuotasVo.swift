@@ -120,9 +120,9 @@ extension PlanQuotasVo {
     /// Free 离线冷启动保底基线 (Cold-Start Baseline)
     public static var createFreeDefault: PlanQuotasVo {
         PlanQuotasVo(
-            maxKnowledgePages: 1000,
-            maxVaultsCount: 4,
-            maxFileSizeMb: 10,
+            maxKnowledgePages: SubscriptionQuotaConstants.Free.maxKnowledgePages,
+            maxVaultsCount: SubscriptionQuotaConstants.Free.maxVaultsCount,
+            maxFileSizeMb: SubscriptionQuotaConstants.Free.maxFileSizeMb,
             dailyAiMessages: 0, // 离线无云端消息
             cloudLlmModelsEnabled: false,
             vectorSearchEnabled: false,
@@ -140,9 +140,9 @@ extension PlanQuotasVo {
     /// Pro 专业版基线 (功能与配额表对齐)
     public static var createProDefault: PlanQuotasVo {
         PlanQuotasVo(
-            maxKnowledgePages: 50000,
-            maxVaultsCount: 10,
-            maxFileSizeMb: 50, // 50 MB
+            maxKnowledgePages: SubscriptionQuotaConstants.Pro.maxKnowledgePages,
+            maxVaultsCount: SubscriptionQuotaConstants.Pro.maxVaultsCount,
+            maxFileSizeMb: SubscriptionQuotaConstants.Pro.maxFileSizeMb, // 50 MB
             dailyAiMessages: -1,
             cloudLlmModelsEnabled: true,
             vectorSearchEnabled: true,

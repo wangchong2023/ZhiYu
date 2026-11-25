@@ -9,11 +9,10 @@
 //  核心职责：应用级编译时常量定义（存储 key、超时、默认值等）。
 //
 import Foundation
-import UFPCore
 
 /// 智宇系统支持的外部导入文件格式定义 (DocumentFormat)
 /// 本枚举代表待摄入资料的排版文件类型。
-public enum DocumentFormat: Sendable {
+public enum DocumentFormat: Sendable, Equatable {
     /// 标准 Markdown 文本格式 (.md, .markdown)
     case markdown
     /// 纯文本格式 (.txt, .text)

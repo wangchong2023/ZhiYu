@@ -9,6 +9,7 @@
 //
 
 import Foundation
+import ZhiYuDomain
 import UFPCore
 import Combine
 

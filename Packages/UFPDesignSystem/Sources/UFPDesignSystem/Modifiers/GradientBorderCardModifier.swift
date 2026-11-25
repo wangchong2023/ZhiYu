@@ -10,18 +10,33 @@
 //
 
 import SwiftUI
-import UFPDesignSystem
 
 /// 渐变边框卡片修饰符，消除重复的 padding+background+clipShape+overlay(LinearGradient stroke) 链
-struct GradientBorderCardModifier: ViewModifier {
-    var padding: CGFloat = DesignTokens.Spacing.standardPadding
-    var cornerRadius: CGFloat = DesignTokens.Spacing.standardRadius
-    var backgroundOpacity: Double = DesignTokens.Opacity.ghost
-    var gradientStartColor: Color = .appAccent
-    var gradientStartOpacity: Double = DesignTokens.Opacity.disabled
-    var borderWidth: CGFloat = DesignTokens.SystemStroke.divider
+public struct GradientBorderCardModifier: ViewModifier {
+    public var padding: CGFloat = DesignTokens.Spacing.standardPadding
+    public var cornerRadius: CGFloat = DesignTokens.Spacing.standardRadius
+    public var backgroundOpacity: Double = DesignTokens.Opacity.ghost
+    public var gradientStartColor: Color = .appAccent
+    public var gradientStartOpacity: Double = DesignTokens.Opacity.disabled
+    public var borderWidth: CGFloat = DesignTokens.SystemStroke.divider
 
-    func body(content: Content) -> some View {
+    public init(
+        padding: CGFloat = DesignTokens.Spacing.standardPadding,
+        cornerRadius: CGFloat = DesignTokens.Spacing.standardRadius,
+        backgroundOpacity: Double = DesignTokens.Opacity.ghost,
+        gradientStartColor: Color = .appAccent,
+        gradientStartOpacity: Double = DesignTokens.Opacity.disabled,
+        borderWidth: CGFloat = DesignTokens.SystemStroke.divider
+    ) {
+        self.padding = padding
+        self.cornerRadius = cornerRadius
+        self.backgroundOpacity = backgroundOpacity
+        self.gradientStartColor = gradientStartColor
+        self.gradientStartOpacity = gradientStartOpacity
+        self.borderWidth = borderWidth
+    }
+
+    public func body(content: Content) -> some View {
         content
             .padding(padding)
             .background(Color.appCard.opacity(backgroundOpacity))
@@ -40,7 +55,7 @@ struct GradientBorderCardModifier: ViewModifier {
     }
 }
 
-extension View {
+public extension View {
     /// 渐变边框卡片样式：padding + background(appCard) + clipShape + overlay(LinearGradient stroke)
     func gradientBorderCardStyle(
         padding: CGFloat = DesignTokens.Spacing.standardPadding,

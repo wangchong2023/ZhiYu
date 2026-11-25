@@ -231,18 +231,3 @@ class SecurityManager: @unchecked Sendable {
         }
     }
 }
-
-// MARK: - 错误定义
-enum SecurityError: LocalizedError {
-    case invalidSalt
-    case encodingFailed
-    case decodingFailed
-
-    var errorDescription: String? {
-        switch self {
-        case .invalidSalt: return "Failed to derive key from salt: invalid encoding"
-        case .encodingFailed: return "Data encoding failed"
-        case .decodingFailed: return "Data decoding failed"
-        }
-    }
-}

@@ -10,19 +10,28 @@
 //
 
 import SwiftUI
-import UFPDesignSystem
 
 /// Accent 透明背景胶囊修饰符
 ///
 /// 消除 `SourceRow`、`PageDetailHeader`、`UserProfileView`、`OnDeviceComponents` 中重复的
 /// `padding(.horizontal:).padding(.vertical:).background(Color.appAccent.opacity(DesignTokens.Opacity.subtle)).clipShape(Capsule())` 模式。
 /// 注意：不强制 foregroundStyle，由调用方自行设置字色。
-struct AccentSubtleCapsuleModifier: ViewModifier {
-    var horizontalPadding: CGFloat
-    var verticalPadding: CGFloat
-    var backgroundOpacity: Double
+public struct AccentSubtleCapsuleModifier: ViewModifier {
+    public var horizontalPadding: CGFloat
+    public var verticalPadding: CGFloat
+    public var backgroundOpacity: Double
 
-    func body(content: Content) -> some View {
+    public init(
+        horizontalPadding: CGFloat = DesignTokens.Spacing.tightPadding,
+        verticalPadding: CGFloat = DesignTokens.Spacing.atomic,
+        backgroundOpacity: Double = DesignTokens.Opacity.subtle
+    ) {
+        self.horizontalPadding = horizontalPadding
+        self.verticalPadding = verticalPadding
+        self.backgroundOpacity = backgroundOpacity
+    }
+
+    public func body(content: Content) -> some View {
         content
             .padding(.horizontal, horizontalPadding)
             .padding(.vertical, verticalPadding)
@@ -31,7 +40,7 @@ struct AccentSubtleCapsuleModifier: ViewModifier {
     }
 }
 
-extension View {
+public extension View {
     /// Accent 透明背景胶囊样式：padding + background(appAccent.opacity) + clipShape(Capsule)
     /// 不强制 foregroundStyle，由调用方自行设置字色。
     func accentSubtleCapsule(

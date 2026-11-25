@@ -17,3 +17,10 @@ public typealias RetryTask = UFPCore.RetryTask
 
 /// 重试错误类型（兼容层，实际实现见 `UFPCore.RetryError`）
 public typealias RetryError = UFPCore.RetryError
+
+/// 兼容性别名：指向已下沉至 UFPCore 的安全与文档格式基础组件
+public typealias AESGCMCryptoHelper = UFPCore.AESGCMCryptoHelper
+public typealias SecurityError = UFPCore.SecurityError
+public typealias DocumentFormat = UFPCore.DocumentFormat
+public typealias MultilingualTextSanitizer = UFPCore.MultilingualTextSanitizer
+public typealias HomophonePinyinSanitizer = UFPCore.HomophonePinyinSanitizer

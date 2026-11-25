@@ -11,10 +11,25 @@
 import Foundation
 import CryptoKit
 
+// MARK: - 错误定义
+public enum SecurityError: LocalizedError, Sendable, Equatable {
+    case invalidSalt
+    case encodingFailed
+    case decodingFailed
+
+    public var errorDescription: String? {
+        switch self {
+        case .invalidSalt: return "Failed to derive key from salt: invalid encoding"
+        case .encodingFailed: return "Data encoding failed"
+        case .decodingFailed: return "Data decoding failed"
+        }
+    }
+}
+
 /// AES-GCM 对称加解密辅助
 /// 抽取 SecurityManager.encrypt/decrypt 与 SecureEnclaveCryptoService.encrypt/decrypt 中重复的
 /// `text.data(using:.utf8)` + `AES.GCM.seal` / `AES.GCM.SealedBox` + `String(data:encoding:.utf8)` 模式。
-enum AESGCMCryptoHelper {
+public enum AESGCMCryptoHelper {
 
     /// 使用对称密钥加密明文字符串
     /// - Parameters:
@@ -22,7 +37,7 @@ enum AESGCMCryptoHelper {
     ///   - symmetricKey: 对称密钥
     /// - Returns: Base64 编码的复合密文
     /// - Throws: `SecurityError.encodingFailed`（明文编码失败）或底层 CryptoKit 错误
-    static func encrypt(_ plainText: String, using symmetricKey: SymmetricKey) throws -> String {
+    public static func encrypt(_ plainText: String, using symmetricKey: SymmetricKey) throws -> String {
         guard let data = plainText.data(using: .utf8) else {
             throw SecurityError.encodingFailed
         }
@@ -36,7 +51,7 @@ enum AESGCMCryptoHelper {
     ///   - symmetricKey: 对称密钥
     /// - Returns: 还原的原始明文
     /// - Throws: `SecurityError.decodingFailed`（Base64 解码或 UTF-8 还原失败）或底层 CryptoKit 错误
-    static func decrypt(_ cipherText: String, using symmetricKey: SymmetricKey) throws -> String {
+    public static func decrypt(_ cipherText: String, using symmetricKey: SymmetricKey) throws -> String {
         let sealedBox = try sealedBox(from: cipherText)
         let decryptedData = try AES.GCM.open(sealedBox, using: symmetricKey)
         return try utf8String(from: decryptedData)
@@ -46,7 +61,7 @@ enum AESGCMCryptoHelper {
     /// - Parameter cipherText: Base64 编码的复合密文
     /// - Returns: AES-GCM SealedBox
     /// - Throws: `SecurityError.decodingFailed`（Base64 解码失败）或底层 CryptoKit 错误
-    static func sealedBox(from cipherText: String) throws -> AES.GCM.SealedBox {
+    public static func sealedBox(from cipherText: String) throws -> AES.GCM.SealedBox {
         guard let combinedData = Data(base64Encoded: cipherText) else {
             throw SecurityError.decodingFailed
         }
@@ -57,7 +72,7 @@ enum AESGCMCryptoHelper {
     /// - Parameter data: 解密后的原始数据
     /// - Returns: 还原的明文字符串
     /// - Throws: `SecurityError.decodingFailed`（UTF-8 还原失败）
-    static func utf8String(from data: Data) throws -> String {
+    public static func utf8String(from data: Data) throws -> String {
         guard let decryptedString = String(data: data, encoding: .utf8) else {
             throw SecurityError.decodingFailed
         }
