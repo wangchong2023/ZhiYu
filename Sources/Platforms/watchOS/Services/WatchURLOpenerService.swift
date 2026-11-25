@@ -12,8 +12,7 @@
 import Foundation
 /// watchOS URL 打开器服务（no-op，watchOS 不支持系统级 URL 跳转）
 @MainActor
-// swiftlint:disable:next redundant_sendable
-final class WatchURLOpenerService: URLOpenerProtocol, Sendable {
+final class WatchURLOpenerService: URLOpenerProtocol {
     func open(_ url: URL) async {
         Logger.shared.warning("[WatchURLOpener] URL 打开在 watchOS 上不可用，已忽略: \(url.absoluteString)")
     }

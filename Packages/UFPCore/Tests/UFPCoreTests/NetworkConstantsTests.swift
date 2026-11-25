@@ -134,7 +134,7 @@ final class NetworkConstantsTests: XCTestCase {
 
     // MARK: - URL Scheme 白名单
 
-    func testURLSchemeWhitelist() {
+    func testURLSchemeAllowlist() {
         XCTAssertEqual(NetworkConstants.URLScheme.http, "http")
         XCTAssertEqual(NetworkConstants.URLScheme.https, "https")
         XCTAssertTrue(NetworkConstants.URLScheme.allowed.contains("http"))
@@ -196,7 +196,7 @@ final class NetworkConstantsTests: XCTestCase {
         let localSuffixes = [
             NetworkConstants.LocalDomainSuffix.local,
             NetworkConstants.LocalDomainSuffix.internalSuffix,
-            NetworkConstants.LocalDomainSuffix.localhost,
+            NetworkConstants.LocalDomainSuffix.localhost
         ]
         let dnsSuffixes = NetworkConstants.DNSRebinding.suffixes
         for ls in localSuffixes {

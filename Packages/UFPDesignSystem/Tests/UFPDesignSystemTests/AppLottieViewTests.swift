@@ -102,7 +102,3 @@ final class AppLottieViewTests: XCTestCase {
         return URL(fileURLWithPath: resources[0]).deletingPathExtension().lastPathComponent
     }
 }
-
-private extension View {
-    func _bodyAccessor() {}
-}

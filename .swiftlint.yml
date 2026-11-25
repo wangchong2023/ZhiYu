@@ -37,12 +37,19 @@ opt_in_rules:
 # 2. 扫描区域限制
 included:
   - Sources
+  - Packages
   - Tests
 
 excluded:
   - Carthage
   - Pods
   - build                     # 过滤掉编译日志和临时生成缓存
+  - Packages/UFPCore/.build
+  - Packages/UFPStorage/.build
+  - Packages/UFPDesignSystem/.build
+  - Packages/ZhiYuDomain/.build
+  - Packages/ZhiYuAICore/.build
+  - Packages/ZhiYuFeatures/.build
   - Sources/Localization/Extensions # 排除自动生成的本地化强类型扩展，避免复杂的嵌套命名误报
   - Sources/Domain/Contracts/Generated # 排除 protoc 生成的契约代码（gen.sh 按需再生，不入库）
 

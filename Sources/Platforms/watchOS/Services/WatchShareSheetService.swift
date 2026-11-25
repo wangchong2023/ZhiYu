@@ -12,8 +12,7 @@
 import Foundation
 /// watchOS 系统分享面板服务（no-op，watchOS 无系统分享面板）
 @MainActor
-// swiftlint:disable:next redundant_sendable
-final class WatchShareSheetService: ShareSheetProtocol, Sendable {
+final class WatchShareSheetService: ShareSheetProtocol {
     func presentShareSheet(items: [Any]) async {
         Logger.shared.warning("[WatchShareSheet] 系统分享面板在 watchOS 上不可用，已忽略请求。items 数量: \(items.count)")
     }

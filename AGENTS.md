@@ -85,7 +85,7 @@
    - 视图样式与间距必须统一引用 `DesignSystem` 令牌（如 `DesignSystem.standardPadding`, `DesignSystem.medium`, `DesignSystem.titleFontSize`）。
 
 3. **🏗️ 架构分层 (L0-L3 + SPM) 单向依赖**：
-   - 依赖关系严格自顶向下：L3 应用层 (`ZhiYu App`) → L2 业务功能切片包 (`ZhiYuFeatures`) → L1.5 领域大脑包 (`ZhiYuDomain`) → L1 基础设施包 (`ZhiYuAICore` / `UFPStorage`) → Shared (`UFPDesignSystem`) → L0 底座包 (`UFPCore`)。
+   - 依赖关系严格遵循 DIP 与物理包拓扑：L3 应用层 (`ZhiYu App`) → L2 业务功能切片包 (`ZhiYuFeatures`) → AI 中台适配包 (`ZhiYuAICore`) → L1.5 领域大脑包 (`ZhiYuDomain`) / 通用存储引擎 (`UFPStorage`) → L0 底座包 (`UFPCore`)；UI 共享层 `UFPDesignSystem` → `UFPCore`（`ZhiYuDomain` 保持纯领域契约，不反向依赖具体 AI/存储适配器）。
    - 严禁反向跨层依赖或在领域层导入 UI 框架（`UIKit`/`AppKit`/`SwiftUI`）。
 
 4. **🔢 彻底去魔鬼化数字 / 字符 / 字符串 (No Magic Numbers/Strings)**：

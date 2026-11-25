@@ -13,8 +13,7 @@ import AppKit
 
 /// macOS URL 打开器服务
 @MainActor
-// swiftlint:disable:next redundant_sendable
-final class MacURLOpenerService: URLOpenerProtocol, Sendable {
+final class MacURLOpenerService: URLOpenerProtocol {
     func open(_ url: URL) async {
         NSWorkspace.shared.open(url)
     }

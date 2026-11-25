@@ -46,7 +46,7 @@ final class ZipUtilityArchiveParsingTests: XCTestCase {
 
     func testReadZipArchive_invalidMagicBytes_returnsNil() throws {
         let invalidURL = temporaryDirectoryURL.appendingPathComponent("invalid.txt")
-        try "NotAZipArchiveContent".data(using: .utf8)?.write(to: invalidURL)
+        try Data("NotAZipArchiveContent".utf8).write(to: invalidURL)
         let result = ZipUtility.readZipArchive(at: invalidURL)
         XCTAssertNil(result, "非 ZIP 文件头签名应返回 nil")
     }
@@ -103,7 +103,7 @@ final class ZipUtilityArchiveParsingTests: XCTestCase {
     func testReadZipArchive_unalignedSignatureScan_recoversNextValidHeader() throws {
         let dummyGarbage = Data([0xDE, 0xAD, 0xBE, 0xEF, 0x01, 0x02])
         let fileName = "recovered.txt"
-        guard let validContent = "Recovered Content".data(using: .utf8) else { return }
+        let validContent = Data("Recovered Content".utf8)
         let validZip = buildStoredZip(fileName: fileName, contentData: validContent)
 
         // 在正常 ZIP 前插入损坏字节模拟偏移扫描

@@ -69,12 +69,12 @@ final class TypographyTokenTests: XCTestCase {
 
     /// captionFont 必须返回 .caption（Dynamic Type 语义样式）
     func testCaptionFontIsDynamicType() {
-        let _ = DesignTokens.Typography.captionFont
+        _ = DesignTokens.Typography.captionFont
     }
 
     /// titleFont 必须返回 .title2.bold()
     func testTitleFontIsDynamicType() {
-        let _ = DesignTokens.Typography.titleFont
+        _ = DesignTokens.Typography.titleFont
     }
 
     // MARK: - Icons 验证

@@ -13,8 +13,7 @@ import UIKit
 
 /// iOS 系统分享面板服务
 @MainActor
-// swiftlint:disable:next redundant_sendable
-final class iOSShareSheetService: ShareSheetProtocol, Sendable {
+final class iOSShareSheetService: ShareSheetProtocol {
     func presentShareSheet(items: [Any]) async {
         let controller = UIActivityViewController(activityItems: items, applicationActivities: nil)
 

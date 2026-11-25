@@ -49,7 +49,7 @@ final class UFPCoreTests: XCTestCase {
         let expectation = expectation(description: "Concurrent DI registration and resolution")
         expectation.expectedFulfillmentCount = 100
 
-        DispatchQueue.concurrentPerform(iterations: 100) { i in
+        DispatchQueue.concurrentPerform(iterations: 100) { _ in
             let service = DummyService()
             container.register(service as DummyServiceProtocol, for: DummyServiceProtocol.self)
             let resolved = container.resolveOptional(DummyServiceProtocol.self)

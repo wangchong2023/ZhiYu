@@ -62,11 +62,11 @@ LAYER_PATHS = {
 # 忽略提取的通用 Swift 关键字与常见类型名（避免因同名匹配造成误报）
 # 注意：领域实体（PageChunk/KnowledgePage/Tag 等）不在此白名单中，
 # 以便 audit-arch-dependency 能拦截 L0→L1.5 跨层引用
-# 动态加载：从 ExemptionRegistry 获取 SDK 符号 + 项目符号 + 手动白名单
-# 此处仅保留无法被 Registry 覆盖的少量项目概念词（Done/Plan/Theme 等已在 manual_whitelist）
+# 动态加载：从 ExemptionRegistry 获取 SDK 符号 + 手动白名单
+# 注意：严禁并入 project_symbols，否则项目自身全部类型都会被过滤导致实体数归零（门禁假绿）！
 _REGISTRY = ExemptionRegistry()
 _REGISTRY.load()
-COMMON_KEYWORDS = _REGISTRY.sdk_symbols | _REGISTRY.project_symbols | _REGISTRY.get_manual_symbols()
+COMMON_KEYWORDS = _REGISTRY.sdk_symbols | _REGISTRY.get_manual_symbols()
 
 # ==============================================================================
 # MARK: - 实体提取逻辑
@@ -114,13 +114,14 @@ def extract_entities_from_dir(dir_path):
     if not os.path.exists(dir_path):
         return entities
 
-    # 类型定义的正则表达式（提取首字母大写的类型名）
+    # 类型定义的正则表达式（提取首字母大写的类型名，含 typealias）
     patterns = [
         re.compile(r'\bclass\s+([A-Z][A-Za-z0-9_]+)'),
         re.compile(r'\bstruct\s+([A-Z][A-Za-z0-9_]+)'),
         re.compile(r'\benum\s+([A-Z][A-Za-z0-9_]+)'),
         re.compile(r'\bactor\s+([A-Z][A-Za-z0-9_]+)'),
-        re.compile(r'\bprotocol\s+([A-Z][A-Za-z0-9_]+)')
+        re.compile(r'\bprotocol\s+([A-Z][A-Za-z0-9_]+)'),
+        re.compile(r'\btypealias\s+([A-Z][A-Za-z0-9_]+)')
     ]
 
     for root, dirs, files in os.walk(dir_path):
@@ -175,6 +176,10 @@ def check_file_dependencies(file_path, forbidden_entities, layer_name):
         if not clean_line:
             continue
 
+        # 剥离字符串字面量与 L10n 强类型本地化路径（避免 "Synthesis" / L10n.Collaboration.Status 误报）
+        clean_line = re.sub(r'"[^"\\]*(?:\\.[^"\\]*)*"', '""', clean_line)
+        clean_line = re.sub(r'\bL10n(?:\.[A-Za-z0-9_]+)+', 'L10n', clean_line)
+
         # 2. 正则查找违规高层实体调用
         match = forbidden_pattern.search(clean_line)
         if match:
@@ -221,6 +226,7 @@ def run_architecture_audit():
     print("🔍 [Arch Dependency] 正在提取各物理分层类型的实体定义...")
 
     # 1. 提取各层实体
+    core_entities = extract_entities_from_dir(LAYER_PATHS["Core"])
     features_entities = extract_entities_from_dir(LAYER_PATHS["Features"])
     platforms_entities = extract_entities_from_dir(LAYER_PATHS["Platforms"])
     infra_entities = extract_entities_from_dir(LAYER_PATHS["Infrastructure"])
@@ -242,20 +248,30 @@ def run_architecture_audit():
     }
 
     print("📊 [Arch Dependency] 实体定义统计:")
+    print(f"  - 底座层 (Core) 实体数: {len(core_entities)}")
     print(f"  - 表现层/平台层 (Features/Platforms) 总实体数: {len(high_level_entities)}")
     print(f"  - 表现层 UI/路由核心拦截实体数: {len(high_level_ui_entities)}")
     print(f"  - 领域层所有实体数: {len(domain_all_entities)} (其中 Models: {len(domain_models_entities)}, Services: {len(domain_services_entities)})")
     print(f"  - 基础设施层 (Infrastructure) 实体数: {len(infra_entities)}")
 
+    # 防空转熔断：任一核心层实体数为 0 说明解析器或过滤词典异常，禁止静默假绿
+    if not high_level_entities or not domain_all_entities or not infra_entities:
+        print(
+            "❌ [Arch Dependency] 严重异常：至少一个架构分层提取实体数为 0，拒绝假绿放行！",
+            file=sys.stderr,
+        )
+        return 1
+
     # 2. 定义各层不应该引用的实体名单（Core、Infra、Domain 严禁调用 UI 视图或控制器）
     # 架构红线：L0 底座层禁止反向引用 L1.5 领域层（含 Models 和 Services 全部实体）
+    # 注意：剔除当前层自身已定义的同名类型（如嵌套 Constants/Status/ErrorDomain），避免自引用误报
     forbidden_rules = {
         # Core (L0) 严禁调用任何高层实体：UI 视图、Domain Services、Domain Models、Infrastructure
-        "Core": high_level_ui_entities.union(domain_all_entities).union(infra_entities),
+        "Core": high_level_ui_entities.union(domain_all_entities).union(infra_entities).difference(core_entities),
         # Infrastructure (L1) 禁止直接调用表现层 UI
-        "Infrastructure": high_level_ui_entities,
+        "Infrastructure": high_level_ui_entities.difference(infra_entities),
         # Domain (L1.5) 作为大脑层，可以调用 Infra 和 Core，但绝对禁止直接调用表现层 UI (View/Coordinator)
-        "Domain": high_level_ui_entities
+        "Domain": high_level_ui_entities.difference(domain_all_entities)
     }
 
     # 3. 逐个物理层级执行审计

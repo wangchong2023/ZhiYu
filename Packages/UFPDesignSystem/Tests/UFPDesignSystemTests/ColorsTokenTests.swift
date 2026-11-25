@@ -17,8 +17,16 @@ private typealias PlatformColor = NSColor
 #endif
 @testable import UFPDesignSystem
 
+/// 跨平台 RGBA 颜色分量容器（避免 4 元组 large_tuple 告警）。
+private struct RGBAComponents {
+    let r: Double
+    let g: Double
+    let b: Double
+    let a: Double
+}
+
 /// 跨平台读取 SwiftUI Color 的 RGBA 分量（sRGB 空间）。
-private func rgba(of color: Color) -> (r: Double, g: Double, b: Double, a: Double)? {
+private func rgba(of color: Color) -> RGBAComponents? {
     let platformColor = PlatformColor(color)
     var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
     #if canImport(UIKit)
@@ -26,7 +34,7 @@ private func rgba(of color: Color) -> (r: Double, g: Double, b: Double, a: Doubl
     #else
     platformColor.getRed(&r, green: &g, blue: &b, alpha: &a)
     #endif
-    return (r, g, b, a)
+    return RGBAComponents(r: r, g: g, b: b, a: a)
 }
 
 final class ColorsTokenTests: XCTestCase {
@@ -82,12 +90,12 @@ final class ColorsTokenTests: XCTestCase {
 
     /// Splash.bgStep1 必须存在
     func testSplashBgStep1Exists() {
-        let _ = DesignTokens.Colors.Splash.bgStep1
+        _ = DesignTokens.Colors.Splash.bgStep1
     }
 
     /// Splash.glow1 必须存在
     func testSplashGlow1Exists() {
-        let _ = DesignTokens.Colors.Splash.glow1
+        _ = DesignTokens.Colors.Splash.glow1
     }
 
     // MARK: - accentColorResolver 验证
@@ -96,7 +104,7 @@ final class ColorsTokenTests: XCTestCase {
     func testAccentColorResolverDefault() {
         Color.accentColorResolver = { .blue }
         let color = Color.appAccent
-        let _ = color
+        _ = color
     }
 
     // MARK: - hex 初始化 (缺陷 #85)

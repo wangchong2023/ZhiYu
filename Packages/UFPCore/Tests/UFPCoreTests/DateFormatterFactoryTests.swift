@@ -25,9 +25,10 @@ final class DateFormatterFactoryTests: XCTestCase {
     }
 
     /// 验证详细时间格式输出与直接 DateFormatter 等价
-    func testString_DetailedFormat() {
-        let expected = Self.expectedDateString(format: "yyyy-MM-dd HH:mm", timeZone: TimeZone(secondsFromGMT: 0)!)
-        let formatted = factory.string(from: referenceDate, format: "yyyy-MM-dd HH:mm", locale: Locale(identifier: "en_US_POSIX"), timeZone: TimeZone(secondsFromGMT: 0)!)
+    func testString_DetailedFormat() throws {
+        let utc = try XCTUnwrap(TimeZone(secondsFromGMT: 0))
+        let expected = Self.expectedDateString(format: "yyyy-MM-dd HH:mm", timeZone: utc)
+        let formatted = factory.string(from: referenceDate, format: "yyyy-MM-dd HH:mm", locale: Locale(identifier: "en_US_POSIX"), timeZone: utc)
         XCTAssertEqual(formatted, expected)
     }
 

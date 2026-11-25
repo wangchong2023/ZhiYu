@@ -161,15 +161,7 @@ public actor LiteRTInferenceBackend: LocalInferenceBackendProtocol {
         let conversation = try await engine.createConversation(with: conversationConfig)
         self.activeConversation = conversation
 
-        var contents: [Content] = []
-        for img in imageData where !img.isEmpty {
-            contents.append(.imageData(img))
-        }
-        if let audio = audioData, !audio.isEmpty {
-            contents.append(.audioData(audio))
-        }
-        contents.append(.text(trimmedPrompt))
-        let message = Message(contents: contents)
+        let message = buildMessage(trimmedPrompt: trimmedPrompt, imageData: imageData, audioData: audioData)
         let thinking = ThinkingConfig(enableThinking: options.enableThinking)
 
         let startNano = DispatchTime.now().uptimeNanoseconds
@@ -213,6 +205,18 @@ public actor LiteRTInferenceBackend: LocalInferenceBackendProtocol {
     }
 
     #if canImport(LiteRTLM)
+    private func buildMessage(trimmedPrompt: String, imageData: [Data], audioData: Data?) -> Message {
+        var contents: [Content] = []
+        for img in imageData where !img.isEmpty {
+            contents.append(.imageData(img))
+        }
+        if let audio = audioData, !audio.isEmpty {
+            contents.append(.audioData(audio))
+        }
+        contents.append(.text(trimmedPrompt))
+        return Message(contents: contents)
+    }
+
     internal static func mapBackend(for accelerator: LocalInferenceAccelerator) -> Backend {
         switch accelerator {
         case .cpu:

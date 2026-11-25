@@ -126,17 +126,25 @@ public final class ServiceContainer: @unchecked Sendable {
     /// 消除与 markProductionChainComplete() 的竞态窗口（问题 #8 真正修复）
     /// 注意：之前的修复（两次 lock 调用）仍有竞态窗口，因为 mark 可能在两次 lock 之间执行。
     public func reset() {
+        struct ResetOutcome {
+            let shouldBlock: Bool
+            let removedCount: Int
+            let removedKeys: [String]
+        }
         let resetCallStackDepth = 5
         let callSite = Thread.callStackSymbols.prefix(resetCallStackDepth).joined(separator: "\n")
-        let (shouldBlock, removedCount, removedKeys): (Bool, Int, [String]) = lock.withLock {
+        let outcome: ResetOutcome = lock.withLock {
             if isProductionChainPopulated {
-                return (true, 0, [])
+                return ResetOutcome(shouldBlock: true, removedCount: 0, removedKeys: [])
             }
             let count = services.count
             let keys = Array(services.keys)
             services.removeAll()
-            return (false, count, keys)
+            return ResetOutcome(shouldBlock: false, removedCount: count, removedKeys: keys)
         }
+        let shouldBlock = outcome.shouldBlock
+        let removedCount = outcome.removedCount
+        let removedKeys = outcome.removedKeys
         if shouldBlock {
             let msg = "[ServiceContainer] reset() BLOCKED: production DI chain is complete. Call site:\n\(callSite)"
             os_log(.error, log: diLog, "%{public}@", msg)

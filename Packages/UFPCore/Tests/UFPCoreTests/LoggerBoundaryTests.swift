@@ -12,10 +12,6 @@ import XCTest
 
 final class LoggerBoundaryTests: XCTestCase {
 
-    override func setUp() {
-        super.setUp()
-    }
-
     /// info/warning/error/debug 调用不崩溃（基线）
     func testAllLevelsDoNotCrash() {
         MinimalLogger.shared.debug("debug message")

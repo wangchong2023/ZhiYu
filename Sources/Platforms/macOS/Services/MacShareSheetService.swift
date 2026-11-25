@@ -13,8 +13,7 @@ import AppKit
 
 /// macOS 系统分享面板服务
 @MainActor
-// swiftlint:disable:next redundant_sendable
-final class MacShareSheetService: ShareSheetProtocol, Sendable {
+final class MacShareSheetService: ShareSheetProtocol {
     func presentShareSheet(items: [Any]) async {
         let picker = NSSharingServicePicker(items: items)
         // 从当前 key window 的 contentView 展示

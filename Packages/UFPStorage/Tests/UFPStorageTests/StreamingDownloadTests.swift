@@ -99,7 +99,7 @@ final class StreamingDownloadTests: XCTestCase {
 
     func testVerifySHA256AcceptsEmptyChecksum() async {
         let manager = makeManager()
-        let file = tempDirectory!.appendingPathComponent("empty.bin")
+        let file = tempDirectory.appendingPathComponent("empty.bin")
         try? Data("test content".utf8).write(to: file)
 
         let result = manager.verifySHA256(of: file, expectedHash: "")
@@ -108,7 +108,7 @@ final class StreamingDownloadTests: XCTestCase {
 
     func testVerifySHA256RejectsNonStandardLength() async {
         let manager = makeManager()
-        let file = tempDirectory!.appendingPathComponent("short.bin")
+        let file = tempDirectory.appendingPathComponent("short.bin")
         try? Data("test content".utf8).write(to: file)
 
         let result = manager.verifySHA256(of: file, expectedHash: "abc123")
@@ -117,7 +117,7 @@ final class StreamingDownloadTests: XCTestCase {
 
     func testVerifySHA256ReturnsFalseForNonExistentFile() async {
         let manager = makeManager()
-        let file = tempDirectory!.appendingPathComponent("missing.bin")
+        let file = tempDirectory.appendingPathComponent("missing.bin")
         let checksum = String(repeating: "a", count: 64)
 
         let result = manager.verifySHA256(of: file, expectedHash: checksum)
@@ -126,7 +126,7 @@ final class StreamingDownloadTests: XCTestCase {
 
     func testVerifySHA256AcceptsCorrectChecksum() async {
         let manager = makeManager()
-        let file = tempDirectory!.appendingPathComponent("correct.bin")
+        let file = tempDirectory.appendingPathComponent("correct.bin")
         let content = "test content for SHA256 \(UUID().uuidString)"
         try? Data(content.utf8).write(to: file)
 
@@ -137,7 +137,7 @@ final class StreamingDownloadTests: XCTestCase {
 
     func testVerifySHA256RejectsMismatch() async {
         let manager = makeManager()
-        let file = tempDirectory!.appendingPathComponent("mismatch.bin")
+        let file = tempDirectory.appendingPathComponent("mismatch.bin")
         try? Data("test content".utf8).write(to: file)
 
         let fakeHash = String(repeating: "0", count: 64)
@@ -147,7 +147,7 @@ final class StreamingDownloadTests: XCTestCase {
 
     func testVerifySHA256CaseInsensitive() async {
         let manager = makeManager()
-        let file = tempDirectory!.appendingPathComponent("case.bin")
+        let file = tempDirectory.appendingPathComponent("case.bin")
         let content = "case insensitive check"
         try? Data(content.utf8).write(to: file)
 
@@ -379,7 +379,7 @@ final class StreamingDownloadTests: XCTestCase {
         let manager = makeManager()
         let taskID = "test-complete-fail-\(UUID().uuidString)"
         await manager.registerChecksum(for: taskID, checksum: String(repeating: "a", count: 64))
-        let tempFile = tempDirectory!.appendingPathComponent("temp.bin")
+        let tempFile = tempDirectory.appendingPathComponent("temp.bin")
         try? Data("payload".utf8).write(to: tempFile)
 
         // When
@@ -403,7 +403,7 @@ final class StreamingDownloadTests: XCTestCase {
         let manager = makeManager()
         let taskID = "test-complete-ok-\(UUID().uuidString)"
         let content = "verified-content"
-        let tempFile = tempDirectory!.appendingPathComponent("temp-ok.bin")
+        let tempFile = tempDirectory.appendingPathComponent("temp-ok.bin")
         try? Data(content.utf8).write(to: tempFile)
         await manager.registerChecksum(for: taskID, checksum: sha256Hex(of: Data(content.utf8)))
 
@@ -412,7 +412,7 @@ final class StreamingDownloadTests: XCTestCase {
         await pollUntilNot(idle: taskID, in: manager)
 
         // Then — 文件移入目标目录，状态为 completed
-        let destURL = tempDirectory!.appendingPathComponent("\(taskID).bin")
+        let destURL = tempDirectory.appendingPathComponent("\(taskID).bin")
         XCTAssertTrue(FileManager.default.fileExists(atPath: destURL.path), "校验通过后文件应移入目标目录")
         XCTAssertFalse(FileManager.default.fileExists(atPath: tempFile.path), "临时文件应被移走")
 
@@ -431,11 +431,11 @@ final class StreamingDownloadTests: XCTestCase {
         let manager = makeManager()
         let taskID = "test-complete-overwrite-\(UUID().uuidString)"
         let content = "new-content"
-        let tempFile = tempDirectory!.appendingPathComponent("temp-overwrite.bin")
+        let tempFile = tempDirectory.appendingPathComponent("temp-overwrite.bin")
         try? Data(content.utf8).write(to: tempFile)
         await manager.registerChecksum(for: taskID, checksum: sha256Hex(of: Data(content.utf8)))
 
-        let destURL = tempDirectory!.appendingPathComponent("\(taskID).bin")
+        let destURL = tempDirectory.appendingPathComponent("\(taskID).bin")
         try? Data("old-stale".utf8).write(to: destURL)
 
         // When
@@ -458,11 +458,11 @@ final class StreamingDownloadTests: XCTestCase {
         // Given — 目标目录父路径不存在，使 moveItem 必然抛错；先 startDownload 建立活动任务
         let manager = makeManagerWithNonexistentDestination()
         let taskID = "test-moveitem-fail-\(UUID().uuidString)"
-        let remoteURL = URL(string: "https://example.com/move-fail.bin")!
+        let remoteURL = try XCTUnwrap(URL(string: "https://example.com/move-fail.bin"))
         try await manager.startDownload(taskID: taskID, remoteURL: remoteURL)
 
         let content = "move-item-fail-content"
-        let tempFile = tempDirectory!.appendingPathComponent("temp-movefail.bin")
+        let tempFile = tempDirectory.appendingPathComponent("temp-movefail.bin")
         try? Data(content.utf8).write(to: tempFile)
         await manager.registerChecksum(for: taskID, checksum: sha256Hex(of: Data(content.utf8)))
 

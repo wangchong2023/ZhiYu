@@ -101,8 +101,8 @@ public struct SSRFGuard: Sendable {
     private static func isIPv6LoopbackBytes(_ address: in6_addr) -> Bool {
         withUnsafeBytes(of: address) { bytes in
             guard bytes.count == NetworkConstants.IPv6PrivateRange.totalBytes else { return false }
-            for index in 0..<NetworkConstants.IPv6PrivateRange.lastByteIndex {
-                if bytes[index] != 0 { return false }
+            for index in 0..<NetworkConstants.IPv6PrivateRange.lastByteIndex where bytes[index] != 0 {
+                return false
             }
             return bytes[NetworkConstants.IPv6PrivateRange.lastByteIndex] == NetworkConstants.IPv6PrivateRange.loopbackMarker
         }

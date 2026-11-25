@@ -270,7 +270,7 @@ public enum SystemConstants {
         /// 文本类文件扩展名集合（用于导入识别）
         public static let textFileExtensions: Set<String> = [
             "txt", "md", "json", "csv", "js", "py",
-            "html", "xml", "css", "log", "swift", "yaml", "yml",
+            "html", "xml", "css", "log", "swift", "yaml", "yml"
         ]
     }
 

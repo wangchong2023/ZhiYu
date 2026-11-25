@@ -17,8 +17,7 @@ import UIKit
 
 /// iOS URL 打开器服务
 @MainActor
-// swiftlint:disable:next redundant_sendable
-final class iOSURLOpenerService: URLOpenerProtocol, Sendable {
+final class iOSURLOpenerService: URLOpenerProtocol {
     /// 可注入的 URL 打开闭包（默认调用真实 UIApplication.shared.open）
     private let openHandler: @MainActor (URL) async -> Void
 

@@ -93,69 +93,75 @@ public enum JSONRepairProcessor {
         var output = ""
         var inString = false
         var escape = false
-        var i = 0
+        var index = 0
         let count = chars.count
+        let escapeChar: Character = "\\"
 
-        while i < count {
-            let c = chars[i]
-            let escapeChar: Character = "\\"
+        while index < count {
+            let char = chars[index]
             if inString {
-                output.append(c)
+                output.append(char)
                 if escape {
                     escape = false
-                } else if c == escapeChar {
+                } else if char == escapeChar {
                     escape = true
-                } else if c == "\"" {
+                } else if char == "\"" {
                     inString = false
                 }
-                i += 1
+                index += 1
                 continue
             }
-            if c == "\"" {
+            if char == "\"" {
                 inString = true
-                output.append(c)
-                i += 1
+                output.append(char)
+                index += 1
                 continue
             }
-            // 字符串外：尝试识别 `{`/`,` 后紧跟的裸 key（`key:`，key 后允许空白再冒号）
-            if c == "{" || c == "," {
-                var j = i + 1
-                while j < count && isWhitespace(chars[j]) { j += 1 }
-                if j < count, isIdentifierStart(chars[j]) {
-                    var k = j
-                    while k < count && isIdentifierChar(chars[k]) { k += 1 }
-                    var m = k
-                    while m < count && isWhitespace(chars[m]) { m += 1 }
-                    if m < count, chars[m] == ":" {
-                        output.append(c)
-                        output.append(contentsOf: chars[(i + 1)..<j])
-                        output.append("\"")
-                        output.append(contentsOf: chars[j..<k])
-                        output.append("\"")
-                        i = k
-                        continue
-                    }
-                }
+            if char == "{" || char == ",",
+               let nextIndex = tryConsumeUnquotedKey(in: chars, from: index, output: &output) {
+                index = nextIndex
+                continue
             }
-            output.append(c)
-            i += 1
+            output.append(char)
+            index += 1
         }
         return output
     }
 
+    /// 尝试在 `{` 或 `,` 之后识别并补齐裸 key 引号；匹配成功返回消费后的新下标
+    private static func tryConsumeUnquotedKey(in chars: [Character], from index: Int, output: inout String) -> Int? {
+        let count = chars.count
+        var keyStart = index + 1
+        while keyStart < count && isWhitespace(chars[keyStart]) { keyStart += 1 }
+        guard keyStart < count, isIdentifierStart(chars[keyStart]) else { return nil }
+
+        var keyEnd = keyStart
+        while keyEnd < count && isIdentifierChar(chars[keyEnd]) { keyEnd += 1 }
+        var colonIndex = keyEnd
+        while colonIndex < count && isWhitespace(chars[colonIndex]) { colonIndex += 1 }
+        guard colonIndex < count, chars[colonIndex] == ":" else { return nil }
+
+        output.append(chars[index])
+        output.append(contentsOf: chars[(index + 1)..<keyStart])
+        output.append("\"")
+        output.append(contentsOf: chars[keyStart..<keyEnd])
+        output.append("\"")
+        return keyEnd
+    }
+
     /// 是否为 JSON 裸 key 起始字符（ASCII 字母或下划线）
-    private static func isIdentifierStart(_ c: Character) -> Bool {
-        c.isASCII && (c.isLetter || c == "_")
+    private static func isIdentifierStart(_ char: Character) -> Bool {
+        char.isASCII && (char.isLetter || char == "_")
     }
 
     /// 是否为 JSON 裸 key 组成字符（ASCII 字母/数字/下划线）
-    private static func isIdentifierChar(_ c: Character) -> Bool {
-        c.isASCII && (c.isLetter || c.isNumber || c == "_")
+    private static func isIdentifierChar(_ char: Character) -> Bool {
+        char.isASCII && (char.isLetter || char.isNumber || char == "_")
     }
 
     /// 是否为 JSON 空白字符
-    private static func isWhitespace(_ c: Character) -> Bool {
-        c == " " || c == "\t" || c == "\n" || c == "\r"
+    private static func isWhitespace(_ char: Character) -> Bool {
+        char == " " || char == "\t" || char == "\n" || char == "\r"
     }
 
     /// 使用 PartialJSON 将不完整 JSON 解析并序列化为合规字符串

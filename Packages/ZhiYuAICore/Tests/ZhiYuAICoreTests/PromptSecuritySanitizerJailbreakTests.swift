@@ -79,4 +79,3 @@ final class PromptSecuritySanitizerJailbreakTests: XCTestCase {
                       "零宽字符混淆的越狱模式必须被正确拦截")
     }
 }
-

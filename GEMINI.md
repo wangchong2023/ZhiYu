@@ -45,9 +45,9 @@ xcodebuild test -project ZhiYu.xcodeproj -scheme ZhiYu -destination 'platform=iO
 | 层级 | 名称 | SPM 物理包 | 物理路径 | 核心职责 |
 | :--- | :--- | :--- | :--- | :--- |
 | **L3** | 应用层 (App) | `ZhiYu` App Target | `Sources/App/` | 全局入口、环境配置、路由中心 |
-| **L2** | 业务功能层 (Features) | `ZhiYuFeatures` | `Packages/ZhiYuFeatures/` | 业务切片 (AI/Knowledge/Insight) |
-| **L1.5** | 领域层 (Domain) | `ZhiYuDomain` | `Packages/ZhiYuDomain/` | **核心业务大脑**：业务规则、RAG 契约 |
-| **L1** | 基础设施层 (Infra) | `ZhiYuAICore` / `UFPStorage` | `Packages/ZhiYuAICore/`, `Packages/UFPStorage/` | AI 适配器与物理存储算子 |
+| **L2** | 业务功能层 (Features) | `ZhiYuFeatures` | `Packages/ZhiYuFeatures/` | 业务切片 (AI/Knowledge/Insight)，依赖 `ZhiYuAICore`/`ZhiYuDomain`/`UFPDesignSystem`/`UFPCore` |
+| **L1.5** | 领域层 (Domain) | `ZhiYuDomain` | `Packages/ZhiYuDomain/` | **核心业务大脑**：纯领域模型与契约 Protocols（仅依赖 `UFPCore`，遵循 DIP） |
+| **L1** | 基础设施层 (Infra) | `ZhiYuAICore` / `UFPStorage` | `Packages/ZhiYuAICore/`, `Packages/UFPStorage/` | AI 适配器（依赖 `ZhiYuDomain`/`UFPStorage`/`UFPCore`）与通用物理存储引擎（仅依赖 `UFPCore`） |
 | **L0** | 底层基座层 (Base) | `UFPCore` | `Packages/UFPCore/` | 内核：DI 容器、Logger、全局协议 |
 | **Shared** | 共享标准层 | `UFPDesignSystem` | `Packages/UFPDesignSystem/` | 视觉标准：Design Token、`Bundle.module` |
 

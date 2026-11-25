@@ -26,7 +26,7 @@ final class ServiceContainerConcurrencyTests: XCTestCase {
     }
 
     /// 高并发交替注册同一 key 的不同实例 → 最终状态必须一致（无半写入状态）
-    func testConcurrentRegisterSameKeyConsistency() {
+    func testConcurrentRegisterSameKeyConsistency() throws {
         let container = ServiceContainer.shared
         let iterations = 200
 
@@ -36,9 +36,8 @@ final class ServiceContainerConcurrencyTests: XCTestCase {
         }
 
         // 最终解析必须成功且无崩溃
-        let resolved = container.resolveOptional(ConcurrentServiceProtocol.self)
-        XCTAssertNotNil(resolved, "并发注册后必须能解析到某个实例")
-        XCTAssertTrue((0..<iterations).contains(resolved!.id),
+        let resolved = try XCTUnwrap(container.resolveOptional(ConcurrentServiceProtocol.self), "并发注册后必须能解析到某个实例")
+        XCTAssertTrue((0..<iterations).contains(resolved.id),
                       "解析出的 id 必须是某次注册的有效值，不能是内存损坏")
     }
 

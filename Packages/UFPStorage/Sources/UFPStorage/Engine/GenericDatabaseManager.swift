@@ -107,7 +107,7 @@ public final class GenericDatabaseManager: TestStateResettable, @unchecked Senda
     public func setupGlobal(at url: URL) throws {
         self.globalDBURL = url
         guard let globalMigrator else {
-            fatalError("[GenericDatabaseManager] globalMigrator 未注入，无法迁移全局库")
+            throw DatabaseError.migratorNotConfigured("globalMigrator")
         }
         let globalPool = try createAndMigrateDatabase(at: url, migrator: globalMigrator)
         self.globalWriter = globalPool
@@ -133,7 +133,7 @@ public final class GenericDatabaseManager: TestStateResettable, @unchecked Senda
             // 3. 建立默认专属物理库连接
             self.dbURL = url
             guard let vaultMigrator else {
-                fatalError("[GenericDatabaseManager] vaultMigrator 未注入，无法迁移专属库")
+                throw DatabaseError.migratorNotConfigured("vaultMigrator")
             }
             let dbPool = try createAndMigrateDatabase(at: url, migrator: vaultMigrator)
             self.dbWriter = dbPool
@@ -159,7 +159,7 @@ public final class GenericDatabaseManager: TestStateResettable, @unchecked Senda
 
         // 对专属瞬态内存主数据库执行迁移
         guard let vaultMigrator else {
-            fatalError("[GenericDatabaseManager] vaultMigrator 未注入")
+            throw DatabaseError.migratorNotConfigured("vaultMigrator")
         }
         try vaultMigrator.migrate(writer)
 
@@ -167,7 +167,7 @@ public final class GenericDatabaseManager: TestStateResettable, @unchecked Senda
         let globalQueue = try DatabaseQueue()
         self.globalWriter = globalQueue
         guard let globalMigrator else {
-            fatalError("[GenericDatabaseManager] globalMigrator 未注入")
+            throw DatabaseError.migratorNotConfigured("globalMigrator")
         }
         try globalMigrator.migrate(globalQueue)
 
@@ -210,7 +210,7 @@ public final class GenericDatabaseManager: TestStateResettable, @unchecked Senda
             let memoryQueue = try DatabaseQueue()
             self.dbWriter = memoryQueue
             guard let vaultMigrator else {
-                fatalError("[GenericDatabaseManager] vaultMigrator 未注入")
+                throw DatabaseError.migratorNotConfigured("vaultMigrator")
             }
             try vaultMigrator.migrate(memoryQueue)
 
@@ -218,7 +218,7 @@ public final class GenericDatabaseManager: TestStateResettable, @unchecked Senda
             let memoryGlobalQueue = try DatabaseQueue()
             self.globalWriter = memoryGlobalQueue
             guard let globalMigrator else {
-                fatalError("[GenericDatabaseManager] globalMigrator 未注入")
+                throw DatabaseError.migratorNotConfigured("globalMigrator")
             }
             try globalMigrator.migrate(memoryGlobalQueue)
 
@@ -274,7 +274,7 @@ public final class GenericDatabaseManager: TestStateResettable, @unchecked Senda
 
         // 2. 重新配置并开辟新库连接池，自动运行 Schema 迁移
         guard let vaultMigrator else {
-            fatalError("[GenericDatabaseManager] vaultMigrator 未注入")
+            throw DatabaseError.migratorNotConfigured("vaultMigrator")
         }
         // 缺陷 #82 修复：新库创建/迁移失败时降级到内存模式并重抛，避免留下
         // 「dbURL 已指向新库但 dbWriter == nil」的半开不一致状态（旧连接已关闭不可回滚）。
@@ -360,7 +360,7 @@ public final class GenericDatabaseManager: TestStateResettable, @unchecked Senda
     /// 对指定数据库连接执行 Schema 迁移。
     public func migrate(_ writer: any DatabaseWriter) throws {
         guard let vaultMigrator else {
-            fatalError("[GenericDatabaseManager] vaultMigrator 未注入")
+            throw DatabaseError.migratorNotConfigured("vaultMigrator")
         }
         try vaultMigrator.migrate(writer)
     }

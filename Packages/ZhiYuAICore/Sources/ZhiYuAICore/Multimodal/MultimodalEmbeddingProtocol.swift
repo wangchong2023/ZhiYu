@@ -86,10 +86,10 @@ public final class MultimodalEmbeddingEngine: MultimodalEmbeddingProtocol, @unch
         for (index, word) in words.enumerated() {
             let weight: Float = 1.0 / Float(index + 1)
             let hash = abs(word.hashValue)
-            for d in 0..<dimension {
-                let seed = (hash &+ (d * Constants.wordHashMultiplier)) ^ (d << Constants.wordHashShift)
+            for dim in 0..<dimension {
+                let seed = (hash &+ (dim * Constants.wordHashMultiplier)) ^ (dim << Constants.wordHashShift)
                 let val = Float((seed % Constants.wordHashModulo) - Constants.wordHashOffset) / Constants.wordHashScale
-                vector[d] += val * weight
+                vector[dim] += val * weight
             }
         }
 

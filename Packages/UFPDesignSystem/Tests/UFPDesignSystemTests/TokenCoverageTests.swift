@@ -16,45 +16,45 @@ final class TokenCoverageTests: XCTestCase {
 
     /// DesignTokens.Spacing.About 必须存在且可访问
     func testAboutNamespaceExists() {
-        let _ = DesignTokens.Spacing.About.logoSize
+        _ = DesignTokens.Spacing.About.logoSize
     }
 
     /// DesignTokens.Spacing.Auth 必须存在且可访问
     func testAuthNamespaceExists() {
-        let _ = DesignTokens.Spacing.Auth.logoBackgroundSize
-        let _ = DesignTokens.Spacing.Auth.modePickerWidth
-        let _ = DesignTokens.Spacing.Auth.modePickerHeight
-        let _ = DesignTokens.Spacing.Auth.guestButtonTopPadding
+        _ = DesignTokens.Spacing.Auth.logoBackgroundSize
+        _ = DesignTokens.Spacing.Auth.modePickerWidth
+        _ = DesignTokens.Spacing.Auth.modePickerHeight
+        _ = DesignTokens.Spacing.Auth.guestButtonTopPadding
     }
 
     /// DesignTokens.Spacing.Voice 必须存在且可访问
     func testVoiceNamespaceExists() {
-        let _ = DesignTokens.Spacing.Voice.recordButtonSize
-        let _ = DesignTokens.Spacing.Voice.waveformHeight
-        let _ = DesignTokens.Spacing.Voice.transcriptionEditorMaxHeight
+        _ = DesignTokens.Spacing.Voice.recordButtonSize
+        _ = DesignTokens.Spacing.Voice.waveformHeight
+        _ = DesignTokens.Spacing.Voice.transcriptionEditorMaxHeight
     }
 
     /// DesignTokens.Spacing.Lint 必须存在且可访问
     func testLintNamespaceExists() {
-        let _ = DesignTokens.Spacing.Lint.chartSize
-        let _ = DesignTokens.Spacing.Lint.scoreFontSize
-        let _ = DesignTokens.Spacing.Lint.emptyIconSize
+        _ = DesignTokens.Spacing.Lint.chartSize
+        _ = DesignTokens.Spacing.Lint.scoreFontSize
+        _ = DesignTokens.Spacing.Lint.emptyIconSize
     }
 
     /// DesignTokens.Spacing.AI.Chat 必须存在且可访问
     func testChatNamespaceExists() {
-        let _ = DesignTokens.Spacing.AI.Chat.pulsingDotSize
-        let _ = DesignTokens.Spacing.AI.Chat.bubbleIconScale
-        let _ = DesignTokens.Spacing.AI.Chat.avatarSize
-        let _ = DesignTokens.Spacing.AI.Chat.bubbleCornerRadius
-        let _ = DesignTokens.Spacing.AI.Chat.referencePanelCornerRadius
-        let _ = DesignTokens.Spacing.AI.Chat.bubbleTrailingPadding
+        _ = DesignTokens.Spacing.AI.Chat.pulsingDotSize
+        _ = DesignTokens.Spacing.AI.Chat.bubbleIconScale
+        _ = DesignTokens.Spacing.AI.Chat.avatarSize
+        _ = DesignTokens.Spacing.AI.Chat.bubbleCornerRadius
+        _ = DesignTokens.Spacing.AI.Chat.referencePanelCornerRadius
+        _ = DesignTokens.Spacing.AI.Chat.bubbleTrailingPadding
     }
 
     /// DesignTokens.Spacing.Feedback 必须存在且可访问
     func testFeedbackNamespaceExists() {
-        let _ = DesignTokens.Spacing.Feedback.defaultRating
-        let _ = DesignTokens.Spacing.Feedback.maxRating
+        _ = DesignTokens.Spacing.Feedback.defaultRating
+        _ = DesignTokens.Spacing.Feedback.maxRating
     }
 
     // MARK: - Token 值不变量

@@ -12,9 +12,11 @@
 import Foundation
 
 /// 通用存储引擎强类型异常。
-public enum DatabaseError: Error {
+public enum DatabaseError: Error, Equatable {
     /// 数据库未就绪（dbWriter 为 nil，如启动早期、Vault 热切换瞬态、reset 后）。
     case notReady
     /// 数据库正在排空（Vault 热切换中，拒绝新事务）。
     case draining
+    /// Schema 迁移器未注入（调用 setup/migrate/switchDatabase 前缺少对应迁移器）。
+    case migratorNotConfigured(String)
 }

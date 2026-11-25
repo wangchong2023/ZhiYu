@@ -91,4 +91,3 @@ final class ServiceContainerKeyCollisionTests: XCTestCase {
         XCTAssertTrue(container.hasService(for: Coin.self))
     }
 }
-

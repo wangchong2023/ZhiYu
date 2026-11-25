@@ -15,27 +15,27 @@ final class TokenNamespaceIsolationTests: XCTestCase {
 
     /// DesignTokens.Spacing 必须存在且可访问
     func testDesignTokensSpacingExists() {
-        let _ = DesignTokens.Spacing.small
-        let _ = DesignTokens.Spacing.medium
-        let _ = DesignTokens.Spacing.standardPadding
+        _ = DesignTokens.Spacing.small
+        _ = DesignTokens.Spacing.medium
+        _ = DesignTokens.Spacing.standardPadding
     }
 
     /// DesignTokens.Typography 必须存在且可访问
     func testDesignTokensTypographyExists() {
-        let _ = DesignTokens.Typography.bodyFontSize
-        let _ = DesignTokens.Typography.titleFont
-        let _ = DesignTokens.Typography.HeadingLevel.h1
+        _ = DesignTokens.Typography.bodyFontSize
+        _ = DesignTokens.Typography.titleFont
+        _ = DesignTokens.Typography.HeadingLevel.h1
     }
 
     /// DesignTokens.Colors 必须存在且可访问
     func testDesignTokensColorsExists() {
-        let _ = DesignTokens.Colors.glassOpacity
-        let _ = DesignTokens.Colors.Opacity.fullOpacity
+        _ = DesignTokens.Colors.glassOpacity
+        _ = DesignTokens.Colors.Opacity.fullOpacity
     }
 
     /// DesignTokens.Animations 必须存在且可访问
     func testDesignTokensAnimationsExists() {
-        let _ = DesignTokens.Animations.Interaction.standardAnimation
+        _ = DesignTokens.Animations.Interaction.standardAnimation
     }
 
     // MARK: - Token 值不变量验证

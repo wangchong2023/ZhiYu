@@ -60,7 +60,7 @@ final class InjectNestedOptionalTests: XCTestCase {
     /// OptionalDetectableProtocol 对嵌套 Optional 的 injectWrappedType
     /// Optional<Optional<Int>>.injectWrappedType 应返回 Optional<Int>.self
     func testNestedOptionalInjectWrappedType() {
-        let wrappedType = Optional<Optional<Int>>.injectWrappedType
+        let wrappedType = Int??.injectWrappedType
         XCTAssertTrue(wrappedType == Optional<Int>.self,
                       "Int??.injectWrappedType 必须返回 Optional<Int>.self")
     }
@@ -69,7 +69,7 @@ final class InjectNestedOptionalTests: XCTestCase {
     /// Optional<Optional<Int>>.injectWrap(nil as Any) 应返回 .none 语义
     func testNestedOptionalInjectWrapWithNil() {
         let value: Any = NSNull()
-        let wrapped = Optional<Optional<Int>>.injectWrap(value) as? Int??
+        let wrapped = Int??.injectWrap(value) as? Int??
         // injectWrap(NSNull) → NSNull as? Optional<Int> 失败 → 返回 .none
         // as? Int?? → .some(.none) 或 .none？
         // 关键验证：不崩溃
