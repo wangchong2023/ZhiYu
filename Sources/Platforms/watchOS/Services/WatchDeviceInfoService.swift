@@ -14,7 +14,7 @@ import WatchKit
 import Dependencies
 
 /// watchOS 设备信息服务
-final class WatchDeviceInfoService: DeviceInfoProtocol, @unchecked Sendable {
+struct WatchDeviceInfoService: DeviceInfoProtocol, Sendable {
     @Dependency(\.keyStore) private var keyStore: (any KeyStoreProtocol)?
 
     var systemVersion: String {

@@ -11,7 +11,7 @@
 import Foundation
 import UFPStorage
 
-final class SQLiteImportRecordRepository: ImportRecordRepository, DatabaseWriterProvider, @unchecked Sendable {
+final class SQLiteImportRecordRepository: ImportRecordRepository, DatabaseWriterProvider, Sendable {
     // MARK: - ImportRecordRepository
 
     func save(_ record: ImportRecord) async throws {

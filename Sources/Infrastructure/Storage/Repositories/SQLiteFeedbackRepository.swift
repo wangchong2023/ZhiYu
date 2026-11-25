@@ -11,7 +11,7 @@
 import Foundation
 import UFPStorage
 
-final class SQLiteFeedbackRepository: FeedbackRepository, DatabaseWriterProvider, @unchecked Sendable {
+final class SQLiteFeedbackRepository: FeedbackRepository, DatabaseWriterProvider, Sendable {
 
     func save(_ entry: FeedbackEntry) async throws {
         let writer = try await dbWriter

@@ -14,7 +14,7 @@ import Foundation
 import Dependencies
 
 /// macOS 设备信息服务
-final class MacDeviceInfoService: DeviceInfoProtocol, @unchecked Sendable {
+struct MacDeviceInfoService: DeviceInfoProtocol, Sendable {
     @Dependency(\.keyStore) private var keyStore: (any KeyStoreProtocol)?
 
     var systemVersion: String {

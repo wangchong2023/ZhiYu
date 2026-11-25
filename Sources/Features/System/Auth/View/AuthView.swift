@@ -15,22 +15,22 @@ import UFPCore
 
 /// 身份认证主视图
 struct AuthView: View {
-    @Dependency(\.toastService) private var toastManager
+    @Dependency(\.toastService) var toastManager
     @Environment(AuthService.self) var authService
     @Environment(ThemeManager.self) var themeManager
     @Environment(\.interfaceIdiom) private var idiom
 
     // MARK: - 区域感知与3D翻转状态
-    @State private var currentRegion: AuthRegion = AuthRegionDetector.shared.detectDefaultRegion()
-    @State private var displayedRegion: AuthRegion = AuthRegionDetector.shared.detectDefaultRegion()
-    @State private var rotateDegrees: Double = 0
+    @State var currentRegion: AuthRegion = AuthRegionDetector.shared.detectDefaultRegion()
+    @State var displayedRegion: AuthRegion = AuthRegionDetector.shared.detectDefaultRegion()
+    @State var rotateDegrees: Double = 0
 
-    @State private var isLoading: Bool = false
-    @State private var errorMessage: String?
-    @State private var isAgreementChecked: Bool = true
+    @State var isLoading: Bool = false
+    @State var errorMessage: String?
+    @State var isAgreementChecked: Bool = true
     @State private var showPrivacySheet: Bool = false
     @State private var showTermsSheet: Bool = false
-    @State private var selectedLanguage: LanguageMode = Localized.languageMode
+    @State var selectedLanguage: LanguageMode = Localized.languageMode
 
     var body: some View {
         // swiftlint:disable:next redundant_discardable_let
@@ -400,146 +400,5 @@ struct AuthView: View {
             title: L10n.Auth.termsOfServiceTitle,
             content: L10n.Auth.termsOfServiceContent
         )
-    }
-
-    // MARK: - 子视图
-
-    /// 系统语言与区域切换控制条
-    private var topControlBar: some View {
-        HStack {
-            RegionSelectorToggle(currentRegion: $currentRegion) {
-                triggerRegionFlip()
-            }
-
-            Spacer()
-
-            languageSwitcher
-        }
-        .padding(.horizontal, DesignTokens.Spacing.wide)
-        .padding(.top, DesignTokens.Spacing.tiny)
-    }
-
-    /// 触发 3D 卡片翻转动效
-    private func triggerRegionFlip() {
-        withAnimation(.appSlow) {
-            rotateDegrees += FeatureConstants.AuthFlip.rotationDegrees
-        }
-        Task {
-            try? await Task.sleep(for: .seconds(AppConfig.UI.animationDuration))
-            await MainActor.run {
-                displayedRegion = currentRegion
-            }
-        }
-    }
-
-    /// 系统语言切换按钮（右上角）
-    private var languageSwitcher: some View {
-        HStack {
-            Spacer()
-            Menu {
-                ForEach(LanguageMode.allCases) { mode in
-                    Toggle(isOn: languageSelectionBinding(for: mode)) {
-                        Text(mode.displayName)
-                    }
-                }
-            } label: {
-                HStack(spacing: DesignTokens.SystemSpacing.tiny) {
-                    Image(systemName: DesignTokens.Icons.globe)
-                        .font(.subheadline)
-                    Text(selectedLanguage.displayName)
-                        .font(.caption)
-                }
-                .foregroundStyle(.appSecondary)
-                .padding(.horizontal, DesignTokens.SystemSpacing.medium)
-                .padding(.vertical, DesignTokens.SystemSpacing.small)
-                .background(.ultraThinMaterial)
-                .clipShape(Capsule())
-                .contentShape(Capsule())
-            }
-            .plainMenuStyleIfMac()
-        }
-        .padding(.trailing, DesignTokens.Spacing.medium)
-        .padding(.top, DesignTokens.Spacing.tiny)
-    }
-
-    /// 判断指定语言是否为当前选中项
-    static func isLanguageSelected(_ mode: LanguageMode, current: LanguageMode) -> Bool {
-        mode == current
-    }
-
-    /// 为单个语言项生成顶层菜单勾选绑定，避免 macOS 上 Menu 内嵌 Picker 产生空白二级子菜单
-    private func languageSelectionBinding(for mode: LanguageMode) -> Binding<Bool> {
-        Binding(
-            get: { AuthView.isLanguageSelected(mode, current: selectedLanguage) },
-            set: { _ in
-                selectedLanguage = mode
-                Localized.languageMode = mode
-            }
-        )
-    }
-
-    private var heroHeader: some View {
-        VStack(spacing: DesignTokens.Spacing.giant) {
-            ZStack {
-                Circle()
-                    .fill(LinearGradient(colors: [.appAccent.opacity(DesignTokens.Opacity.medium), .appConcept.opacity(DesignTokens.Opacity.subtle)], startPoint: .topLeading, endPoint: .bottomTrailing))
-                    .frame(width: DesignTokens.Spacing.Auth.logoBackgroundSize, height: DesignTokens.Spacing.Auth.logoBackgroundSize)
-                    .blur(radius: DesignTokens.Spacing.shadowRadius)
-
-                Image(systemName: DesignTokens.Icons.knowledge)
-                    .font(.system(size: DesignTokens.Reference.FontSize.mega))
-                    .foregroundStyle(LinearGradient(colors: [.appAccent, .appConcept], startPoint: .topLeading, endPoint: .bottomTrailing))
-                    .shadow(color: .appAccent.opacity(DesignTokens.Opacity.disabled), radius: DesignTokens.Spacing.shadowRadius, y: DesignTokens.Spacing.shadowY)
-            }
-
-            VStack(spacing: DesignTokens.Spacing.small) {
-                Text(L10n.Common.appName)
-                    .font(.system(size: DesignTokens.Typography.titleFontSize, weight: .black, design: .rounded))
-                    .foregroundStyle(.appText)
-                    .tracking(DesignTokens.Reference.Spacing.one)
-
-                Text(L10n.Onboarding.subtitle)
-                    .font(.system(size: DesignTokens.Typography.subheadlineFontSize, weight: .medium))
-                    .foregroundStyle(.appSecondary)
-                    .multilineTextAlignment(.center)
-            }
-        }
-        .padding(.top, DesignTokens.Spacing.wide)
-    }
-
-    // MARK: - 逻辑
-
-    private func handleAuth() {
-        performLogin(using: CarrierAuthStrategy())
-    }
-
-    /// 触发第三方账号授权登录逻辑
-    func handleThirdPartyLogin(using strategy: any AuthStrategy) {
-        performLogin(using: strategy)
-    }
-
-    /// 统一的登录执行逻辑
-    private func performLogin(using strategy: any AuthStrategy) {
-        if !isAgreementChecked {
-            toastManager.show(type: .error, message: L10n.Auth.agreementRequired)
-            HapticFeedback.shared.trigger(.error)
-            return
-        }
-
-        Task {
-            isLoading = true
-            errorMessage = nil
-
-            let success = await authService.login(using: strategy)
-
-            if !success {
-                errorMessage = L10n.Auth.authFailed
-                HapticFeedback.shared.trigger(.error)
-            } else {
-                HapticFeedback.shared.trigger(.success)
-            }
-
-            isLoading = false
-        }
     }
 }

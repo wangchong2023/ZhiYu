@@ -20,7 +20,7 @@ private enum RAGGovernanceFormula {
 }
 
 /// [Infra] RAG 全链路质量治理 SQLite 存储
-final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterProvider, @unchecked Sendable {
+final class RAGGovernanceSQLiteStore: RAGGovernanceRepository, DatabaseWriterProvider, Sendable {
     // MARK: - 私有辅助
 
     /// 计算截止日期：当前时间往前推 days 天
