@@ -49,7 +49,7 @@ struct SettingsView: View {
     @Environment(\.interfaceIdiom) private var idiom
     
     /// 设置分类枚举，表示各个设置大类（人工智能与插件中心已统一收敛至头像菜单独立入口）
-    private enum SettingsSection: String, CaseIterable, Identifiable {
+    enum SettingsSection: String, CaseIterable, Identifiable {
         case appearance      // 界面外观
         case security        // 安全隐私
         case data            // 数据与日志
@@ -110,12 +110,12 @@ struct SettingsView: View {
         }
     }
     
-    @State private var selectedLanguage: LanguageMode = Localized.languageMode
-    @State private var languageChanged = false
-    @State private var showInjectConfirmation = false
-    @State private var isInjecting = false
+    @State var selectedLanguage: LanguageMode = Localized.languageMode
+    @State var languageChanged = false
+    @State var showInjectConfirmation = false
+    @State var isInjecting = false
     /// 免费用户尝试开启安全功能时弹出升级提示
-    @State private var showUpgradeSheet = false
+    @State var showUpgradeSheet = false
     /// 当前大屏布局下选中的设置分类，默认选中“外观”
     @State private var selectedSection: SettingsSection? = .appearance
     /// 右侧详情区导航栈路径（切换左侧分类时立即清空，彻底解决停留在子页面无法切换的问题）
@@ -393,175 +393,16 @@ struct SettingsView: View {
     /// 统一的设置页完成保存按钮组件
     /// - Parameter router: 路由实例
     @ViewBuilder
-    private func doneButton(router: Router) -> some View {
+    func doneButton(router: Router) -> some View {
         Button(L10n.Common.done) {
             router.isShowingSettingsSheet = false
             dismiss()
         }
         .bold()
     }
-    
-    private var appearanceSection: some View {
-        @Bindable var bindableThemeManager = themeManager
-        return Section {
-            Picker(selection: $bindableThemeManager.colorSchemeMode) {
-                ForEach(ColorSchemeMode.allCases, id: \.self) { mode in
-                    Text(mode.displayName).tag(mode)
-                }
-            } label: {
-                Label(L10n.Settings.systemTheme, systemImage: DesignTokens.Icons.settingsAppearance)
-                    .labelStyle(ColorfulIconLabelStyle(color: Color.theme.indigo))
-            }
 
-            Picker(selection: $selectedLanguage) {
-                ForEach(LanguageMode.allCases, id: \.self) { mode in
-                    Text(mode.displayName).tag(mode)
-                }
-            } label: {
-                Label(L10n.Settings.systemLanguage, systemImage: DesignTokens.Icons.globe)
-                    .labelStyle(ColorfulIconLabelStyle(color: Color.theme.blue))
-            }
-            .onChange(of: selectedLanguage) { _, newValue in
-                Localized.languageMode = newValue
-                languageChanged = true
-                router.triggerLanguageRefresh()
-            }
-        } header: {
-            Text(L10n.Settings.Section.appearance)
-        }
-        .id(router.currentLocale)
-    }
-    
-    private var dataManagementSection: some View {
-        Section {
-            // 将用量统计调整至首行，提高核心运营数据的展示优先级
-            NavigationLink(value: SettingsSubRoute.systemStats) {
-                Label(L10n.Common.usage, systemImage: DesignTokens.Icons.chartBarFill)
-                    .labelStyle(ColorfulIconLabelStyle(color: Color.theme.teal))
-            }
-
-            #if ICLOUD_ENABLED
-            NavigationLink(value: SettingsSubRoute.iCloudSync) {
-                Label(L10n.Settings.iCloudSync, systemImage: DesignTokens.Icons.icloud)
-                    .labelStyle(ColorfulIconLabelStyle(color: Color.theme.blue))
-            }
-            #endif
-            
-            // 将恢复备份调整至第三行，降低非常规操作的入口级别
-            NavigationLink(value: SettingsSubRoute.backup) {
-                Label(L10n.Settings.backupRestore, systemImage: DesignTokens.Icons.settingsData)
-                    .labelStyle(ColorfulIconLabelStyle(color: Color.theme.brown))
-            }
-            
-            NavigationLink(value: SettingsSubRoute.log) {
-                Label(L10n.Settings.operationLog, systemImage: DesignTokens.Icons.listBulletRectangleFill)
-                    .labelStyle(ColorfulIconLabelStyle(color: Color.theme.mint))
-            }
-            
-            // 恢复预设：生成默认的演示笔记本
-            Button(action: { showInjectConfirmation = true }) {
-                HStack {
-                    Label(L10n.Settings.rebuildInitialNotebooks, systemImage: DesignTokens.Icons.arrowCounterclockwise)
-                        .labelStyle(ColorfulIconLabelStyle(color: Color.theme.red))
-                        .foregroundStyle(.appText)
-                    Spacer()
-                    if isInjecting {
-                        ProgressView()
-                    }
-                }
-            }
-            .buttonStyle(.plain)
-            .disabled(isInjecting)
-        } header: {
-            Text(L10n.Settings.Section.data)
-        }
-    }
-    
-    private func securitySection(store _: AppStore) -> some View {
-        @Bindable var settingsStore = settingsStore
-        let hasFeature = AuthSession.shared.currentUser?.hasPrivacySecurity == true
-        let showBiometric = appEnv.platformEnv.interactionStyle == .touch
-        
-        // 自定义 Binding：免费用户尝试开启时拦截并弹出升级提示
-        let privacyBinding = Binding<Bool>(
-            get: { settingsStore.isPrivacyModeEnabled },
-            set: { newValue in
-                if hasFeature {
-                    settingsStore.isPrivacyModeEnabled = newValue
-                } else if newValue {
-                    // 免费用户尝试开启 → 弹出升级提示，不修改状态
-                    showUpgradeSheet = true
-                } else {
-                    settingsStore.isPrivacyModeEnabled = newValue
-                }
-            }
-        )
-        let biometricBinding = Binding<Bool>(
-            get: { settingsStore.isBiometricEnabled },
-            set: { newValue in
-                if hasFeature {
-                    settingsStore.isBiometricEnabled = newValue
-                } else if newValue {
-                    showUpgradeSheet = true
-                } else {
-                    settingsStore.isBiometricEnabled = newValue
-                }
-            }
-        )
-        
-        return Section {
-            Toggle(isOn: privacyBinding) {
-                Label(L10n.Settings.privacyMode, systemImage: DesignTokens.Icons.settingsSecurity)
-                    .labelStyle(ColorfulIconLabelStyle(color: Color.theme.purple))
-            }
-            
-            if showBiometric {
-                Toggle(isOn: biometricBinding) {
-                    Label(L10n.Settings.biometricProtection, systemImage: DesignTokens.Icons.faceid)
-                        .labelStyle(ColorfulIconLabelStyle(color: Color.theme.green))
-                }
-            }
-        } header: {
-            Text(L10n.Settings.Section.security)
-        } footer: {
-            // 帮助文案：说明隐私模式与生物识别的作用。若支持生物识别，则使用合并后的一句话描述，否则使用基础描述。
-            if showBiometric {
-                Text(L10n.Settings.privacyCombinedDesc)
-            } else {
-                Text(L10n.Settings.privacyModeDesc)
-            }
-        }
-        .sheet(isPresented: $showUpgradeSheet) {
-            SubscriptionPlanView()
-                .appDesktopSheetSize(.large)
-        }
-    }
-    
-    private var feedbackSection: some View {
-        Section {
-            NavigationLink {
-                FeedbackView()
-                    .environment(themeManager)
-            } label: {
-                Label(L10n.Settings.Feedback.title, systemImage: "bubble.left.and.bubble.right.fill")
-                    .labelStyle(ColorfulIconLabelStyle(color: Color.theme.blue))
-            }
-        }
-    }
-    
-    private var aboutSection: some View {
-        Section {
-            NavigationLink {
-                AboutView()
-            } label: {
-                Label(L10n.Settings.Section.about, systemImage: DesignTokens.Icons.settingsAbout)
-                    .labelStyle(ColorfulIconLabelStyle(color: Color.theme.gray))
-            }
-        }
-    }
-    
     #if DEBUG
-    private var developerSection: some View {
+    var developerSection: some View {
         Section {
             NavigationLink {
                 DeveloperSettingsView()
@@ -575,9 +416,9 @@ struct SettingsView: View {
             }
         }
     }
-    
+
     @ViewBuilder
-    private var developerSettingsDestination: some View {
+    var developerSettingsDestination: some View {
         DeveloperSettingsView(isEmbedded: true)
             .environment(store)
             .environment(store.knowledgeStore)
@@ -585,61 +426,4 @@ struct SettingsView: View {
             .environmentObject(onboardingService)
     }
     #endif
-    
-    @ViewBuilder
-    private func defaultSettingsList(for section: SettingsSection) -> some View {
-        Form {
-            switch section {
-            case .appearance:
-                appearanceSection
-                    .appListRowBackground()
-            case .security:
-                securitySection(store: store)
-                    .appListRowBackground()
-            case .data:
-                dataManagementSection
-                    .appListRowBackground()
-            default:
-                EmptyView()
-            }
-        }
-        .appGroupedFormStyle()
-        .scrollContentBackground(.hidden)
-        .tint(Color.appAccent)
-    }
-    
-    @ViewBuilder
-    private func emptyDetailPlaceholder(router: Router) -> some View {
-        VStack(spacing: DesignTokens.Spacing.medium) {
-            Image(systemName: DesignTokens.Icons.gearshape2)
-                .font(.system(size: DesignTokens.Reference.FontSize.mega)) // Dynamic Type
-                .foregroundStyle(.appAccent)
-            Text(L10n.Settings.selectCategoryTip)
-                .font(.headline)
-                .foregroundStyle(.appText)
-        }
-        .toolbar {
-            ToolbarItem(placement: .confirmationAction) {
-                doneButton(router: router)
-            }
-        }
-    }
-}
-
-/// A custom label style that adds an iOS-Settings-like colored rounded background to the icon
-struct ColorfulIconLabelStyle: LabelStyle {
-    var color: Color
-    
-    func makeBody(configuration: Configuration) -> some View {
-        HStack(spacing: DesignTokens.Spacing.medium) {
-            configuration.icon
-                .font(.system(size: DesignTokens.SystemFontSize.body, weight: .medium)) // Dynamic Type
-                .foregroundStyle(.white)
-                .frame(width: DesignTokens.Metrics.settingsIconFrameSize, height: DesignTokens.Metrics.settingsIconFrameSize)
-                .background(color)
-                .clipShape(RoundedRectangle(cornerRadius: DesignTokens.SystemRadius.small, style: .continuous))
-            
-            configuration.title
-        }
-    }
 }

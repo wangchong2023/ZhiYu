@@ -15,6 +15,7 @@
 
 import Foundation
 import UFPCore
+import Dependencies
 
 /// 支付凭证验证失败重试队列
 ///
@@ -40,11 +41,8 @@ actor PaymentRetryQueue {
 
     // MARK: - 依赖
 
-    // 键值存储抽象（extension 不支持 @Inject，使用 computed property 安全解析）
-    // inject_exempt: DI 就绪性检查（Key 返回非可选，测试时未注册会崩溃，故保留 resolveOptional）
-    private var keyStore: (any KeyStoreProtocol)? {
-        ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self)
-    }
+    /// 键值存储抽象（由 @Dependency(\.keyStore) 注入，支持可选安全降级）
+    @Dependency(\.keyStore) private var keyStore: (any KeyStoreProtocol)?
 
     // MARK: - 状态
 

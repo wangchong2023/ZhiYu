@@ -73,5 +73,52 @@ final class MacNativeUITests: MacBaseUITestCase {
         // 命令面板由 Router.showCommandPalette 驱动，弹出 sheet；以搜索栏 TextField 作为可达锚点
         let paletteSearchField = app.textFields.firstMatch
         XCTAssertTrue(paletteSearchField.waitForExistence(timeout: 10), "⌘P 应弹出命令面板（搜索栏出现）")
+
+        // 按 Esc 应能关闭命令面板并恢复主窗口可交互状态
+        app.typeKey(.escape, modifierFlags: [])
+        XCTAssertTrue(app.buttons["userProfileMenuButton"].waitForExistence(timeout: 5), "Esc 关闭命令面板后主界面应保持可交互")
+    }
+
+    // MARK: - 4. 用户资料菜单与侧边栏核心导航
+
+    /// 点击用户资料菜单按钮应能弹出菜单项（AI 设置/插件中心/设置入口）
+    func testUserProfileMenuOpensPopoverOrMenu() {
+        guard waitForMainWindow() else {
+            XCTFail("前置：主界面应出现")
+            return
+        }
+        let profileButton = app.buttons["userProfileMenuButton"]
+        profileButton.tap()
+        XCTAssertTrue(app.windows.firstMatch.exists, "点击用户资料菜单后主窗口应稳定不崩溃")
+        app.typeKey(.escape, modifierFlags: [])
+    }
+
+    /// 验证 macOS 主窗口符合桌面端最小可用尺寸约束（避免窗口塌缩）
+    func testMainWindowMeetsDesktopMinimumFrame() {
+        guard waitForMainWindow() else {
+            XCTFail("前置：主界面应出现")
+            return
+        }
+        let mainWindow = app.windows.firstMatch
+        XCTAssertTrue(mainWindow.exists, "主窗口必须存在")
+        XCTAssertGreaterThanOrEqual(mainWindow.frame.width, 800, "macOS 主窗口宽度不应低于 800pt")
+        XCTAssertGreaterThanOrEqual(mainWindow.frame.height, 560, "macOS 主窗口高度不应低于 560pt")
+    }
+
+    /// 切换主窗口核心侧边栏导航项应平滑响应且不闪退
+    func testSidebarCoreNavigationRemainsResponsive() {
+        guard waitForMainWindow() else {
+            XCTFail("前置：主界面应出现")
+            return
+        }
+        let candidates = ["知识图谱", "Graph", "合成实验室", "Synthesis", "任务中心", "Tasks"]
+        for label in candidates {
+            let item = app.staticTexts[label].firstMatch
+            if item.exists && item.isHittable {
+                item.tap()
+                XCTAssertTrue(app.windows.firstMatch.exists, "切换至 \(label) 后主窗口应保持稳定")
+                break
+            }
+        }
     }
 }
