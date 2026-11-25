@@ -41,7 +41,7 @@ public protocol VectorRepository: Sendable {
 // MARK: - NoOp 实现
 
 /// VectorRepository 的空操作实现，用于测试环境安全降级
-public final class NoOpVectorRepository: VectorRepository, @unchecked Sendable {
+public final class NoOpVectorRepository: VectorRepository, Sendable {
     public init() {}
     public func saveChunks(_ chunks: [PageChunk], for pageID: UUID) async throws {}
     public func fetchChunks(for pageID: UUID) async throws -> [PageChunk] { [] }

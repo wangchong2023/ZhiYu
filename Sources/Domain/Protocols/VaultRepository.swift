@@ -33,7 +33,7 @@ public protocol VaultRepository: Sendable {
 // MARK: - NoOp 实现
 
 /// VaultRepository 的空操作实现，用于测试环境安全降级
-public final class NoOpVaultRepository: VaultRepository, @unchecked Sendable {
+public final class NoOpVaultRepository: VaultRepository, Sendable {
     public init() {}
     public func fetchAllVaults() async throws -> [Vault] { [] }
     public func saveVault(_ vault: Vault) async throws {}

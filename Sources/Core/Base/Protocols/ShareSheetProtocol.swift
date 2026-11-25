@@ -24,7 +24,7 @@ public protocol ShareSheetProtocol: Sendable {
 
 /// ShareSheetProtocol 的空操作实现，用于测试环境安全降级
 @MainActor
-public final class NoOpShareSheet: ShareSheetProtocol, @unchecked Sendable {
+public final class NoOpShareSheet: ShareSheetProtocol {
     public init() {}
     public func presentShareSheet(items: [Any]) async {}
 }

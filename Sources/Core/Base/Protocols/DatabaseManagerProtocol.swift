@@ -44,7 +44,7 @@ public protocol VaultDatabaseSwitcher: Sendable {
 
 /// VaultDatabaseSwitcher 的空操作实现，用于测试环境安全降级
 @MainActor
-public final class NoOpVaultDatabaseSwitcher: VaultDatabaseSwitcher, @unchecked Sendable {
+public final class NoOpVaultDatabaseSwitcher: VaultDatabaseSwitcher {
     public init() {}
     public func switchDatabase(to vaultID: UUID, at url: URL) async throws {}
     public func releaseDatabaseConnection() {}

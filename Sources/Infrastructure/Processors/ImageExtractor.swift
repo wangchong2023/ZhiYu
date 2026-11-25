@@ -11,12 +11,9 @@
 import Foundation
 import UFPCore
 import Dependencies
-#if os(iOS)
-import UIKit
-#endif
 
 /// 网页/PDF/Office 图片提取 + OCR 处理器
-final class ImageExtractor: @unchecked Sendable {
+struct ImageExtractor: Sendable {
 
     private let maxImageSize = AppConstants.Keys.ImportLimits.maxImageSizeBytes
     private let maxImages = AppConstants.Keys.ImportLimits.maxImagesPerPage
@@ -151,12 +148,8 @@ final class ImageExtractor: @unchecked Sendable {
     // MARK: - OCR
 
     private func ocrImage(_ data: Data) async -> String? {
-        #if os(iOS)
         guard let image = AppImage(data: data) else { return nil }
         return try? await ocrService.recognizeText(from: image)
-        #else
-        return nil
-        #endif
     }
 
     // MARK: - Helpers

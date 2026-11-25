@@ -28,7 +28,7 @@ public protocol RemoteConfigCapabilities: Sendable {
 // MARK: - NoOp 实现
 
 /// RemoteConfigCapabilities 的空操作实现，用于测试环境安全降级
-public final class NoOpRemoteConfig: RemoteConfigCapabilities, @unchecked Sendable {
+public final class NoOpRemoteConfig: RemoteConfigCapabilities, Sendable {
     public init() {}
     public func fetchLLMManifests() async throws -> [LLMManifest] { [] }
     public func fetchAgentSkills() async throws -> [AgentSkill] { [] }

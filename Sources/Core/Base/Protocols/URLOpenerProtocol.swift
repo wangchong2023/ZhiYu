@@ -23,7 +23,7 @@ public protocol URLOpenerProtocol: Sendable {
 
 /// URLOpenerProtocol 的空操作实现，用于测试环境安全降级
 @MainActor
-public final class NoOpURLOpener: URLOpenerProtocol, @unchecked Sendable {
+public final class NoOpURLOpener: URLOpenerProtocol {
     public init() {}
     public func open(_ url: URL) async {}
 }
