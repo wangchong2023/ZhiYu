@@ -184,15 +184,44 @@ public enum AppMemoryBridge {
 
 // MARK: - 跨平台音频会话桥接
 
-/// 音频会话配置桥接：iOS 用 AVAudioSession 设置播放模式，macOS/watchOS 无此概念时降级为无操作
+/// 音频会话配置桥接：iOS 用 AVAudioSession 设置播放/录音模式，macOS/watchOS 无此概念时降级为安全默认实现
 public enum AppAudioSessionBridge {
+    #if os(iOS)
     /// 配置为播放模式并激活会话（仅 iOS 生效）
     public static func configurePlaybackSession() {
-        #if os(iOS)
         try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
         try? AVAudioSession.sharedInstance().setActive(true)
-        #endif
     }
+
+    /// 请求麦克风录音权限并激活录音会话
+    public static func requestAndActivateRecordSession() async -> Bool {
+        let granted: Bool
+        if #available(iOS 17.0, *) {
+            granted = await AVAudioApplication.requestRecordPermission()
+        } else {
+            let session = AVAudioSession.sharedInstance()
+            granted = await withCheckedContinuation { continuation in
+                session.requestRecordPermission { allowed in
+                    continuation.resume(returning: allowed)
+                }
+            }
+        }
+        guard granted else { return false }
+        let session = AVAudioSession.sharedInstance()
+        try? session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowBluetoothHFP])
+        try? session.setActive(true, options: .notifyOthersOnDeactivation)
+        return true
+    }
+
+    /// 停用录音会话（仅 iOS 生效）
+    public static func deactivateRecordSession() {
+        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+    }
+    #else
+    public static func configurePlaybackSession() {}
+    public static func requestAndActivateRecordSession() async -> Bool { true }
+    public static func deactivateRecordSession() {}
+    #endif
 }
 
 // MARK: - 跨平台 UIView/NSView 桥接 Representable

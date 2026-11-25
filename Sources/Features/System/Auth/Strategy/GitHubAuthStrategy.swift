@@ -12,9 +12,6 @@
 import Foundation
 import UFPCore
 import AuthenticationServices
-#if canImport(UIKit)
-import UIKit
-#endif
 
 /// GitHub 认证配置与错误域常量
 private enum GitHubAuthConfig {
@@ -95,9 +92,7 @@ public final class GitHubAuthStrategy: NSObject, AuthStrategy {
                 continuation.resume(returning: cred)
             }
             
-            #if canImport(UIKit)
             session.presentationContextProvider = self
-            #endif
             session.prefersEphemeralWebBrowserSession = false
             session.start()
         }
@@ -109,7 +104,6 @@ public final class GitHubAuthStrategy: NSObject, AuthStrategy {
     }
 }
 
-#if canImport(UIKit)
 extension GitHubAuthStrategy: ASWebAuthenticationPresentationContextProviding {
 
     /// presentationAnchor
@@ -118,4 +112,3 @@ extension GitHubAuthStrategy: ASWebAuthenticationPresentationContextProviding {
         PlatformPresentationAnchor.keyWindow
     }
 }
-#endif

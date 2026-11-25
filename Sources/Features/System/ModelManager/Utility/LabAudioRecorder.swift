@@ -46,14 +46,11 @@ final class LabAudioRecorder: NSObject, ObservableObject, AVAudioRecorderDelegat
     func startRecording() async {
         guard !isRecording else { return }
 
-        #if canImport(UIKit)
-        guard await requestRecordPermission() else {
+        guard await AppAudioSessionBridge.requestAndActivateRecordSession() else {
             hasPermission = false
             return
         }
         hasPermission = true
-        await configureAudioSessionAsync()
-        #endif
 
         let tempDir = FileManager.default.temporaryDirectory
         let fileURL = tempDir.appendingPathComponent("lab_recording_\(UUID().uuidString).wav")
@@ -68,33 +65,6 @@ final class LabAudioRecorder: NSObject, ObservableObject, AVAudioRecorderDelegat
         startTime = Date()
         startMeterTimer()
     }
-
-    #if canImport(UIKit)
-    private func requestRecordPermission() async -> Bool {
-        if #available(iOS 17.0, *) {
-            return await AVAudioApplication.requestRecordPermission()
-        } else {
-            let session = AVAudioSession.sharedInstance()
-            return await withCheckedContinuation { continuation in
-                session.requestRecordPermission { granted in
-                    continuation.resume(returning: granted)
-                }
-            }
-        }
-    }
-
-    private func configureAudioSessionAsync() async {
-        await Task.detached(priority: .userInitiated) {
-            let session = AVAudioSession.sharedInstance()
-            do {
-                try session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowBluetoothHFP])
-                try session.setActive(true, options: .notifyOthersOnDeactivation)
-            } catch {
-                Logger.shared.warning("[LabAudioRecorder] 激活音频会话警告: \(error.localizedDescription)")
-            }
-        }.value
-    }
-    #endif
 
     private func setupAudioRecorderAsync(fileURL: URL) async -> AVAudioRecorder? {
         await Task.detached(priority: .userInitiated) { () -> AVAudioRecorder? in
@@ -171,16 +141,12 @@ final class LabAudioRecorder: NSObject, ObservableObject, AVAudioRecorderDelegat
             recordedFileURL = recorder.url
             Task.detached(priority: .userInitiated) {
                 recorder.stop()
-                #if canImport(UIKit)
-                try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
-                #endif
+                AppAudioSessionBridge.deactivateRecordSession()
             }
         } else {
-            #if canImport(UIKit)
             Task.detached(priority: .utility) {
-                try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+                AppAudioSessionBridge.deactivateRecordSession()
             }
-            #endif
         }
 
         isRecording = false

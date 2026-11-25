@@ -10,7 +10,6 @@
 //
 
 import Foundation
-import ZhiYuDomain
 
 // MARK: - 1. 主题页面 (Concept) 元数据结构
 public struct ConceptFrontmatter: Codable, Sendable {
@@ -187,8 +186,3 @@ public enum MatrixValue: Codable, Sendable, Equatable {
         }
     }
 }
-
-// MARK: - 5. Frontmatter 物理解析核心处理器
-
-/// 通用剥离逻辑已下沉至 ZhiYuDomain，此处 typealias 兼容层维持调用点不变
-public typealias FrontmatterParser = ZhiYuDomain.FrontmatterParser

@@ -13,13 +13,13 @@ import Foundation
 // MARK: - 行遍历过滤辅助
 
 /// 文档行遍历过滤的公共辅助方法集
-enum LineIterationHelpers {
+public enum LineIterationHelpers {
 
     /// 遍历行数组，跳过空行，对剩余行执行闭包（不跳过任何前缀）
     /// - Parameters:
     ///   - lines: 原始行数组
     ///   - body: 对有效行执行的闭包（传入 trimmed 行和原始行）
-    static func iterateTrimmedLines(
+    public static func iterateTrimmedLines(
         _ lines: [String],
         body: (String, String) -> Void
     ) {
