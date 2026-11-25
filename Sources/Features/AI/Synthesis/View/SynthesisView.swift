@@ -16,6 +16,11 @@ import UFPDesignSystem
 
 // MARK: - 合成视图入口
 
+private enum SynthesisGridConstants {
+    /// macOS 桌面宽屏合成操作网格列数
+    static let desktopColumns = 3
+}
+
 struct SynthesisView: View {
     @Dependency(\.toastService) private var toastManager
     @Binding var selection: SidebarSelection?
@@ -392,9 +397,10 @@ struct SynthesisView: View {
             )
             .padding(.horizontal, DesignTokens.Spacing.tiny)
             
-            let item = GridItem(.flexible(), spacing: DesignTokens.Spacing.medium)
-            let gridColumns = idiom == .mac ? [item, item, item] : [item, item]
-            LazyVGrid(columns: gridColumns, spacing: DesignTokens.Spacing.medium) {
+            AppAdaptiveGrid(
+                desktopColumns: SynthesisGridConstants.desktopColumns,
+                spacing: DesignTokens.Spacing.medium
+            ) {
                 ForEach(SynthesisStore.SynthesisType.allCases) { type in
                     SynthesisActionButton(type: type, 
                                          store: store, 

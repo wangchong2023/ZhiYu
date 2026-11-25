@@ -368,6 +368,30 @@ public extension View {
         modifier(DesktopSheetSizeModifier(preset: preset))
     }
 
+    /// 跨平台自适应弹窗原语（isPresented 版本）：内置 macOS 桌面最小宽高约束，从 API 层面杜绝漏配弹窗尺寸。
+    func appAdaptiveSheet<Content: View>(
+        isPresented: Binding<Bool>,
+        preset: DesktopSheetPreset = .standard,
+        onDismiss: (() -> Void)? = nil,
+        @ViewBuilder content: @escaping () -> Content
+    ) -> some View {
+        self.sheet(isPresented: isPresented, onDismiss: onDismiss) {
+            content().appDesktopSheetSize(preset)
+        }
+    }
+
+    /// 跨平台自适应弹窗原语（item 版本）：内置 macOS 桌面最小宽高约束，从 API 层面杜绝漏配弹窗尺寸。
+    func appAdaptiveSheet<Item: Identifiable, Content: View>(
+        item: Binding<Item?>,
+        preset: DesktopSheetPreset = .standard,
+        onDismiss: (() -> Void)? = nil,
+        @ViewBuilder content: @escaping (Item) -> Content
+    ) -> some View {
+        self.sheet(item: item, onDismiss: onDismiss) { value in
+            content(value).appDesktopSheetSize(preset)
+        }
+    }
+
     /// macOS NavigationSplitView 侧边栏列移除系统默认 sidebarToggle（仅在 sidebar 列上生效）
     @ViewBuilder
     func appHideSystemSidebarToggle() -> some View {

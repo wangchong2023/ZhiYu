@@ -127,10 +127,7 @@ targetTemplates:
       - package: UFPStorage
       - package: UFPDesignSystem
       - package: ZhiYuDomain
-      - package: ZhiYuAICore
-      - package: ZhiYuFeatures
       - package: GRDB
-      - package: ZIPFoundation
 
   IOSApplicationTemplate:
     templates:
@@ -179,8 +176,8 @@ targetTemplates:
     sources:
       - path: Sources
         excludes:
+          - "Platforms/iOS/**"
           - "Platforms/watchOS/**"
-          - "Platforms/iOS/Widgets/**"
           - "Info.plist"
           - "Base.lproj/**"
           - "LaunchScreen.storyboard"
@@ -253,15 +250,11 @@ targets:
       - path: Sources/Core/System/Security/SecurityReinforcement.swift
       - path: Sources/Core/System/Security/RegexReplacementHelper.swift
       - path: Sources/Core/System/Notifications/AppNotifications.swift
-      # L1.5 领域层：模型、协议、RAG
+      # L1.5 领域层：模型、协议、RAG（核心纯模型/常量已下沉至 ZhiYuDomain SPM 包，经 Reexports 透传）
+      - path: Sources/Domain/Models/ZhiYuDomainReexports.swift
       - path: Sources/Domain/Models/KnowledgePage.swift
       - path: Sources/Domain/Models/PageType.swift
-      - path: Sources/Domain/Models/LintIssue.swift
-      - path: Sources/Domain/Models/SearchConstants.swift
-      - path: Sources/Domain/Models/SearchDiagnosticInfo.swift
       - path: Sources/Domain/Models/RAGModels.swift
-      - path: Sources/Domain/Models/ChunkType.swift
-      - path: Sources/Domain/Models/DomainThresholds.swift
       - path: Sources/Domain/Models/CreatePageInput.swift
       - path: Sources/Domain/Models/PromptConstants.swift
       - path: Sources/Domain/Protocols/IngestServiceProtocol.swift

@@ -237,9 +237,7 @@ struct KnowledgeDashboardView: View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.tightPadding) {
             InsightDashboardSectionTitle(icon: DesignTokens.Icons.grid, title: L10n.Dashboard.hotTopics)
             
-            let item = GridItem(.flexible(), spacing: DesignSystem.Grid.standardSpacing)
-            let columns = idiom == .mac ? [item, item, item, item] : [item, item]
-            LazyVGrid(columns: columns, spacing: DesignSystem.Grid.standardSpacing) {
+            AppAdaptiveGrid(spacing: DesignSystem.Grid.standardSpacing) {
                 // 遍历用户可见页面类型，屏蔽 raw 选项的统计
                 ForEach(PageType.allVisibleCases, id: \.self) { type in
                     let count = store.pages.filter { $0.pageType == type }.count

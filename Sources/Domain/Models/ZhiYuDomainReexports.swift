@@ -1,0 +1,19 @@
+//
+//  ZhiYuDomainReexports.swift
+//  ZhiYu
+//
+//  Created by Antigravity on 2026/11/25.
+//  Copyright © 2026 WangChong. All rights reserved.
+//
+//  系统层级：[L1.5] 领域层
+//  核心职责：将已物理下沉至 ZhiYuDomain SPM 包的纯领域模型与常量向主 App 及 Watch Target 零侵入透传。
+//
+
+import ZhiYuDomain
+
+public typealias SearchConstants = ZhiYuDomain.SearchConstants
+public typealias DomainThresholds = ZhiYuDomain.DomainThresholds
+public typealias ChunkType = ZhiYuDomain.ChunkType
+public typealias PotentialLinkSuggestion = ZhiYuDomain.PotentialLinkSuggestion
+public typealias LintIssue = ZhiYuDomain.LintIssue
+public typealias SearchDiagnosticInfo = ZhiYuDomain.SearchDiagnosticInfo

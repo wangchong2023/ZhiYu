@@ -45,6 +45,7 @@ GATEKEEPER_AUDIT_STEPS = [
     ("设计令牌数量预算审计", ["python3", "Tools/ios/audit-design-token-budget.py"]),
     ("文件大小 SRP 审计", ["python3", "Tools/ios/audit-code-file-size.py"]),
     ("强制解包安全审计", ["python3", "Tools/ios/audit-code-force-unwrap.py"]),
+    ("三平台隔离与桌面弹窗规范审计", ["python3", "Tools/ios/audit-cross-platform-isolation.py"]),
 ]
 
 

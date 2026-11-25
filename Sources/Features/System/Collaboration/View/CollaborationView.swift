@@ -196,56 +196,30 @@ struct CollaborationViewContent: View {
     }
 
     private var hostButton: some View {
-        Button(action: { showHostingSheet = true }) {
-            HStack(spacing: DesignTokens.Spacing.small) {
-                Image(systemName: DesignTokens.Icons.broadcast)
-                Text(L10n.Collaboration.hostSession)
-            }
-            .font(idiom == .mac ? .subheadline.weight(.semibold) : .headline)
-            .foregroundStyle(.white)
-            .frame(
-                minWidth: idiom == .mac ? DesignTokens.Metrics.notebookCardWidth : nil,
-                maxWidth: idiom == .mac ? nil : .infinity
-            )
-            .padding(.horizontal, DesignTokens.Spacing.wide)
-            .padding(.vertical, idiom == .mac ? DesignTokens.Spacing.medium : DesignTokens.Spacing.standardPadding)
-            .background(Color.appAccent)
-            .clipShape(RoundedRectangle(cornerRadius: idiom == .mac ? DesignTokens.Spacing.mediumRadius : DesignTokens.SystemRadius.card))
-            .opacity(collabService.isSimulator ? DesignTokens.Opacity.soft : DesignTokens.Opacity.solid)
-            .accessibilityIdentifier("collab-host-button")
+        AppAdaptiveActionButton(
+            title: L10n.Collaboration.hostSession,
+            systemImage: DesignTokens.Icons.broadcast,
+            style: .primary,
+            isDisabled: collabService.isSimulator,
+            desktopMinWidth: DesignTokens.Metrics.notebookCardWidth
+        ) {
+            showHostingSheet = true
         }
-        .buttonStyle(.plain)
-        .disabled(collabService.isSimulator)
+        .accessibilityIdentifier("collab-host-button")
     }
 
     private var joinButton: some View {
-        Button(action: {
+        AppAdaptiveActionButton(
+            title: L10n.Collaboration.joinSession,
+            systemImage: DesignTokens.Icons.search,
+            style: .secondary,
+            isDisabled: collabService.isSimulator,
+            desktopMinWidth: DesignTokens.Metrics.notebookCardWidth
+        ) {
             showBrowsing = true
             collabService.startBrowsing()
-        }) {
-            HStack(spacing: DesignTokens.Spacing.small) {
-                Image(systemName: DesignTokens.Icons.search)
-                Text(L10n.Collaboration.joinSession)
-            }
-            .font(idiom == .mac ? .subheadline.weight(.medium) : .headline)
-            .foregroundStyle(.appAccent)
-            .frame(
-                minWidth: idiom == .mac ? DesignTokens.Metrics.notebookCardWidth : nil,
-                maxWidth: idiom == .mac ? nil : .infinity
-            )
-            .padding(.horizontal, DesignTokens.Spacing.wide)
-            .padding(.vertical, idiom == .mac ? DesignTokens.Spacing.medium : DesignTokens.Spacing.standardPadding)
-            .background(Color.appAccent.opacity(DesignTokens.Opacity.subtle))
-            .clipShape(RoundedRectangle(cornerRadius: idiom == .mac ? DesignTokens.Spacing.mediumRadius : DesignTokens.SystemRadius.card))
-            .overlay(
-                RoundedRectangle(cornerRadius: idiom == .mac ? DesignTokens.Spacing.mediumRadius : DesignTokens.SystemRadius.card)
-                    .strokeBorder(Color.appAccent.opacity(DesignTokens.Opacity.medium), lineWidth: DesignTokens.Spacing.borderWidth)
-            )
-            .opacity(collabService.isSimulator ? DesignTokens.Opacity.soft : DesignTokens.Opacity.solid)
-            .accessibilityIdentifier("collab-join-button")
         }
-        .buttonStyle(.plain)
-        .disabled(collabService.isSimulator)
+        .accessibilityIdentifier("collab-join-button")
     }
 
     private var stopSearchingButton: some View {
@@ -308,20 +282,13 @@ struct CollaborationViewContent: View {
     private var leaveButton: some View {
         HStack {
             if idiom == .mac { Spacer() }
-            Button(action: { collabService.stop() }) {
-                HStack(spacing: DesignTokens.Spacing.small) {
-                    Image(systemName: DesignTokens.Icons.errorCircle)
-                    Text(L10n.Collaboration.leaveSession)
-                }
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(Color.theme.red)
-                .frame(maxWidth: idiom == .mac ? nil : .infinity)
-                .padding(.horizontal, DesignTokens.Spacing.wide)
-                .padding(.vertical, idiom == .mac ? DesignTokens.Spacing.medium : DesignTokens.Spacing.standardPadding)
-                .background(Color.theme.red.opacity(DesignTokens.Opacity.light))
-                .clipShape(RoundedRectangle(cornerRadius: idiom == .mac ? DesignTokens.Spacing.mediumRadius : DesignTokens.SystemRadius.card))
+            AppAdaptiveActionButton(
+                title: L10n.Collaboration.leaveSession,
+                systemImage: DesignTokens.Icons.errorCircle,
+                style: .destructive
+            ) {
+                collabService.stop()
             }
-            .buttonStyle(.plain)
             .accessibilityIdentifier("collab-leave-button")
         }
     }

@@ -9,6 +9,7 @@
 //  核心职责：定义 RAG 检索增强生成领域模型：页面分块 (PageChunk)、嵌入向量及混合检索召回结果。
 //
 import Foundation
+import ZhiYuDomain
 
 /// 知识分块模型：用于 RAG 检索的原子单位
 public struct PageChunk: Identifiable, Codable, Sendable {

@@ -52,7 +52,7 @@ OPEN_SOURCE_REGISTRY = {
     },
     "ZIPFoundation": {
         "allowed_prefixes": [
-            "Platforms/iOS/Services/ZIPFoundationArchiver",  # 唯一适配层
+            "Platforms/Apple/Services/ZIPFoundationArchiver",  # 唯一适配层（iOS/macOS 共享）
             "Platforms/macOS/MacFileArchiver",              # macOS 系统命令实现，内部无 ZIPFoundation import
         ],
         "adapter_class": "ZIPFoundationArchiver / MacFileArchiver",

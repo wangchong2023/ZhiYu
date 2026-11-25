@@ -164,9 +164,7 @@ struct LintHealthCheckSection: View {
     // MARK: - 指标网格
 
     private var metricsGrid: some View {
-        let item = GridItem(.flexible(), spacing: DesignTokens.Spacing.standardPadding)
-        let columns = idiom == .mac ? [item, item, item, item] : [item, item]
-        return LazyVGrid(columns: columns, spacing: DesignTokens.Spacing.standardPadding) {
+        AppAdaptiveGrid(spacing: DesignTokens.Spacing.standardPadding) {
             InsightMetricCard(title: L10n.Lint.metricPages,
                               value: "\(store.pages.count)",
                               icon: DesignTokens.Icons.documentFill,

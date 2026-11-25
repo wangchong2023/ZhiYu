@@ -44,6 +44,7 @@ Tools/
 | `ios-check-arch-dependency-registry.py` | 校验 `opensource_dependencies.yml` 与 Package.swift/project.yml 三层一致性 |
 | `ios-check-arch-opensource-internal-deps.py` | 审计开源库自身 Package.swift 内部依赖是否已全部本地化（禁止远端 URL，必须 path: ../<name> 且已注册） |
 | `ios-check-arch-opensource-placement.py` | 审计开源适配层在 SPM 包中的物理归位与残留清理状态 |
+| `audit-cross-platform-isolation.py` | 审计 iOS/macOS 物理隔离、Watch 轻量化依赖与 macOS 弹窗防塌缩规范 |
 
 ### Compliance (规范守卫)
 | 脚本 | 功能说明 |
