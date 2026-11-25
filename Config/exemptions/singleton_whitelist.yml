@@ -54,7 +54,7 @@ singleton_whitelist:
     added: 2026-08-12
     expiry_check: P2
 
-  - file: Sources/Platforms/iOS/Services/ActivityService.swift
+  - file: Sources/Platforms/Apple/Services/ActivityService.swift
     class: ActivityService
     reason: P2 阶段迁移
     added: 2026-08-12
