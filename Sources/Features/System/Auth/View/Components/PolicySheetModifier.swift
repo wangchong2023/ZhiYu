@@ -27,6 +27,7 @@ struct PolicySheetModifier: ViewModifier {
                 content: self.content,
                 isPresented: isPresented
             )
+            .appDesktopSheetSize(.standard)
         }
     }
 }

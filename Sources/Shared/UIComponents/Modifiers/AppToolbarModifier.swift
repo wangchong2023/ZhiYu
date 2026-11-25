@@ -50,8 +50,16 @@ struct AppTabToolbarModifier<Trailing: View>: ViewModifier {
                 #endif
                 
                 #if os(macOS)
+                if Trailing.self != EmptyView.self {
+                    ToolbarItem(placement: .primaryAction) {
+                        trailingItems
+                    }
+                    if #available(macOS 26.0, *) {
+                        ToolbarSpacer(.fixed)
+                    }
+                }
                 ToolbarItem(placement: .primaryAction) {
-                    trailingToolbarContent(trailingItems)
+                    UserProfileMenu()
                 }
                 #else
                 ToolbarItem(placement: .topBarTrailing) {
@@ -112,8 +120,16 @@ struct AppSubPageToolbarModifier<Trailing: View>: ViewModifier {
                 #endif
                 
                 #if os(macOS)
+                if Trailing.self != EmptyView.self {
+                    ToolbarItem(placement: .primaryAction) {
+                        trailingItems
+                    }
+                    if #available(macOS 26.0, *) {
+                        ToolbarSpacer(.fixed)
+                    }
+                }
                 ToolbarItem(placement: .primaryAction) {
-                    trailingToolbarContent(trailingItems)
+                    UserProfileMenu()
                 }
                 #else
                 ToolbarItem(placement: .topBarTrailing) {

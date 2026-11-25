@@ -70,8 +70,10 @@ struct AboutView: View {
                     infoRow(title: L10n.Settings.About.version, value: versionDisplayString)
                     Divider().padding(.leading, DesignTokens.Spacing.standardPadding)
                     infoRow(title: L10n.Settings.About.build, value: buildDetailString)
-                    Divider().padding(.leading, DesignTokens.Spacing.standardPadding)
-                    infoRow(title: L10n.Settings.About.buildTime, value: buildTimestampString)
+                    if !buildTimestampString.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        Divider().padding(.leading, DesignTokens.Spacing.standardPadding)
+                        infoRow(title: L10n.Settings.About.buildTime, value: buildTimestampString)
+                    }
                 }
                 .background(Color.appCard.opacity(DesignTokens.Opacity.soft))
                 .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius))

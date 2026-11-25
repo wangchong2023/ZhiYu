@@ -133,6 +133,7 @@ struct KnowledgePageListContent: View {
         }
         .sheet(isPresented: $showInsights) {
             VaultInsightsPanel()
+                .appDesktopSheetSize(.large)
         }
         .confirmationDialog(
             pageToDelete.map { L10n.Vault.Page.deletePageTitle( $0.title) } ?? L10n.Knowledge.Page.deletePage,

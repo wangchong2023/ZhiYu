@@ -25,27 +25,33 @@ struct OnDeviceActionButton: View {
     var background: Color
     var isDisabled: Bool = false
     let action: () -> Void
+    @Environment(\.interfaceIdiom) private var idiom
 
     var body: some View {
-        Button(action: action) {
-            HStack(spacing: DesignTokens.Spacing.small) {
-                if isLoading {
-                    ProgressView()
-                        .tint(.white)
-                } else {
-                    Image(systemName: icon)
+        HStack {
+            if idiom == .mac { Spacer() }
+            Button(action: action) {
+                HStack(spacing: DesignTokens.Spacing.small) {
+                    if isLoading {
+                        ProgressView()
+                            .controlSize(.small)
+                            .tint(.white)
+                    } else {
+                        Image(systemName: icon)
+                    }
+                    Text(title)
                 }
-                Text(title)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.white)
+                .frame(maxWidth: idiom == .mac ? nil : .infinity)
+                .padding(.horizontal, DesignTokens.Spacing.standardPadding)
+                .padding(.vertical, idiom == .mac ? DesignTokens.Spacing.small : DesignTokens.Spacing.medium)
+                .background(background)
+                .clipShape(RoundedRectangle(cornerRadius: idiom == .mac ? DesignTokens.Spacing.mediumRadius : DesignTokens.Spacing.cardRadius))
             }
-            .font(.subheadline.weight(.semibold))
-            .foregroundStyle(.white)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, DesignTokens.Spacing.medium)
-            .background(background)
-            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius))
+            // 自绘圆角按钮需关闭 macOS 默认 bezel，避免双层外框。
+            .buttonStyle(.plain)
+            .disabled(isDisabled)
         }
-        // 自绘圆角按钮需关闭 macOS 默认 bezel，避免双层外框。
-        .buttonStyle(.plain)
-        .disabled(isDisabled)
     }
 }

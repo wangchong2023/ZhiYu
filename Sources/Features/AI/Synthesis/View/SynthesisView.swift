@@ -29,6 +29,7 @@ struct SynthesisView: View {
     @State private var outputType: SynthesisStore.SynthesisType = .mindmap
     @State private var selectedDoc: SynthesisStore.SynthesisDocument?
     @Environment(ThemeManager.self) var themeManager
+    @Environment(\.interfaceIdiom) private var idiom
     @State private var pdfURL: IdentifiableURL?
 
     @State private var exportError: String?
@@ -94,7 +95,7 @@ struct SynthesisView: View {
         .scrollContentBackground(.hidden)
         .scrollIndicators(.hidden)
         .padding(.top, DesignTokens.Spacing.widePadding)
-        .appDesktopReadableWidth(DesignTokens.Metrics.macWideContentWidth)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var runningTasksContainer: some View {
@@ -391,7 +392,9 @@ struct SynthesisView: View {
             )
             .padding(.horizontal, DesignTokens.Spacing.tiny)
             
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: DesignTokens.Spacing.medium) {
+            let item = GridItem(.flexible(), spacing: DesignTokens.Spacing.medium)
+            let gridColumns = idiom == .mac ? [item, item, item] : [item, item]
+            LazyVGrid(columns: gridColumns, spacing: DesignTokens.Spacing.medium) {
                 ForEach(SynthesisStore.SynthesisType.allCases) { type in
                     SynthesisActionButton(type: type, 
                                          store: store, 
@@ -412,6 +415,10 @@ struct SynthesisView: View {
                         showPromptWorkshop = false
                     }
             }
+            .frame(
+                minWidth: idiom == .mac ? DesignTokens.Metrics.macProfileWindowWidth : nil,
+                minHeight: idiom == .mac ? DesignTokens.Metrics.macSettingsWindowHeight : nil
+            )
         }
     }
 }
@@ -439,13 +446,19 @@ extension View {
         outputSheet: some View
     ) -> some View {
         self
-            .sheet(isPresented: showOutput) { outputSheet }
+            .sheet(isPresented: showOutput) {
+                outputSheet
+                    .appDesktopSheetSize(.large)
+            }
             .sheet(item: pdfURL) { identifiable in
-                #if canImport(PDFKit)
-                PDFPreviewWrapper(url: identifiable.url)
-                #else
-                Text(identifiable.url.lastPathComponent)
-                #endif
+                Group {
+                    #if canImport(PDFKit)
+                    PDFPreviewWrapper(url: identifiable.url)
+                    #else
+                    Text(identifiable.url.lastPathComponent)
+                    #endif
+                }
+                .appDesktopSheetSize(.large)
             }
             .alertNoPages(isPresented: showNoPagesAlert)
             .alertLimitReached(isPresented: showLimitAlert)

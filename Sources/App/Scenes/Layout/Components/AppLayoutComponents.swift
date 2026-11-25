@@ -114,11 +114,13 @@ extension ContentView {
             .sheet(isPresented: $store.showCreateSheet) {
                 CreatePageView()
                     .applySettingsPresentationSizing(screenClass: appEnv.screenClass)
+                    .appDesktopSheetSize(.standard)
             }
             
             // 统一挂载性能监控 Sheet，避免分散在互斥视图分支导致状态丢失
             .sheet(isPresented: $store.showPerfDashboard) {
                 PerformanceDashboardView(service: store.performanceService)
+                    .appDesktopSheetSize(.large)
             }
             .background {
                 ZStack {
@@ -159,11 +161,11 @@ extension ContentView {
         Group {
             if idiom == .mac {
                 // macOS 统一使用单一 2 栏 NavigationSplitView，消除切 Tab 重建闪烁；
-                // 知识库二级导航内嵌在 detail 左侧，由独立的 secondaryVisibility 按钮平滑折叠/展开。
+                // 主侧边栏伸展按钮保留系统原生位置（左侧窗体交通灯右侧），符合 Apple macOS HIG；
+                // 知识库二级导航内嵌在 detail 左侧，由 detail 工具栏的 secondaryVisibility 按钮平滑折叠/展开。
                 NavigationSplitView(columnVisibility: $splitColumnVisibility) {
                     AdaptiveSidebarView(selectedTab: $router.selectedTab)
                         .macSidebarColumnWidth()
-                        .appHideSystemSidebarToggle()
                 } detail: {
                     HStack(spacing: 0) {
                         if router.selectedTab == .knowledge && isKnowledgeSidebarVisible {

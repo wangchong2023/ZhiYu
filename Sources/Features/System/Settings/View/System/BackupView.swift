@@ -24,7 +24,7 @@ struct BackupView: View {
     @State private var backupToDelete: BackupService.BackupEntry?
     
     var body: some View {
-        List {
+        Form {
             // Auto Backup Toggle
             Section {
                 Toggle(isOn: $backupService.isAutoBackupEnabled) {
@@ -92,8 +92,9 @@ struct BackupView: View {
             }
             .appListRowBackground()
         }
-        .insetGroupedListStyleIfIOS()
+        .appGroupedFormStyle()
         .scrollContentBackground(.hidden)
+        .tint(Color.appAccent)
         .background(themeManager.pageBackground())
         .navigationTitle(L10n.Backup.title)
         .appNavigationBarTitleDisplayMode(.inline)

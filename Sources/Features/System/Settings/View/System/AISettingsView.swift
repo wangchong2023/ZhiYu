@@ -45,6 +45,7 @@ struct AISettingsView: View {
                             .tag(index)
                     }
                 }
+                .labelsHidden()
                 .segmentedPickerStyleIfAvailable()
                 .padding(.horizontal)
                 .padding(.vertical, DesignTokens.Spacing.small)

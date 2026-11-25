@@ -118,6 +118,7 @@ public struct ModelLabView: View {
         .animation(.standardAnimation, value: labManager.selectedUseCase)
         .sheet(isPresented: $showConfigSheet) {
             configurationSheet
+                .appDesktopSheetSize(.standard)
         }
         .appFullScreenCover(item: $labManager.selectedUseCase) { useCase in
             useCaseDetailPanel(for: useCase)

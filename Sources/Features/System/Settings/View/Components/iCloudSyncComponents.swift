@@ -136,6 +136,7 @@ struct SyncSettingsSection: View {
                         Text(option.displayName).tag(option)
                     }
                 }
+                .labelsHidden()
                 .pickerStyle(.segmented)
             }
         } header: {

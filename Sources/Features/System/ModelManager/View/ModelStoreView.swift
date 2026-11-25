@@ -146,6 +146,7 @@ public struct ModelStoreView: View {
         }
         .sheet(isPresented: $showHFTokenSheet) {
             hfTokenConfigSheet
+                .appDesktopSheetSize(.compact)
         }
         .alert(item: $alertManifest) { manifest in
             let requiredGb = String(format: "%.1f", manifest.minDeviceMemoryInGb)

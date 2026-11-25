@@ -63,46 +63,60 @@ struct AuthView: View {
             themeManager.pageBackground()
                 .ignoresSafeArea()
 
-            // 全屏/宽屏自适应居中双栏舞台：限制最大宽高保持 42%:58% 黄金视觉比例
+            // 全屏/宽屏自适应居中一体化双栏玻璃主卡片：左右等高对称，消除孤岛割裂感
             GeometryReader { proxy in
+                let stageShape = RoundedRectangle(cornerRadius: DesignTokens.Spacing.chipRadius, style: .continuous)
                 let stageHeight = min(
-                    max(proxy.size.height - DesignTokens.Spacing.huge * 2, DesignTokens.Metrics.minWindowHeight),
+                    max(proxy.size.height - DesignTokens.Spacing.Auth.logoBackgroundSize, DesignTokens.Metrics.macSettingsWindowHeight),
                     DesignTokens.Metrics.macAuthStageMaxHeight
                 )
-                HStack(spacing: DesignTokens.Spacing.huge) {
-                    // 左侧内嵌品牌渐变画报卡
+                HStack(spacing: 0) {
+                    // 左半边：内嵌融合式品牌画报区
                     desktopBrandPanel
                         .frame(maxWidth: DesignTokens.Metrics.authHeroWidth, maxHeight: .infinity)
 
-                    // 右侧通透垂直居中登录流
+                    Divider()
+                        .opacity(DesignTokens.Opacity.subtle)
+
+                    // 右半边：等高玻璃登录表单区（方案 A：三段式节奏，顶部标题 → 核心登录 → 底部访客入口）
                     ScrollView(showsIndicators: false) {
-                        VStack(spacing: DesignTokens.Spacing.giant) {
-                            // 卡片登录承载容器 (保留 3D 翻转动画)
-                            Group {
-                                if displayedRegion == .china {
-                                    AuthPhonePanel(
-                                        isLoading: $isLoading,
-                                        isAgreementChecked: $isAgreementChecked,
-                                        showPrivacySheet: $showPrivacySheet,
-                                        showTermsSheet: $showTermsSheet,
-                                        handleAuth: handleAuth
-                                    )
-                                } else {
-                                    OverseasLoginCardView()
-                                        .id(Localized.currentLanguage)
-                                        .rotation3DEffect(.degrees(180), axis: (x: 0, y: 1.0, z: 0.0))
+                        VStack(spacing: 0) {
+                            Spacer(minLength: DesignTokens.Spacing.large)
+
+                            VStack(spacing: DesignTokens.Spacing.huge) {
+                                // 卡片登录承载容器 (保留 3D 翻转动画)
+                                Group {
+                                    if displayedRegion == .china {
+                                        AuthPhonePanel(
+                                            isLoading: $isLoading,
+                                            isAgreementChecked: $isAgreementChecked,
+                                            showPrivacySheet: $showPrivacySheet,
+                                            showTermsSheet: $showTermsSheet,
+                                            handleAuth: handleAuth
+                                        )
+                                    } else {
+                                        OverseasLoginCardView()
+                                            .id(Localized.currentLanguage)
+                                            .rotation3DEffect(.degrees(180), axis: (x: 0, y: 1.0, z: 0.0))
+                                    }
                                 }
+                                .rotation3DEffect(.degrees(rotateDegrees), axis: (x: 0, y: 1.0, z: 0.0))
+
+                                AuthOAuthPanel(
+                                    isLoading: $isLoading,
+                                    isAgreementChecked: $isAgreementChecked,
+                                    errorMessage: $errorMessage,
+                                    handleThirdPartyLogin: handleThirdPartyLogin
+                                )
                             }
-                            .rotation3DEffect(.degrees(rotateDegrees), axis: (x: 0, y: 1.0, z: 0.0))
 
-                            AuthOAuthPanel(
-                                isLoading: $isLoading,
-                                isAgreementChecked: $isAgreementChecked,
-                                errorMessage: $errorMessage,
-                                handleThirdPartyLogin: handleThirdPartyLogin
-                            )
+                            Spacer(minLength: DesignTokens.Spacing.huge)
 
-                            AuthGuestSection()
+                            VStack(spacing: DesignTokens.Spacing.medium) {
+                                Divider()
+                                    .overlay(Color.appBorder.opacity(DesignTokens.Opacity.medium))
+                                AuthGuestSection()
+                            }
                         }
                         .frame(maxWidth: DesignTokens.Metrics.authFormWidth)
                         .padding(.horizontal, DesignTokens.Spacing.wide)
@@ -110,8 +124,22 @@ struct AuthView: View {
                         .frame(maxWidth: .infinity, minHeight: stageHeight)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.appCard.opacity(DesignTokens.Opacity.prominent))
                 }
                 .frame(maxWidth: DesignTokens.Metrics.macAuthStageMaxWidth, maxHeight: stageHeight)
+                .clipShape(stageShape)
+                .overlay(
+                    stageShape
+                        .strokeBorder(
+                            Color.appBorder.opacity(DesignTokens.Opacity.soft),
+                            lineWidth: DesignTokens.Spacing.borderWidth
+                        )
+                )
+                .shadow(
+                    color: Color.theme.black.opacity(DesignTokens.Opacity.medium),
+                    radius: DesignTokens.Spacing.wide,
+                    y: DesignTokens.Spacing.small
+                )
                 .padding(.horizontal, DesignTokens.Spacing.huge)
                 .padding(.vertical, DesignTokens.Spacing.giant)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -134,10 +162,9 @@ struct AuthView: View {
         )
     }
 
-    /// 桌面形态左侧内嵌品牌画报卡：同色系深邃极光渐变 + 干净书本图标 + 无框极简特性行
+    /// 桌面形态左侧内嵌品牌画报区：与右侧表单融合在同一张玻璃主卡片内，均衡留白
     private var desktopBrandPanel: some View {
-        let posterShape = RoundedRectangle(cornerRadius: DesignTokens.Spacing.chipRadius, style: .continuous)
-        return VStack(alignment: .leading, spacing: DesignTokens.Spacing.huge) {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.giant) {
             // 顶部品牌徽章（干净圆角方块 + 无外圈书本图标，告别「方套圆」）
             HStack(spacing: DesignTokens.Spacing.medium) {
                 ZStack {
@@ -162,8 +189,6 @@ struct AuthView: View {
                     .foregroundStyle(.white)
                     .tracking(DesignTokens.Reference.Spacing.one)
             }
-
-            Spacer(minLength: DesignTokens.Spacing.large)
 
             // 品牌主标语
             VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
@@ -197,27 +222,14 @@ struct AuthView: View {
                 )
             }
 
-            Spacer(minLength: DesignTokens.Spacing.medium)
+            Spacer(minLength: 0)
         }
         .padding(DesignTokens.Spacing.huge)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .background(desktopBrandPosterBackground)
-        .clipShape(posterShape)
-        .overlay(
-            posterShape
-                .strokeBorder(
-                    Color.theme.white.opacity(DesignTokens.Opacity.glass),
-                    lineWidth: DesignTokens.Spacing.borderWidth
-                )
-        )
-        .shadow(
-            color: Color.theme.indigo.opacity(DesignTokens.Opacity.glass),
-            radius: DesignTokens.Spacing.wide,
-            y: DesignTokens.Spacing.small
-        )
     }
 
-    /// 左侧品牌画报协调深邃渐变背景
+    /// 左侧品牌画报协调深邃渐变背景（克制饱和度，与整窗暗色氛围自然融合）
     private var desktopBrandPosterBackground: some View {
         ZStack {
             LinearGradient(
@@ -226,11 +238,11 @@ struct AuthView: View {
                 endPoint: .bottomTrailing
             )
 
-            // 柔和深色渐变叠层，保证任意强调色下均具备高雅深邃质感与高对比白色文字
+            // 柔和深色渐变叠层，压低高饱和洋红/亮紫刺眼感，与右侧玻璃表单自然衔接
             LinearGradient(
                 colors: [
-                    Color.theme.black.opacity(DesignTokens.Opacity.soft),
-                    Color.theme.black.opacity(DesignTokens.Opacity.medium)
+                    Color.theme.black.opacity(DesignTokens.Opacity.medium),
+                    Color.theme.black.opacity(DesignTokens.Opacity.soft)
                 ],
                 startPoint: .top,
                 endPoint: .bottom
@@ -239,7 +251,7 @@ struct AuthView: View {
             // 左上微光氛围点缀
             RadialGradient(
                 colors: [
-                    Color.theme.white.opacity(DesignTokens.Opacity.glass),
+                    Color.theme.white.opacity(DesignTokens.Opacity.subtle),
                     .clear
                 ],
                 center: .topLeading,

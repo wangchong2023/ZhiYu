@@ -52,6 +52,7 @@ struct SynthesisControlSheet: View {
                     .pickerStyle(.segmented)
                 }
             }
+            .appGroupedFormStyle()
             .scrollContentBackground(.hidden)
             .background(Color.appBackground)
             .navigationTitle(L10n.AI.Synthesis.Control.title)
@@ -83,6 +84,7 @@ struct SynthesisControlSheet: View {
         @ViewBuilder content: () -> Content
     ) -> some View {
         Picker(header, selection: selection, content: content)
+            .labelsHidden()
             .pickerStyle(.segmented)
     }
 }

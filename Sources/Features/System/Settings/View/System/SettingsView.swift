@@ -13,6 +13,29 @@ import Dependencies
 import UFPDesignSystem
 import UFPCore
 
+/// 设置页二级子路由（强类型值路由，确保点击左侧任意分类时可编程式清空导航栈）
+enum SettingsSubRoute: Hashable {
+    case systemStats
+    case iCloudSync
+    case backup
+    case log
+    case ragEvaluation
+    case performanceDashboard
+    case taskRoutingRules
+
+    var displayTitle: String {
+        switch self {
+        case .systemStats: return L10n.Common.usage
+        case .iCloudSync: return L10n.Settings.iCloudSync
+        case .backup: return L10n.Backup.title
+        case .log: return L10n.Settings.operationLog
+        case .ragEvaluation: return L10n.Dashboard.stats.benchmark
+        case .performanceDashboard: return L10n.Common.Perf.title
+        case .taskRoutingRules: return L10n.ModelManager.Routing.taskRules
+        }
+    }
+}
+
 struct SettingsView: View {
     @Dependency(\.toastService) private var toastManager
     @Environment(AppStore.self) var store
@@ -25,13 +48,11 @@ struct SettingsView: View {
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.interfaceIdiom) private var idiom
     
-    /// 设置分类枚举，表示各个设置大类
+    /// 设置分类枚举，表示各个设置大类（人工智能与插件中心已统一收敛至头像菜单独立入口）
     private enum SettingsSection: String, CaseIterable, Identifiable {
         case appearance      // 界面外观
         case security        // 安全隐私
         case data            // 数据与日志
-        case ai              // AI 智能体
-        case plugins         // 插件与扩展
         case feedback        // 反馈改进
         #if DEBUG
         case developer       // 开发调试
@@ -40,9 +61,9 @@ struct SettingsView: View {
 
         static var allCases: [SettingsSection] {
             #if DEBUG
-            return [.appearance, .security, .data, .ai, .plugins, .feedback, .developer, .about]
+            return [.appearance, .security, .data, .feedback, .developer, .about]
             #else
-            return [.appearance, .security, .data, .ai, .plugins, .feedback, .about]
+            return [.appearance, .security, .data, .feedback, .about]
             #endif
         }
 
@@ -57,10 +78,6 @@ struct SettingsView: View {
                 return L10n.Settings.Section.security
             case .data:
                 return L10n.Settings.Section.data
-            case .ai:
-                return L10n.Settings.Section.ai
-            case .plugins:
-                return L10n.Settings.Section.plugins
             case .feedback:
                 return L10n.Settings.Feedback.title
             #if DEBUG
@@ -81,10 +98,6 @@ struct SettingsView: View {
                 return DesignTokens.Icons.settingsSecurity
             case .data:
                 return DesignTokens.Icons.settingsData
-            case .ai:
-                return DesignTokens.Icons.sparkles
-            case .plugins:
-                return DesignTokens.Icons.settingsPlugins
             case .feedback:
                 return "bubble.left.and.bubble.right.fill"
             #if DEBUG
@@ -105,6 +118,8 @@ struct SettingsView: View {
     @State private var showUpgradeSheet = false
     /// 当前大屏布局下选中的设置分类，默认选中“外观”
     @State private var selectedSection: SettingsSection? = .appearance
+    /// 右侧详情区导航栈路径（切换左侧分类时立即清空，彻底解决停留在子页面无法切换的问题）
+    @State private var detailPath: [SettingsSubRoute] = []
     /// 当前悬停的设置分类（用于桌面端即时悬停反馈）
     @State private var hoveredSection: SettingsSection?
     
@@ -113,32 +128,44 @@ struct SettingsView: View {
         
         Group {
             if idiom == .macCatalyst || idiom == .mac {
-                HStack(spacing: 0) {
-                    sidebarColumn
-                        .frame(width: DesignTokens.Metrics.settingsSidebarWidth)
+                ZStack {
+                    themeManager.pageBackground()
+                        .ignoresSafeArea()
 
-                    Divider()
-                        .background(Color.appBorder.opacity(DesignTokens.Opacity.shadow))
+                    HStack(spacing: 0) {
+                        sidebarColumn
+                            .frame(width: DesignTokens.Metrics.settingsSidebarWidth)
 
-                    ZStack {
-                        themeManager.pageBackground()
-                            .ignoresSafeArea()
+                        Divider()
+                            .opacity(DesignTokens.Opacity.soft)
 
-                        NavigationStack {
-                            detailColumn(for: selectedSection, router: router)
-                        }
+                        VStack(spacing: 0) {
+                            macDetailHeaderBar
+
+                            NavigationStack(path: $detailPath) {
+                                detailColumn(for: selectedSection, router: router)
+                                    .navigationDestination(for: SettingsSubRoute.self) { route in
+                                        subRouteDestination(for: route)
+                                            .navigationBarBackButtonHidden(true)
                                     }
-                    .frame(maxWidth: .infinity)
+                            }
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
-                NavigationStack {
+                NavigationStack(path: $detailPath) {
                     ZStack {
                         themeManager.pageBackground()
                             .ignoresSafeArea()
 
                         compactList
                     }
-                                    .navigationTitle(L10n.Settings.title)
+                    .navigationDestination(for: SettingsSubRoute.self) { route in
+                        subRouteDestination(for: route)
+                    }
+                    .navigationTitle(L10n.Common.settings)
                     .toolbar {
                         ToolbarItem(placement: .confirmationAction) {
                             doneButton(router: router)
@@ -195,9 +222,6 @@ struct SettingsView: View {
             dataManagementSection
                 .appListRowBackground()
 
-            PluginExtensionsSection()
-                .appListRowBackground()
-
             securitySection(store: store)
                 .appListRowBackground()
 
@@ -216,50 +240,93 @@ struct SettingsView: View {
         .scrollContentBackground(.hidden)
     }
 
-    /// 构建大屏左侧分类侧边栏（气泡圆角卡片样式，具备全行热区、悬停反馈与选中高亮）
-    private var sidebarColumn: some View {
-        ScrollView {
-            VStack(spacing: DesignTokens.SystemSpacing.small) {
-                ForEach(SettingsSection.allCases) { section in
-                    let isSelected = selectedSection == section
-                    let isHovered = hoveredSection == section
-                    let rowShape = RoundedRectangle(cornerRadius: DesignTokens.Spacing.mediumRadius, style: .continuous)
-                    Button(action: {
-                        if selectedSection != section {
-                            selectedSection = section
-                        }
-                    }) {
-                        HStack(spacing: DesignTokens.Spacing.medium) {
-                            Image(systemName: section.iconName)
-                                .font(.subheadline)
-                                .foregroundStyle(isSelected ? .white : .appAccent)
-                                .frame(width: DesignTokens.IconSize.standard, alignment: .center)
-                            Text(section.displayName)
-                                .font(.body.weight(.medium))
-                                .foregroundStyle(isSelected ? .white : .appText)
-                            Spacer()
-                        }
-                        .padding(.horizontal, DesignTokens.SystemSpacing.content)
-                        .padding(.vertical, DesignTokens.SystemSpacing.medium)
+    /// 桌面端右侧内联标题栏（进入二级子页面时在左上角展示内联返回按钮，彻底避免 macOS Settings 双行居中工具栏）
+    private var macDetailHeaderBar: some View {
+        HStack(spacing: DesignTokens.Spacing.small) {
+            if !detailPath.isEmpty {
+                Button {
+                    detailPath.removeLast()
+                } label: {
+                    Image(systemName: DesignTokens.Icons.back)
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(.appText)
+                        .frame(width: DesignTokens.IconSize.large, height: DesignTokens.IconSize.large)
                         .background(
-                            rowShape.fill(
-                                isSelected
-                                    ? Color.appAccent
-                                    : (isHovered ? Color.appAccent.opacity(DesignTokens.Opacity.glass) : Color.clear)
-                            )
+                            Circle()
+                                .fill(Color.appCard.opacity(DesignTokens.Opacity.soft))
                         )
-                        .contentShape(rowShape)
-                    }
-                    .buttonStyle(.plain)
-                    .onHoverIfAvailable { hovering in
-                        hoveredSection = hovering ? section : (hoveredSection == section ? nil : hoveredSection)
+                        .contentShape(Circle())
+                }
+                .buttonStyle(.plain)
+            }
+
+            Text(detailPath.last?.displayTitle ?? selectedSection?.displayName ?? L10n.Common.settings)
+                .font(.title3.bold())
+                .foregroundStyle(.appText)
+                .lineLimit(1)
+
+            Spacer()
+        }
+        .padding(.horizontal, DesignTokens.Spacing.loosePadding)
+        .padding(.top, DesignTokens.Spacing.standardPadding)
+        .padding(.bottom, DesignTokens.Spacing.small)
+    }
+
+    /// 构建大屏左侧分类侧边栏（参考现代 macOS 设置风格：顶部大标题 + 柔和选中胶囊 + 单行无折行）
+    private var sidebarColumn: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text(L10n.Common.settings)
+                .font(.title3.bold())
+                .foregroundStyle(.appText)
+                .padding(.horizontal, DesignTokens.Spacing.standardPadding)
+                .padding(.top, DesignTokens.Spacing.standardPadding)
+                .padding(.bottom, DesignTokens.Spacing.medium)
+
+            ScrollView {
+                VStack(spacing: DesignTokens.SystemSpacing.tiny) {
+                    ForEach(SettingsSection.allCases) { section in
+                        let isSelected = selectedSection == section
+                        let isHovered = hoveredSection == section
+                        let rowShape = RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius, style: .continuous)
+                        Button(action: {
+                            detailPath.removeAll()
+                            if selectedSection != section {
+                                selectedSection = section
+                            }
+                        }) {
+                            HStack(spacing: DesignTokens.Spacing.small) {
+                                Image(systemName: section.iconName)
+                                    .font(.subheadline)
+                                    .foregroundStyle(isSelected ? Color.appAccent : .appSecondary)
+                                    .frame(width: DesignTokens.IconSize.standard, alignment: .center)
+                                Text(section.displayName)
+                                    .font(.body.weight(isSelected ? .semibold : .regular))
+                                    .foregroundStyle(isSelected ? .appText : .appSecondary)
+                                    .lineLimit(1)
+                                Spacer(minLength: 0)
+                            }
+                            .padding(.horizontal, DesignTokens.SystemSpacing.medium)
+                            .padding(.vertical, DesignTokens.SystemSpacing.small)
+                            .background(
+                                rowShape.fill(
+                                    isSelected
+                                        ? Color.appAccent.opacity(DesignTokens.Opacity.glass)
+                                        : (isHovered ? Color.appBorder.opacity(DesignTokens.Opacity.subtle) : Color.clear)
+                                )
+                            )
+                            .contentShape(rowShape)
+                        }
+                        .buttonStyle(.plain)
+                        .onHoverIfAvailable { hovering in
+                            hoveredSection = hovering ? section : (hoveredSection == section ? nil : hoveredSection)
+                        }
                     }
                 }
+                .padding(.horizontal, DesignTokens.SystemSpacing.medium)
+                .padding(.bottom, DesignTokens.SystemSpacing.content)
             }
-            .padding(.horizontal, DesignTokens.SystemSpacing.medium)
-            .padding(.vertical, DesignTokens.SystemSpacing.content)
         }
-        .background(Color.appCard.opacity(DesignTokens.Opacity.disabled)) // 侧边栏微暗色半透明质感
+        .background(Color.appBackground.opacity(DesignTokens.Opacity.subtle))
     }
     
     /// 根据当前选中的分类，渲染右侧具体详情面板
@@ -275,11 +342,6 @@ struct SettingsView: View {
                     AboutView(showsDismissButton: false, usesEmbeddedBackground: true)
                 case .feedback:
                     FeedbackView(isEmbedded: true)
-                        .environment(themeManager)
-                case .plugins:
-                    PluginExtensionsDetailView()
-                case .ai:
-                    AISettingsView(showsDismissButton: false, usesEmbeddedBackground: true)
                         .environment(themeManager)
                 #if DEBUG
                 case .developer:
@@ -303,6 +365,31 @@ struct SettingsView: View {
         }
     }
     
+    /// 统一的设置二级子路由视图分发
+    @ViewBuilder
+    private func subRouteDestination(for route: SettingsSubRoute) -> some View {
+        switch route {
+        case .systemStats:
+            SystemStatsView()
+        case .iCloudSync:
+            #if ICLOUD_ENABLED
+            iCloudSyncView()
+            #else
+            EmptyView()
+            #endif
+        case .backup:
+            BackupView()
+        case .log:
+            LogView()
+        case .ragEvaluation:
+            RAGEvaluationView()
+        case .performanceDashboard:
+            PerformanceDashboardView(service: store.performanceService)
+        case .taskRoutingRules:
+            TaskRoutingRulesView()
+        }
+    }
+
     /// 统一的设置页完成保存按钮组件
     /// - Parameter router: 路由实例
     @ViewBuilder
@@ -348,33 +435,25 @@ struct SettingsView: View {
     private var dataManagementSection: some View {
         Section {
             // 将用量统计调整至首行，提高核心运营数据的展示优先级
-            NavigationLink {
-                SystemStatsView()
-            } label: {
+            NavigationLink(value: SettingsSubRoute.systemStats) {
                 Label(L10n.Common.usage, systemImage: DesignTokens.Icons.chartBarFill)
                     .labelStyle(ColorfulIconLabelStyle(color: Color.theme.teal))
             }
 
             #if ICLOUD_ENABLED
-            NavigationLink {
-                iCloudSyncView()
-            } label: {
+            NavigationLink(value: SettingsSubRoute.iCloudSync) {
                 Label(L10n.Settings.iCloudSync, systemImage: DesignTokens.Icons.icloud)
                     .labelStyle(ColorfulIconLabelStyle(color: Color.theme.blue))
             }
             #endif
             
             // 将恢复备份调整至第三行，降低非常规操作的入口级别
-            NavigationLink {
-                BackupView()
-            } label: {
+            NavigationLink(value: SettingsSubRoute.backup) {
                 Label(L10n.Settings.backupRestore, systemImage: DesignTokens.Icons.settingsData)
                     .labelStyle(ColorfulIconLabelStyle(color: Color.theme.brown))
             }
             
-            NavigationLink {
-                LogView()
-            } label: {
+            NavigationLink(value: SettingsSubRoute.log) {
                 Label(L10n.Settings.operationLog, systemImage: DesignTokens.Icons.listBulletRectangleFill)
                     .labelStyle(ColorfulIconLabelStyle(color: Color.theme.mint))
             }
@@ -454,6 +533,7 @@ struct SettingsView: View {
         }
         .sheet(isPresented: $showUpgradeSheet) {
             SubscriptionPlanView()
+                .appDesktopSheetSize(.large)
         }
     }
     
@@ -498,7 +578,7 @@ struct SettingsView: View {
     
     @ViewBuilder
     private var developerSettingsDestination: some View {
-        DeveloperSettingsView()
+        DeveloperSettingsView(isEmbedded: true)
             .environment(store)
             .environment(store.knowledgeStore)
             .environment(store.settingsStore)
@@ -508,7 +588,7 @@ struct SettingsView: View {
     
     @ViewBuilder
     private func defaultSettingsList(for section: SettingsSection) -> some View {
-        List {
+        Form {
             switch section {
             case .appearance:
                 appearanceSection
@@ -523,8 +603,9 @@ struct SettingsView: View {
                 EmptyView()
             }
         }
-        .adaptiveListStyle()
+        .appGroupedFormStyle()
         .scrollContentBackground(.hidden)
+        .tint(Color.appAccent)
     }
     
     @ViewBuilder

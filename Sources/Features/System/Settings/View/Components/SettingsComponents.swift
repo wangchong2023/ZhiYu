@@ -66,6 +66,7 @@ struct PluginExtensionsDetailView: View {
                     NavigationStack {
                         PluginCenterView()
                     }
+                    .appDesktopSheetSize(.large)
                 }
             } else {
                 // 有已安装插件：展示设置列表

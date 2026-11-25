@@ -14,6 +14,9 @@ import Dependencies
 import UFPDesignSystem
 
 struct DeveloperSettingsView: View {
+    /// 嵌入 SettingsView 详情栏时为 true：隐藏独立「完成」关闭按钮并复用父级统一背景
+    var isEmbedded: Bool = false
+
     @Dependency(\.toastService) private var toastManager
     @Dependency(\.keyStore) private var keyStore: (any KeyStoreProtocol)?
     @Environment(AppStore.self) var store
@@ -21,13 +24,14 @@ struct DeveloperSettingsView: View {
     @Environment(SettingsStore.self) var settingsStore
     @EnvironmentObject var onboardingService: OnboardingService
     @Environment(\.dismiss) var dismiss
+    @Environment(\.interfaceIdiom) private var idiom
     @State private var showStressTestConfirmation = false
     @State private var stressTestTargetCount = FeatureConstants.StressTest.defaultTargetCount
     @State private var isStressTesting = false
     @State private var stressTestCount: Int?
 
     var body: some View {
-        List {
+        Form {
 
             // MARK: - 性能测试 (Performance Testing)
             Section {
@@ -57,28 +61,33 @@ struct DeveloperSettingsView: View {
                     
                     Divider()
                     
-                    // 下方横跨卡片的一体化压力测试按钮，采用高对比度的蓝色主题，带 gauge.with.needle 仪表盘图标
-                    Button(action: { showStressTestConfirmation = true }) {
-                        HStack(spacing: DesignTokens.SystemSpacing.element) {
-                            Spacer()
-                            Image(systemName: DesignTokens.Icons.gaugeWithNeedle)
-                                .font(.headline)
-                            Text(L10n.Settings.developer.stressTest.run)
-                                .bold()
-                            if isStressTesting {
-                                ProgressView()
-                                    .padding(.leading, DesignTokens.SystemSpacing.tiny)
+                    // macOS HIG：桌面表单操作按钮右对齐紧凑展示；iOS 保持全宽触控按钮
+                    HStack {
+                        if idiom == .mac { Spacer() }
+                        Button(action: { showStressTestConfirmation = true }) {
+                            HStack(spacing: DesignTokens.SystemSpacing.element) {
+                                if idiom != .mac { Spacer() }
+                                Image(systemName: DesignTokens.Icons.gaugeWithNeedle)
+                                    .font(idiom == .mac ? .subheadline.weight(.semibold) : .headline)
+                                Text(L10n.Settings.developer.stressTest.run)
+                                    .font(idiom == .mac ? .subheadline.weight(.semibold) : .headline)
+                                if isStressTesting {
+                                    ProgressView()
+                                        .controlSize(.small)
+                                        .padding(.leading, DesignTokens.SystemSpacing.tiny)
+                                }
+                                if idiom != .mac { Spacer() }
                             }
-                            Spacer()
+                            .padding(.horizontal, DesignTokens.Spacing.standardPadding)
+                            .padding(.vertical, DesignTokens.SystemSpacing.element)
+                            .frame(maxWidth: idiom == .mac ? nil : .infinity)
+                            .background(isStressTesting ? Color.secondary.opacity(DesignTokens.Opacity.disabled) : Color.theme.accent)
+                            .foregroundColor(Color.theme.white)
+                            .clipShape(RoundedRectangle(cornerRadius: idiom == .mac ? DesignTokens.Spacing.mediumRadius : DesignTokens.SystemRadius.card))
                         }
-                        .padding(.vertical, DesignTokens.SystemSpacing.element)
-                        .frame(maxWidth: .infinity)
-                        .background(isStressTesting ? Color.secondary.opacity(DesignTokens.Opacity.disabled) : Color.theme.accent)
-                        .foregroundColor(Color.theme.white)
-                        .cornerRadius(DesignTokens.SystemRadius.card)
+                        .disabled(isStressTesting)
+                        .buttonStyle(.plain) // 避免嵌套点击污染
                     }
-                    .disabled(isStressTesting)
-                    .buttonStyle(.plain) // 避免嵌套点击污染
                 }
                 .padding(.vertical, DesignTokens.SystemSpacing.element)
             } header: {
@@ -94,21 +103,15 @@ struct DeveloperSettingsView: View {
 
             // MARK: - 质量评估
             Section {
-                NavigationLink {
-                    RAGEvaluationView()
-                } label: {
+                NavigationLink(value: SettingsSubRoute.ragEvaluation) {
                     Label(L10n.Dashboard.stats.benchmark, systemImage: DesignTokens.Icons.checkmarkShield)
                 }
 
-                NavigationLink {
-                    PerformanceDashboardView(service: store.performanceService)
-                } label: {
+                NavigationLink(value: SettingsSubRoute.performanceDashboard) {
                     Label(L10n.Common.Perf.title, systemImage: DesignTokens.Icons.chartBarXaxis)
                 }
 
-                NavigationLink {
-                    TaskRoutingRulesView()
-                } label: {
+                NavigationLink(value: SettingsSubRoute.taskRoutingRules) {
                     Label(L10n.ModelManager.Routing.taskRules, systemImage: DesignTokens.Icons.settingsAI)
                 }
 
@@ -124,8 +127,14 @@ struct DeveloperSettingsView: View {
                     SplashPresentationPolicy.resetSplashState(keyStore: keyStore)
                     toastManager.show(type: .success, message: L10n.Settings.developer.resetOnboardingDone)
                 } label: {
-                    Label(L10n.Settings.developer.showWelcomeBanner, systemImage: DesignTokens.Icons.sparkles)
+                    HStack {
+                        Label(L10n.Settings.developer.showWelcomeBanner, systemImage: DesignTokens.Icons.sparkles)
+                            .foregroundStyle(.appText)
+                        Spacer()
+                    }
+                    .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
 
                 Button {
                     dismiss()
@@ -136,18 +145,35 @@ struct DeveloperSettingsView: View {
                         SplashPresentationPolicy.resetSplashState(keyStore: keyStore)
                     }
                 } label: {
-                    Label(L10n.Settings.developer.showGuidePage, systemImage: DesignTokens.Icons.questionCircle)
+                    HStack {
+                        Label(L10n.Settings.developer.showGuidePage, systemImage: DesignTokens.Icons.questionCircle)
+                            .foregroundStyle(.appText)
+                        Spacer()
+                    }
+                    .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
             } header: {
                 Text(L10n.Settings.developer.section.onboarding)
             }
             .appListRowBackground()
         }
-            .adaptiveListStyle()
+            .appGroupedFormStyle()
             .scrollContentBackground(.hidden)
-            .background(PageBackgroundView(accentColor: Color.theme.blue))
+            .tint(Color.appAccent)
+            .background {
+                if !isEmbedded {
+                    PageBackgroundView(accentColor: Color.theme.blue)
+                }
+            }
             .navigationTitle(L10n.Settings.Section.developer)
-            .doneDismissToolbar()
+            .toolbar {
+                if !isEmbedded {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button(L10n.Common.done) { dismiss() }
+                    }
+                }
+            }
             .appToast() // 确保在二级导航页面也能正确渲染 Toast，解决被遮挡问题
             .confirmationDialog(L10n.Settings.developer.stressTest.confirmTitle, isPresented: $showStressTestConfirmation, titleVisibility: .visible) {
                 Button(L10n.Settings.developer.stressTest.confirmAction(stressTestTargetCount), role: .destructive) {

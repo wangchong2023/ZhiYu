@@ -61,14 +61,20 @@ struct RAGEvaluationView: View {
             } else {
                 ScrollView {
                     VStack(spacing: DesignTokens.Spacing.wide) {
-                        RAGTimeRangePicker(selectedDays: $selectedDays)
-
-                        Picker("", selection: $selectedTab) {
-                            ForEach(EvalTab.allCases) { tab in
-                                Text(tab.title).tag(tab)
+                        HStack(spacing: DesignTokens.Spacing.medium) {
+                            Picker("", selection: $selectedTab) {
+                                ForEach(EvalTab.allCases) { tab in
+                                    Text(tab.title).tag(tab)
+                                }
                             }
+                            .labelsHidden()
+                            .pickerStyle(.segmented)
+                            .fixedSize()
+
+                            Spacer()
+
+                            RAGTimeRangePicker(selectedDays: $selectedDays)
                         }
-                        .pickerStyle(.segmented)
                         .padding(.horizontal, DesignTokens.Spacing.small)
 
                         switch selectedTab {

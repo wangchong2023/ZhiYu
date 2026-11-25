@@ -230,6 +230,7 @@ struct LLMSettingsView: View {
             .appListRowBackground()
         }
         .insetGroupedListStyleIfIOS()
+        .appGroupedFormStyle()
         .scrollContentBackground(.hidden)
         .alert(L10n.Common.configureAI, isPresented: $showAlert) {
             Button(L10n.Common.ok, role: .cancel) { }

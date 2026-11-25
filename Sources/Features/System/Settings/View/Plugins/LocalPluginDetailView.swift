@@ -19,6 +19,7 @@ struct LocalPluginDetailView: View {
     let manifest: PluginManifest
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.interfaceIdiom) private var idiom
     @Dependency(\.pluginRegistry) var registry
     @State private var showUninstallConfirm = false
     @State private var localIcon: AppImage?
@@ -69,16 +70,21 @@ struct LocalPluginDetailView: View {
                 }
 
                 // MARK: - 操作
-                Button(role: .destructive, action: {
-                    registry.unloadPlugin(id: manifest.id)
-                    dismiss()
-                }) {
-                    Label(L10n.Plugin.Action.uninstall, systemImage: DesignTokens.Icons.delete)
-                        .font(.headline).frame(maxWidth: .infinity)
-                        .padding(.vertical, DesignTokens.Spacing.small)
+                HStack {
+                    if idiom == .mac { Spacer() }
+                    Button(role: .destructive, action: {
+                        registry.unloadPlugin(id: manifest.id)
+                        dismiss()
+                    }) {
+                        Label(L10n.Plugin.Action.uninstall, systemImage: DesignTokens.Icons.delete)
+                            .font(idiom == .mac ? .subheadline.weight(.semibold) : .headline)
+                            .frame(maxWidth: idiom == .mac ? nil : .infinity)
+                            .padding(.horizontal, idiom == .mac ? DesignTokens.Spacing.standardPadding : 0)
+                            .padding(.vertical, DesignTokens.Spacing.small)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(Color.theme.red)
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(Color.theme.red)
 
                 Divider()
 

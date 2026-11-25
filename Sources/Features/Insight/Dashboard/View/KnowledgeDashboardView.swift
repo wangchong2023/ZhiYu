@@ -18,6 +18,7 @@ struct KnowledgeDashboardView: View {
     @Environment(Router.self) var router
     @Environment(ThemeManager.self) var themeManager
     @Environment(\.horizontalSizeClass) var horizontalSizeClass
+    @Environment(\.interfaceIdiom) private var idiom
     
     // 使用协调器管理状态与交互
     @State private var coordinator = DashboardCoordinator()
@@ -236,7 +237,9 @@ struct KnowledgeDashboardView: View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.tightPadding) {
             InsightDashboardSectionTitle(icon: DesignTokens.Icons.grid, title: L10n.Dashboard.hotTopics)
             
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: DesignSystem.Grid.standardSpacing) {
+            let item = GridItem(.flexible(), spacing: DesignSystem.Grid.standardSpacing)
+            let columns = idiom == .mac ? [item, item, item, item] : [item, item]
+            LazyVGrid(columns: columns, spacing: DesignSystem.Grid.standardSpacing) {
                 // 遍历用户可见页面类型，屏蔽 raw 选项的统计
                 ForEach(PageType.allVisibleCases, id: \.self) { type in
                     let count = store.pages.filter { $0.pageType == type }.count

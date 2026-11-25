@@ -55,12 +55,19 @@ struct FeedbackView: View {
 
     private var feedbackContent: some View {
         VStack(spacing: 0) {
-            Picker("", selection: $selectedTab) {
-                Text(L10n.Settings.Feedback.submit).tag(0)
-                Text(L10n.Settings.Feedback.history).tag(1)
+            HStack {
+                Picker("", selection: $selectedTab) {
+                    Text(L10n.Settings.Feedback.title).tag(0)
+                    Text(L10n.Settings.Feedback.history).tag(1)
+                }
+                .labelsHidden()
+                .pickerStyle(.segmented)
+                .fixedSize()
+                Spacer()
             }
-            .pickerStyle(.segmented)
-            .commonContentPadding(horizontal: DesignTokens.Spacing.standardPadding, vertical: DesignTokens.Spacing.standardPadding)
+            .padding(.horizontal, DesignTokens.Spacing.standardPadding)
+            .padding(.top, DesignTokens.Spacing.medium)
+            .padding(.bottom, DesignTokens.Spacing.small)
 
             if selectedTab == 0 {
                 submitForm
@@ -73,79 +80,96 @@ struct FeedbackView: View {
     // MARK: - 提交表单
 
     private var submitForm: some View {
-        Form {
-            Section(L10n.Settings.Feedback.subject) {
-                TextField(L10n.Settings.Feedback.subjectPlaceholder, text: $titleText)
-            }
-            .appListRowBackground()
-            
-            Section(L10n.Settings.Feedback.category) {
-                Picker(L10n.Settings.Feedback.category, selection: $selectedCategory) {
-                    ForEach(FeedbackCategory.allCases, id: \.self) { cat in
-                        Text(FeedbackCategory.displayName(cat)).tag(cat)
-                    }
+        let isSubmitDisabled = titleText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isSubmitting
+        return VStack(spacing: 0) {
+            Form {
+                Section(L10n.Settings.Feedback.subject) {
+                    TextField(L10n.Settings.Feedback.subjectPlaceholder, text: $titleText)
                 }
-                .pickerStyle(.segmented)
-            }
-            .appListRowBackground()
-            
-            Section(L10n.Settings.Feedback.rating) {
-                HStack {
-                    Text(L10n.Settings.Feedback.rating)
-                    Spacer()
-                    ForEach(1...maxRating, id: \.self) { star in
-                        Image(systemName: star <= rating ? "star.fill" : "star")
-                            .foregroundStyle(.appAccent)
-                            .onTapGesture { rating = star }
-                    }
-                }
-            }
-            .appListRowBackground()
-            
-            Section(L10n.Settings.Feedback.content) {
-                TextEditor(text: $contentText)
-                    .frame(minHeight: DesignSystem.FeedbackMetrics.textEditorHeight)
-                    .overlay(alignment: .topLeading) {
-                        if contentText.isEmpty {
-                            Text(L10n.Settings.Feedback.contentPlaceholder)
-                                .foregroundStyle(.secondary)
-                                .padding(.top, DesignTokens.Spacing.tightPadding)
-                                .padding(.leading, DesignTokens.Spacing.atomic)
-                                .allowsHitTesting(false)
+                .appListRowBackground()
+                
+                Section(L10n.Settings.Feedback.category) {
+                    Picker(L10n.Settings.Feedback.category, selection: $selectedCategory) {
+                        ForEach(FeedbackCategory.allCases, id: \.self) { cat in
+                            Text(FeedbackCategory.displayName(cat)).tag(cat)
                         }
                     }
-            }
-            .appListRowBackground()
-            
-            Section {
-                HStack {
-                    Text(L10n.Settings.Feedback.appVersionLabel)
-                    Spacer()
-                    Text(appVersion).foregroundStyle(.secondary)
+                    .labelsHidden()
+                    .pickerStyle(.segmented)
                 }
-                HStack {
-                    Text(L10n.Settings.Feedback.osVersionLabel)
-                    Spacer()
-                    Text(deviceInfo.systemVersion).foregroundStyle(.secondary)
-                }
-            }
-            .appListRowBackground()
-            
-            Section {
-                Button(action: submit) {
-                    HStack {
-                        Spacer()
-                        if isSubmitting { ProgressView() } else { Text(L10n.Settings.Feedback.submit).bold() }
+                .appListRowBackground()
+                
+                Section(L10n.Settings.Feedback.rating) {
+                    HStack(spacing: DesignTokens.Spacing.small) {
+                        ForEach(1...maxRating, id: \.self) { star in
+                            Image(systemName: star <= rating ? "star.fill" : "star")
+                                .font(.title3)
+                                .foregroundStyle(.appAccent)
+                                .onTapGesture { rating = star }
+                        }
                         Spacer()
                     }
                 }
-                .disabled(titleText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isSubmitting)
+                .appListRowBackground()
+                
+                Section(L10n.Settings.Feedback.content) {
+                    TextEditor(text: $contentText)
+                        .frame(minHeight: DesignSystem.FeedbackMetrics.textEditorHeight)
+                        .overlay(alignment: .topLeading) {
+                            if contentText.isEmpty {
+                                Text(L10n.Settings.Feedback.contentPlaceholder)
+                                    .foregroundStyle(.secondary)
+                                    .padding(.top, DesignTokens.Spacing.tightPadding)
+                                    .padding(.leading, DesignTokens.Spacing.atomic)
+                                    .allowsHitTesting(false)
+                            }
+                        }
+                }
+                .appListRowBackground()
+                
+                Section {
+                    HStack {
+                        Text(L10n.Settings.Feedback.appVersionLabel)
+                        Spacer()
+                        Text(appVersion).foregroundStyle(.secondary)
+                    }
+                    HStack {
+                        Text(L10n.Settings.Feedback.osVersionLabel)
+                        Spacer()
+                        Text(deviceInfo.systemVersion).foregroundStyle(.secondary)
+                    }
+                }
+                .appListRowBackground()
             }
-            .appListRowBackground()
+            .appGroupedFormStyle()
+            .scrollContentBackground(.hidden)
+            .tint(Color.appAccent)
+
+            Divider()
+
+            HStack {
+                Spacer()
+                Button(action: submit) {
+                    HStack(spacing: DesignTokens.Spacing.small) {
+                        if isSubmitting {
+                            ProgressView()
+                                .controlSize(.small)
+                        }
+                        Text(L10n.Settings.Feedback.submit)
+                            .font(.body.weight(.semibold))
+                    }
+                    .padding(.horizontal, DesignTokens.Spacing.huge)
+                    .padding(.vertical, DesignTokens.SystemSpacing.element)
+                    .background(isSubmitDisabled ? Color.appAccent.opacity(DesignTokens.Opacity.disabled) : Color.appAccent)
+                    .foregroundStyle(Color.theme.white)
+                    .clipShape(RoundedRectangle(cornerRadius: DesignTokens.SystemRadius.card, style: .continuous))
+                }
+                .buttonStyle(.plain)
+                .disabled(isSubmitDisabled)
+            }
+            .padding(.horizontal, DesignTokens.Spacing.standardPadding)
+            .padding(.vertical, DesignTokens.Spacing.medium)
         }
-        .appGroupedFormStyle()
-        .scrollContentBackground(.hidden)
-        .tint(Color.appAccent)
     }
 
     // MARK: - 历史列表
@@ -167,6 +191,7 @@ struct FeedbackView: View {
                     }
                 }
                 .listStyle(.plain)
+                .scrollContentBackground(.hidden)
             }
         }
     }

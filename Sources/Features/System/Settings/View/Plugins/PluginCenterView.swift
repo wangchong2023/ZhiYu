@@ -49,6 +49,7 @@ struct PluginCenterView: View {
                 Text(L10n.Plugin.marketTitle).tag(0)
                 Text(L10n.Plugin.myPlugins).tag(1)
             }
+            .labelsHidden()
             .segmentedPickerStyleIfAvailable()
             .padding(.horizontal)
             .padding(.vertical, DesignTokens.Spacing.small)
@@ -62,7 +63,7 @@ struct PluginCenterView: View {
                         myPluginsSection
                     }
                 }
-                .appDesktopReadableWidth(DesignTokens.Metrics.macWideContentWidth)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .background(PageBackgroundView(accentColor: .appAccent))

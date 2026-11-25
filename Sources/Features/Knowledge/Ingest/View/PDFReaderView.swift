@@ -61,6 +61,7 @@ struct PDFReaderView: View {
                 }
                 .sheet(isPresented: $showIngestSheet) {
                     PDFIngestSheet(documentInfo: documentInfo, ingestStore: ingestStore, pdfDocument: pdfDocument)
+                        .appDesktopSheetSize(.standard)
                 }
             }
             .onAppear {

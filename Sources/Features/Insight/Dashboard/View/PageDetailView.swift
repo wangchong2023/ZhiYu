@@ -167,8 +167,8 @@ struct PageDetailView: View {
         let content = ScrollViewReader { _ in
             detailScrollView(coordinator: coordinator)
         }
-        .frame(maxWidth: DesignSystem.Layout.maxReadWidth)
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: idiom == .mac ? .infinity : DesignSystem.Layout.maxReadWidth, alignment: .leading)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(PageBackgroundView(accentColor: Color.fromModelColorName(coordinator.page.pageType.colorName)))
         .appSubPageToolbar(title: coordinator.page.title) {
             HStack(spacing: DesignTokens.Spacing.small) {
@@ -251,7 +251,7 @@ struct PageDetailView: View {
         }
         // 36pt 是 iPad 悬浮 TabBar 的避让量；macOS 原生工具栏下会增加无谓留白。
         .padding(.top, idiom != .mac && appEnv.screenClass != .compact ? FeatureConstants.TaskCenterLayout.iPadDetailTopOffset : 0)
-        .frame(maxWidth: DesignSystem.Layout.maxReadWidth)
+        .frame(maxWidth: idiom == .mac ? .infinity : DesignSystem.Layout.maxReadWidth, alignment: .leading)
         .overlay(
             Divider().background(Color.appBorder),
             alignment: .bottom
@@ -271,6 +271,7 @@ struct PageDetailView: View {
             }
             .sheet(isPresented: Binding(get: { coordinator.showBacklinks }, set: { coordinator.showBacklinks = $0 })) {
                 BacklinksView(page: coordinator.page)
+                    .appDesktopSheetSize(.standard)
             }
             .sheet(isPresented: Binding(get: { coordinator.showIconPicker }, set: { coordinator.showIconPicker = $0 })) {
                 NavigationStack {
@@ -284,9 +285,11 @@ struct PageDetailView: View {
                         }
                     ))
                 }
+                .appDesktopSheetSize(.standard)
             }
             .sheet(isPresented: Binding(get: { coordinator.showSnapshotHistory }, set: { coordinator.showSnapshotHistory = $0 })) {
                 PageHistoryView(page: coordinator.page)
+                    .appDesktopSheetSize(.large)
             }
     }
 

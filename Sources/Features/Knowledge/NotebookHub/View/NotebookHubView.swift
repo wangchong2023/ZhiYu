@@ -42,9 +42,18 @@ public struct NotebookHubView: View {
                 .ignoresSafeArea()
             
             ScrollView {
-                VStack(alignment: .leading, spacing: DesignTokens.Spacing.standardPadding) {
-                    // 1. 现代风格搜索区域
-                    searchBar(bindableViewModel: Bindable(viewModel))
+                VStack(alignment: .leading, spacing: idiom == .mac ? DesignTokens.Spacing.wide : DesignTokens.Spacing.standardPadding) {
+                    if idiom == .mac {
+                        // macOS 方案 A：顶部统一工作台 Hero 条（含统计胶囊、紧凑搜索与新建主 CTA）
+                        NotebookHubDesktopHeroBar(
+                            viewModel: viewModel,
+                            notebookCount: viewModel.notebooks.count,
+                            totalPageCount: viewModel.notebooks.reduce(0) { $0 + $1.pageCount }
+                        )
+                    } else {
+                        // 移动端/iPad：标准顶部搜索条
+                        searchBar(bindableViewModel: Bindable(viewModel))
+                    }
                     
                     AIProcessingStatusBanner()
                         .padding(.horizontal, DesignSystem.Vault.homePadding)
@@ -57,7 +66,7 @@ public struct NotebookHubView: View {
                     notebookGridSection
                 }
                 .padding(.bottom, DesignTokens.Spacing.huge)
-                .appDesktopReadableWidth(DesignTokens.Metrics.macWideContentWidth)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
             .scrollIndicators(.hidden)
             .accessibilityIdentifier("NotebookHubView")
@@ -69,13 +78,18 @@ public struct NotebookHubView: View {
         .appToolbarBackgroundVisible()
         .appToolbarBackgroundMaterial(.ultraThinMaterial)
         .toolbar {
-            // 使用 ToolbarItemGroup 替代 ToolbarItem + HStack，解决 SwiftUI 在大屏/分栏下 HStack 拦截点击、导致菜单及头像按钮点击无响应的交互缺陷。
+            // 业务操作与头像按钮分置独立 ToolbarItem + 固定间距分隔，避免 macOS 26+ Liquid Glass 将视图切换按钮与头像融合成连体药丸。
             appToolbarTrailingGroup {
                 sparklesButton
                 if idiom != .watch {
                     sortMenu
                 }
                 displayModeButton
+            }
+            if #available(iOS 26.0, macOS 26.0, watchOS 26.0, *) {
+                ToolbarSpacer(.fixed)
+            }
+            appToolbarTrailing {
                 UserProfileMenu()
             }
         }
@@ -84,9 +98,11 @@ public struct NotebookHubView: View {
         }
         .sheet(isPresented: $viewModel.isShowingCreateSheet) {
             CreateNotebookSheet(viewModel: viewModel)
+                .appDesktopSheetSize(.compact)
         }
         .sheet(isPresented: $viewModel.isShowingEditSheet) {
             EditNotebookSheet(viewModel: viewModel)
+                .appDesktopSheetSize(.compact)
         }
         .alert(L10n.Common.rename, isPresented: $viewModel.isShowingRenameAlert) {
             TextField(L10n.Vault.namePlaceholder, text: $viewModel.editingName)
@@ -112,6 +128,7 @@ public struct NotebookHubView: View {
                     }
             }
             .environment(router)
+            .appDesktopSheetSize(.large)
         }
         .onAppear {
             if !onboardingService.hasCompletedOnboarding {
@@ -168,11 +185,13 @@ public struct NotebookHubView: View {
                 .padding(.top, DesignTokens.Spacing.huge)
             } else if viewModel.displayMode == .grid {
                 let columns = appEnv.screenClass == .expansive 
-                    ? [GridItem(.adaptive(minimum: 250), spacing: DesignTokens.Spacing.standardPadding)]
+                    ? [GridItem(.adaptive(minimum: 280), spacing: DesignTokens.Spacing.standardPadding)]
                     : [GridItem(.flexible(), spacing: DesignTokens.Spacing.standardPadding), GridItem(.flexible(), spacing: DesignTokens.Spacing.standardPadding)]
                 
                 LazyVGrid(columns: columns, spacing: DesignTokens.Spacing.standardPadding) {
-                    CreateNotebookButton(viewModel: viewModel, displayMode: .grid)
+                    if idiom != .mac {
+                        CreateNotebookButton(viewModel: viewModel, displayMode: .grid)
+                    }
                     
                     ForEach(viewModel.notebooks) { notebook in
                         NotebookCard(notebook: notebook) {
@@ -270,6 +289,7 @@ struct WelcomeBannerView: View {
                     .background(Color.secondary.opacity(DesignTokens.Opacity.subtle))
                     .clipShape(Circle())
             }
+            .buttonStyle(.plain)
         }
         .padding()
         .background(.ultraThinMaterial)

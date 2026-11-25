@@ -60,6 +60,7 @@ struct SaveVoiceNoteSheet: View {
                     Label(type.displayName, systemImage: type.icon).tag(type)
                 }
             }
+            .labelsHidden()
             .segmentedPickerStyleIfAvailable()
         }
     }

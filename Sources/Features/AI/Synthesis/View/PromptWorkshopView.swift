@@ -43,8 +43,11 @@ struct PromptWorkshopView: View {
         if idiom == .watch {
             WatchFeaturePlaceholderView(placeholderMessage: L10n.Watch.promptWorkshopPlaceholder)
         } else {
-            // 直接返回 Form，利用父视图统一渲染的渐变背景，规避多层 ignoresSafeArea 导致的点击拦截问题
-            Form {
+            ZStack {
+                themeManager.pageBackground()
+                    .ignoresSafeArea()
+
+                Form {
                 // ── 认知补全：功能简介 (可收缩) ──
                 Section {
                     if idiom == .watch {
@@ -120,8 +123,11 @@ struct PromptWorkshopView: View {
                 }
                 .appListRowBackground() // 适配全局毛玻璃背景
             }
-            .scrollContentBackground(.hidden) // 隐藏 Form 默认的白色背景，实现高端毛玻璃穿透
+                .appGroupedFormStyle()
+                .scrollContentBackground(.hidden) // 隐藏 Form 默认背景，透出统一主题渐变
+            }
             .tint(Color.appAccent)
+            .navigationTitle(L10n.AI.Prompt.Factory.title)
             .appNavigationBarTitleDisplayMode(.inline)
             .onDisappear {
                 promptService.save()
@@ -134,6 +140,7 @@ struct PromptWorkshopView: View {
                 Button(L10n.Common.cancel, role: .cancel) {}
             } message: {
                 Text(L10n.AI.Prompt.resetWarning)
-            }        }
+            }
+        }
     }
 }

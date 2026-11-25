@@ -286,11 +286,15 @@ struct SearchView: View {
         .background(themeManager.pageBackground())
         .sheet(item: $previewPage) { page in
             PagePreviewSheet(page: page)
+                .appDesktopSheetSize(.large)
         }
         .sheet(isPresented: $showDiagnostics) {
-            if let diag = searchStore.lastSearchDiagnostic {
-                SearchDiagnosticSheet(info: diag)
+            Group {
+                if let diag = searchStore.lastSearchDiagnostic {
+                    SearchDiagnosticSheet(info: diag)
+                }
             }
+            .appDesktopSheetSize(.large)
         }
     }
     

@@ -70,6 +70,7 @@ struct ImportRecordSection: View {
         }
         .sheet(isPresented: $showTextPreview) {
             textPreviewSheetContent
+                .appDesktopSheetSize(.large)
         }
         .quickLookPreview($quickLookURL)
         .task { await loadRecords() }

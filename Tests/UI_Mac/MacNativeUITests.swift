@@ -32,8 +32,8 @@ final class MacNativeUITests: MacBaseUITestCase {
         XCTAssertTrue(openSettingsViaMenu(), "⌘, 应打开设置窗口")
     }
 
-    /// 设置窗口应包含 AI Section（AISettings 已并入 Settings，showsDismissButton 隐藏）
-    func testAISettingsSectionPresentInSettings() {
+    /// 设置窗口侧边栏切换不同分类（安全/关于）应保持窗口稳定不漂移，且不含冗余 AI 项
+    func testSettingsSidebarNavigationDoesNotDriftWindow() {
         guard waitForMainWindow() else {
             XCTFail("前置：主界面应出现")
             return
@@ -43,13 +43,11 @@ final class MacNativeUITests: MacBaseUITestCase {
             return
         }
 
-        // 设置窗口已打开：点击 AI Section
-        // 不硬编码本地化 label，按 label 模糊匹配（覆盖 en="Artificial Intelligence" / zh="人工智能"）
-        let aiButton = app.buttons.matching(
-            NSPredicate(format: "label CONTAINS[c] 'ai' OR label CONTAINS[c] '人工'")
+        let aboutButton = app.buttons.matching(
+            NSPredicate(format: "label CONTAINS[c] 'about' OR label CONTAINS[c] '关于'")
         ).firstMatch
-        XCTAssertTrue(aiButton.waitForExistence(timeout: 10), "设置侧边栏应包含 AI Section")
-        aiButton.tap()
+        XCTAssertTrue(aboutButton.waitForExistence(timeout: 10), "设置侧边栏应包含关于分类")
+        aboutButton.tap()
     }
 
     // MARK: - 3. 菜单栏快捷键

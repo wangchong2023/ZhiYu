@@ -74,6 +74,7 @@ extension ModelLabView {
                         Text(L10n.ModelManager.Lab.modelConfigs).tag(0)
                         Text(L10n.ModelManager.Lab.systemPrompt).tag(1)
                     }
+                    .labelsHidden()
                     .pickerStyle(.segmented)
                     .padding(.horizontal, DesignTokens.Spacing.medium)
                     .padding(.top, DesignTokens.Spacing.small)

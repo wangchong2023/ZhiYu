@@ -109,6 +109,7 @@ struct SynthesisActionButton: View {
                 SynthesisControlSheet(type: type) { options in
                     performSynthesis(options: options)
                 }
+                .appDesktopSheetSize(.standard)
             }
             
             if isLimitReached {

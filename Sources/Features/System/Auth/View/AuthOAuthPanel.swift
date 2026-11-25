@@ -23,26 +23,51 @@ struct AuthOAuthPanel: View {
 
     var body: some View {
         let isDesktop = AuthView.isDesktopLayout(idiom)
-        VStack(spacing: DesignTokens.Spacing.large) {
-            HStack {
-                Rectangle().fill(Color.appBorder.opacity(DesignTokens.Opacity.shadow)).frame(height: DesignTokens.Spacing.borderWidth)
+        VStack(spacing: isDesktop ? DesignTokens.Spacing.wide : DesignTokens.Spacing.large) {
+            HStack(spacing: DesignTokens.Spacing.small) {
+                Rectangle()
+                    .fill(Color.appBorder.opacity(DesignTokens.Opacity.soft))
+                    .frame(height: DesignTokens.Spacing.borderWidth)
                 Text(L10n.Auth.moreLoginMethods)
-                    .font(.caption)
+                    .font(.caption.weight(.medium))
                     .foregroundStyle(.appSecondary)
                     .lineLimit(1)
                     .fixedSize(horizontal: true, vertical: false)
-                    .padding(.horizontal, DesignTokens.Spacing.small)
-                Rectangle().fill(Color.appBorder.opacity(DesignTokens.Opacity.shadow)).frame(height: DesignTokens.Spacing.borderWidth)
+                    .padding(.horizontal, DesignTokens.Spacing.tiny)
+                Rectangle()
+                    .fill(Color.appBorder.opacity(DesignTokens.Opacity.soft))
+                    .frame(height: DesignTokens.Spacing.borderWidth)
             }
 
             HStack(spacing: isDesktop ? DesignTokens.Spacing.medium : DesignTokens.Spacing.large) {
-                ThirdPartyIconButton(id: FeatureConstants.OAuthProviderId.apple, icon: DesignTokens.Icons.appleLogo, isSystem: true, color: .primary, isDesktopStyle: isDesktop) {
+                ThirdPartyIconButton(
+                    id: FeatureConstants.OAuthProviderId.apple,
+                    label: "Apple",
+                    icon: DesignTokens.Icons.appleLogo,
+                    isSystem: true,
+                    color: .primary,
+                    isDesktopStyle: isDesktop
+                ) {
                     handleThirdPartyLogin(AppleAuthStrategy())
                 }
-                ThirdPartyIconButton(id: FeatureConstants.OAuthProviderId.google, icon: DesignTokens.Icons.googleLogo, isSystem: false, color: Color.theme.blue, isDesktopStyle: isDesktop) {
+                ThirdPartyIconButton(
+                    id: FeatureConstants.OAuthProviderId.google,
+                    label: "Google",
+                    icon: DesignTokens.Icons.googleLogo,
+                    isSystem: false,
+                    color: Color.theme.blue,
+                    isDesktopStyle: isDesktop
+                ) {
                     handleThirdPartyLogin(GoogleAuthStrategy())
                 }
-                ThirdPartyIconButton(id: FeatureConstants.OAuthProviderId.github, icon: DesignTokens.Icons.githubLogo, isSystem: false, color: .primary, isDesktopStyle: isDesktop) {
+                ThirdPartyIconButton(
+                    id: FeatureConstants.OAuthProviderId.github,
+                    label: "GitHub",
+                    icon: DesignTokens.Icons.githubLogo,
+                    isSystem: false,
+                    color: .primary,
+                    isDesktopStyle: isDesktop
+                ) {
                     handleThirdPartyLogin(GitHubAuthStrategy())
                 }
             }
@@ -64,6 +89,7 @@ struct AuthOAuthPanel: View {
 /// 第三方登录图标按钮
 struct ThirdPartyIconButton: View {
     let id: String
+    let label: String
     let icon: String
     let isSystem: Bool
     let color: Color
@@ -71,8 +97,17 @@ struct ThirdPartyIconButton: View {
     let action: () -> Void
     @State private var isHovered = false
 
-    init(id: String, icon: String, isSystem: Bool = true, color: Color, isDesktopStyle: Bool = false, action: @escaping () -> Void) {
+    init(
+        id: String,
+        label: String = "",
+        icon: String,
+        isSystem: Bool = true,
+        color: Color,
+        isDesktopStyle: Bool = false,
+        action: @escaping () -> Void
+    ) {
         self.id = id
+        self.label = label
         self.icon = icon
         self.isSystem = isSystem
         self.color = color
@@ -84,21 +119,28 @@ struct ThirdPartyIconButton: View {
         Button(action: action) {
             if isDesktopStyle {
                 let cardShape = RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius, style: .continuous)
-                ZStack {
-                    cardShape
-                        .fill(Color.appCard.opacity(isHovered ? DesignTokens.Opacity.prominent : DesignTokens.Opacity.medium))
-                        .frame(maxWidth: .infinity)
-                        .frame(height: DesignTokens.Spacing.Auth.thirdPartyIconContainerSize)
-                        .overlay(
-                            cardShape
-                                .strokeBorder(
-                                    Color.appBorder.opacity(isHovered ? DesignTokens.Opacity.medium : DesignTokens.Opacity.soft),
-                                    lineWidth: DesignTokens.Spacing.borderWidth
-                                )
-                        )
-
+                HStack(spacing: DesignTokens.Spacing.small) {
                     providerIcon
+                    if !label.isEmpty {
+                        Text(label)
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(.appText)
+                            .lineLimit(1)
+                    }
                 }
+                .frame(maxWidth: .infinity)
+                .frame(height: DesignTokens.Spacing.Auth.thirdPartyIconContainerSize)
+                .background(
+                    cardShape
+                        .fill(Color.theme.white.opacity(isHovered ? DesignTokens.Opacity.subtle : DesignTokens.Opacity.light))
+                )
+                .overlay(
+                    cardShape
+                        .strokeBorder(
+                            Color.theme.white.opacity(isHovered ? DesignTokens.Opacity.shadow : DesignTokens.Opacity.glass),
+                            lineWidth: DesignTokens.Spacing.borderWidth
+                        )
+                )
                 .contentShape(cardShape)
             } else {
                 ZStack {

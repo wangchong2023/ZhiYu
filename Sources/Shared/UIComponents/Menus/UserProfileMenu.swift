@@ -19,8 +19,10 @@ struct UserProfileMenu: View {
     @Environment(ThemeManager.self) var themeManager
     // property wrapper 必须位于 struct 顶层，禁止放在 body 内 #if 分支
     @Environment(\.openWindow) private var openWindow
+    @Environment(\.dismissWindow) private var dismissWindow
     
     @State private var isShowingPopover = false
+    @State private var isHoveringMacSettingsRow = false
     @State private var showWatchMenu = false
     @State private var showAbout = false
     @State private var showSettings = false
@@ -73,67 +75,69 @@ struct UserProfileMenu: View {
             }
         }
         #elseif os(macOS)
-        // macOS：设置走原生 SettingsLink，个人资料/订阅/插件走辅助窗口，退出走 authService.logout()
-        // macOS 27+ 默认隐藏 Menu 内部普通 Button 的 SF Symbol，必须在 Menu 内容内部显式应用 .labelStyle(.titleAndIcon) 强制渲染图标。
-        Menu {
-            Group {
-                Button(action: {
-                    HapticFeedback.shared.trigger(.selection)
-                    guard UserProfileMenu.canOpenAuxWindow(
-                        isLoggedIn: AuthSession.shared.isLoggedIn,
-                        isGuest: AuthSession.shared.isGuest
-                    ) else { return }
-                    openWindow(id: "profile")
-                }) {
-                    Label(
-                        authService.currentUser?.name ?? L10n.Auth.profileAndQuota,
-                        systemImage: DesignTokens.Icons.personCropFill
-                    )
-                }
-
-                Divider()
-
-                SettingsLink {
-                    Label(L10n.Common.settings, systemImage: DesignTokens.Icons.settings)
-                }
-                .accessibilityIdentifier("settingsMenuButton")
-
-                Button(action: {
-                    guard UserProfileMenu.canOpenAuxWindow(
-                        isLoggedIn: AuthSession.shared.isLoggedIn,
-                        isGuest: AuthSession.shared.isGuest
-                    ) else { return }
-                    openWindow(id: "plan")
-                }) {
-                    Label(L10n.Auth.subscription, systemImage: "creditcard.fill")
-                }
-
-                Button(action: {
-                    guard UserProfileMenu.canOpenAuxWindow(
-                        isLoggedIn: AuthSession.shared.isLoggedIn,
-                        isGuest: AuthSession.shared.isGuest
-                    ) else { return }
-                    openWindow(id: "plugins")
-                }) {
-                    Label(L10n.Plugin.title, systemImage: "puzzlepiece.extension.fill")
-                }
-
-                Divider()
-
-                Button(role: .destructive, action: {
-                    HapticFeedback.shared.trigger(.selection)
-                    authService.logout()
-                }) {
-                    Label(L10n.Common.logout, systemImage: DesignTokens.Icons.logout)
-                }
-                .accessibilityIdentifier("logoutButton")
-            }
-            .labelStyle(.titleAndIcon)
-        } label: {
+        // macOS：使用宽敞的桌面悬浮 Popover（320pt 宽 + 头像/邮箱头部 + .body 字号 + 悬停态），
+        // 避免系统原生 NSMenu 13pt 紧凑排版导致视觉偏小。
+        Button(action: {
+            HapticFeedback.shared.trigger(.selection)
+            isShowingPopover.toggle()
+        }) {
             profileLabel
         }
         .appToolbarButtonStyle()
         .accessibilityIdentifier("userProfileMenuButton")
+        .popover(isPresented: $isShowingPopover, arrowEdge: .bottom) {
+            CustomProfilePopover(
+                showMenuPopover: $isShowingPopover,
+                onAction: { action in
+                    guard UserProfileMenu.canOpenAuxWindow(
+                        isLoggedIn: AuthSession.shared.isLoggedIn,
+                        isGuest: AuthSession.shared.isGuest
+                    ) else { return }
+                    let targetId: String
+                    switch action {
+                    case .profile: targetId = "profile"
+                    case .plan: targetId = "plan"
+                    case .plugins: targetId = "plugins"
+                    case .aiSettings: targetId = "ai-settings"
+                    case .settings: return
+                    }
+                    // 互斥关闭其余已打开的头像菜单辅助窗口与设置窗口，确保同时最多只打开 1 个
+                    for otherId in ProfilePopoverConstants.auxWindowIDs where otherId != targetId {
+                        dismissWindow(id: otherId)
+                    }
+                    NSApp?.windows
+                        .filter { $0.identifier?.rawValue.contains("Settings") == true }
+                        .forEach { $0.close() }
+                    openWindow(id: targetId)
+                },
+                customSettingsRow: {
+                    SettingsLink {
+                        CustomProfilePopover<EmptyView>.menuRowLabel(
+                            icon: DesignTokens.Icons.settings,
+                            color: .blue,
+                            title: L10n.Common.settings,
+                            trailingHint: "⌘,",
+                            isHovered: isHoveringMacSettingsRow
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .accessibilityIdentifier("settingsMenuButton")
+                    .onHoverIfAvailable { hovering in
+                        isHoveringMacSettingsRow = hovering
+                    }
+                    .simultaneousGesture(TapGesture().onEnded {
+                        for auxId in ProfilePopoverConstants.auxWindowIDs {
+                            dismissWindow(id: auxId)
+                        }
+                        isShowingPopover = false
+                    })
+                }
+            )
+            .frame(width: ProfilePopoverConstants.macMenuWidth)
+            .environment(authService)
+            .environment(themeManager)
+        }
         #else
         // iOS/iPadOS：使用原生 Menu 控件，彻底解决 ToolbarItem 内部 popover 状态失效导致的点击无响应问题
         Menu {
@@ -201,11 +205,11 @@ struct UserProfileMenu: View {
         Group {
             if authService.isGuest {
                 Image(systemName: DesignTokens.Icons.personCrop)
-                    .font(.system(size: DesignTokens.Typography.bodyFontSize, weight: .medium))
+                    .font(.system(size: DesignTokens.Metrics.titleFontSize, weight: .medium))
                     .symbolRenderingMode(.hierarchical)
             } else {
                 Image(systemName: DesignTokens.Icons.personCropFill)
-                    .font(.system(size: DesignTokens.Typography.headlineFontSize, weight: .medium))
+                    .font(.system(size: DesignTokens.Metrics.titleFontSize, weight: .medium))
                     .symbolRenderingMode(.hierarchical)
             }
         }
@@ -248,7 +252,7 @@ struct UserProfileMenuSheetContent: View {
                 }
             )
         }
-        .frame(width: CustomProfilePopover.Constants.menuWidth, height: CustomProfilePopover.Constants.menuHeight)
+        .frame(width: ProfilePopoverConstants.menuWidth, height: ProfilePopoverConstants.menuHeight)
         .environment(authService)
         .environment(store)
         .environment(router)
@@ -277,26 +281,49 @@ struct UserProfileMenuSheetContent: View {
 }
 
 // MARK: - 自定义个人中心悬浮弹窗
-struct CustomProfilePopover: View {
+@MainActor
+private enum ProfilePopoverConstants {
+    #if os(iOS)
+    /// iPad 大屏：菜单宽度 300pt
+    static let menuWidth: CGFloat = UIDevice.current.userInterfaceIdiom == .pad ? 300 : 280
+    #else
+    static let menuWidth: CGFloat = 320
+    #endif
+    static let macMenuWidth: CGFloat = 236
+    static let menuHeight: CGFloat = 360
+    static let iconBoxSize: CGFloat = 30
+    static let auxWindowIDs: [String] = ["profile", "plan", "ai-settings", "plugins"]
+}
+
+struct CustomProfilePopover<SettingsRow: View>: View {
     @Environment(AuthService.self) var authService
     @Environment(ThemeManager.self) var themeManager
     
-    @MainActor
-    fileprivate enum Constants {
-        #if os(iOS)
-        /// iPad 大屏：菜单宽度 300pt
-        static let menuWidth: CGFloat = UIDevice.current.userInterfaceIdiom == .pad ? 300 : 280
-        #else
-        static let menuWidth: CGFloat = 280
-        #endif
-        static let menuHeight: CGFloat = 360
-        static let iconBoxSize: CGFloat = 30
-    }
-    
     @State private var showSignOutAlert = false
+    @State private var hoveredRowTitle: String?
 
     @Binding var showMenuPopover: Bool
     var onAction: ((UserProfileMenu.MenuAction) -> Void)?
+    private let customSettingsRow: (() -> SettingsRow)?
+
+    init(
+        showMenuPopover: Binding<Bool>,
+        onAction: ((UserProfileMenu.MenuAction) -> Void)? = nil,
+        @ViewBuilder customSettingsRow: @escaping () -> SettingsRow
+    ) {
+        self._showMenuPopover = showMenuPopover
+        self.onAction = onAction
+        self.customSettingsRow = customSettingsRow
+    }
+
+    init(
+        showMenuPopover: Binding<Bool>,
+        onAction: ((UserProfileMenu.MenuAction) -> Void)? = nil
+    ) where SettingsRow == EmptyView {
+        self._showMenuPopover = showMenuPopover
+        self.onAction = onAction
+        self.customSettingsRow = nil
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -347,11 +374,15 @@ struct CustomProfilePopover: View {
 
             // 菜单列表（一次性完整平铺展示，防止出现滚动截断）
             VStack(spacing: DesignTokens.Spacing.tiny) {
-                menuRow(icon: "gearshape.fill", color: .blue, title: L10n.Common.settings) {
-                    onAction?(.settings)
-                    showMenuPopover = false
+                if let customSettingsRow {
+                    customSettingsRow()
+                } else {
+                    menuRow(icon: "gearshape.fill", color: .blue, title: L10n.Common.settings) {
+                        onAction?(.settings)
+                        showMenuPopover = false
+                    }
+                    .accessibilityIdentifier("settingsMenuButton")
                 }
-                .accessibilityIdentifier("settingsMenuButton")
                 
                 menuRow(icon: "creditcard.fill", color: Color(hue: 0.62, saturation: 0.65, brightness: 0.82), title: L10n.Auth.subscription) {
                     onAction?(.plan)
@@ -373,7 +404,7 @@ struct CustomProfilePopover: View {
                     .padding(.vertical, DesignTokens.Spacing.tiny)
                     .opacity(DesignTokens.Opacity.soft)
                 
-                menuRow(icon: DesignTokens.Icons.logout, color: .red, title: L10n.Common.logout, textColor: .red) {
+                menuRow(icon: DesignTokens.Icons.logout, color: .red, title: L10n.Common.logout, textColor: .red, showsChevron: false) {
                     showMenuPopover = false
                     authService.logout()
                 }
@@ -387,33 +418,77 @@ struct CustomProfilePopover: View {
         )
     }
     
-    private func menuRow(icon: String, color: Color, title: String, textColor: Color = .appText, action: @escaping () -> Void) -> some View {
-        Button(action: {
+    static func menuRowLabel(
+        icon: String,
+        color: Color,
+        title: String,
+        textColor: Color = .appText,
+        trailingHint: String? = nil,
+        showsChevron: Bool = false,
+        isHovered: Bool = false
+    ) -> some View {
+        let rowShape = RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius, style: .continuous)
+        return HStack(spacing: DesignTokens.Spacing.medium) {
+            ZStack {
+                RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius)
+                    .fill(color.opacity(DesignTokens.Opacity.glass))
+                    .frame(width: ProfilePopoverConstants.iconBoxSize, height: ProfilePopoverConstants.iconBoxSize)
+                Image(systemName: icon)
+                    .font(.system(size: DesignTokens.SystemFontSize.body, weight: .semibold))
+                    .symbolRenderingMode(.monochrome)
+                    .foregroundStyle(color)
+            }
+
+            Text(title)
+                .font(.body.weight(.medium))
+                .foregroundStyle(textColor)
+                .lineLimit(1)
+            Spacer()
+            if let trailingHint {
+                Text(trailingHint)
+                    .font(.caption.monospaced())
+                    .foregroundStyle(.appSecondary)
+            } else if showsChevron {
+                Image(systemName: DesignTokens.Icons.forward)
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.appSecondary.opacity(DesignTokens.Opacity.soft))
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, DesignTokens.Spacing.small)
+        .padding(.vertical, DesignTokens.SystemSpacing.small)
+        .background(
+            rowShape.fill(isHovered ? Color.appAccent.opacity(DesignTokens.Opacity.glass) : Color.clear)
+        )
+        .contentShape(rowShape)
+    }
+
+    private func menuRow(
+        icon: String,
+        color: Color,
+        title: String,
+        textColor: Color = .appText,
+        showsChevron: Bool = true,
+        action: @escaping () -> Void
+    ) -> some View {
+        let isHovered = hoveredRowTitle == title
+        return Button(action: {
             HapticFeedback.shared.trigger(.selection)
             action()
         }) {
-            HStack(spacing: DesignTokens.Spacing.medium) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius)
-                        .fill(color.opacity(DesignTokens.Opacity.glass))
-                        .frame(width: Constants.iconBoxSize, height: Constants.iconBoxSize)
-                    Image(systemName: icon)
-                        .font(.system(size: DesignTokens.SystemFontSize.subheadline, weight: .semibold)) // Dynamic Type
-                        .symbolRenderingMode(.monochrome)
-                        .foregroundStyle(color)
-                }
-                
-                Text(title)
-                    .font(.subheadline)
-                    .foregroundStyle(textColor)
-                Spacer()
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, DesignTokens.Spacing.small)
-            .padding(.vertical, DesignTokens.SystemSpacing.small)
-            .contentShape(Rectangle())
+            Self.menuRowLabel(
+                icon: icon,
+                color: color,
+                title: title,
+                textColor: textColor,
+                showsChevron: showsChevron,
+                isHovered: isHovered
+            )
         }
         .buttonStyle(.plain)
         .frame(maxWidth: .infinity, alignment: .leading)
+        .onHoverIfAvailable { hovering in
+            hoveredRowTitle = hovering ? title : (hoveredRowTitle == title ? nil : hoveredRowTitle)
+        }
     }
 }

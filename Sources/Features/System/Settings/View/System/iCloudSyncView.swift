@@ -139,6 +139,7 @@ struct iCloudSyncView: View {
         }
         .sheet(item: $coordinator.activeConflict) { conflictInfo in
             ConflictDiffView(conflictInfo: conflictInfo, store: store)
+                .appDesktopSheetSize(.large)
         }
         .onDisappear {
             coordinator.onDisappear()

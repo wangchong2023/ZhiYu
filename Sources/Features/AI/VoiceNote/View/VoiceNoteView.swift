@@ -68,6 +68,7 @@ struct VoiceNoteView: View {
         .hideNavigationBarIfIOS(true)
         .sheet(isPresented: $showSaveSheet) {
             SaveVoiceNoteSheet(speechService: speechService, title: $noteTitle)
+                .appDesktopSheetSize(.compact)
         }
         .onReceive(timer) { _ in
             guard speechService.isRecording, let start = recordingStartTime else { return }

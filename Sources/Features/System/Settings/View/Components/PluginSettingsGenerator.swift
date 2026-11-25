@@ -16,6 +16,7 @@ import UFPCore
 struct PluginCustomSettingsView: View {
     let tab: PluginSettingTab
     @Environment(\.dismiss) var dismiss
+    @Environment(\.interfaceIdiom) private var idiom
     @Dependency(\.pluginRegistry) var registry
     
     // 自动双向绑定状态
@@ -36,16 +37,21 @@ struct PluginCustomSettingsView: View {
             }
             
             Section {
-                Button(action: {
-                    // 保存最终快照
-                    HapticFeedback.shared.trigger(.success)
-                    dismiss()
-                }) {
-                    Text(L10n.Common.done)
-                        .frame(maxWidth: .infinity)
+                HStack {
+                    if idiom == .mac { Spacer() }
+                    Button(action: {
+                        // 保存最终快照
+                        HapticFeedback.shared.trigger(.success)
+                        dismiss()
+                    }) {
+                        Text(L10n.Common.done)
+                            .frame(maxWidth: idiom == .mac ? nil : .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
                 }
             }
         }
+        .appGroupedFormStyle()
         .scrollContentBackground(.hidden)
         .background(Color.appBackground)
         .tint(Color.appAccent)

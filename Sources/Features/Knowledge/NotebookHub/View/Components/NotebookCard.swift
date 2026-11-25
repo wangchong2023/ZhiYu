@@ -53,10 +53,26 @@ struct NotebookCard: View {
                 
                 Spacer(minLength: DesignTokens.Spacing.small)
                 
-                // 4. 元数据底部说明（采用强类型相对时间表达，保持跨语言的国际化适配）
-                Text("\(L10n.Vault.lastEdited) \(notebook.updatedAt.formatted(.relative(presentation: .numeric)))")
-                    .font(.caption2.weight(.medium))
-                    .foregroundStyle(.secondary.opacity(DesignTokens.Opacity.dim))
+                // 4. 元数据底部说明（页面数量胶囊 + 强类型相对编辑时间）
+                HStack(spacing: DesignTokens.Spacing.small) {
+                    Label(
+                        "\(notebook.pageCount) \(L10n.Vault.pageCountSuffix)",
+                        systemImage: DesignTokens.Icons.document
+                    )
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(colorForVault)
+                    .padding(.horizontal, DesignTokens.Spacing.small)
+                    .padding(.vertical, DesignTokens.Spacing.atomic)
+                    .background(colorForVault.opacity(DesignTokens.Opacity.subtle))
+                    .clipShape(Capsule())
+
+                    Spacer(minLength: DesignTokens.Spacing.tiny)
+
+                    Text("\(L10n.Vault.lastEdited) \(notebook.updatedAt.formatted(.relative(presentation: .numeric)))")
+                        .font(.caption2.weight(.medium))
+                        .foregroundStyle(.secondary.opacity(DesignTokens.Opacity.dim))
+                        .lineLimit(1)
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .frame(height: DesignTokens.Metrics.notebookCardHeight)

@@ -239,7 +239,13 @@ public extension View {
         #if os(iOS)
         self.fullScreenCover(isPresented: isPresented, onDismiss: onDismiss, content: content)
         #else
-        self.sheet(isPresented: isPresented, onDismiss: onDismiss, content: content)
+        self.sheet(isPresented: isPresented, onDismiss: onDismiss) {
+            content()
+                .frame(
+                    minWidth: DesignTokens.Metrics.macSettingsWindowWidth,
+                    minHeight: DesignTokens.Metrics.macSettingsWindowHeight
+                )
+        }
         #endif
     }
 
@@ -253,7 +259,13 @@ public extension View {
         #if os(iOS)
         self.fullScreenCover(item: item, onDismiss: onDismiss, content: content)
         #else
-        self.sheet(item: item, onDismiss: onDismiss, content: content)
+        self.sheet(item: item, onDismiss: onDismiss) { value in
+            content(value)
+                .frame(
+                    minWidth: DesignTokens.Metrics.macSettingsWindowWidth,
+                    minHeight: DesignTokens.Metrics.macSettingsWindowHeight
+                )
+        }
         #endif
     }
 }

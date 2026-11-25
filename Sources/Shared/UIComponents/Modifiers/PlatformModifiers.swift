@@ -363,6 +363,11 @@ public extension View {
         modifier(DesktopReadableWidthModifier(maxWidth: maxWidth))
     }
 
+    /// macOS 桌面端 `.sheet()` 弹窗语义化最小宽高约束（防止 macOS 弹窗塌缩成极窄小窗；iOS/watchOS 无影响）。
+    func appDesktopSheetSize(_ preset: DesktopSheetPreset = .standard) -> some View {
+        modifier(DesktopSheetSizeModifier(preset: preset))
+    }
+
     /// macOS NavigationSplitView 侧边栏列移除系统默认 sidebarToggle（仅在 sidebar 列上生效）
     @ViewBuilder
     func appHideSystemSidebarToggle() -> some View {
@@ -374,29 +379,18 @@ public extension View {
     }
 
     /// macOS NavigationSplitView 右侧 detail 窗体导航栏：
-    /// 挂载于 detail 列，按「主侧边栏折叠 →（可选）知识库二级导航折叠 → VaultBadge」顺序排列，
-    /// 始终紧贴右侧主窗体左缘，随分栏展开/折叠平滑跟随。
+    /// 主侧边栏折叠按钮已归位至左侧窗体交通灯旁（macOS 原生 sidebarToggle）；
+    /// 右侧 detail 工具栏仅保留本窗体控件：「（可选）知识库二级导航折叠 → VaultBadge」。
     @ViewBuilder
     func appCustomSidebarToggle(
-        visibility: Binding<NavigationSplitViewVisibility>,
+        visibility _: Binding<NavigationSplitViewVisibility>,
         secondaryVisibility: Binding<Bool>? = nil
     ) -> some View {
         #if os(macOS)
         self
             .toolbar {
-                ToolbarItemGroup(placement: .navigation) {
-                    Button {
-                        withAnimation(DesignTokens.Animation.Config.prominentSpring) {
-                            visibility.wrappedValue = (visibility.wrappedValue == .detailOnly) ? .all : .detailOnly
-                        }
-                    } label: {
-                        Image(systemName: DesignTokens.Icons.sidebarToggle)
-                            .appToolbarItemStandardFrame()
-                    }
-                    .help(L10n.Common.Sidebar.toggle)
-                    .accessibilityIdentifier("toggleSidebarButton")
-
-                    if let secondaryVisibility {
+                if let secondaryVisibility {
+                    ToolbarItem(placement: .navigation) {
                         Button {
                             withAnimation(DesignTokens.Animation.Config.prominentSpring) {
                                 secondaryVisibility.wrappedValue.toggle()
@@ -409,13 +403,55 @@ public extension View {
                         .help(L10n.Common.Sidebar.title)
                         .accessibilityIdentifier("toggleKnowledgeSidebarButton")
                     }
+                }
 
+                ToolbarItem(placement: .navigation) {
                     VaultBadge()
                 }
             }
         #else
         self
         #endif
+    }
+}
+
+/// macOS 桌面端弹窗尺寸分档（全量基于 DesignTokens 既有令牌）
+public enum DesktopSheetPreset {
+    /// 轻量表单（500 × 500pt）：新建/编辑笔记本、链接导入、创建协作房间、Token/服务器配置等
+    case compact
+    /// 标准面板（560 × 600pt）：新建页面、反向链接、图标选择器、提示词、政策协议、合成参数等
+    case standard
+    /// 大尺寸诊断/预览（820 × 600pt）：知识巡检、洞察面板、性能监控、快照历史、合成预览、模型实验室配置等
+    case large
+
+    var minWidth: CGFloat {
+        switch self {
+        case .compact: DesignTokens.Spacing.Decorator.desktopSheetMinWidth
+        case .standard: DesignTokens.Metrics.macProfileWindowWidth
+        case .large: DesignTokens.Metrics.macSettingsWindowWidth
+        }
+    }
+
+    var minHeight: CGFloat {
+        switch self {
+        case .compact: DesignTokens.Spacing.Decorator.desktopSheetMinWidth
+        case .standard: DesignTokens.Spacing.Decorator.desktopSheetMinHeight
+        case .large: DesignTokens.Metrics.macSettingsWindowHeight
+        }
+    }
+}
+
+/// macOS 桌面弹窗最小宽高修饰符（基于运行时 Trait `interfaceIdiom`，零平台宏）
+private struct DesktopSheetSizeModifier: ViewModifier {
+    @Environment(\.interfaceIdiom) private var idiom
+    let preset: DesktopSheetPreset
+
+    func body(content: Content) -> some View {
+        if idiom == .mac {
+            content.frame(minWidth: preset.minWidth, minHeight: preset.minHeight)
+        } else {
+            content
+        }
     }
 }
 

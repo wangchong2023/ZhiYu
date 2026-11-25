@@ -118,6 +118,7 @@ struct PDFIngestSheet: View {
                 Text(L10n.Ingest.PDF.pageRange).tag(PDFIngestMode.pageRange)
                 Text(L10n.Ingest.PDF.highlightsOnly).tag(PDFIngestMode.highlights)
             }
+            .labelsHidden()
             .segmentedPickerStyleIfAvailable()
 
             if ingestMode == .pageRange {

@@ -36,6 +36,7 @@ struct CreatePageView: View {
                 templateSection
                 contentSection
             }
+            .appGroupedFormStyle()
             .scrollContentBackground(.hidden)
             .background(PageBackgroundView(accentColor: .appAccent))
             .navigationTitle(L10n.Creation.title)

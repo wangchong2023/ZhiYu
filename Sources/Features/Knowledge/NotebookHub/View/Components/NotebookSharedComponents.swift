@@ -60,3 +60,112 @@ struct NotebookIconView<S: Shape>: View {
         .accessibilityHidden(true)
     }
 }
+
+// MARK: - macOS 方案 A：统一工作台 Hero 条与快速模板区
+
+/// macOS 笔记本工作台顶部 Hero 概览条（标题 + 真实资产统计胶囊 + 紧凑搜索 + 主 CTA）
+struct NotebookHubDesktopHeroBar: View {
+    @Bindable var viewModel: NotebookHubViewModel
+    let notebookCount: Int
+    let totalPageCount: Int
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: DesignTokens.Spacing.standardPadding) {
+            HStack(alignment: .center, spacing: DesignTokens.Spacing.standardPadding) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
+                    Text(L10n.Vault.homeTitle)
+                        .font(.system(size: DesignTokens.SystemFontSize.hero, weight: .bold, design: .rounded))
+                        .foregroundStyle(.appText)
+
+                    Text(L10n.Vault.subtitle)
+                        .font(.subheadline)
+                        .foregroundStyle(.appSecondary)
+                }
+
+                Spacer(minLength: DesignTokens.Spacing.standardPadding)
+
+                HStack(spacing: DesignTokens.Spacing.medium) {
+                    desktopStatPill(
+                        icon: DesignTokens.Icons.knowledge,
+                        value: "\(notebookCount)",
+                        label: L10n.Vault.homeTitle,
+                        tint: Color.appAccent
+                    )
+                    desktopStatPill(
+                        icon: DesignTokens.Icons.document,
+                        value: "\(totalPageCount)",
+                        label: L10n.Vault.pageCountSuffix,
+                        tint: Color.theme.purple
+                    )
+
+                    // 紧凑桌面搜索框
+                    HStack(spacing: DesignTokens.Spacing.small) {
+                        Image(systemName: DesignTokens.Icons.search)
+                            .font(.subheadline)
+                            .foregroundStyle(.appSecondary)
+                        TextField(L10n.Search.base, text: $viewModel.searchText)
+                            .textFieldStyle(.plain)
+                            .font(.subheadline)
+                        if !viewModel.searchText.isEmpty {
+                            Button { viewModel.searchText = "" } label: {
+                                ClearSearchButton()
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding(.horizontal, DesignTokens.Spacing.medium)
+                    .padding(.vertical, DesignTokens.Spacing.small)
+                    .frame(width: DesignTokens.Metrics.macSidebarWidth)
+                    .background(Color.appCard.opacity(DesignTokens.Opacity.dim))
+                    .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.mediumRadius, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: DesignTokens.Spacing.mediumRadius, style: .continuous)
+                            .strokeBorder(Color.appBorder.opacity(DesignTokens.Opacity.soft), lineWidth: DesignTokens.Spacing.borderWidth)
+                    )
+
+                    // 主 CTA：新建笔记本
+                    Button {
+                        viewModel.isShowingCreateSheet = true
+                    } label: {
+                        HStack(spacing: DesignTokens.Spacing.small) {
+                            Image(systemName: DesignTokens.Icons.plus)
+                                .font(.subheadline.weight(.semibold))
+                            Text(L10n.Vault.new)
+                                .font(.subheadline.weight(.semibold))
+                        }
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, DesignTokens.Spacing.standardPadding)
+                        .padding(.vertical, DesignTokens.Spacing.small)
+                        .background(Color.appAccent)
+                        .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.mediumRadius, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+        .padding(.horizontal, DesignSystem.Vault.homePadding)
+        .padding(.top, DesignTokens.Spacing.standardPadding)
+    }
+
+    private func desktopStatPill(icon: String, value: String, label: String, tint: Color) -> some View {
+        HStack(spacing: DesignTokens.Spacing.small) {
+            Image(systemName: icon)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(tint)
+            Text(value)
+                .font(.subheadline.weight(.bold))
+                .foregroundStyle(.appText)
+            Text(label)
+                .font(.caption)
+                .foregroundStyle(.appSecondary)
+        }
+        .padding(.horizontal, DesignTokens.Spacing.medium)
+        .padding(.vertical, DesignTokens.Spacing.small)
+        .background(Color.appCard.opacity(DesignTokens.Opacity.dim))
+        .clipShape(Capsule())
+        .overlay(
+            Capsule()
+                .strokeBorder(Color.appBorder.opacity(DesignTokens.Opacity.medium), lineWidth: DesignTokens.Spacing.borderWidth)
+        )
+    }
+}

@@ -94,6 +94,7 @@ public struct OnDeviceLLMSettingsView: View {
                 .appListRowBackground()
             }
             .insetGroupedListStyleIfIOS()
+            .appGroupedFormStyle()
             .scrollContentBackground(.hidden) // 隐藏 Form 默认的白色背景，实现高端毛玻璃穿透
         }
         .appToolbarBackgroundHidden()
@@ -101,6 +102,7 @@ public struct OnDeviceLLMSettingsView: View {
 .appNavigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showTestSheet) {
             OnDeviceTestView(onDeviceService: onDeviceService)
+                .appDesktopSheetSize(.standard)
         }
         .alert(L10n.AI.OnDevice.Error.inferenceFailed, isPresented: $showError) {
             Button(L10n.Common.ok, role: .cancel) {}

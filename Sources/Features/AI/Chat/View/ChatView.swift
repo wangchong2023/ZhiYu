@@ -317,6 +317,7 @@ struct ChatViewContent: View {
                         .toolbar { ToolbarItem(placement: .automatic) { Button(L10n.Common.close) { coordinator.showPrompts = false } } }
                 }
                 .presentationDetents([.large])
+                .appDesktopSheetSize(.standard)
             }
         }
     }

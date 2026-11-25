@@ -65,6 +65,7 @@ struct LintViewContent: View {
                     Text(L10n.Lint.title).tag(0)
                     Text(L10n.Lint.aiSuggestions).tag(1)
                 }
+                .labelsHidden()
                 .segmentedPickerStyleIfAvailable()
                 .padding(.horizontal, DesignTokens.Spacing.huge)
                 .padding(.vertical, DesignTokens.Spacing.tiny)

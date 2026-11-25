@@ -27,6 +27,7 @@ private enum InsightBusinessConstants {
 /// 知识治理健康检查总面板：包含仪表盘头部、指标网格与问题分组列表
 struct LintHealthCheckSection: View {
     @Environment(AppStore.self) var store
+    @Environment(\.interfaceIdiom) private var idiom
     let aiStore: AIWorkflowStore
     let healthColor: Color
     let onRun: () -> Void
@@ -163,7 +164,9 @@ struct LintHealthCheckSection: View {
     // MARK: - 指标网格
 
     private var metricsGrid: some View {
-        LazyVGrid(columns: [GridItem(.flexible(), spacing: DesignTokens.Spacing.standardPadding), GridItem(.flexible(), spacing: DesignTokens.Spacing.standardPadding)], spacing: DesignTokens.Spacing.standardPadding) {
+        let item = GridItem(.flexible(), spacing: DesignTokens.Spacing.standardPadding)
+        let columns = idiom == .mac ? [item, item, item, item] : [item, item]
+        return LazyVGrid(columns: columns, spacing: DesignTokens.Spacing.standardPadding) {
             InsightMetricCard(title: L10n.Lint.metricPages,
                               value: "\(store.pages.count)",
                               icon: DesignTokens.Icons.documentFill,

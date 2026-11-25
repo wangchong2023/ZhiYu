@@ -23,6 +23,8 @@ private enum SystemStatsConstants {
 /// 提供 AI 资源消耗、存储空间分布及数据溯源的多维度监控。
 struct SystemStatsView: View {
     @Environment(ThemeManager.self) var themeManager
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.interfaceIdiom) private var idiom
     
     // 使用协调器管理状态与交互
     @State private var coordinator = SystemStatsCoordinator()
@@ -56,15 +58,21 @@ struct SystemStatsView: View {
             
             ScrollView {
                 LazyVStack(spacing: 0) {
-                    // 分段选择器
-                    Picker("", selection: $selectedTab) {
-                        ForEach(Tab.allCases, id: \.self) { tab in
-                            Text(tab.title).tag(tab)
+                    // 分段选择器（与下方卡片保持左对齐与统一边距）
+                    HStack {
+                        Picker("", selection: $selectedTab) {
+                            ForEach(Tab.allCases, id: \.self) { tab in
+                                Text(tab.title).tag(tab)
+                            }
                         }
+                        .labelsHidden()
+                        .segmentedPickerStyleIfAvailable()
+                        .fixedSize()
+                        Spacer()
                     }
-                    .segmentedPickerStyleIfAvailable()
                     .padding(.horizontal, DesignTokens.Spacing.medium)
-                    .padding(.vertical, DesignTokens.Spacing.medium)
+                    .padding(.top, DesignTokens.Spacing.small)
+                    .padding(.bottom, DesignTokens.Spacing.medium)
                     
                     if coordinator.isLoading {
                         VStack {
@@ -85,11 +93,16 @@ struct SystemStatsView: View {
                 }
                 .padding(.bottom, DesignTokens.Spacing.huge) // 底部留白
             }
-            .background(PageBackgroundView(accentColor: .appAccent))
         }
         .appToolbarBackgroundHidden()
         .navigationTitle(L10n.Dashboard.stats.navigationTitleMonitor)
-        .doneDismissToolbar()
+        .toolbar {
+            if idiom != .mac {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(L10n.Common.done) { dismiss() }
+                }
+            }
+        }
         .task {
             await coordinator.loadStats()
         }

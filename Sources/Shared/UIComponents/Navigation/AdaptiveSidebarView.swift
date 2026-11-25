@@ -42,7 +42,11 @@ struct AdaptiveSidebarView: View {
                 // 挂载 "SidebarTab_taskCenter" 标识符供 UI 自动化测试精准定位
                 Button(action: handleTaskCenterClick) {
                     Label(L10n.AI.Task.centerTitle, systemImage: "arrow.triangle.2.circlepath")
+                        .foregroundStyle(.primary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
                 .accessibilityIdentifier("SidebarTab_taskCenter")
             }
         }
@@ -141,6 +145,7 @@ struct AdaptiveDetailView: View {
                 makePageDetailView(for: page)
             }
         }
+        .id(selectedTab)
     }
 
     /// 根据路由构建对应的内容视图，提供单元测试直接调用的入口

@@ -71,6 +71,7 @@ struct PageHistoryView: View {
                     selectedSnapshot = nil
                     showRollbackAlert = true
                 }
+                .appDesktopSheetSize(.large)
             }
             .alert(L10n.Knowledge.Page.confirmDelete, isPresented: $showRollbackAlert) {
                 Button(L10n.Knowledge.Page.History.rollback, role: .destructive) {

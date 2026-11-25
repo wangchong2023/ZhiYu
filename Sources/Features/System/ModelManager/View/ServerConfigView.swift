@@ -47,6 +47,7 @@ public struct ServerConfigView: View {
                 servers.append(server)
                 saveServers()
             })
+            .appDesktopSheetSize(.compact)
         }
         .sheet(item: $editingServer) { server in
             ServerEditSheet(server: server, onSave: { updated in
@@ -55,6 +56,7 @@ public struct ServerConfigView: View {
                     saveServers()
                 }
             })
+            .appDesktopSheetSize(.compact)
         }
         .onAppear {
             loadServers()
@@ -274,6 +276,7 @@ struct ServerEditSheet: View {
                     }
                     .appListRowBackground()
                 }
+                .appGroupedFormStyle()
                 .scrollContentBackground(.hidden)
             }
             .navigationTitle(server == nil ? L10n.ModelManager.Server.formAddTitle : L10n.ModelManager.Server.formEditTitle)

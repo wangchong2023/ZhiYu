@@ -27,8 +27,7 @@ struct PerformanceDashboardView: View {
     }
     
     var body: some View {
-        NavigationStack {
-            ScrollView {
+        ScrollView {
                 VStack(spacing: DesignTokens.Spacing.wide) {
                     // Memory
                     MetricCardView(
@@ -125,7 +124,6 @@ struct PerformanceDashboardView: View {
                 timer?.invalidate()
                 timer = nil
             }
-        }
     }
 }
 

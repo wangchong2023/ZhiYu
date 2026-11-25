@@ -176,7 +176,9 @@ struct TaskCenterView: View {
 
     // MARK: - Status Dashboard
     private var statusDashboard: some View {
-        LazyVGrid(columns: [GridItem(.flexible(), spacing: DesignSystem.Task.dashboardSpacing), GridItem(.flexible(), spacing: DesignSystem.Task.dashboardSpacing)], spacing: DesignSystem.Task.dashboardSpacing) {
+        let item = GridItem(.flexible(), spacing: DesignSystem.Task.dashboardSpacing)
+        let columns = idiom == .mac ? [item, item, item, item] : [item, item]
+        return LazyVGrid(columns: columns, spacing: DesignSystem.Task.dashboardSpacing) {
             summaryCard(type: .ingest, color: Color.theme.blue)
             summaryCard(type: .healthCheck, color: Color.theme.red)
             summaryCard(type: .aiScan, color: Color.theme.orange)

@@ -73,19 +73,17 @@ enum MacSceneBuilder {
         Settings {
             MacSettingsView()
                 .frame(
-                    minWidth: DesignTokens.Metrics.macSettingsWindowWidth,
-                    minHeight: DesignTokens.Metrics.macSettingsWindowHeight
+                    width: DesignTokens.Metrics.macSettingsWindowWidth,
+                    height: DesignTokens.Metrics.macSettingsWindowHeight
                 )
-                .modifier(MacAuxiliaryWindowCentering())
+                .modifier(MacAuxiliaryWindowCentering(hidesTitlebarText: true))
                 .modifier(SceneEnvironmentInjection(
                     appEnv: appEnv, appModel: appModel, dependencies: dependencies,
                     themeManager: themeManager, onboardingService: onboardingService
                 ))
         }
-        .defaultSize(
-            width: DesignTokens.Metrics.macSettingsWindowWidth,
-            height: DesignTokens.Metrics.macSettingsWindowHeight
-        )
+        .windowResizability(.contentSize)
+        .windowToolbarStyle(.unified)
         .defaultPosition(.center)
     }
 
@@ -118,6 +116,13 @@ enum MacSceneBuilder {
             height: DesignTokens.Metrics.macPlanWindowHeight,
             injection: injection
         ) { SubscriptionPlanView() }
+
+        auxiliaryWindow(
+            title: L10n.Settings.Section.ai, id: "ai-settings",
+            width: DesignTokens.Metrics.macSettingsWindowWidth,
+            height: DesignTokens.Metrics.macSettingsWindowHeight,
+            injection: injection
+        ) { AISettingsView(showsDismissButton: false, usesEmbeddedBackground: false) }
 
         auxiliaryWindow(
             title: L10n.Plugin.title, id: "plugins",
@@ -159,26 +164,40 @@ enum MacSceneBuilder {
 
 /// 确保 macOS 辅助窗口每次打开时精准居中于主窗口（或屏幕）中央，消除系统级联偏移导致的漂移感。
 private struct MacAuxiliaryWindowCentering: ViewModifier {
+    var hidesTitlebarText: Bool = false
+
     func body(content: Content) -> some View {
-        content.background(MacWindowCenteringAnchor())
+        content.background(MacWindowCenteringAnchor(hidesTitlebarText: hidesTitlebarText))
     }
 }
 
 private struct MacWindowCenteringAnchor: NSViewRepresentable {
+    var hidesTitlebarText: Bool = false
+
     func makeNSView(context: Context) -> CenteringNSView {
-        CenteringNSView()
+        let view = CenteringNSView()
+        view.hidesTitlebarText = hidesTitlebarText
+        return view
     }
 
-    func updateNSView(_ nsView: CenteringNSView, context: Context) {}
+    func updateNSView(_ nsView: CenteringNSView, context: Context) {
+        nsView.hidesTitlebarText = hidesTitlebarText
+    }
 
     final class CenteringNSView: NSView {
         private var hasCentered = false
+        var hidesTitlebarText = false
 
         override func viewDidMoveToWindow() {
             super.viewDidMoveToWindow()
             guard let targetWindow = window, !hasCentered else { return }
             hasCentered = true
-            DispatchQueue.main.async {
+            DispatchQueue.main.async { [hidesTitlebarText] in
+                targetWindow.toolbarStyle = .unified
+                if hidesTitlebarText {
+                    targetWindow.titleVisibility = .hidden
+                    targetWindow.titlebarAppearsTransparent = true
+                }
                 Self.center(window: targetWindow)
             }
         }

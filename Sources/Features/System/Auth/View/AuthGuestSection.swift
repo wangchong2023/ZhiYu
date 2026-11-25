@@ -20,7 +20,7 @@ struct AuthGuestSection: View {
     var body: some View {
         Button(action: { authService.continueAsGuest() }) {
             if AuthView.isDesktopLayout(idiom) {
-                HStack(spacing: DesignTokens.Spacing.tiny) {
+                HStack(spacing: DesignTokens.Spacing.small) {
                     Text(L10n.Auth.guestMode)
                         .font(.subheadline.weight(.medium))
                     Image(systemName: DesignTokens.Icons.arrowRight)
@@ -28,8 +28,19 @@ struct AuthGuestSection: View {
                 }
                 .foregroundStyle(isHovered ? .appAccent : .appSecondary)
                 .padding(.vertical, DesignTokens.Spacing.small)
-                .padding(.horizontal, DesignTokens.Spacing.medium)
-                .contentShape(Rectangle())
+                .padding(.horizontal, DesignTokens.Spacing.standardPadding)
+                .background(
+                    Capsule()
+                        .fill(Color.theme.white.opacity(isHovered ? DesignTokens.Opacity.light : DesignTokens.Opacity.faint))
+                )
+                .overlay(
+                    Capsule()
+                        .strokeBorder(
+                            Color.appBorder.opacity(isHovered ? DesignTokens.Opacity.soft : DesignTokens.Opacity.medium),
+                            lineWidth: DesignTokens.Spacing.borderWidth
+                        )
+                )
+                .contentShape(Capsule())
             } else {
                 Text(L10n.Auth.guestMode)
                     .font(.subheadline)

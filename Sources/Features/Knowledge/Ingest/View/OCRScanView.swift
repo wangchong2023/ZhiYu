@@ -91,6 +91,7 @@ struct OCRScanView: View {
                 }
                 .sheet(isPresented: $showIconPicker) {
                     IconPickerView(selectedIcon: $targetCustomIcon)
+                        .appDesktopSheetSize(.standard)
                 }
                 .alert(L10n.Ingest.OCR.scanFailed, isPresented: $showOCRError) {
                     Button(L10n.Common.ok, role: .cancel) {}

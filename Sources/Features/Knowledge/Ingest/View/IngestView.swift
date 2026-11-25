@@ -48,7 +48,7 @@ struct IngestView: View {
                 .padding(.horizontal)
                 .padding(.top, DesignTokens.Spacing.standardPadding)
                 .padding(.bottom, DesignTokens.Spacing.huge)
-                .appDesktopReadableWidth(DesignTokens.Metrics.macWideContentWidth)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .appTabToolbar(title: L10n.Ingest.title)
@@ -85,6 +85,7 @@ struct IngestView: View {
                 coordinator.pendingVoiceFileURL = audioURL
                 coordinator.hasNewContent = true
             })
+            .appDesktopSheetSize(.standard)
         }
         .sheet(isPresented: $coordinator.showOCRScan, onDismiss: {
             // Bug #66 修复：同上，用 hasNewContent 标志判断。
@@ -103,9 +104,16 @@ struct IngestView: View {
                 }
                 coordinator.hasNewContent = true
             })
+            .appDesktopSheetSize(.large)
         }
-        .sheet(isPresented: $coordinator.showURLImport) { URLImportSheet(urlText: $coordinator.newURL, onImport: { urls in coordinator.handleBatchURLImport(urls) }) }
-        .sheet(isPresented: $coordinator.showManualForm) { manualFormSheet }
+        .sheet(isPresented: $coordinator.showURLImport) {
+            URLImportSheet(urlText: $coordinator.newURL, onImport: { urls in coordinator.handleBatchURLImport(urls) })
+                .appDesktopSheetSize(.compact)
+        }
+        .sheet(isPresented: $coordinator.showManualForm) {
+            manualFormSheet
+                .appDesktopSheetSize(.standard)
+        }
         .onReceive(NotificationCenter.default.publisher(for: .importFromClipboard)) { _ in coordinator.performClipboardImport() }
         .appToolbarBackgroundHidden()
         .background(PageBackgroundView(accentColor: .appSource))

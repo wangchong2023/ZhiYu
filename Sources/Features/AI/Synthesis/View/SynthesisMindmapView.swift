@@ -44,6 +44,7 @@ struct SynthesisMindmapView: View {
                 Text(L10n.AI.Synthesis.actions).tag(0)
                 Text(L10n.AI.Synthesis.documentList).tag(1)
             }
+            .labelsHidden()
             .pickerStyle(.segmented)
             .padding(.horizontal, DesignTokens.Spacing.standardPadding)
             .padding(.top, DesignTokens.Spacing.small)

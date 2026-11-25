@@ -263,8 +263,8 @@ struct Graph3DView: View {
                     }
                     return nil
                 }
-            }.filter { $0.0 == selectedID || $0.1 == selectedID }
-            return Set(connectedEdges.flatMap { [$0.0, $0.1] })
+            }.filter { sourceID, targetID in sourceID == selectedID || targetID == selectedID }
+            return Set(connectedEdges.flatMap { sourceID, targetID in [sourceID, targetID] })
         }()
 
         for (index, page) in pages.enumerated() {

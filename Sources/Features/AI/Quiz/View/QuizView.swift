@@ -148,6 +148,7 @@ struct QuizView: View {
                             .primaryButtonLabelStyle()
                             .shadow(color: .appAccent.opacity(DesignTokens.Opacity.shadow), radius: 10, y: 5)
                     }
+                    .buttonStyle(.plain)
                     .padding(DesignTokens.Spacing.standardPadding)
                 }
             } else {
@@ -234,20 +235,30 @@ struct QuizView: View {
             Text(L10n.Quiz.backToPage)
                 .primaryButtonLabelStyle()
         }
+        .buttonStyle(.plain)
     }
 }
 
 // MARK: - 按钮样式辅助
 private extension View {
-    /// 主按钮标签样式（消除 QuizView 内重复的按钮文本样式链）
+    /// 主按钮标签样式（macOS 限制合理最大宽并居中，避免宽屏拉满长条；iOS 保持全宽触控友好）
     func primaryButtonLabelStyle() -> some View {
-        self
-            .font(.headline.weight(.bold))
+        modifier(QuizPrimaryButtonLabelModifier())
+    }
+}
+
+private struct QuizPrimaryButtonLabelModifier: ViewModifier {
+    @Environment(\.interfaceIdiom) private var idiom
+
+    func body(content: Content) -> some View {
+        content
+            .font(idiom == .mac ? .subheadline.weight(.semibold) : .headline.weight(.bold))
             .foregroundStyle(.white)
-            .frame(maxWidth: .infinity)
-            .padding(DesignTokens.Spacing.standardPadding)
+            .frame(maxWidth: idiom == .mac ? DesignTokens.Metrics.authFormWidth : .infinity)
+            .padding(.horizontal, DesignTokens.Spacing.wide)
+            .padding(.vertical, idiom == .mac ? DesignTokens.Spacing.medium : DesignTokens.Spacing.standardPadding)
             .background(Color.appAccent)
-            .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius))
+            .clipShape(RoundedRectangle(cornerRadius: idiom == .mac ? DesignTokens.Spacing.mediumRadius : DesignTokens.Spacing.cardRadius))
     }
 }
 

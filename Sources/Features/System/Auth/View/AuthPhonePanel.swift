@@ -25,10 +25,10 @@ struct AuthPhonePanel: View {
         let isDesktop = AuthView.isDesktopLayout(idiom)
         Group {
             if isDesktop {
-                VStack(alignment: .leading, spacing: DesignTokens.Spacing.large) {
-                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.giant) {
+                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
                         Text(authService.carrierMaskedPhone ?? authService.currentUser?.phone?.maskedPhoneNumber ?? L10n.Auth.login)
-                            .font(.system(size: DesignTokens.Typography.titleFontSize, weight: .bold, design: .rounded))
+                            .font(.system(size: DesignTokens.SystemFontSize.hero, weight: .bold, design: .rounded))
                             .foregroundStyle(.appText)
 
                         Text(L10n.Auth.overseasSubtitle)
@@ -36,9 +36,10 @@ struct AuthPhonePanel: View {
                             .foregroundStyle(.appSecondary)
                     }
 
-                    actionButton
-
-                    agreementSection
+                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.standardPadding) {
+                        actionButton
+                        agreementSection
+                    }
                 }
             } else {
                 VStack(spacing: DesignTokens.Spacing.large) {
