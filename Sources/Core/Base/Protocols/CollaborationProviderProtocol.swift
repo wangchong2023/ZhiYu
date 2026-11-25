@@ -104,7 +104,7 @@ enum CollaborationProviderKey: DependencyKey {
 
 /// 无操作协作服务（测试/预览占位，DI 未就绪时降级）
 @MainActor
-final class NoOpCollaborationProvider: CollaborationProviderProtocol, @unchecked Sendable {
+final class NoOpCollaborationProvider: CollaborationProviderProtocol {
     var delegate: CollaborationProviderDelegate?
     init() {}
     func startHosting(roomName: String, userName: String) {}

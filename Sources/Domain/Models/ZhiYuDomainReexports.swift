@@ -29,3 +29,4 @@ public typealias KnowledgePageFTS = ZhiYuDomain.KnowledgePageFTS
 public typealias PluginRecordFTS = ZhiYuDomain.PluginRecordFTS
 public typealias AgentTool = ZhiYuDomain.AgentTool
 public typealias PluginRecord = ZhiYuDomain.PluginRecord
+public typealias ToolItem = ZhiYuDomain.ToolItem

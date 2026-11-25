@@ -28,8 +28,8 @@ SCAN_ROOTS = [
 ]
 EXCLUDE_DIRS = {".git", ".build", ".swiftpm", "build", "DerivedData", "Tests"}
 
-# 存量水位线基线（2026-11-25 审计精准锁死：71 -> 62 / 10，零松弛余量，禁止新增）
-MAX_UNCHECKED_SENDABLE = 62
+# 存量水位线基线（2026-11-25 审计精准锁死：71 -> 62 -> 52 / 10，零松弛余量，禁止新增）
+MAX_UNCHECKED_SENDABLE = 52
 MAX_NONISOLATED_UNSAFE = 10
 
 UNCHECKED_SENDABLE_PATTERN = re.compile(r"@unchecked\s+Sendable\b")

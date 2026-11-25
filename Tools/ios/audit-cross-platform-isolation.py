@@ -98,6 +98,24 @@ def check_macos_sheet_sizing() -> list[str]:
     ]
 
 
+def check_infrastructure_zero_platform_macros() -> list[str]:
+    """确保 Sources/Infrastructure/ 保持 0 处 #if os() 平台宏（平台差异应走 canImport 或 Platforms/）。"""
+    infra_root = PROJECT_DIR / "Sources" / "Infrastructure"
+    if not infra_root.is_dir():
+        return []
+    hits: list[str] = []
+    macro_pattern = re.compile(r"#if\s+os\(")
+    for swift_file in sorted(infra_root.rglob("*.swift")):
+        rel = swift_file.relative_to(PROJECT_DIR)
+        for idx, line in enumerate(swift_file.read_text(encoding="utf-8", errors="ignore").splitlines(), start=1):
+            code_part = line.split("//", 1)[0]
+            if macro_pattern.search(code_part):
+                hits.append(f"{rel}:{idx}")
+    if not hits:
+        return []
+    return [f"Sources/Infrastructure/ 禁止出现 #if os()（共 {len(hits)} 处）：" + ", ".join(hits)]
+
+
 def main() -> int:
     """主入口：执行三平台隔离与桌面弹窗门禁审计。"""
     os.chdir(PROJECT_DIR)
@@ -110,6 +128,7 @@ def main() -> int:
     errors.extend(check_target_physical_isolation(template_text))
     errors.extend(check_watch_lightweight_dependencies(template_text))
     errors.extend(check_macos_sheet_sizing())
+    errors.extend(check_infrastructure_zero_platform_macros())
 
     if errors:
         print("❌ [Cross-Platform Isolation Audit] 发现以下跨平台隔离/弹窗规范违规：")

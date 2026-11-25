@@ -184,7 +184,7 @@ public enum AISynthesisServiceKey: DependencyKey {
 }
 
 /// 无操作 AI 知识综合服务（测试/预览占位，DI 未就绪时降级）
-public final class NoOpAISynthesisService: AISynthesisServiceProtocol, @unchecked Sendable {
+public final class NoOpAISynthesisService: AISynthesisServiceProtocol, Sendable {
     public init() {}
     public func summarize(content: String) async throws -> String { "" }
     public func generateMindMap(content: String) async throws -> String { "" }

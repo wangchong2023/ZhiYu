@@ -17,7 +17,7 @@ import Dependencies
 /// 全局任务管理中心
 @MainActor
 @Observable
-public final class TaskCenter: @unchecked Sendable {
+public final class TaskCenter {
     /// 单个任务保留的最大子日志条数（超出后从头部丢弃）
     private static let maxSubLogCount: Int = 50
 

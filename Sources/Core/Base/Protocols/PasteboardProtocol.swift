@@ -23,7 +23,7 @@ public protocol PasteboardProtocol: AnyObject, Sendable {
 
 /// PasteboardProtocol 的空操作实现，用于测试环境安全降级
 @MainActor
-public final class NoOpPasteboard: PasteboardProtocol, @unchecked Sendable {
+public final class NoOpPasteboard: PasteboardProtocol {
     private var _string: String?
     public init() {}
     public var string: String? {

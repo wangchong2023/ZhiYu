@@ -17,7 +17,7 @@ import Dependencies
 /// 插件运行时引擎：负责插件激活/停用、资源限流、安全熔断与内容拦截管道
 @MainActor
 @Observable
-final class PluginRuntime: @unchecked Sendable {
+final class PluginRuntime {
 
     /// 父注册中心弱引用（避免循环引用）
     @ObservationIgnored

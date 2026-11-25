@@ -20,7 +20,7 @@ import UFPStorage
 /// 负责全局状态同步、跨服务协调及业务流程封装。
 @Observable
 @MainActor
-public final class AppStore: @unchecked Sendable {
+public final class AppStore {
 
     // MARK: - 辅助类型
 

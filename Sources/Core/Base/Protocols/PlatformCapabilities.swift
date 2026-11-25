@@ -107,7 +107,7 @@ public final class NoOpBiometricAuthProvider: BiometricAuthProviderProtocol {
 }
 
 /// 无操作模型编译服务（测试/预览占位，DI 未就绪时降级）
-public final class NoOpMLModelCompiler: MLModelCompilerProtocol, @unchecked Sendable {
+public final class NoOpMLModelCompiler: MLModelCompilerProtocol, Sendable {
     public init() {}
     public var supportsCompilation: Bool { false }
     public func compileModel(at url: URL) async throws -> URL { url }

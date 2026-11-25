@@ -18,7 +18,7 @@ import UFPCore
 /// 组合 PluginLoader / PluginRuntime / PluginStorage 三大子模块
 @MainActor
 @Observable
-final class PluginRegistry: @unchecked Sendable {
+final class PluginRegistry {
 
     // MARK: - 子模块
 

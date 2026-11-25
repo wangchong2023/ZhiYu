@@ -29,7 +29,7 @@ private enum DatabaseManagerConstants {
 /// 物理引擎逻辑（建库/连接池/WAL/热切换/降级骨架）已下沉至 UFPStorage `GenericDatabaseManager`，
 /// 本类型保留业务装配与安全增强，作为业务层的唯一数据库入口。
 @MainActor
-final class DatabaseManager: TestStateResettable, @unchecked Sendable {
+final class DatabaseManager: TestStateResettable {
 
     /// 全局唯一的线程安全单例实例。
     nonisolated static let shared = DatabaseManager()
