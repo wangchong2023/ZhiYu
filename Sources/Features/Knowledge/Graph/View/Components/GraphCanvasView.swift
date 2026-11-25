@@ -62,11 +62,8 @@ struct GraphCanvasView: View {
                 .scaleEffect(scale)
                 .gesture(zoomGesture)
                 .simultaneousGesture(dragGesture)
-                .onAppear { graphSize = geometry.size }
-                .onChange(of: geometry.size) { _, newSize in
-                    graphSize = newSize
-                }
             }
+            .clipped()
         }
     }
 

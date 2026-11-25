@@ -47,6 +47,7 @@ struct GraphLayoutProcessor {
         }
 
         applyLinkCounts(nodes: &nodes, edges: edges)
+        resolveLabelOverlaps(nodes: &nodes)
         centerGraph(nodes: &nodes, canvasSize: canvasSize)
         return (nodes, edges)
     }
@@ -125,6 +126,61 @@ struct GraphLayoutProcessor {
         for i in nodes.indices {
             nodes[i].position.x += dx
             nodes[i].position.y += dy
+        }
+    }
+
+    // MARK: - 节点与标签矩形包络防重叠 (AABB Overlap Removal)
+
+    /// 估算单个节点（图标 + 下方标题标签）的半宽与半高，供布局消重与单测复用。
+    static func estimatedLabelHalfExtents(for title: String) -> (halfWidth: CGFloat, halfHeight: CGFloat) {
+        var rawWidth: CGFloat = 0
+        for scalar in title.unicodeScalars {
+            rawWidth += scalar.value <= GraphConstants.LabelCollision.asciiScalarUpperBound
+                ? GraphConstants.LabelCollision.asciiCharWidth
+                : GraphConstants.LabelCollision.wideCharWidth
+        }
+        let clampedLabelWidth = min(
+            GraphConstants.LabelCollision.maxLabelWidth,
+            max(GraphConstants.LabelCollision.minLabelWidth, rawWidth)
+        )
+        let totalWidth = clampedLabelWidth + GraphConstants.LabelCollision.horizontalPadding
+        return (totalWidth / 2, GraphConstants.LabelCollision.nodeBoxHeight / 2)
+    }
+
+    /// 对力导向收敛后的节点执行迭代式 AABB 矩形消重，彻底消除节点图标与文字标签的重叠。
+    private static func resolveLabelOverlaps(nodes: inout [GraphNode]) {
+        let count = nodes.count
+        guard count > 1, count <= GraphConstants.LabelCollision.maxOverlapRemovalNodes else { return }
+
+        let extents = nodes.map { estimatedLabelHalfExtents(for: $0.title) }
+        let push = GraphConstants.LabelCollision.pushFactor
+        let epsilon = GraphConstants.LabelCollision.overlapEpsilon
+
+        for _ in 0..<GraphConstants.LabelCollision.maxIterations {
+            var moved = false
+            for i in 0..<(count - 1) {
+                for j in (i + 1)..<count {
+                    let dx = nodes[j].position.x - nodes[i].position.x
+                    let dy = nodes[j].position.y - nodes[i].position.y
+                    let overlapX = (extents[i].halfWidth + extents[j].halfWidth) - abs(dx)
+                    let overlapY = (extents[i].halfHeight + extents[j].halfHeight) - abs(dy)
+                    guard overlapX > epsilon, overlapY > epsilon else { continue }
+
+                    moved = true
+                    if overlapX < overlapY {
+                        let sign: CGFloat = dx >= 0 ? 1 : -1
+                        let shift = max(overlapX * push, GraphConstants.LabelCollision.coincidentNudge)
+                        nodes[i].position.x -= sign * shift
+                        nodes[j].position.x += sign * shift
+                    } else {
+                        let sign: CGFloat = dy >= 0 ? 1 : -1
+                        let shift = max(overlapY * push, GraphConstants.LabelCollision.coincidentNudge)
+                        nodes[i].position.y -= sign * shift
+                        nodes[j].position.y += sign * shift
+                    }
+                }
+            }
+            if !moved { break }
         }
     }
 

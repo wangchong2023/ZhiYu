@@ -23,6 +23,7 @@ struct GraphContainerView: View {
     var heroNamespace: Namespace.ID
     @Binding var selectedTab: AppTab
     @Environment(ThemeManager.self) var themeManager
+    @Environment(\.interfaceIdiom) private var idiom
     @State private var viewModel = GraphViewModel()
     @StateObject private var tooltipManager = TooltipManager.shared
     /// Bug #67 修复：保存布局 Task 引用，新布局启动前取消旧任务，避免竞态覆盖。
@@ -86,7 +87,12 @@ struct GraphContainerView: View {
             themeManager.pageBackground()
                 .ignoresSafeArea()
 
-            if viewModel.isLayouting {
+            if idiom == .mac && viewModel.show3D {
+                // macOS 桌面端原位无缝铺满整个图谱工作区展示 3D 视图，避免小黑条 sheet 割裂感
+                Graph3DView(selectedNodeID: $viewModel.selectedNodeID, isFullScreen: $viewModel.show3D)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .transition(.opacity)
+            } else if viewModel.isLayouting {
                 // 首次加载中：显示加载指示器，避免闪烁空状态视图
                 VStack(spacing: DesignTokens.Spacing.standardPadding) {
                     ProgressView()
@@ -163,27 +169,37 @@ struct GraphContainerView: View {
         }
         .appTabToolbar(title: L10n.Graph.title)
         .appToolbarBackgroundHidden()
-        .onChange(of: store.pages.count) { _, _ in layoutGraph() }
+        .onChange(of: store.pages.map(\.id)) { _, _ in layoutGraph() }
         // Bug #68 修复：filterType 变化时刷新边过滤缓存，无需重新布局。
         .onChange(of: viewModel.filterType) { _, _ in refreshFilteredEdgesCache() }
-        .onChange(of: viewModel.graphSize) { _, newSize in
-            if newSize != .zero { layoutGraph() }
+        .onChange(of: viewModel.graphSize) { oldSize, newSize in
+            guard newSize != .zero else { return }
+            if oldSize == .zero || viewModel.nodes.isEmpty {
+                layoutGraph()
+            }
         }
         .task {
+            if store.pages.isEmpty {
+                await store.refresh()
+            }
             layoutGraph()
         }
         .sheet(isPresented: $viewModel.showInsights) {
             insightsPanel
                 .presentationDetents([.large])
+                .appDesktopSheetSize(.large)
         }
-        .appFullScreenCover(isPresented: $viewModel.show3D) {
+        .appFullScreenCover(isPresented: Binding(
+            get: { idiom != .mac && viewModel.show3D },
+            set: { viewModel.show3D = $0 }
+        )) {
             NavigationStack {
                 Graph3DView(selectedNodeID: $viewModel.selectedNodeID, isFullScreen: $viewModel.show3D)
             }
         }
         .overlay(alignment: .bottomTrailing) {
-            // 3. 动态联动的缩放工具栏
-            if !viewModel.nodes.isEmpty {
+            // 3. 动态联动的缩放工具栏（macOS 处于 3D 模式时隐藏 2D 工具栏）
+            if !viewModel.nodes.isEmpty && !(idiom == .mac && viewModel.show3D) {
                 GraphZoomControls(
                     scale: $viewModel.scale,
                     lastScale: $viewModel.lastScale,
@@ -202,8 +218,9 @@ struct GraphContainerView: View {
             }
         }
         .overlay(alignment: .bottom) {
-            // 4. 详情卡片
-            if let selectedID = viewModel.selectedNodeID,
+            // 4. 详情卡片（macOS 处于 3D 模式时由 Graph3DView 内部信息栏接管）
+            if !(idiom == .mac && viewModel.show3D),
+               let selectedID = viewModel.selectedNodeID,
                let page = store.pages.first(where: { $0.id == selectedID }) {
                 GraphSelectedNodeCard(page: page)
                     .padding(.bottom, DesignTokens.Spacing.loosePadding)
@@ -224,39 +241,18 @@ struct GraphContainerView: View {
     }
 
     /**
-     * @description: 处理节点点击事件：切换选中状态、相机自动聚焦定位、触发震动反馈
+     * @description: 处理节点点击事件：原地高亮切换选中状态与关联边，不强行平移/缩放画布导致全图晃动
      * @param {GraphNode} node 被点击的节点对象
      * @return {*}
      */
     private func handleNodeTap(_ node: GraphNode) {
-        // 守卫：graphSize 为 .zero 时无法计算居中偏移，跳过聚焦逻辑
-        guard viewModel.graphSize != .zero else {
-            viewModel.selectedNodeID = node.id
-            HapticFeedback.shared.trigger(.selection)
-            return
-        }
-        withAnimation(DesignTokens.Animation.prominent) {
+        withAnimation(DesignTokens.Animation.standard) {
             if viewModel.selectedNodeID == node.id {
                 viewModel.selectedNodeID = nil
                 viewModel.isAnimating = false
             } else {
                 viewModel.selectedNodeID = node.id
-                viewModel.isAnimating = true
-                
-                // 聚焦逻辑：计算偏移量使节点居中
-                // 核心修复：先平移后缩放，简化计算公式
-                let centerX = viewModel.graphSize.width / 2
-                let centerY = viewModel.graphSize.height / 2
-                
-                viewModel.offset = CGSize(
-                    width: centerX - node.position.x,
-                    height: centerY - node.position.y
-                )
-                viewModel.lastOffset = viewModel.offset
-                if viewModel.scale < 1.0 { 
-                    viewModel.scale = GraphConstants.TwoD.nodeTapScale
-                    viewModel.lastScale = GraphConstants.TwoD.nodeTapScale 
-                }
+                viewModel.isAnimating = false
             }
         }
         HapticFeedback.shared.trigger(.selection)

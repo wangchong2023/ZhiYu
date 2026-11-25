@@ -138,6 +138,7 @@ struct GraphInsightsPanel: View {
                 .padding(.bottom, DesignTokens.Spacing.small)
                 .sheet(isPresented: $showGuide) {
                     GraphConceptGuideSheet()
+                        .appDesktopSheetSize(.standard)
                 }
 
                 insightSection(

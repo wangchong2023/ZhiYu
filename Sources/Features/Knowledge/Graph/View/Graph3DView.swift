@@ -27,6 +27,7 @@ struct Graph3DView: View {
     @Dependency(\.toastService) private var toastManager
     @Environment(KnowledgeStore.self) var store
     @Environment(Router.self) var router
+    @Environment(\.interfaceIdiom) private var idiom
     @State private var scene: SCNScene?
     @State private var cameraDistance: Float = GraphConstants.ThreeD.defaultCameraDistance
     @State private var autoRotate = false
@@ -49,6 +50,8 @@ struct Graph3DView: View {
             TappableSceneView(scene: scene) { uuid in
                 handleNodeTap(uuid)
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .ignoresSafeArea(edges: isFullScreen ? .all : [])
             .onChange(of: selectedNodeID) { _, _ in
                 buildScene()
             }
@@ -65,7 +68,7 @@ struct Graph3DView: View {
         .overlay(alignment: .topTrailing) {
             if !hideControls {
                 controlsOverlay
-                    .padding(.top, isFullScreen ? DesignTokens.ComponentSpacing.ultra : DesignTokens.Spacing.tightPadding)
+                    .padding(.top, (isFullScreen && idiom != .mac) ? DesignTokens.ComponentSpacing.ultra : DesignTokens.Spacing.standardPadding)
                     .padding(.trailing, DesignTokens.Spacing.standardPadding)
                     .transition(.move(edge: .trailing).combined(with: .opacity))
             }
@@ -78,7 +81,7 @@ struct Graph3DView: View {
             }
         }
         .background(PageBackgroundView(accentColor: .appAccent))
-        .ignoresSafeArea(edges: isFullScreen ? .all : [])
+        .ignoresSafeArea(edges: (isFullScreen && idiom != .mac) ? .all : [])
         .adaptiveFullScreenImmersive(isFullScreen)
         .preferredColorScheme(isFullScreen ? .dark : nil)
         .hideBackButtonIfIOS(isFullScreen)

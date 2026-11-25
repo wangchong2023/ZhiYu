@@ -50,15 +50,15 @@ final class GraphConstantsTests: XCTestCase {
 
     /// 验证 Physics 常量
     func testPhysicsConstants() {
-        XCTAssertEqual(GraphConstants.Physics.repulsionForce, 5000.0)
+        XCTAssertEqual(GraphConstants.Physics.repulsionForce, 12000.0)
         XCTAssertEqual(GraphConstants.Physics.attractionForce, 0.01)
         XCTAssertEqual(GraphConstants.Physics.damping, 0.85)
         XCTAssertEqual(GraphConstants.Physics.centerGravity, 0.005)
         XCTAssertEqual(GraphConstants.Physics.friction, 0.9)
-        XCTAssertEqual(GraphConstants.Physics.gridSize, 120.0)
-        XCTAssertEqual(GraphConstants.Physics.collisionDistance, 20.0)
+        XCTAssertEqual(GraphConstants.Physics.gridSize, 200.0)
+        XCTAssertEqual(GraphConstants.Physics.collisionDistance, 90.0)
         XCTAssertEqual(GraphConstants.Physics.collisionForce, 10000.0)
-        XCTAssertEqual(GraphConstants.Physics.maxRepulsionDistanceSq, 40000.0)
+        XCTAssertEqual(GraphConstants.Physics.maxRepulsionDistanceSq, 160000.0)
         XCTAssertEqual(GraphConstants.Physics.minDistanceSq, 0.01)
     }
 }

@@ -260,4 +260,53 @@ final class GraphLayoutProcessorTests: XCTestCase {
         XCTAssertLessThan(topEdges.count, result.edges.count,
                           "过滤后边数应少于原始边数")
     }
+
+    /// 回归测试：多节点长中文标题经力导向 + AABB 矩形消重后，任意两节点的图标与标签包围盒不得重叠。
+    func testLayout_ChineseLongTitles_HaveNoNodeOrLabelOverlap() {
+        let titles = [
+            "社区咖啡与熟客文化",
+            "第三空间设计原则",
+            "瑞幸与星巴克商业对比报告",
+            "独立咖啡馆生存指南",
+            "咖啡店选址方法论",
+            "菜单研发与爆款策略",
+            "咖啡连锁行业选址规划",
+            "词条：什么是咖啡豆烘焙度",
+            "咖啡豆供应链成本拆解",
+            "下沉市场咖啡消费洞察",
+            "咖啡会员与数字化运营",
+            "咖啡店日常运营手册",
+            "烘焙工厂与产地直采",
+            "Manner 扩张策略",
+            "语音速记：咖啡设备采购清单"
+        ]
+        var pages = titles.enumerated().map { idx, title in
+            let nextTitle = titles[(idx + 1) % titles.count]
+            return KnowledgePage(title: title, pageType: .concept, content: "关联 [[\(nextTitle)]]")
+        }
+        pages[0].content += " [[\(titles[2])]] [[\(titles[3])]] [[\(titles[4])]]"
+
+        let result = GraphLayoutProcessor.layout(
+            pages: pages,
+            linkResolver: { title in pages.first { $0.title == title } },
+            canvasSize: CGSize(width: 960, height: 680)
+        )
+
+        XCTAssertEqual(result.nodes.count, titles.count)
+        let tolerance: CGFloat = 1.0
+        for i in 0..<(result.nodes.count - 1) {
+            for j in (i + 1)..<result.nodes.count {
+                let a = result.nodes[i]
+                let b = result.nodes[j]
+                let extA = GraphLayoutProcessor.estimatedLabelHalfExtents(for: a.title)
+                let extB = GraphLayoutProcessor.estimatedLabelHalfExtents(for: b.title)
+                let overlapX = (extA.halfWidth + extB.halfWidth) - abs(a.position.x - b.position.x)
+                let overlapY = (extA.halfHeight + extB.halfHeight) - abs(a.position.y - b.position.y)
+                XCTAssertFalse(
+                    overlapX > tolerance && overlapY > tolerance,
+                    "节点「\(a.title)」与「\(b.title)」的图标或文字标签发生重叠 (overlapX=\(overlapX), overlapY=\(overlapY))"
+                )
+            }
+        }
+    }
 }

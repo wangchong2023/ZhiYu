@@ -113,30 +113,12 @@ struct GraphNodeView: View {
     }
     
     private var nodeContent: some View {
-        ZStack {
-            let nodeBaseColor = useClustering ? (clusters.first(where: { $0.pageIDs.contains(node.id) }).map { Color.fromModelColorName($0.colorName) } ?? Color.fromModelColorName(node.pageType.colorName)) : Color.fromModelColorName(node.pageType.colorName)
+        let nodeBaseColor = useClustering ? (clusters.first(where: { $0.pageIDs.contains(node.id) }).map { Color.fromModelColorName($0.colorName) } ?? Color.fromModelColorName(node.pageType.colorName)) : Color.fromModelColorName(node.pageType.colorName)
 
-            // 1. 深度发光 (Aura Effect)
-            if isSelected {
-                Circle()
-                    .fill(nodeBaseColor.opacity(DesignTokens.Colors.Opacity.glassOpacity))
-                    .frame(width: nodeSize * FeatureConstants.GraphComponentsScale.auraSizeMultiplier, height: nodeSize * FeatureConstants.GraphComponentsScale.auraSizeMultiplier)
-                    .blur(radius: DesignTokens.Spacing.cardRadius)
-                    .scaleEffect(isAnimating ? FeatureConstants.GraphComponentsScale.auraMaxScale : FeatureConstants.GraphComponentsScale.auraMinScale)
-                    .animation(.easeInOut(duration: DesignTokens.Animations.ambientBreathDuration).repeatForever(autoreverses: true), value: isAnimating)
-            }
-
-            // 2. 核心脉冲 (Core Pulse)
-            if isSelected {
-                Circle()
-                    .stroke(nodeBaseColor.opacity(DesignTokens.SystemOpacity.disabled), lineWidth: DesignTokens.SystemStroke.divider)
-                    .frame(width: nodeSize, height: nodeSize)
-                    .scaleEffect(isAnimating ? FeatureConstants.GraphComponentsScale.pulseMaxScale : 1.0)
-                    .opacity(isAnimating ? 0 : 1)
-                    .animation(.easeOut(duration: DesignTokens.Animations.pulseDuration).repeatForever(autoreverses: false), value: isAnimating)
-            }
-
-            // 3. 节点本体 (Node Body)
+        // 节点本体固定为 nodeSize × nodeSize，发光与脉冲均置于 background/overlay 内，
+        // 避免 repeatForever 动画改变布局尺寸或向上传染至画布引发全图节点持续晃动。
+        return ZStack {
+            // 1. 节点本体 (Node Body)
             Circle()
                 .fill(
                     LinearGradient(
@@ -147,6 +129,28 @@ struct GraphNodeView: View {
                 )
                 .matchedGeometryEffectIfAvailable(id: node.id, in: heroNamespace, isSource: true)
                 .frame(width: nodeSize, height: nodeSize)
+                .background {
+                    if isSelected {
+                        // 静态双层高光光晕：清晰标识选中节点，避免 repeatForever 触发整图持续重绘与晃动
+                        ZStack {
+                            Circle()
+                                .fill(nodeBaseColor.opacity(DesignTokens.Colors.Opacity.glassOpacity))
+                                .frame(
+                                    width: nodeSize * FeatureConstants.GraphComponentsScale.auraSizeMultiplier,
+                                    height: nodeSize * FeatureConstants.GraphComponentsScale.auraSizeMultiplier
+                                )
+                                .blur(radius: DesignTokens.Spacing.cardRadius)
+
+                            Circle()
+                                .stroke(nodeBaseColor.opacity(DesignTokens.Opacity.soft), lineWidth: DesignTokens.SystemStroke.divider)
+                                .frame(
+                                    width: nodeSize * FeatureConstants.GraphComponentsScale.auraMaxScale,
+                                    height: nodeSize * FeatureConstants.GraphComponentsScale.auraMaxScale
+                                )
+                        }
+                        .allowsHitTesting(false)
+                    }
+                }
                 .onHoverIfAvailable { hovering in
                     withAnimation(.spring()) {
                         isHovered = hovering
@@ -166,15 +170,12 @@ struct GraphNodeView: View {
                 .shadow(color: nodeBaseColor.opacity(isSelected ? DesignTokens.SystemOpacity.textSecondary : DesignTokens.SystemOpacity.disabled), radius: isSelected ? DesignTokens.Spacing.standardPadding : DesignTokens.SystemSpacing.small)
                 .scaleEffect(isSelected ? FeatureConstants.GraphComponentsScale.auraMaxScale : 1.0)
 
-            // 4. 类型图标
+            // 2. 类型图标
             Image(systemName: node.pageType.icon)
                 .font(.system(size: isSelected ? DesignTokens.Typography.subheadlineFontSize : DesignTokens.Typography.microFontSize, weight: .bold))
                 .foregroundStyle(.white)
         }
-        .onTapGesture {
-            HapticFeedback.shared.trigger(.link)
-            onSelect()
-        }
+        .frame(width: nodeSize, height: nodeSize)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(node.title), \(node.pageType.displayName)")
         .accessibilityValue(L10n.Graph.linksCountFormat(linkCount))
@@ -231,6 +232,8 @@ struct GraphNodeLabel: View {
             .font(.system(size: fontSize, weight: isSelected ? .semibold : .medium))
             .foregroundStyle(isSelected ? .appText : .appSecondary)
             .lineLimit(1)
+            .truncationMode(.tail)
+            .frame(maxWidth: isSelected ? nil : GraphConstants.LabelCollision.maxLabelWidth)
             .position(x: node.position.x, y: node.position.y + nodeSize / 2 + DesignTokens.Spacing.mediumRadius)
             .accessibilityHidden(true) // 节点图标已包含信息，标签设为隐藏以防冗余
     }

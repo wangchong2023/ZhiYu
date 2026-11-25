@@ -174,15 +174,43 @@ public enum GraphConstants {
     
     /// 力导向算法物理常数
     public struct Physics {
-        public static let repulsionForce: CGFloat = 5000.0
+        public static let repulsionForce: CGFloat = 12000.0
         public static let attractionForce: CGFloat = 0.01
         public static let damping: CGFloat = 0.85
         public static let centerGravity: CGFloat = 0.005
         public static let friction: CGFloat = 0.9
-        public static let gridSize: CGFloat = 120.0
-        public static let collisionDistance: CGFloat = 20.0
+        public static let gridSize: CGFloat = 200.0
+        public static let collisionDistance: CGFloat = 90.0
         public static let collisionForce: CGFloat = 10000.0
-        public static let maxRepulsionDistanceSq: CGFloat = 40000.0
+        public static let maxRepulsionDistanceSq: CGFloat = 160000.0
         public static let minDistanceSq: CGFloat = 0.01
+    }
+
+    /// 2D 节点图标 + 标题标签矩形包络防重叠参数（AABB Overlap Removal）
+    public enum LabelCollision {
+        /// 单个 CJK/全角字符估算宽度（pt）
+        public static let wideCharWidth: CGFloat = 11.0
+        /// 单个 ASCII/半角字符估算宽度（pt）
+        public static let asciiCharWidth: CGFloat = 6.5
+        /// 判定 ASCII 字符的 Unicode 标量上限
+        public static let asciiScalarUpperBound: UInt32 = 0x007F
+        /// 最小节点包络宽度（pt，覆盖图标与短标题）
+        public static let minLabelWidth: CGFloat = 72.0
+        /// 节点标签最大显示宽度（pt，超出截断并在选中时完整展开）
+        public static let maxLabelWidth: CGFloat = 136.0
+        /// 相邻标签水平安全间距（pt）
+        public static let horizontalPadding: CGFloat = 18.0
+        /// 单个节点（图标 + 下方标题 + 垂直留白）总包络高度（pt）
+        public static let nodeBoxHeight: CGFloat = 74.0
+        /// 矩形碰撞消除最大迭代轮数
+        public static let maxIterations: Int = 36
+        /// 每轮沿最小穿透轴的对称推开系数（略大于 0.5 加速收敛）
+        public static let pushFactor: CGFloat = 0.52
+        /// 执行精确矩形消重的节点数上限（超大图低 LOD 不显示标签）
+        public static let maxOverlapRemovalNodes: Int = 300
+        /// 重叠判定容差（pt）
+        public static let overlapEpsilon: CGFloat = 0.5
+        /// 完全重合时的确定性微小偏移步长（pt）
+        public static let coincidentNudge: CGFloat = 1.0
     }
 }
