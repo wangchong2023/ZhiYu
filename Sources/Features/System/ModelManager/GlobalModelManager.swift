@@ -59,6 +59,9 @@ public final class GlobalModelManager: TestStateResettable {
     /// 已订阅下载状态流的模型 ID 集合，防止重复订阅产生僵尸 Task
     private var subscribedModelIds: Set<String> = []
 
+    /// 待触发的备用镜像源映射表（当主下载源在异步 HTTP 响应阶段返回 4xx/5xx 时自动容灾切换）
+    private var pendingFallbackURLs: [String: URL] = [:]
+
     /// 物理硬件运存防爆评估拦截服务
     @ObservationIgnored private let hardwareGuard: DeviceHardwareGuard
     
@@ -403,7 +406,8 @@ public final class GlobalModelManager: TestStateResettable {
             return
         }
         
-        // 2. 启动后台物理下载
+        // 2. 记录备用镜像源（供异步 HTTP 404/5xx 失败时自动容灾切换），并启动后台物理下载
+        pendingFallbackURLs[modelId] = route.fallbackURL
         Task {
             do {
                 try await downloadManager.startDownload(modelId: modelId, remoteURL: url)
@@ -411,7 +415,7 @@ public final class GlobalModelManager: TestStateResettable {
                 observeDownloadState(for: modelId)
             } catch {
                 // 若首选源下载失败且存在备用镜像源（如 HuggingFace 失败自动切换 ModelScope），执行自动容灾重试
-                if let fallbackURL = route.fallbackURL {
+                if let fallbackURL = pendingFallbackURLs.removeValue(forKey: modelId) {
                     Logger.shared.warning("[GlobalModelManager] Primary download failed for \(modelId), automatically falling back to mirror: \(fallbackURL.absoluteString)")
                     do {
                         try await downloadManager.startDownload(modelId: modelId, remoteURL: fallbackURL)
@@ -443,6 +447,7 @@ public final class GlobalModelManager: TestStateResettable {
     
     /// 取消下载并清理沙盒碎片
     public func cancelDownload(for modelId: String) {
+        pendingFallbackURLs.removeValue(forKey: modelId)
         Task {
             try? await downloadManager.cancelDownload(modelId: modelId)
             downloadStates[modelId] = .cancelled
@@ -457,45 +462,75 @@ public final class GlobalModelManager: TestStateResettable {
         Task {
             let stream = await downloadManager.observeDownloadState(for: modelId)
             for await state in stream {
-                // 确保在主线程更新 `@Observable` 响应式状态以驱动 UI 安全重绘
                 await MainActor.run {
-                    self.downloadStates[modelId] = state
-                    // 当握手到真实网络文件大小时，动态更新本地清单中的 fileSizeInBytes
-                    if case .downloading(_, _, _, let totalBytes) = state, totalBytes > 0 {
-                        if let index = self.remoteManifests.firstIndex(where: { $0.modelId == modelId }) {
-                            if self.remoteManifests[index].fileSizeInBytes == 0 || self.remoteManifests[index].fileSizeInBytes != totalBytes {
-                                self.remoteManifests[index].fileSizeInBytes = totalBytes
-                            }
-                        }
-                    }
-                    if case let .completed(localURL) = state {
-                        let actualSize = (try? FileManager.default.attributesOfItem(atPath: localURL.path)[.size] as? Int64) ?? 0
-                        let probe = ModelFormatProbe.shared.inspect(fileURL: localURL)
-                        let format = if case let .valid(fmt) = probe { fmt } else { FeatureConstants.ModelSpecConstants.ggufFormatName }
-                        let receipt = ModelDownloadReceipt(
-                            modelId: modelId,
-                            exactFileSize: actualSize,
-                            completedAt: Date(),
-                            sha256Checksum: nil,
-                            format: format
-                        )
-                        ModelReceiptStore.shared.saveReceipt(receipt)
-                        self.markModelAsDownloaded(modelId)
-                    }
-                    // 终态时立即清理订阅标记，允许后续重新订阅
-                    // 修复：原实现仅在流结束时清理，但 AsyncStream 永不 finish 导致订阅泄漏，
-                    // 用户再次点击下载时被 guard 拦截，状态流不更新，UI 无反馈
-                    switch state {
-                    case .completed, .failed, .cancelled:
-                        self.subscribedModelIds.remove(modelId)
-                    default:
-                        break
-                    }
+                    self.handleDownloadStateUpdate(state, for: modelId)
                 }
             }
             // 流结束后清理订阅标记，允许后续重新订阅
             self.subscribedModelIds.remove(modelId)
         }
+    }
+
+    /// 在主线程分发单条下载状态变更，包含异步镜像源自动容灾、真实大小同步与终态清理
+    private func handleDownloadStateUpdate(_ state: DownloadState, for modelId: String) {
+        // 若异步下载阶段收到 4xx/5xx 等失败且仍有未尝试的备用镜像源，自动容灾切换而非直接报错
+        if case let .failed(errorMessage) = state,
+           let fallbackURL = pendingFallbackURLs.removeValue(forKey: modelId) {
+            Logger.shared.warning(
+                "[GlobalModelManager] Async download failed for \(modelId) (\(errorMessage)), switching to fallback mirror: \(fallbackURL.absoluteString)"
+            )
+            downloadStates[modelId] = .pending
+            Task {
+                do {
+                    try await downloadManager.startDownload(modelId: modelId, remoteURL: fallbackURL)
+                } catch {
+                    downloadStates[modelId] = .failed(error: error.localizedDescription)
+                    subscribedModelIds.remove(modelId)
+                }
+            }
+            return
+        }
+
+        downloadStates[modelId] = state
+        syncDownloadedManifestSizeIfNeeded(state, for: modelId)
+        if case let .completed(localURL) = state {
+            finalizeCompletedDownload(modelId: modelId, localURL: localURL)
+        }
+        // 终态时立即清理订阅标记，允许后续重新订阅
+        switch state {
+        case .completed, .failed, .cancelled:
+            pendingFallbackURLs.removeValue(forKey: modelId)
+            subscribedModelIds.remove(modelId)
+        default:
+            break
+        }
+    }
+
+    /// 当握手到真实网络文件大小时，动态更新本地清单中的 fileSizeInBytes
+    private func syncDownloadedManifestSizeIfNeeded(_ state: DownloadState, for modelId: String) {
+        guard case .downloading(_, _, _, let totalBytes) = state, totalBytes > 0,
+              let index = remoteManifests.firstIndex(where: { $0.modelId == modelId }),
+              remoteManifests[index].fileSizeInBytes == 0 || remoteManifests[index].fileSizeInBytes != totalBytes else {
+            return
+        }
+        remoteManifests[index].fileSizeInBytes = totalBytes
+    }
+
+    /// 记录已完成下载的模型回执并标记就绪
+    private func finalizeCompletedDownload(modelId: String, localURL: URL) {
+        pendingFallbackURLs.removeValue(forKey: modelId)
+        let actualSize = (try? FileManager.default.attributesOfItem(atPath: localURL.path)[.size] as? Int64) ?? 0
+        let probe = ModelFormatProbe.shared.inspect(fileURL: localURL)
+        let format = if case let .valid(fmt) = probe { fmt } else { FeatureConstants.ModelSpecConstants.ggufFormatName }
+        let receipt = ModelDownloadReceipt(
+            modelId: modelId,
+            exactFileSize: actualSize,
+            completedAt: Date(),
+            sha256Checksum: nil,
+            format: format
+        )
+        ModelReceiptStore.shared.saveReceipt(receipt)
+        markModelAsDownloaded(modelId)
     }
 
     /// 重新订阅所有处于活跃下载状态的模型，防止视图重建/Tab 切换后订阅丢失导致状态停滞
@@ -523,6 +558,7 @@ public final class GlobalModelManager: TestStateResettable {
         modelCallCounts = [:]
         isLoading = false
         subscribedModelIds = []
+        pendingFallbackURLs = [:]
     }
 
     // MARK: - TestStateResettable

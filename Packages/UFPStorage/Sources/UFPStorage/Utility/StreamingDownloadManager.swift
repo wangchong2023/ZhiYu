@@ -22,6 +22,12 @@ private enum StreamingDownloadConstants {
     static let resumeDirectoryName = "ufp.download.resume"
     /// 沙盒存储分配失败错误消息前缀
     static let sandboxAllocationFailedPrefix = "Sandbox storage allocation failed:"
+    /// HTTP 2xx 成功状态码下界
+    static let httpSuccessStatusMin: Int = 200
+    /// HTTP 2xx 成功状态码上界
+    static let httpSuccessStatusMax: Int = 299
+    /// HTTP 2xx 成功状态码区间
+    static let httpSuccessStatusRange: ClosedRange<Int> = httpSuccessStatusMin...httpSuccessStatusMax
 }
 
 /// 通用流式下载管理器。
@@ -435,6 +441,12 @@ internal final class StreamingDownloadDelegateHelper: NSObject, URLSessionDownlo
     ) {
         guard let taskID = downloadTask.taskDescription, totalBytesExpectedToWrite > 0 else { return }
 
+        // 拦截 4xx/5xx 错误响应体进度上报，防止将错误页的几十字节覆盖为模型真实文件大小
+        if let httpResponse = downloadTask.response as? HTTPURLResponse,
+           !StreamingDownloadConstants.httpSuccessStatusRange.contains(httpResponse.statusCode) {
+            return
+        }
+
         Task {
             await manager.updateProgress(for: taskID, totalBytesWritten: totalBytesWritten, totalBytesExpectedToWrite: totalBytesExpectedToWrite)
         }
@@ -449,7 +461,8 @@ internal final class StreamingDownloadDelegateHelper: NSObject, URLSessionDownlo
         guard let taskID = downloadTask.taskDescription else { return }
 
         // 严格校验 HTTP 状态码，拦截 404/500 等异常请求，防止将错误页面保存
-        if let httpResponse = downloadTask.response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
+        if let httpResponse = downloadTask.response as? HTTPURLResponse,
+           !StreamingDownloadConstants.httpSuccessStatusRange.contains(httpResponse.statusCode) {
             Task {
                 await manager.updateState(for: taskID, to: .failed(error: "Network error: HTTP \(httpResponse.statusCode)"))
                 await manager.clearActiveTask(for: taskID)
