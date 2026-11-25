@@ -15,7 +15,7 @@ import CommonCrypto
 import UFPCore
 
 /// 通用流式下载器配置常量（避免魔数）。
-private enum StreamingDownloadConstants {
+internal enum StreamingDownloadConstants {
     /// 下载速度采样最小间隔（秒），避免高频采样抖动
     static let speedSampleIntervalSeconds: Double = 0.5
     /// 默认断点续传数据子目录名
@@ -415,97 +415,5 @@ public actor StreamingDownloadManager {
     /// - Returns: 校验是否通过（空哈希容灾放行；非 64 字符拒绝）
     nonisolated public func verifySHA256(of fileURL: URL, expectedHash: String) -> Bool {
         SHA256Verifier.verify(of: fileURL, expectedHash: expectedHash)
-    }
-}
-
-// MARK: - 桥接 Delegate 协调助手类 (NSObject Bridge Pattern)
-
-/// URLSession 代理协助类。负责无声桥接后台系统通知至 Actor。
-internal final class StreamingDownloadDelegateHelper: NSObject, URLSessionDownloadDelegate, Sendable {
-
-    /// 持有弱引用的 Actor 控制器
-    private let manager: StreamingDownloadManager
-
-    init(manager: StreamingDownloadManager) {
-        self.manager = manager
-        super.init()
-    }
-
-    /// URLSession 下载进度回调，更新下载进度
-    func urlSession(
-        _ session: URLSession,
-        downloadTask: URLSessionDownloadTask,
-        didWriteData bytesWritten: Int64,
-        totalBytesWritten: Int64,
-        totalBytesExpectedToWrite: Int64
-    ) {
-        guard let taskID = downloadTask.taskDescription, totalBytesExpectedToWrite > 0 else { return }
-
-        // 拦截 4xx/5xx 错误响应体进度上报，防止将错误页的几十字节覆盖为模型真实文件大小
-        if let httpResponse = downloadTask.response as? HTTPURLResponse,
-           !StreamingDownloadConstants.httpSuccessStatusRange.contains(httpResponse.statusCode) {
-            return
-        }
-
-        Task {
-            await manager.updateProgress(for: taskID, totalBytesWritten: totalBytesWritten, totalBytesExpectedToWrite: totalBytesExpectedToWrite)
-        }
-    }
-
-    /// URLSession 下载完成回调，将临时文件移交至管理器处理
-    func urlSession(
-        _ session: URLSession,
-        downloadTask: URLSessionDownloadTask,
-        didFinishDownloadingTo location: URL
-    ) {
-        guard let taskID = downloadTask.taskDescription else { return }
-
-        // 严格校验 HTTP 状态码，拦截 404/500 等异常请求，防止将错误页面保存
-        if let httpResponse = downloadTask.response as? HTTPURLResponse,
-           !StreamingDownloadConstants.httpSuccessStatusRange.contains(httpResponse.statusCode) {
-            Task {
-                await manager.updateState(for: taskID, to: .failed(error: "Network error: HTTP \(httpResponse.statusCode)"))
-                await manager.clearActiveTask(for: taskID)
-            }
-            return
-        }
-
-        // 创建临时安全副本，防止系统委托在退出 didFinishDownloading 瞬间删除文件
-        let tempDirectory = FileManager.default.temporaryDirectory
-        let safeTempURL = tempDirectory.appendingPathComponent(UUID().uuidString + ".bin")
-
-        do {
-            try FileManager.default.moveItem(at: location, to: safeTempURL)
-            let defaultVerificationFailedMessage = "verification failed"
-            Task {
-                await manager.completeDownload(for: taskID, tempFileURL: safeTempURL, verificationFailedMessage: defaultVerificationFailedMessage)
-            }
-        } catch {
-            Task {
-                await manager.updateState(for: taskID, to: .failed(error: "temporary copy failed: \(error.localizedDescription)"))
-                await manager.clearActiveTask(for: taskID)
-            }
-        }
-    }
-
-    /// URLSession 任务完成回调，处理下载错误（自动忽略用户主动取消）
-    func urlSession(
-        _ session: URLSession,
-        task: URLSessionTask,
-        didCompleteWithError error: Error?
-    ) {
-        guard let taskDescription = task.taskDescription else { return }
-
-        if let error = error {
-            let nsError = error as NSError
-            // 如果是用户主动取消任务，忽略报错
-            if nsError.domain == NSURLErrorDomain && nsError.code == NSURLErrorCancelled {
-                return
-            }
-
-            Task {
-                await manager.handleDownloadError(for: taskDescription, error: error)
-            }
-        }
     }
 }
