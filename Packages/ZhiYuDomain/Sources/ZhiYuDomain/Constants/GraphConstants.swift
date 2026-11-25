@@ -10,6 +10,7 @@
 //
 
 import Foundation
+import CoreGraphics
 
 /// 知识图谱布局与物理仿真专有领域常量
 public enum GraphConstants {

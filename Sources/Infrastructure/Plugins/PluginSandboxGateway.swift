@@ -10,11 +10,11 @@
 //
 import Foundation
 import UFPCore
-#if os(iOS) || os(macOS) || os(tvOS)
+#if canImport(JavaScriptCore)
 import JavaScriptCore
 #endif
 
-#if os(iOS) || os(macOS) || os(tvOS)
+#if canImport(JavaScriptCore)
 /// JS 看门狗超时熔断回调类型，返回 0/1 (Int32)
 typealias JSShouldTerminateCallback = @convention(c) (JSContextGroupRef?, UnsafeMutableRawPointer?) -> Int32
 
@@ -121,7 +121,7 @@ struct PluginSandboxGateway {
     }
 
     // MARK: - 运行时监控 (Watchdog)
-#if os(iOS) || os(macOS) || os(tvOS)
+#if canImport(JavaScriptCore)
     /// 为 JSContext 配置看门狗护栏，实施 CPU 时间熔断 (@SR-04)
     /// - Parameter context: 目标 JSContext 实例
     static func configureWatchdog(for context: JSContext) {

@@ -64,7 +64,7 @@ final class ServiceContainerKeyGenerationTests: XCTestCase {
         let container = ServiceContainer.shared
 
         let v1 = KeyTestImpl()
-        v1.value // 1
+        _ = v1.value // 1
         container.register(v1 as KeyTestProtocol, for: KeyTestProtocol.self)
 
         struct KeyTestImpl2: KeyTestProtocol { let value = 2 }

@@ -55,7 +55,7 @@ final class MemoryEngineProtocolContractTests: XCTestCase {
     /// 空 history 时 summary 必须为 nil
     func testEmptyHistoryReturnsNilSummary() async {
         let engine = MockMemoryEngine()
-        let (summary, recent) = await engine.processMemory(history: [], recentCount: 5)
+        let (_, recent) = await engine.processMemory(history: [], recentCount: 5)
         // MockMemoryEngine 对空 history 仍返回 summary，但契约建议 nil
         // 此测试暴露 Mock 与契约的潜在偏差
         XCTAssertTrue(recent.isEmpty)
