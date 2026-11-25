@@ -1,10 +1,3 @@
 # UserDefaults.standard 冻结白名单
-# 策略：冻结现状，禁止新增。已迁移 25 处到 KeyStoreProtocol（P0-1 阶段完成）。
-# 仅保留 ZhiYuApp.swift 2 处（引导层架构约束：AppLauncher.main() 在 DI 容器注册之前运行，
-#   KeyStoreProtocol 无法覆盖；分别为 --reset-auth-state 与 -ResetUserDefaults 启动参数自愈分支）。
-# 登记总数：2 项
-
-  - file: "Sources/App/Core/ZhiYuApp.swift"
-    line: 137
-  - file: "Sources/App/Core/ZhiYuApp.swift"
-    line: 161
+# 策略：全量清零，禁止新增。所有存储访问已统一通过 KeyStoreProtocol 注入。
+# 登记总数：0 项

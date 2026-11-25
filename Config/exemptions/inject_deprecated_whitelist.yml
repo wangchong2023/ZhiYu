@@ -1,3 +1,4 @@
+# 废弃注入冻结白名单（已清理全部历史僵尸条目，当前精准锁死 47 项，禁止新增）
 inject_deprecated_whitelist:
 - file: Sources/Platforms/watchOS/WatchVoiceCaptureView.swift
   line: 20
@@ -32,12 +33,6 @@ inject_deprecated_whitelist:
 - file: Sources/Platforms/iOS/Services/iOSWatchSyncService.swift
   line: 72
   type: ServiceContainer.shared
-  reason: P7 渐进式迁移存量
-  added: '2026-08-12'
-  expiry_check: P7
-- file: Sources/Core/System/Security/KeychainService.swift
-  line: 30
-  type: '@Inject'
   reason: P7 渐进式迁移存量
   added: '2026-08-12'
   expiry_check: P7
@@ -210,18 +205,6 @@ inject_deprecated_whitelist:
   reason: P7 渐进式迁移存量
   added: '2026-08-12'
   expiry_check: P7
-- file: Sources/App/Lifecycle/AppWindowSceneDelegate.swift
-  line: 28
-  type: ServiceContainer.shared
-  reason: P7 渐进式迁移存量
-  added: '2026-08-12'
-  expiry_check: P7
-- file: Sources/App/Lifecycle/AppWindowSceneDelegate.swift
-  line: 29
-  type: ServiceContainer.shared
-  reason: P7 渐进式迁移存量
-  added: '2026-08-12'
-  expiry_check: P7
 - file: Sources/Shared/DesignSystem/Themes/ThemeManager.swift
   line: 115
   type: ServiceContainer.shared
@@ -239,18 +222,6 @@ inject_deprecated_whitelist:
   type: ServiceContainer.shared
   reason: P7 渐进式迁移存量
   added: '2026-08-12'
-  expiry_check: P7
-- file: Tests/Unit/Base/ServiceContainerTests.swift
-  line: 38
-  type: '@Inject'
-  reason: 测试 DI 容器本身的功能，保留 @Inject 验证
-  added: '2026-08-19'
-  expiry_check: P7
-- file: Tests/Unit/Base/ServiceContainerTests.swift
-  line: 111
-  type: '@Inject'
-  reason: 测试 DI 容器本身的功能，保留 @Inject 验证
-  added: '2026-08-19'
   expiry_check: P7
 - file: Sources/Platforms/iOS/Services/iOSWatchSyncService.swift
   line: 73
