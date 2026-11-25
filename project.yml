@@ -256,7 +256,7 @@ targets:
       - path: Sources/Domain/Models/PageType.swift
       - path: Sources/Domain/Models/RAGModels.swift
       - path: Sources/Domain/Models/CreatePageInput.swift
-      - path: Sources/Domain/Models/PromptConstants.swift
+      - path: Sources/Domain/Models/PromptConstants+AppModels.swift
       - path: Sources/Domain/Protocols/IngestServiceProtocol.swift
       - path: Sources/Domain/Protocols/EmbeddingProvider.swift
       - path: Sources/Domain/Protocols/SyncProtocols.swift

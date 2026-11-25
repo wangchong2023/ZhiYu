@@ -11,12 +11,15 @@
 //
 
 import Foundation
+import ZhiYuAICore
 
-/// 通用两阶段二次语义重排序引擎
-public struct ContextReranker: Sendable {
+public typealias ContextReranker = ZhiYuAICore.ContextReranker
+
+/// 主 App PageChunk 二阶段语义重排序扩展（单一类型定义归属 ZhiYuAICore.ContextReranker）
+public extension ZhiYuAICore.ContextReranker {
 
     /// 重排序参数常量集
-    public enum Constants {
+    enum Constants {
         /// 默认 Top-K 保留切片数量
         public static let defaultTopK: Int = 5
         /// 默认最低分数阈值（低于此值的候选被剪枝）
@@ -29,15 +32,13 @@ public struct ContextReranker: Sendable {
         public static let regularMultiplier: Float = 1.0
     }
 
-    public init() {}
-
     /// 对一阶段召回的候选分块进行二次重排序与噪点剪枝
     /// - Parameters:
     ///   - query: 原始提问或查询
     ///   - candidates: 粗粒度召回的候选切片及其一阶段分数值
     ///   - topK: 期望精选保留的最终切片数量 (默认 5)
     /// - Returns: 经二阶段重排序与降噪后的候选切片列表
-    public func rerank(
+    func rerank(
         query: String,
         candidates: [(chunk: PageChunk, score: Float)],
         topK: Int = Constants.defaultTopK,

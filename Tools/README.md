@@ -46,6 +46,7 @@ Tools/
 | `ios-check-arch-opensource-placement.py` | 审计开源适配层在 SPM 包中的物理归位与残留清理状态 |
 | `audit-cross-platform-isolation.py` | 审计 iOS/macOS 物理隔离、Watch 轻量化依赖与 macOS 弹窗防塌缩规范 |
 | `audit-concurrency-escapes.py` | 审计生产源码中 `@unchecked Sendable` 与 `nonisolated(unsafe)` 水位线（只减不增） |
+| `audit-cross-package-symbol-collisions.py` | 审计 Sources 与 Packages 跨包顶层类型同名冲突、非 Shim 重名文件与豁免白名单僵尸路径 |
 
 ### Compliance (规范守卫)
 | 脚本 | 功能说明 |

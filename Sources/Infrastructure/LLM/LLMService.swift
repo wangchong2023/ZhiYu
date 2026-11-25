@@ -9,6 +9,7 @@
 //  核心职责：实现 LLM 模块的核心业务逻辑服务。
 //
 import Foundation
+import ZhiYuDomain
 import UFPCore
 import Combine
 import Dependencies

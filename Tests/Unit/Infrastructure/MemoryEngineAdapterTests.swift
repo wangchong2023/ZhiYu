@@ -17,9 +17,9 @@ final class MemoryEngineAdapterTests: XCTestCase {
 
     /// 验证 MemoryEngineProtocol 契约隔离性：原生引擎与开源适配器均遵循相同接口契约且可零破坏替换
     func testMemoryEngineAdapterHotSwapping() async throws {
-        let engines: [any MemoryEngineProtocol] = [
-            NativeMemoryEngine(),
-            SwarmMemoryAdapter()
+        let engines: [any ChatMemoryEngineProtocol] = [
+            ChatNativeMemoryEngine(),
+            ChatSwarmMemoryAdapter()
         ]
 
         let history = (1...10).map { i in

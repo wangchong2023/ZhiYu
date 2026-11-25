@@ -9,6 +9,7 @@
 //  核心职责：实现基于 Apple NLEmbedding 的向量化与相似度检索业务。
 //
 import Foundation
+import ZhiYuDomain
 import NaturalLanguage
 import UFPCore
 

@@ -30,3 +30,5 @@ public typealias PluginRecordFTS = ZhiYuDomain.PluginRecordFTS
 public typealias AgentTool = ZhiYuDomain.AgentTool
 public typealias PluginRecord = ZhiYuDomain.PluginRecord
 public typealias ToolItem = ZhiYuDomain.ToolItem
+public typealias PromptConstants = ZhiYuDomain.PromptConstants
+public typealias MemoryEngineType = ZhiYuDomain.MemoryEngineType

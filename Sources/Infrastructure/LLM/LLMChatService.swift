@@ -9,6 +9,7 @@
 //  核心职责：实现 LLMChat 模块的核心业务逻辑服务。
 //
 import Foundation
+import ZhiYuDomain
 import UFPCore
 import Dependencies
 

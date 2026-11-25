@@ -11,15 +11,11 @@
 //
 
 import Foundation
+import ZhiYuDomain
 
-/// 记忆引擎类型
-public enum MemoryEngineType: String, Sendable, Codable {
-    case native
-    case openSourceAdapter
-}
-
-/// 通用对话记忆与 Episodic 摘要契约协议
-public protocol MemoryEngineProtocol: Sendable {
+/// 面向主 App ChatMessageDTO 的对话记忆与 Episodic 摘要契约协议
+/// （通用领域契约见 ZhiYuDomain.MemoryEngineProtocol）
+public protocol ChatMemoryEngineProtocol: Sendable {
     /// 当前记忆引擎类型
     var engineType: MemoryEngineType { get }
 

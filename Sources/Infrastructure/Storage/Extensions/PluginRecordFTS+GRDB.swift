@@ -14,7 +14,7 @@ import Foundation
 
 // MARK: - GRDB 协议遵循
 
-extension PluginRecordFTS: FetchableRecord, PersistableRecord {
+extension PluginRecordFTS: @retroactive FetchableRecord, @retroactive PersistableRecord, @retroactive MutablePersistableRecord, @retroactive EncodableRecord, @retroactive TableRecord {
     public static var databaseTableName: String {
         AppConstants.Storage.Tables.pluginRecordsFTS
     }

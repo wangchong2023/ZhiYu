@@ -1,5 +1,5 @@
 //
-//  MarkdownRendererView.swift
+//  UFPMarkdownView.swift
 //  UFPDesignSystem
 //
 //  Created by Antigravity on 2026/08/02.
@@ -10,7 +10,7 @@
 //           封装 gonzalezreal/swift-markdown-ui，上层只需 import UFPDesignSystem，
 //           严禁上层直接 import MarkdownUI。
 //
-//  架构原则：开源库 MarkdownUI 只在此文件 import，通过 MarkdownRendererView 对外暴露能力。
+//  架构原则：开源库 MarkdownUI 只在此文件 import，通过 UFPMarkdownView 对外暴露能力。
 //
 
 import SwiftUI
@@ -20,7 +20,7 @@ import MarkdownUI
 
 /// Markdown 内容渲染视图（封装 swift-markdown-ui）
 /// 提供统一的样式配置入口，上层无需感知底层渲染库。
-public struct MarkdownRendererView: View {
+public struct UFPMarkdownView: View {
     private let content: String
     private let theme: Theme
 
@@ -40,20 +40,20 @@ public struct MarkdownRendererView: View {
 
 // MARK: - 预设主题便捷扩展
 
-public extension MarkdownRendererView {
+public extension UFPMarkdownView {
     /// 适合深色背景的暗色主题
-    static func dark(_ content: String) -> MarkdownRendererView {
-        MarkdownRendererView(content, theme: .gitHub)
+    static func dark(_ content: String) -> UFPMarkdownView {
+        UFPMarkdownView(content, theme: .gitHub)
     }
 
     /// 适合知识卡片的紧凑主题
-    static func compact(_ content: String) -> MarkdownRendererView {
-        MarkdownRendererView(content, theme: .basic)
+    static func compact(_ content: String) -> UFPMarkdownView {
+        UFPMarkdownView(content, theme: .basic)
     }
 }
 #else
-/// watchOS 平台下 MarkdownRendererView 原生 Text 降级实现
-public struct MarkdownRendererView: View {
+/// watchOS 平台下 UFPMarkdownView 原生 Text 降级实现
+public struct UFPMarkdownView: View {
     private let content: String
 
     public init(_ content: String) {
@@ -65,13 +65,13 @@ public struct MarkdownRendererView: View {
     }
 }
 
-public extension MarkdownRendererView {
-    static func dark(_ content: String) -> MarkdownRendererView {
-        MarkdownRendererView(content)
+public extension UFPMarkdownView {
+    static func dark(_ content: String) -> UFPMarkdownView {
+        UFPMarkdownView(content)
     }
 
-    static func compact(_ content: String) -> MarkdownRendererView {
-        MarkdownRendererView(content)
+    static func compact(_ content: String) -> UFPMarkdownView {
+        UFPMarkdownView(content)
     }
 }
 #endif

@@ -32,19 +32,19 @@ final class MemoryEngineSupplementTests: XCTestCase {
     // MARK: - NativeMemoryEngine
 
     func testNativeMemoryEngineType() {
-        let engine = NativeMemoryEngine()
+        let engine = ChatNativeMemoryEngine()
         XCTAssertEqual(engine.engineType, .native, "NativeMemoryEngine 的 engineType 应为 .native")
     }
 
     func testNativeProcessMemoryEmptyHistoryReturnsNilSummary() async {
-        let engine = NativeMemoryEngine()
+        let engine = ChatNativeMemoryEngine()
         let (summary, recent) = await engine.processMemory(history: [], recentCount: 5)
         XCTAssertNil(summary, "空历史应返回 nil summary")
         XCTAssertTrue(recent.isEmpty, "空历史应返回空 recent 列表")
     }
 
     func testNativeProcessMemoryCountLessOrEqualRecentCount() async {
-        let engine = NativeMemoryEngine()
+        let engine = ChatNativeMemoryEngine()
         let history = (1...3).map { i in
             ChatMessageDTO(role: i % 2 == 1 ? .user : .assistant, content: "Msg \(i)")
         }
@@ -54,7 +54,7 @@ final class MemoryEngineSupplementTests: XCTestCase {
     }
 
     func testNativeProcessMemoryCountEqualsRecentCount() async {
-        let engine = NativeMemoryEngine()
+        let engine = ChatNativeMemoryEngine()
         let history = (1...5).map { i in
             ChatMessageDTO(role: i % 2 == 1 ? .user : .assistant, content: "Msg \(i)")
         }
@@ -64,7 +64,7 @@ final class MemoryEngineSupplementTests: XCTestCase {
     }
 
     func testNativeProcessMemorySummaryContainsRoleAndContent() async {
-        let engine = NativeMemoryEngine()
+        let engine = ChatNativeMemoryEngine()
         let history = (1...10).map { i in
             ChatMessageDTO(role: i % 2 == 1 ? .user : .assistant, content: "Content\(i)")
         }
@@ -78,7 +78,7 @@ final class MemoryEngineSupplementTests: XCTestCase {
     }
 
     func testNativeProcessMemorySummaryTruncatedToMaxLength() async {
-        let engine = NativeMemoryEngine()
+        let engine = ChatNativeMemoryEngine()
         let longContent = String(repeating: "A", count: 500)
         let history = (1...10).map { _ in
             ChatMessageDTO(role: .user, content: longContent)
@@ -94,14 +94,14 @@ final class MemoryEngineSupplementTests: XCTestCase {
     }
 
     func testNativeRecordSessionSummarySucceeds() async throws {
-        let engine = NativeMemoryEngine()
+        let engine = ChatNativeMemoryEngine()
         try await engine.recordSessionSummary(sessionID: "session-1", summary: "测试摘要")
         try await engine.recordSessionSummary(sessionID: "session-2", summary: "另一个摘要")
         XCTAssertEqual(engine.engineType, .native, "引擎类型应为 .native")
     }
 
     func testNativeRecordSessionSummaryOverwritesExisting() async throws {
-        let engine = NativeMemoryEngine()
+        let engine = ChatNativeMemoryEngine()
         try await engine.recordSessionSummary(sessionID: "dup-session", summary: "第一次")
         try await engine.recordSessionSummary(sessionID: "dup-session", summary: "第二次")
         XCTAssertEqual(engine.engineType, .native, "多次覆写后引擎状态应正常")
@@ -110,19 +110,19 @@ final class MemoryEngineSupplementTests: XCTestCase {
     // MARK: - SwarmMemoryAdapter
 
     func testSwarmMemoryAdapterType() {
-        let adapter = SwarmMemoryAdapter()
+        let adapter = ChatSwarmMemoryAdapter()
         XCTAssertEqual(adapter.engineType, .openSourceAdapter, "SwarmMemoryAdapter 的 engineType 应为 .openSourceAdapter")
     }
 
     func testSwarmProcessMemoryEmptyHistoryReturnsNilSummary() async {
-        let adapter = SwarmMemoryAdapter()
+        let adapter = ChatSwarmMemoryAdapter()
         let (summary, recent) = await adapter.processMemory(history: [], recentCount: 5)
         XCTAssertNil(summary, "空历史应返回 nil summary")
         XCTAssertTrue(recent.isEmpty, "空历史应返回空 recent 列表")
     }
 
     func testSwarmProcessMemoryCountLessOrEqualRecentCount() async {
-        let adapter = SwarmMemoryAdapter()
+        let adapter = ChatSwarmMemoryAdapter()
         let history = (1...4).map { i in
             ChatMessageDTO(role: i % 2 == 1 ? .user : .assistant, content: "Msg \(i)")
         }
@@ -132,7 +132,7 @@ final class MemoryEngineSupplementTests: XCTestCase {
     }
 
     func testSwarmProcessMemorySummaryContainsSwarmIdentifier() async {
-        let adapter = SwarmMemoryAdapter()
+        let adapter = ChatSwarmMemoryAdapter()
         let history = (1...10).map { i in
             ChatMessageDTO(role: i % 2 == 1 ? .user : .assistant, content: "Content\(i)")
         }
@@ -143,7 +143,7 @@ final class MemoryEngineSupplementTests: XCTestCase {
     }
 
     func testSwarmRecordSessionSummarySucceeds() async throws {
-        let adapter = SwarmMemoryAdapter()
+        let adapter = ChatSwarmMemoryAdapter()
         try await adapter.recordSessionSummary(sessionID: "swarm-1", summary: "Swarm 摘要")
         XCTAssertEqual(adapter.engineType, .openSourceAdapter, "Swarm adapter 记录会话摘要后引擎类型应为 .openSourceAdapter")
     }
@@ -151,7 +151,7 @@ final class MemoryEngineSupplementTests: XCTestCase {
     // MARK: - 引擎一致性对比
 
     func testBothEnginesReturnSameRecentCount() async {
-        let engines: [any MemoryEngineProtocol] = [NativeMemoryEngine(), SwarmMemoryAdapter()]
+        let engines: [any ChatMemoryEngineProtocol] = [ChatNativeMemoryEngine(), ChatSwarmMemoryAdapter()]
         let history = (1...20).map { i in
             ChatMessageDTO(role: i % 2 == 0 ? .user : .assistant, content: "Msg \(i)")
         }
@@ -162,7 +162,7 @@ final class MemoryEngineSupplementTests: XCTestCase {
     }
 
     func testBothEnginesHandleZeroRecentCount() async {
-        let engines: [any MemoryEngineProtocol] = [NativeMemoryEngine(), SwarmMemoryAdapter()]
+        let engines: [any ChatMemoryEngineProtocol] = [ChatNativeMemoryEngine(), ChatSwarmMemoryAdapter()]
         let history = (1...5).map { i in
             ChatMessageDTO(role: .user, content: "Msg \(i)")
         }

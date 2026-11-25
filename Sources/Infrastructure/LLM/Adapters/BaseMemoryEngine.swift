@@ -13,7 +13,7 @@ import Foundation
 import os
 
 /// 对话记忆引擎通用基类 (DRY)
-open class BaseMemoryEngine: MemoryEngineProtocol, @unchecked Sendable {
+open class BaseMemoryEngine: ChatMemoryEngineProtocol, @unchecked Sendable {
     open var engineType: MemoryEngineType { .native }
     open var summaryPrefix: String { L10n.AI.Prompt.summaryPrefix }
 

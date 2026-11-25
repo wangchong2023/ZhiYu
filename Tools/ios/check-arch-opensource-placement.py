@@ -67,9 +67,9 @@ PHYSICAL_PLACEMENT_RULES = [
         "severity": "ERROR",
     },
     {
-        "adapter_file": "MarkdownRendererView.swift",
+        "adapter_file": "UFPMarkdownView.swift",
         "expected_package": "UFPDesignSystem",
-        "expected_subpath": "Sources/UFPDesignSystem/Adapters/MarkdownRendererView.swift",
+        "expected_subpath": "Sources/UFPDesignSystem/Adapters/UFPMarkdownView.swift",
         "forbidden_paths": ["Shared/UIComponents/", "Features/"],
         "package_must_declare": ["swift-markdown-ui"],
         "description": "Markdown 渲染封装适配器 → 必须在 UFPDesignSystem SPM 包",

@@ -12,7 +12,7 @@ import UFPStorage
 import Foundation
 
 // MARK: - GRDB 协议遵循
-extension PageLink: FetchableRecord, PersistableRecord {}
+extension PageLink: @retroactive FetchableRecord, @retroactive PersistableRecord, @retroactive MutablePersistableRecord, @retroactive EncodableRecord, @retroactive TableRecord {}
 
 // MARK: - Database Table Name
 extension PageLink {

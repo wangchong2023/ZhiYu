@@ -10,6 +10,7 @@
 //
 
 import Foundation
+import ZhiYuDomain
 
 /// 远程大模型清单描述结构实体
 public struct LLMManifest: Codable, Sendable, Identifiable, Equatable {

@@ -11,6 +11,9 @@
 //
 
 import Foundation
+import ZhiYuAICore
+
+public typealias PromptSecuritySanitizer = ZhiYuAICore.PromptSecuritySanitizer
 
 /// 提示词安全防护错误枚举
 public enum PromptSecurityError: LocalizedError, Equatable {
@@ -24,15 +27,13 @@ public enum PromptSecurityError: LocalizedError, Equatable {
     }
 }
 
-/// 通用提示词安全沙箱与越狱注入拦截器
-public struct PromptSecuritySanitizer: Sendable {
+/// 通用提示词安全沙箱与越狱注入拦截器（主 App 扩展，单一类型定义归属 ZhiYuAICore.PromptSecuritySanitizer）
+public extension ZhiYuAICore.PromptSecuritySanitizer {
 
     /// 常见的越狱注入攻击特征词集
     private static let jailbreakPatterns: [String] = LLMConstants.PromptSecurity.jailbreakPatterns
 
-    public init() {}
-
-    private static let zeroWidthScalarSet: Set<UInt32> = [
+    private static let appZeroWidthScalarSet: Set<UInt32> = [
         0x200B, // Zero-width space
         0x200C, // Zero-width non-joiner
         0x200D, // Zero-width joiner
@@ -45,9 +46,9 @@ public struct PromptSecuritySanitizer: Sendable {
     /// 扫描输入文本中是否存在提示词注入越狱攻击
     /// - Parameter text: 待校验的原始文本
     /// - Throws: 发现注入模式时抛出 PromptSecurityError.jailbreakAttemptDetected
-    public func scanJailbreakAttempt(in text: String) throws {
+    func scanJailbreakAttempt(in text: String) throws {
         // 预处理：基于 Unicode Scalar 严格移除零宽字符，防止字形簇合并绕过
-        let cleanedScalars = text.unicodeScalars.filter { !Self.zeroWidthScalarSet.contains($0.value) }
+        let cleanedScalars = text.unicodeScalars.filter { !Self.appZeroWidthScalarSet.contains($0.value) }
         let lowered = String(cleanedScalars).lowercased()
         for pattern in Self.jailbreakPatterns where lowered.contains(pattern) {
             Logger.shared.warning("[PromptSecurity] 拦截越狱攻击特征: \(pattern)")
@@ -58,7 +59,7 @@ public struct PromptSecuritySanitizer: Sendable {
     /// 使用 XML 标签对 RAG 召回的知识库上下文进行沙箱包装，隔离外部非信任内容
     /// - Parameter context: 原始召回上下文
     /// - Returns: 经过 XML 沙箱包装后的上下文字符串
-    public func sanitizeContext(_ context: String) -> String {
+    func sanitizeContext(_ context: String) -> String {
         let escaped = context
             .replacingOccurrences(of: LLMConstants.PromptTag.contextClose, with: LLMConstants.PromptTag.contextCloseEscaped)
             .replacingOccurrences(of: LLMConstants.PromptTag.contextOpen, with: LLMConstants.PromptTag.contextOpenEscaped)
@@ -68,7 +69,7 @@ public struct PromptSecuritySanitizer: Sendable {
     /// 使用 XML 标签对用户输入的 Query 进行沙箱包装，防止其伪造 System Prompt
     /// - Parameter query: 原始用户输入
     /// - Returns: 经过 XML 沙箱包装后的用户 Query
-    public func sanitizeUserQuery(_ query: String) -> String {
+    func sanitizeUserQuery(_ query: String) -> String {
         let escaped = query
             .replacingOccurrences(of: LLMConstants.PromptTag.userQueryClose, with: LLMConstants.PromptTag.userQueryCloseEscaped)
             .replacingOccurrences(of: LLMConstants.PromptTag.userQueryOpen, with: LLMConstants.PromptTag.userQueryOpenEscaped)

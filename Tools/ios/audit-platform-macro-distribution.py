@@ -77,7 +77,7 @@ PLATFORM_CAPABILITY_FILES = {
     "Sources/Infrastructure/Storage/Utility/DemoPDFBuilder.swift",
     "Sources/Infrastructure/Storage/Utility/DemoImageBuilder.swift",
     "Packages/UFPDesignSystem/Sources/UFPDesignSystem/Adapters/AppLottieView.swift",
-    "Packages/UFPDesignSystem/Sources/UFPDesignSystem/Adapters/MarkdownRendererView.swift",
+    "Packages/UFPDesignSystem/Sources/UFPDesignSystem/Adapters/UFPMarkdownView.swift",
     "Packages/UFPDesignSystem/Sources/UFPDesignSystem/Components/Inputs.swift",
     "Packages/UFPDesignSystem/Sources/UFPDesignSystem/Feedback/AppErrorView.swift",
     "Packages/UFPDesignSystem/Sources/UFPDesignSystem/Tokens/Colors.swift",

@@ -47,6 +47,7 @@ GATEKEEPER_AUDIT_STEPS = [
     ("强制解包安全审计", ["python3", "Tools/ios/audit-code-force-unwrap.py"]),
     ("三平台隔离与桌面弹窗规范审计", ["python3", "Tools/ios/audit-cross-platform-isolation.py"]),
     ("Swift 6 并发逃生舱水位线审计", ["python3", "Tools/ios/audit-concurrency-escapes.py"]),
+    ("跨包同名类型冲突与白名单健康审计", ["python3", "Tools/ios/audit-cross-package-symbol-collisions.py"]),
 ]
 
 

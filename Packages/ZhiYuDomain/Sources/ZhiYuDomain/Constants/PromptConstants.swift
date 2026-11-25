@@ -64,12 +64,78 @@ public enum PromptConstants {
         /// 详尽报告 (Comprehensive) 目标字数区间 (2500 ~ 4000 字)
         public static let comprehensiveMinWords: Int = 2500
         public static let comprehensiveMaxWords: Int = 4000
+
+        /// 详尽长文与深度扩写 (Detailed) 目标字数区间 (2500 ~ 4000 字)
+        public static let detailedMinWords: Int = 2500
+        public static let detailedMaxWords: Int = 4000
     }
 
-    // MARK: - 默认推理参数
+    // MARK: - 默认推理参数 (Inference Parameter Defaults)
     public struct InferenceDefaults {
         public static let defaultTemperature: Double = 0.7
         public static let defaultTopP: Double = 0.9
         public static let defaultPresencePenalty: Double = 0.0
+        public static let temperature: Double = 0.7
+        public static let topP: Double = 0.9
+        public static let topK: Int = 40
+        /// 单次推理生成的最大 Token 数量限制默认值
+        public static let maxTokens: Int = 2048
+    }
+
+    // MARK: - 知识导入管线 (Ingest Pipeline) 常量
+    public struct IngestPipeline {
+        /// 生成全局摘要块时截取正文前 N 字符发送给 LLM
+        public static let summaryChunkCharLimit: Int = 2000
+        /// 每个 Chunk 反向 QA 提问的最大数量
+        public static let maxQAPairsPerChunk: Int = 3
+    }
+
+    // MARK: - 检索诊断 (Search Diagnostics) 常量
+    public struct SearchDiagnostics {
+        /// 诊断信息中保留的 Top-N 结果数
+        public static let topN: Int = 10
+    }
+
+    // MARK: - Prompt 模板引擎 (PromptTemplateEngine) 常量
+    public struct PromptTemplate {
+        /// 远程 Prompt 热更新拉取的网络超时时间（秒）
+        public static let remoteFetchTimeout: TimeInterval = 5.0
+        /// 哈希不匹配日志中截取的前缀长度
+        public static let hashLogPrefixLength: Int = 16
+    }
+
+    // MARK: - JSON Schema 结构约束描述 (Structured Output JSON Schemas)
+    public struct Schemas {
+        /// Quiz 测验题目的标准 JSON Schema 约束描述（强制 LLM 按照结构化 JSON 返回）
+        public static let quizJSONSchema: String = """
+        {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "description": "Quiz title" },
+            "questions": {
+              "type": "array",
+              "description": "Quiz questions list",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "integer", "description": "Question ID starting from 1" },
+                  "question": { "type": "string", "description": "Question text" },
+                  "options": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "minItems": 4,
+                    "maxItems": 4,
+                    "description": "Options list (exactly 4 distinct choices: A, B, C, D)"
+                  },
+                  "answer": { "type": "integer", "description": "Correct option index starting from 0" },
+                  "explanation": { "type": "string", "description": "Explanation text" }
+                },
+                "required": ["question", "options", "answer", "explanation"]
+              }
+            }
+          },
+          "required": ["questions"]
+        }
+        """
     }
 }

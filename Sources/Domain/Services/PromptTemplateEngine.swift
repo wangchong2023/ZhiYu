@@ -10,6 +10,7 @@
 //
 
 import Foundation
+import ZhiYuDomain
 import CryptoKit
 import UFPCore
 

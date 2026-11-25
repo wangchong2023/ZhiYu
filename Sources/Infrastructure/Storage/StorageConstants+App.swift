@@ -8,9 +8,12 @@
 
 import Foundation
 import UFPCore
+import UFPStorage
 
-/// Storage 模块业务常量集
-enum StorageConstants {
+public typealias StorageConstants = UFPStorage.StorageConstants
+
+/// Storage 模块业务常量集（扩展自 UFPStorage.StorageConstants）
+extension UFPStorage.StorageConstants {
 
     // MARK: - 知识页来源类型 (Source Type)
     enum SourceType {

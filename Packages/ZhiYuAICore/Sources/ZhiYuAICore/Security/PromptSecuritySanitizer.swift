@@ -13,7 +13,9 @@ import Foundation
 import UFPCore
 import ZhiYuDomain
 
-public enum PromptSecuritySanitizer {
+public struct PromptSecuritySanitizer: Sendable {
+
+    public init() {}
 
     /// 使用指定 XML 标签安全包裹输入文本
     public static func sanitizeAndWrap(_ input: String, tag: String) -> String {

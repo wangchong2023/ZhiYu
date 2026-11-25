@@ -16,7 +16,7 @@ import os
 
 /// 开源 Swarm / Wax 记忆框架挂载适配器
 /// 继承 BaseMemoryEngine 复用通用历史切片提取与线程安全存储逻辑 (DRY)。
-public final class SwarmMemoryAdapter: BaseMemoryEngine {
+public final class ChatSwarmMemoryAdapter: BaseMemoryEngine {
     public override var engineType: MemoryEngineType { .openSourceAdapter }
 
     public override var summaryPrefix: String { "Swarm Agent Memory State" }

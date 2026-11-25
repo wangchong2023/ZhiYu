@@ -12,7 +12,7 @@ import UFPStorage
 import Foundation
 
 // MARK: - GRDB 协议遵循
-extension KnowledgePageFTS: FetchableRecord, PersistableRecord {
+extension KnowledgePageFTS: @retroactive FetchableRecord, @retroactive PersistableRecord, @retroactive MutablePersistableRecord, @retroactive EncodableRecord, @retroactive TableRecord {
     public static let databaseTableName = AppConstants.Storage.Tables.pagesFTS
 }
 
