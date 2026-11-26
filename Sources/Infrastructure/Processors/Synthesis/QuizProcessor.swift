@@ -151,7 +151,7 @@ enum QuizProcessor {
                     md += "\(ProcessorConstants.MarkdownSyntax.bulletAsterisk)\(opt)\(ProcessorConstants.Whitespace.newline)"
                 }
                 md += "\(ProcessorConstants.Whitespace.newline)\(ProcessorConstants.HTMLTag.detailsOpen)\(ProcessorConstants.Whitespace.newline)\(ProcessorConstants.HTMLTag.summaryOpen)\(L10n.Quiz.showAnswer)\(ProcessorConstants.HTMLTag.summaryClose)\(ProcessorConstants.Whitespace.doubleNewline)"
-                if question.answer < question.options.count {
+                if question.answer >= 0 && question.answer < question.options.count {
                     md += "\(ProcessorConstants.MarkdownSyntax.bold)\(L10n.Quiz.correctAnswer):\(ProcessorConstants.MarkdownSyntax.bold) \(question.options[question.answer])\(ProcessorConstants.Whitespace.doubleNewline)"
                 }
                 if !question.explanation.isEmpty {
@@ -263,11 +263,15 @@ enum QuizProcessor {
 
             if trimmed.hasPrefix(ProcessorConstants.MarkdownSyntax.h2Prefix) || (trimmed.first?.isNumber == true && (trimmed.contains(ProcessorConstants.Whitespace.dotSpace) || trimmed.contains(ProcessorConstants.Whitespace.ideographicComma))) {
                 if inQuestion && !currentQuestionText.isEmpty {
+                    let finalOptions = currentOptions.isEmpty ? ProcessorConstants.Synthesis.quizLetterOptions : currentOptions
+                    let safeAnswer = (currentAnswer >= 0 && currentAnswer < finalOptions.count)
+                        ? currentAnswer
+                        : ProcessorConstants.Synthesis.quizDefaultIndex
                     questions.append(QuizQuestion(
                         id: questions.count + 1,
                         text: currentQuestionText,
-                        options: currentOptions.isEmpty ? ProcessorConstants.Synthesis.quizLetterOptions : currentOptions,
-                        answer: currentAnswer,
+                        options: finalOptions,
+                        answer: safeAnswer,
                         explanation: currentExplanation
                     ))
                     currentOptions.removeAll()
@@ -290,11 +294,15 @@ enum QuizProcessor {
 
         if inQuestion && !currentQuestionText.isEmpty {
             let defaultOpts = (0..<ProcessorConstants.Synthesis.quizOptionCount).map { "\(L10n.AI.Prompt.Quiz.option) \($0 + 1)" }
+            let finalOptions = currentOptions.isEmpty ? defaultOpts : currentOptions
+            let safeAnswer = (currentAnswer >= 0 && currentAnswer < finalOptions.count)
+                ? currentAnswer
+                : ProcessorConstants.Synthesis.quizDefaultIndex
             questions.append(QuizQuestion(
                 id: questions.count + 1,
                 text: currentQuestionText,
-                options: currentOptions.isEmpty ? defaultOpts : currentOptions,
-                answer: currentAnswer,
+                options: finalOptions,
+                answer: safeAnswer,
                 explanation: currentExplanation
             ))
         }

@@ -357,4 +357,25 @@ final class QuizProcessorEdgeTests: XCTestCase {
         """)
         XCTAssertNotNil(model, "模型应被正确解析")
     }
+
+    // MARK: - 缺陷 #116 回归：Markdown 测验越界答案索引钳位与负数防崩
+
+    func testParseMarkdownQuiz_outOfBoundsAnswerClampedSafely() {
+        let md = """
+        # 判断题测验
+
+        ## 1. Swift 是类型安全的语言吗？
+
+        * 是
+        * 否
+
+        Answer: D
+        """
+        let model = QuizProcessor.parseToQuizModel(md)
+        XCTAssertNotNil(model)
+        if let first = model?.questions.first {
+            XCTAssertGreaterThanOrEqual(first.answer, 0)
+            XCTAssertLessThan(first.answer, first.options.count, "答案索引必须严格位于合法选项范围内")
+        }
+    }
 }

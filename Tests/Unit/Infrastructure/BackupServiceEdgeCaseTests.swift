@@ -247,4 +247,25 @@ final class BackupServiceEdgeTests: XCTestCase {
         let restored = backupService.restoreBackup(entry)
         XCTAssertNotNil(restored, "恢复应成功")
     }
+
+    // MARK: - 缺陷 #115 回归：篡改 BackupEntry.fileName 路径穿越防护
+
+    func testTraversalBackupFileNameBlockedOnRestoreAndDelete() throws {
+        // 在 backupDirectory 外层放置受保护哨兵文件
+        let sentinelURL = tempDir.appendingPathComponent("sentinel.txt")
+        try Data("protected".utf8).write(to: sentinelURL)
+
+        let maliciousEntry = BackupService.BackupEntry(
+            id: UUID(),
+            timestamp: Date(),
+            pageCount: 1,
+            totalWords: 1,
+            fileName: "../sentinel.txt"
+        )
+        XCTAssertNil(backupService.safeBackupFileURL(for: maliciousEntry.fileName))
+        XCTAssertNil(backupService.restoreBackup(maliciousEntry), "目录穿越路径不得读取外层文件")
+
+        backupService.deleteBackup(maliciousEntry)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: sentinelURL.path), "目录穿越路径不得删除 backupDirectory 外层文件")
+    }
 }

@@ -158,4 +158,22 @@ final class FileSystemSyncServiceTests: XCTestCase {
         XCTAssertTrue(content.contains("tags: t1, t2"), "应包含 tags 字段")
         XCTAssertTrue(content.contains("updated:"), "应包含 updated 字段")
     }
+
+    // MARK: - 缺陷 #114 回归：路径穿越与 YAML 换行注入防护
+
+    func testExportToMarkdown_traversalAndMultilineTitleSanitizedSafely() throws {
+        XCTAssertEqual(FileSystemSyncService.sanitizeFilename(".."), "untitled")
+        XCTAssertEqual(FileSystemSyncService.sanitizeFilename("///..."), "untitled")
+        XCTAssertFalse(FileSystemSyncService.sanitizeFilename("../../secret\\file").contains(".."))
+        XCTAssertFalse(FileSystemSyncService.sanitizeFilename("../../secret\\file").contains("\\"))
+        XCTAssertFalse(FileSystemSyncService.sanitizeYAMLTitle("Line1\n---\nInjected").contains("\n"))
+
+        let page = KnowledgePage(title: "../evil\n---", pageType: .concept, content: "safe body")
+        let service = FileSystemSyncService()
+        try service.exportToMarkdown(pages: [page], destinationURL: tempRoot)
+
+        let conceptsDir = tempRoot.appendingPathComponent("concepts")
+        let files = try FileManager.default.contentsOfDirectory(atPath: conceptsDir.path)
+        XCTAssertEqual(files.count, 1, "文件必须严格写入 concepts 目录内不得穿越")
+    }
 }

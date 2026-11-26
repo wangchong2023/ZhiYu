@@ -85,7 +85,8 @@ final class BackupService: ObservableObject {
     /// default备份Directory
     /// - Returns: 链接
     static func defaultBackupDirectory() -> URL {
-        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+            ?? FileManager.default.temporaryDirectory
         return docs.appendingPathComponent("AppBackups", isDirectory: true)
     }
 
@@ -95,9 +96,28 @@ final class BackupService: ObservableObject {
         return dir
     }
 
+    /// 校验备份文件名严格落在 backupDirectory 内，防止篡改索引触发目录穿越读/删任意文件
+    internal func safeBackupFileURL(for fileName: String) -> URL? {
+        let trimmed = fileName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty,
+              !trimmed.contains(SystemConstants.Character.slash),
+              !trimmed.contains(SystemConstants.Character.backslash),
+              !trimmed.contains(SystemConstants.Character.dot + SystemConstants.Character.dot) else {
+            return nil
+        }
+        let baseDir = backupDirectory.standardizedFileURL
+        let candidate = baseDir.appendingPathComponent(trimmed).standardizedFileURL
+        guard candidate.deletingLastPathComponent().path == baseDir.path else {
+            return nil
+        }
+        return candidate
+    }
+
     // MARK: - Init
     init(baseDirectory: URL? = nil) {
-        self.baseDirectory = baseDirectory ?? FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        self.baseDirectory = baseDirectory
+            ?? FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+            ?? FileManager.default.temporaryDirectory
         loadBackupEntries()
         checkForCrashRecovery()
     }
@@ -175,7 +195,15 @@ final class BackupService: ObservableObject {
     /// - Returns: 列表
     func restoreBackup(_ entry: BackupEntry) -> [KnowledgePage]? {
         let startTime = Date()
-        let url = backupDirectory.appendingPathComponent(entry.fileName)
+        guard let url = safeBackupFileURL(for: entry.fileName) else {
+            logBackupOperation(
+                action: .error,
+                target: entry.fileName,
+                details: String(format: L10n.Backup.log.restoreFailed, entry.fileName),
+                startTime: startTime
+            )
+            return nil
+        }
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
 
@@ -204,8 +232,9 @@ final class BackupService: ObservableObject {
     /// 删除备份
     /// - Parameter entry: entry
     func deleteBackup(_ entry: BackupEntry) {
-        let url = backupDirectory.appendingPathComponent(entry.fileName)
-        try? FileManager.default.removeItem(at: url)
+        if let url = safeBackupFileURL(for: entry.fileName) {
+            try? FileManager.default.removeItem(at: url)
+        }
         backupEntries.removeAll { $0.id == entry.id }
         saveBackupEntries()
     }

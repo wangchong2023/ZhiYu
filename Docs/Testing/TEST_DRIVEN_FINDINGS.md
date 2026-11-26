@@ -122,21 +122,26 @@
 | **111** | `GraphLayoutProcessor.computeAttractionForces` 使用 `Dictionary(uniqueKeysWithValues:)` 构建节点索引表，重复节点 ID 直接崩溃；且 `config.iterations < 0` 与 `Int(position.x / gridSize)` 遇到 `NaN` 均会触发致命崩溃 | 缺少重复键合并、迭代下限与浮点有限性校验 | 图谱异常数据或迭代溢出直接导致图谱页闪退 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 改用 `uniquingKeysWith`、`max(0, config.iterations)` 及 `gridCoordinates` 有限性守卫 | **✅ 已解决** | 是 (物理仿真引擎防 NaN 与重复键崩溃) | 是 (`GraphLayoutProcessorEdgeTests`) | ✅ 已闭环 |
 | **112** | `PromptTemplateEngine.renderPrompt` 仅对 `skill.skillId` 做了 `sanitizeFilename`，遗漏对 `skill.version` 路径分隔符过滤，存在经由 `version` 字段的路径穿越隐患；且 `init` 中硬索引 `paths[0]` | 路径清理未覆盖缓存文件名的全部动态段 | 恶意/异常远程配置版本号可逃逸缓存目录 | **High** | 架构设计与安全/网络健壮性 | 对 `skill.version` 同步执行 `sanitizeFilename`，`cachesDirectory` 改为 `paths.first ?? temporaryDirectory` 安全解包 | **✅ 已解决** | 是 (缓存文件名全段沙箱清理) | 是 (`PromptTemplateEngineTests`) | ✅ 已闭环 |
 | **113** | `UndoService` 的 `redoStack` 与 `redo()` 回推 `undoStack` 均未执行容量上限裁剪，长会话连续撤销/重做存在内存无界增长隐患 | 容量限制仅施加在 `pushSnapshot` 路径 | 大知识库高频撤销/重做累积大量快照占用内存 | **Low** | 状态机并发与数据生命周期 | 抽取 `Config.maxStackSize` 强类型常量，在 `undo`/`redo` 双向栈写入均执行上限裁剪 | **✅ 已解决** | 是 (撤销/重做双向栈容量守卫) | 是 (`UndoServiceEdgeCaseTests`) | ✅ 已闭环 |
+| **114** | `FileSystemSyncService.exportToMarkdown` 仅替换 `/` 与 `:`，未过滤 `\`、`..`、换行符与空标题，存在路径穿越与 YAML Frontmatter 注入风险 | 文件名消毒与 YAML 标题单行化不完整 | 特殊标题导出产生隐藏文件、跨目录写入或破坏 YAML 元数据块 | **High** | 架构设计与安全/网络健壮性 | 新增 `sanitizeFilename` 与 `sanitizeYAMLTitle` 强类型常量清理，空标题兜底 `untitled` | **✅ 已解决** | 是 (Markdown 导出路径与 YAML 注入防护) | 是 (`FileSystemSyncServiceTests`) | ✅ 已闭环 |
+| **115** | `BackupService.restoreBackup` 与 `deleteBackup` 直接拼接 `entry.fileName`，未校验文件是否严格位于 `backupDirectory` 内；若索引被篡改含 `../` 将越权读取或删除沙盒任意文件；且默认目录硬索引 `urls(...)[0]` | 缺少标准化父目录一致性边界校验 | 篡改备份索引可删除或读取任意沙盒文件 | **High** | 架构设计与安全/网络健壮性 | 新增 `safeBackupFileURL(for:)` 严格校验父目录相等并拦截 `/`、`\`、`..`；默认目录改为 `.first ?? temporaryDirectory` | **✅ 已解决** | 是 (备份索引路径沙箱校验) | 是 (`BackupServiceEdgeCaseTests`) | ✅ 已闭环 |
+| **116** | `QuizProcessor.convertJSONToMarkdown` 访问 `question.options[question.answer]` 时未检查 `question.answer >= 0`；且 `parseMarkdownQuiz` 未将解析到的答案索引钳位在 `finalOptions.count` 合法范围内 | 仅校验上界漏校验下界与动态选项数上界 | 异常答案索引触发数组越界闪退 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 补齐 `question.answer >= 0` 守卫并在 `parseMarkdownQuiz` 对答案索引执行合法区间钳位 | **✅ 已解决** | 是 (测验选项下标双向边界防护) | 是 (`QuizProcessorEdgeTests`) | ✅ 已闭环 |
+| **117** | `RAGEvaluationService.processEvaluationResponse` 未对 LLM 返回评分做 `[0.0, 1.0]` 钳位与 `isFinite` 校验，且不兼容 Markdown 代码块包裹的 JSON 响应 | 直接信任 LLM 原始浮点输出与裸 JSON 格式 | 百分制/负数/NaN 评分污染 RAG 治理报表，带围栏 JSON 评估误报 Error | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | 新增 `sanitizeScore` 强类型边界钳位，解析前经 `LLMUtils.stripMarkdown` 清洗 | **✅ 已解决** | 是 (LLM 评估输出范围钳位与围栏兼容) | 是 (`RAGEvaluationServiceTests`) | ✅ 已闭环 |
+| **118** | `WebScraperProcessor.fetchMarkdown` 对空白输入与 `file://`/`javascript:`/`ftp://`/`data:` 非 HTTP 协议强行拼接 `https://` 前缀，绕过协议校验并构造出畸形 URL | 未先判空与检测显式非 HTTP 协议 | 空输入构造空 host URL，非 HTTP 协议未被第一时间拦截 | **High** | 架构设计与安全/网络健壮性 | 先拦截空字符串与非 `http`/`https` 显式协议，并强制校验 `host` 非空 | **✅ 已解决** | 是 (URL 抓取白名单协议校验) | 是 (`WebScraperProcessorEdgeTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**113 项**
+- **收录问题总数**：**118 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：25 项 (22.1%)
-  - 状态机并发与数据生命周期：22 项 (19.5%)
-  - 架构设计与安全/网络健壮性：29 项 (25.7%)
-  - UI/交互与防御性缺陷：14 项 (12.4%)
-  - 代码坏味道与去魔鬼化/DRY 治理：23 项 (20.4%)
+  - 功能缺陷与核心算法/解析器/数据完整性：27 项 (22.9%)
+  - 状态机并发与数据生命周期：22 项 (18.6%)
+  - 架构设计与安全/网络健壮性：32 项 (27.1%)
+  - UI/交互与防御性缺陷：14 项 (11.9%)
+  - 代码坏味道与去魔鬼化/DRY 治理：23 项 (19.5%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：47 项 (41.6%)
-  - **Medium（功能异常/算法边界/性能损耗）**：41 项 (36.3%)
-  - **Low（样式异味/边界校验/门禁规范）**：25 项 (22.1%)
-- **修复闭环率**：**100% (113/113 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：51 项 (43.2%)
+  - **Medium（功能异常/算法边界/性能损耗）**：42 项 (35.6%)
+  - **Low（样式异味/边界校验/门禁规范）**：25 项 (21.2%)
+- **修复闭环率**：**100% (118/118 项已修复闭环)**
 

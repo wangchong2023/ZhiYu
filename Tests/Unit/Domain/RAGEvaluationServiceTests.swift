@@ -711,4 +711,35 @@ final class RAGEvaluationServiceTests: XCTestCase {
         XCTAssertEqual(lat.sampleCount, 0)
         XCTAssertEqual(tok.totalTokens, 0)
     }
+
+    // MARK: - 缺陷 #117 回归：Markdown 包裹 JSON 兼容与越界/NaN 评分钳位
+
+    func testEvaluationClampsOutOfRangeScoresAndHandlesMarkdownFence() async {
+        XCTAssertEqual(RAGEvaluationService.sanitizeScore(85.0), 1.0)
+        XCTAssertEqual(RAGEvaluationService.sanitizeScore(-0.5), 0.0)
+        XCTAssertEqual(RAGEvaluationService.sanitizeScore(Double.nan), 0.0)
+        XCTAssertEqual(RAGEvaluationService.sanitizeScore(Double.infinity), 0.0)
+
+        mockLLM.generateHandler = { _, _ in
+            return """
+            ```json
+            {
+                "faithfulness": 1.5,
+                "relevance": -0.2,
+                "context_precision": 0.8,
+                "hallucination_rate": 2.0,
+                "citation_accuracy": -1.0
+            }
+            ```
+            """
+        }
+
+        let report = await evaluationService.evaluate(query: "越界评分测试", answer: "回答", context: "上下文")
+        XCTAssertEqual(report.faithfulness, 1.0, accuracy: 0.001)
+        XCTAssertEqual(report.relevance, 0.0, accuracy: 0.001)
+        XCTAssertEqual(report.precision, 0.8, accuracy: 0.001)
+        XCTAssertEqual(report.hallucinationRate, 1.0, accuracy: 0.001)
+        XCTAssertEqual(report.citationAccuracy, 0.0, accuracy: 0.001)
+        XCTAssertEqual(report.status, L10n.AI.Eval.Status.pass)
+    }
 }

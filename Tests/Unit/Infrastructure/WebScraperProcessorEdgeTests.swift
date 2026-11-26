@@ -228,4 +228,21 @@ final class WebScraperProcessorEdgeTests: XCTestCase {
             XCTFail("应为 chainExhausted，实际: \(error)")
         }
     }
+
+    // MARK: - 缺陷 #118 回归：非 HTTP 危险协议与空白 URL 拦截
+
+    func testFetchMarkdown_rejectsNonHTTPSchemesAndBlankInput() async {
+        let processor = WebScraperProcessor(chainHead: MockScraperHandler(next: nil))
+        let blockedInputs = ["   ", "file:///etc/passwd", "javascript:alert(1)", "ftp://example.com/file", "data:text/html,hi"]
+        for input in blockedInputs {
+            do {
+                _ = try await processor.fetchMarkdown(from: input)
+                XCTFail("危险协议或空白输入 \(input) 必须被拦截")
+            } catch WebScraperProcessor.ScraperError.invalidURL {
+                // 预期行为
+            } catch {
+                XCTFail("应抛出 invalidURL，实际为: \(error)")
+            }
+        }
+    }
 }

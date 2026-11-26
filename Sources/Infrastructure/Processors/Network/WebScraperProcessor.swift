@@ -79,16 +79,33 @@ final class WebScraperProcessor: Sendable {
         self.chain = chainHead ?? jina
     }
 
+    private enum URLValidationConstants {
+        static let schemeDelimiter = "://"
+        static let allowedSchemes: Set<String> = ["http", "https"]
+        static let blockedSchemePrefixes: [String] = ["javascript:", "data:", "file:"]
+    }
+
     /// 责任链遍历入口：按 Jina → Googlebot → Archive → DumbExtractor 顺序尝试抓取。
-    /// 自动补全 https:// 前缀，标准化 URL 后交给链首节点处理。
+    /// 自动补全 https:// 前缀，拒绝空输入与非 http/https 危险协议（如 file://、javascript:）。
     func fetchMarkdown(from urlString: String) async throws -> (markdown: String, title: String) {
         let startTime = Date()
         var normalizedString = urlString.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !normalizedString.lowercased().hasPrefix(SystemConstants.URLScheme.http) && !normalizedString.lowercased().hasPrefix(SystemConstants.URLScheme.https) {
+        guard !normalizedString.isEmpty else {
+            throw ScraperError.invalidURL
+        }
+
+        let lowercased = normalizedString.lowercased()
+        let hasExplicitScheme = lowercased.contains(URLValidationConstants.schemeDelimiter)
+            || URLValidationConstants.blockedSchemePrefixes.contains(where: { lowercased.hasPrefix($0) })
+        if !hasExplicitScheme {
             normalizedString = SystemConstants.URLScheme.https + normalizedString
         }
 
-        guard let url = URL(string: normalizedString) else {
+        guard let url = URL(string: normalizedString),
+              let scheme = url.scheme?.lowercased(),
+              URLValidationConstants.allowedSchemes.contains(scheme),
+              let host = url.host,
+              !host.isEmpty else {
             throw ScraperError.invalidURL
         }
 

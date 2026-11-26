@@ -153,24 +153,38 @@ final class RAGEvaluationService: Sendable {
     ///   - answer: 生成的回答
     ///   - sources: 检索文档源列表（传入时触发检索质量记录）
     /// - Returns: 构造好的 EvaluationReport，解析失败返回 nil
+    private enum ScoreBounds {
+        static let minScore: Double = 0.0
+        static let maxScore: Double = 1.0
+    }
+
+    /// 将 LLM 返回的评分钳位至合法 [0.0, 1.0] 区间并过滤 NaN/Infinity，防止脏数据污染治理报表
+    internal static func sanitizeScore(_ raw: Any?) -> Double {
+        guard let value = raw as? Double, value.isFinite else {
+            return ScoreBounds.minScore
+        }
+        return min(max(value, ScoreBounds.minScore), ScoreBounds.maxScore)
+    }
+
     private func processEvaluationResponse(
         _ response: String,
         query: String,
         answer: String,
         sources: [KnowledgeSource]?
     ) async -> EvaluationReport? {
-        // Step 1: JSON 解析 — 尝试从 LLM 响应中提取评分字段
-        guard let data = response.data(using: .utf8),
+        // Step 1: JSON 解析 — 兼容 Markdown 代码块包裹的 JSON 响应
+        let cleanedResponse = LLMUtils.stripMarkdown(response)
+        guard let data = cleanedResponse.data(using: .utf8),
               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
             return nil
         }
 
-        // Step 2: 提取六维评分，缺失字段默认 0.0
-        let faithfulnessScore = (json[EvaluationMetric.faithfulness.rawValue] as? Double) ?? 0.0
-        let relevanceScore = (json[EvaluationMetric.relevance.rawValue] as? Double) ?? 0.0
-        let precisionScore = (json[EvaluationMetric.precision.rawValue] as? Double) ?? 0.0
-        let hallucinationRate = (json[EvaluationMetric.hallucinationRate.rawValue] as? Double) ?? 0.0
-        let citationAccuracy = (json[EvaluationMetric.citationAccuracy.rawValue] as? Double) ?? 0.0
+        // Step 2: 提取五维评分并钳位至 [0.0, 1.0]
+        let faithfulnessScore = Self.sanitizeScore(json[EvaluationMetric.faithfulness.rawValue])
+        let relevanceScore = Self.sanitizeScore(json[EvaluationMetric.relevance.rawValue])
+        let precisionScore = Self.sanitizeScore(json[EvaluationMetric.precision.rawValue])
+        let hallucinationRate = Self.sanitizeScore(json[EvaluationMetric.hallucinationRate.rawValue])
+        let citationAccuracy = Self.sanitizeScore(json[EvaluationMetric.citationAccuracy.rawValue])
 
         // Step 3: 基于忠实度的三级状态判定
         let status: String
