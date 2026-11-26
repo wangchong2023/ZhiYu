@@ -85,4 +85,24 @@ final class VaultLifecycleAndCoordinatorDeepTests: XCTestCase {
         service.autoRestoreActiveVault()
         XCTAssertEqual(service.selectedVaultID, first.id)
     }
+
+    // MARK: - 4. 缺陷 #129 回归：空白笔记本名称创建与重命名防护
+
+    func testVaultLifecycle_BlankNameFallsBackOrIgnoredSafely() {
+        let service = VaultService.shared
+        let initialCount = service.vaults.count
+
+        service.createVault(name: "   \n  ")
+        XCTAssertEqual(service.vaults.count, initialCount + 1)
+        guard let created = service.vaults.last else {
+            XCTFail("应成功创建兜底命名笔记本"); return
+        }
+        XCTAssertEqual(created.name, L10n.Vault.defaultName)
+
+        service.renameVault(id: created.id, newName: "   ")
+        XCTAssertEqual(service.vaults.first(where: { $0.id == created.id })?.name, L10n.Vault.defaultName, "纯空白名称不得覆盖原笔记本名")
+
+        service.updateVault(id: created.id, name: "   ", icon: "book", description: "desc")
+        XCTAssertEqual(service.vaults.first(where: { $0.id == created.id })?.name, L10n.Vault.defaultName)
+    }
 }

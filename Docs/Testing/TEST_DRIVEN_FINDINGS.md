@@ -135,21 +135,24 @@
 | **124** | `KnowledgeIngestPipeline.generateSummaryChunk` 未过滤纯空白 LLM 摘要响应，直接写入空字符串 `.summary` 分块污染向量库 | 缺少 `trimmingCharacters` 非空守卫 | LLM 返回空白摘要时向量库写入脏空分块影响召回质量 | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | 对摘要文本执行 `trimmingCharacters(in: .whitespacesAndNewlines)` 判空拦截 | **✅ 已解决** | 是 (入库分块非空守卫) | 是 (`KnowledgeIngestPipelineTests`) | ✅ 已闭环 |
 | **125** | `GraphClusteringService.cluster` 未校验 `k > 0`，传入 `k <= 0` 时触发负数组长度或空 `centroids` 越界致命崩溃 | 仅校验 `pages.count > k` 与 `embeddings.count >= k`，漏检下界 `k > 0` | 异常聚类数参数直接引发图谱页闪退 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 入口守卫补齐 `k > 0` 下界拦截 | **✅ 已解决** | 是 (K-Means 聚类参数正数守卫) | 是 (`GraphClusteringServiceTests`) | ✅ 已闭环 |
 | **126** | `LintService.checkCircularReferences` 未排除自链（`pageA.id == pageB.id`），导致页面引用自身时被误报为 `A <-> A` 双向循环引用 | 循环引用巡检缺少 `pageB.id != pageA.id` 判定 | 知识库健康巡检误报双向环并错误扣减健康分 | **Low** | 功能缺陷与核心算法/解析器/数据完整性 | 补齐 `pageB.id != pageA.id` 排除自环误报 | **✅ 已解决** | 是 (图巡检自环排除规范) | 是 (`LintServiceTests`) | ✅ 已闭环 |
+| **127** | `OAuthService.sendOAuthRequest` 遗漏 `OAuthGitHubRequest` 分支，尽管 `resolveAuthRequestInfo` 已完整支持 GitHub 渠道，但实际发起登录时 100% 抛出 `NetworkError.unexpected("Unsupported auth request type")` | 请求分发分支漏接 `OAuthGitHubRequest` | GitHub OAuth 登录渠道在生产环境完全不可用 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 在 `sendOAuthRequest` 补齐 `OAuthGitHubRequest` POST 路由分发 | **✅ 已解决** | 是 (多渠道 OAuth 分发完整性核查) | 是 (`AuthOAuthStrategiesBranchTests`) | ✅ 已闭环 |
+| **128** | `SynthesisProcessor.sanitizeMermaidSyntax` 构造节点括号区间 `line.index(after: start)..<end` 前未校验 `start < end`，遇到反向括号行（如 `A] --> B[`）直接触发 Swift 运行时越界范围致命崩溃 | 缺少 `start < end` 区间合法性前置守卫 | LLM 输出畸形 Mermaid 括号时触发 App 闪退 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 补齐 `start < end` 守卫防止非法反向 Range 崩溃 | **✅ 已解决** | 是 (字符串索引区间前置守卫规范) | 是 (`SynthesisProcessorEdgeTests`) | ✅ 已闭环 |
+| **129** | `VaultLifecycleManager` 的 `createVault`/`updateVault`/`renameVault` 未对纯空白笔记本名做 trim 与非空校验，允许创建或覆盖为空白标题幽灵笔记本 | 缺少用户输入标题规范化与非空守卫 | 侧边栏出现空白无名笔记本且 `englishName` 为空 | **Medium** | UI/交互与防御性缺陷 | `createVault` 空名兜底 `L10n.Vault.defaultName`；`renameVault`/`updateVault` 拒绝空白覆写 | **✅ 已解决** | 是 (多租户名称非空规范) | 是 (`VaultLifecycleAndDataCoordinatorDeepTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**126 项**
+- **收录问题总数**：**129 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：31 项 (24.6%)
-  - 状态机并发与数据生命周期：24 项 (19.0%)
-  - 架构设计与安全/网络健壮性：34 项 (27.0%)
-  - UI/交互与防御性缺陷：14 项 (11.1%)
-  - 代码坏味道与去魔鬼化/DRY 治理：23 项 (18.3%)
+  - 功能缺陷与核心算法/解析器/数据完整性：33 项 (25.6%)
+  - 状态机并发与数据生命周期：24 项 (18.6%)
+  - 架构设计与安全/网络健壮性：34 项 (26.4%)
+  - UI/交互与防御性缺陷：15 项 (11.6%)
+  - 代码坏味道与去魔鬼化/DRY 治理：23 项 (17.8%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：56 项 (44.4%)
-  - **Medium（功能异常/算法边界/性能损耗）**：44 项 (34.9%)
-  - **Low（样式异味/边界校验/门禁规范）**：26 项 (20.6%)
-- **修复闭环率**：**100% (126/126 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：58 项 (45.0%)
+  - **Medium（功能异常/算法边界/性能损耗）**：45 项 (34.9%)
+  - **Low（样式异味/边界校验/门禁规范）**：26 项 (20.2%)
+- **修复闭环率**：**100% (129/129 项已修复闭环)**
 

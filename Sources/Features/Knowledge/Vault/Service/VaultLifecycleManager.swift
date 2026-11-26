@@ -93,11 +93,13 @@ extension VaultService {
         clearVaultSelectionState()
     }
 
-    /// 创建全新的笔记本笔记本。
+    /// 创建全新的笔记本。
     public func createVault(name: String, icon: String? = nil, description: String? = nil) {
+        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let safeName = trimmedName.isEmpty ? L10n.Vault.defaultName : trimmedName
         let newVault = Vault(
             id: UUID(),
-            name: name,
+            name: safeName,
             createdAt: Date(),
             updatedAt: Date(),
             pageCount: 0,
@@ -112,8 +114,11 @@ extension VaultService {
 
     /// 更新已存在笔记本的配置元数据。
     public func updateVault(id: UUID, name: String, icon: String?, description: String?) {
+        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         updateVaultField(id: id) { vault in
-            vault.name = name
+            if !trimmedName.isEmpty {
+                vault.name = trimmedName
+            }
             vault.icon = icon
             vault.description = description
         }
@@ -121,8 +126,10 @@ extension VaultService {
 
     /// 重命名特定的笔记本。
     public func renameVault(id: UUID, newName: String) {
+        let trimmedName = newName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedName.isEmpty else { return }
         updateVaultField(id: id) { vault in
-            vault.name = newName
+            vault.name = trimmedName
         }
     }
 

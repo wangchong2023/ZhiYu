@@ -201,4 +201,12 @@ final class SynthesisProcessorEdgeTests: XCTestCase {
         let result = SynthesisProcessor.formatSlidesIfNeeded(text, fallbackTitle: "标题")
         XCTAssertTrue(result.contains("---"))
     }
+
+    // MARK: - 缺陷 #128 回归：Mermaid 反向括号行不得触发 Range lowerBound > upperBound 致命崩溃
+
+    func testFormatMermaid_reversedBracketsDoNotCrash() {
+        let malformed = "graph TD\nA] --> B["
+        let result = SynthesisProcessor.formatMermaid(malformed, fallbackPrefix: "graph TD")
+        XCTAssertTrue(result.contains("graph TD"))
+    }
 }

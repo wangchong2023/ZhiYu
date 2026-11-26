@@ -206,7 +206,9 @@ enum SynthesisProcessor {
                     line = regex.stringByReplacingMatches(in: line, options: [], range: range, withTemplate: ProcessorConstants.RegexPattern.mermaidNodeTemplate)
                 }
 
-                if let start = line.firstIndex(of: Character(ProcessorConstants.MarkdownSyntax.openBracket)), let end = line.lastIndex(of: Character(ProcessorConstants.MarkdownSyntax.closeBracket)) {
+                if let start = line.firstIndex(of: Character(ProcessorConstants.MarkdownSyntax.openBracket)),
+                   let end = line.lastIndex(of: Character(ProcessorConstants.MarkdownSyntax.closeBracket)),
+                   start < end {
                     let range = line.index(after: start)..<end
                     let inner = line[range]
                     var innerText = String(inner)
