@@ -35,7 +35,7 @@ CHECK_DIRS = [
 ]
 
 # 宏总数棘轮上限（只减不增；收敛清理后请同步调低此阈值）
-MAX_TOTAL_MACROS = 125
+MAX_TOTAL_MACROS = 122
 
 # 统一平台宏正则（去注释后匹配，拦截正向/反向/括号/复合条件中的 os() 与 macCatalyst）
 OS_MACRO_PATTERN = re.compile(
@@ -65,10 +65,6 @@ PLATFORM_CAPABILITY_FILES = {
     "Sources/Core/Base/Protocols/PlatformCapabilities.swift",
     "Sources/Infrastructure/LLM/LLMModels.swift",
     "Sources/Shared/DesignSystem/DesignSystem.swift",
-    "Sources/Infrastructure/Plugins/JavaScriptPlugin.swift",
-    "Sources/Infrastructure/Plugins/PluginEnginePool.swift",
-    "Sources/Infrastructure/Plugins/PluginLoader.swift",
-    "Sources/Infrastructure/Plugins/PluginSandboxGateway.swift",
     "Sources/Infrastructure/Storage/Utility/DemoPDFBuilder.swift",
     "Sources/Infrastructure/Storage/Utility/DemoImageBuilder.swift",
     "Packages/UFPDesignSystem/Sources/UFPDesignSystem/Adapters/AppLottieView.swift",

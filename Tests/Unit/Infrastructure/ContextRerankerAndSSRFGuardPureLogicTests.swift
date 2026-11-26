@@ -39,7 +39,8 @@ final class ContextRerankerPureLogicTests: XCTestCase {
     // MARK: - 空候选
 
     func testRerankEmptyCandidates() {
-        let result = reranker.rerank(query: "test", candidates: [])
+        let emptyCandidates: [(chunk: PageChunk, score: Float)] = []
+        let result = reranker.rerank(query: "test", candidates: emptyCandidates)
         XCTAssertTrue(result.isEmpty)
     }
 

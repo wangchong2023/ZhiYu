@@ -96,21 +96,23 @@
 | **85** | `Color.init(hex:)`（UFPDesignSystem）用 `trimmingCharacters(in: .alphanumerics.inverted)` 裁剪非法字符，但 `alphanumerics` 包含全部拉丁字母，导致 **G-Z/g-z 等非法 hex 字符被保留**；同时 `scanHexInt64` 的返回值被忽略。于是 `"fffGGG"`(6 字符) 被判为 case 6 合法，扫描只消费前 3 位（`0xfff`），解析出 `r=0, g=0x0f, b=0xff` 一个看似合理但完全错误的颜色；`"FF0000!"`、`"#!"` 等含符号输入同样静默解析错误 | 调用方传入含非法 hex 字符（G-Z/g-z/符号）或误带分隔符的 6/8 位字符串构造颜色（品牌色/数据可视化精确取色场景） | 非法输入被静默解析成完全错误的颜色而非回退，视觉渲染错误且无任何日志/报错，难以排查 | **Medium** | 解析器非法输入容错（hex 字符校验缺失） | 改为严格校验：去首 `#` 与首尾空白后，仅当长度恰为 6/8 且 `allSatisfy(isHexDigit)` 才按 RGB/ARGB 解析，否则一律回退默认色，杜绝非法字符被当合法解析 | **✅ 已解决** | 是 (hex 解析严格字符集校验范式) | 是 (等价类+边界值测试：合法 6/8 位、`#` 前缀、含 G-Z 非法字符、非法长度 5/7/9、空串/符号输入均回退默认色；还原缺陷版后 FFFGGG 测试失败、恢复修复版通过，完整验证) | ✅ 已闭环 |
 | **86** | `NetworkClient.uploadFile` 的 CRLF header 注入防护（Bug #40 修复）**实际失效**：源码 `guard ... contains("\r") && contains("\n")` 中的 `"\r"`/`"\n"` 是**字面反斜杠字符**（hex `5c72`/`5c6e`，即文本 `\r`/`\n` 而非真实 CR(0x0d)/LF(0x0a)），因此对含真实回车换行的 fileName 检查恒为 false、guard 永不拦截。诊断铁证：fileName scalars 含真实 `0x0d`/`0x0a`，但 `contains("\u{000D}")` 在 iOS target 返回 false（Swift 转义在此环境行为不可靠），原始 `contains("\r")`（字面）更不匹配 | 外部传入的 fileName 含真实 CR/LF 字节（恶意 multipart 上传文件名）调用 `uploadFile` | 防护失效，fileName 中的 CRLF 直接拼入 HTTP multipart header，形成 **HTTP header 注入**（HPE 篡改请求头、注入伪字段），属安全缺陷；Bug #40 声称已修复但实际未生效 | **High** | 网络健壮性与安全（HTTP header 注入防护失效） | 改用不依赖字符串转义的数值判断：`guard !fileName.unicodeScalars.contains(where: { $0.value == 13 || $0.value == 10 })`，对 CR/LF 字节 13/10 直接拦截，绕开 Swift 转义歧义 | **✅ 已解决** | 是 (HTTP 头注入防护字节级数值校验范式) | 是 (`testUploadFile_rejectsCRLFInjection`：夹具含真实 CR/LF（unicodeScalars 断言验证），断言抛 `invalidFileName`；修复版通过，原字面 `\r` 缺陷版对该夹具不拦截，完整验证) | ✅ 已闭环 |
 | **87** | `GlobalModelManager.validateAndAlignDiskFile` 在沙盒文件对齐时使用静态清单中的概略整数与真实下载文件做强等比对（`fileSize == expectedSize`），导致正常下载的大模型权重在 Tab 切换触发 `reload()` 时被误判为坏包静默物理删除（`removeItem`），致使下载按钮变回“下载”且离线问答误报“本地大模型未下载”；同时既有单测多为浅层“不崩溃”空测试，未覆盖下载完成到切 Tab 的生命周期闭环 | 用户在模型库下载完成大模型权重后，切换 Tab（如切换至“任务实验室”或返回）时 | 用户下载好的数 GB 本地大模型文件被后台静默删除，造成用户流量损失，卡片下载按钮变回“下载”，且实验室问答误报“未下载” | **High** | 状态机并发与数据生命周期 | 1. 废除粗估大小强等删除逻辑，只要沙盒文件合法有效（魔数探针/非空）绝不静默删除；2. 增加沙盒物理文件存在性兜底与 OnDeviceLLM 全局单例注册；3. 编写 `ModelDownloadLifecycleTests` 覆盖端到端下载与 Tab 切换生命周期闭环，死锁防退化 | **✅ 已解决** | 是 (模型文件生命周期防误删与魔数探针范式) | 是 (`ModelDownloadLifecycleTests` 全生命周期状态机验证) | ✅ 已闭环 |
+| **88** | 核心基座层中存在多处非必要的 `nonisolated(unsafe)` 逃生舱（`AppConfig.configData` 动态字典逃逸、`ByteFormatter.formatter` 非 Sendable 全局单例、`Localized` 静态 Bundle 缓存未同步加锁），破坏 Swift 6 严格并发安全性，高并发读取时存在未受保护的数据竞争风险 | 多个 Task 并发高频执行配置项读取、字节转换或多语言动态切换 | 违反严格并发检查契约，潜在数据竞争与跨 actor 脏读 | **Medium** | 状态机并发与数据生命周期 | 1. 将 `AppConfig` 重构为只读强类型 `ConfigData: Sendable`；2. 将 `ByteFormatter` 升级为官方静态 Sendable 方法；3. 将 `Localized` 缓存收敛入 `OSAllocatedUnfairLock` 保护并下调 CI 门禁上限至 3 处严格指纹白名单 | **✅ 已解决** | 是 (Sendable不可变模型与锁封装范式) | 是 (补充 `TC-CONCURRENCY-01/02/03` 并发安全测试) | ✅ 已闭环 |
+| **89** | 表现层存在直接侵入视图代码的平台宏历史残留（`LEGACY_VIEW_FILES` 白名单含 `ActivityView`、`MermaidWebView`、`UserProfileMenu` 等），使得平台差异直接耦合在视图树内，违反跨平台架构分层规范与设计系统 Token 约束 | 在视图内直接使用 `#if os(macOS)` 或 `#if os(iOS)` 分支逻辑 | 代码难以跨端复用，多平台渲染行为不一致，平台宏数量持续漂移 | **Medium** | 架构分层与跨平台纯净化 | 1. 废弃直接调用 Representable 的 `ActivityView`，全量统一为 DI 容器的 `ShareSheetProtocol`；2. 将 `MermaidWebView` 物理分层为 iOS 与 Mac 专属独立容器；3. 抽象 `PlatformSettingsLink` 消除视图平台分支；4. 物理删除 CI 门禁中的 `LEGACY_VIEW_FILES` 白名单 | **✅ 已解决** | 是 (跨平台适配器物理归位范式) | 是 (补充 `TC-LEGACY-01/02` 跨平台渲染测试) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**87 项**
+- **收录问题总数**：**89 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：18 项 (20.7%)
-  - 状态机并发与数据生命周期：19 项 (21.8%)
-  - 架构设计与安全/网络健壮性：18 项 (20.7%)
-  - UI/交互与防御性缺陷：9 项 (10.3%)
-  - 代码坏味道与去魔鬼化/DRY 治理：23 项 (26.4%)
+  - 功能缺陷与核心算法/解析器/数据完整性：18 项 (20.2%)
+  - 状态机并发与数据生命周期：20 项 (22.5%)
+  - 架构设计与安全/网络健壮性：19 项 (21.3%)
+  - UI/交互与防御性缺陷：9 项 (10.1%)
+  - 代码坏味道与去魔鬼化/DRY 治理：23 项 (25.8%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：33 项 (37.9%)
-  - **Medium（功能异常/算法边界/性能损耗）**：31 项 (35.6%)
-  - **Low（样式异味/边界校验/门禁规范）**：23 项 (26.4%)
-- **修复闭环率**：**100% (87/87 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：33 项 (37.1%)
+  - **Medium（功能异常/算法边界/性能损耗）**：33 项 (37.1%)
+  - **Low（样式异味/边界校验/门禁规范）**：23 项 (25.8%)
+- **修复闭环率**：**100% (89/89 项已修复闭环)**
 

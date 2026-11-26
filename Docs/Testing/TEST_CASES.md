@@ -192,5 +192,10 @@
 | TC-WID-02 | `KnowledgeStatsWidgetTests` (Tests/Unit/Platforms/KnowledgeStatsWidgetTests.swift) | `testWidgetRefreshIntervalDefinition` |
 | TC-DEE-05 | `DeepLinkTests` (Tests/Unit/Core/DeepLinkTests.swift) | `testHandleURL_WidgetSpecificDeepLinks` |
 | TC-DEE-06 | `DeepLinkTests` (Tests/Unit/Core/DeepLinkTests.swift) | `testHandleURL_RateLimiterBypassAndBlock` |
+| TC-CONCURRENCY-01 | `AppConfigTests` (Tests/Unit/Core/AppConfigTests.swift) | `testAppConfigConcurrentReadSafety` |
+| TC-CONCURRENCY-02 | `ByteFormatterFormattingTests` (Packages/UFPCore/Tests/UFPCoreTests/ByteFormatterFormattingTests.swift) | `testConcurrentFormatSafety` |
+| TC-CONCURRENCY-03 | `LocalizedTests` (Tests/Unit/Core/LocalizedTests.swift) | `testConcurrentLanguageReadingAndCacheReset` |
+| TC-LEGACY-01 | `ShareSheetPresenterTests` (Tests/Unit/Platforms/ShareSheetPresenterTests.swift) | `testShareSheetProtocol_InvocationWithItems_Succeeds`, `testShareSheetProtocol_InvocationWithEmptyItems_DoesNotFail` |
+| TC-LEGACY-02 | `MermaidCrossPlatformRenderingTests` (Tests/Unit/Shared/UIComponents/MermaidCrossPlatformRenderingTests.swift) | `testGenerateMermaidHTML_ForIOS_IncludesViewportAndNeutralTheme`, `testGenerateMermaidHTML_ForMacOS_IncludesDarkThemeAndExtraStyle`, `testGenerateMermaidHTML_EscapesSpecialCharactersSafely` |
 
 > 提示：本映射表覆盖的用例已与系统 XCTest 自动化测试防线（Tests/）对齐；标注"无对应自动化测试"的用例为纯需求/UI 场景，尚未建立对应 XCTest。

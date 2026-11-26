@@ -252,4 +252,41 @@ final class LocalizedTests: XCTestCase {
         let result = L10n.Common.ok
         XCTAssertFalse(result.isEmpty, "L10n.Common.ok 不应为空")
     }
+
+    // MARK: - 并发语言读取与热重置测试 (TC-CONCURRENCY-03)
+
+    func testConcurrentLanguageReadingAndCacheReset() async {
+        let original = Localized.languageMode
+        defer {
+            Localized.languageMode = original
+        }
+
+        let readerGroupCount = 30
+        let readIterations = 20
+        let switchIterations = 10
+
+        await withTaskGroup(of: Void.self) { group in
+            // 后台线程高频读取语言状态与翻译
+            for _ in 0..<readerGroupCount {
+                group.addTask {
+                    for _ in 0..<readIterations {
+                        let lang = Localized.currentLanguage
+                        let isZh = Localized.isChinese
+                        let locale = Localized.currentLocale
+                        XCTAssertFalse(lang.isEmpty)
+                        XCTAssertFalse(locale.identifier.isEmpty)
+                        _ = isZh
+                    }
+                }
+            }
+
+            // 主线程执行缓存重置与语言模式切换
+            group.addTask { @MainActor in
+                for i in 0..<switchIterations {
+                    Localized.languageMode = (i % 2 == 0) ? .english : .chinese
+                    Localized.resetCache()
+                }
+            }
+        }
+    }
 }

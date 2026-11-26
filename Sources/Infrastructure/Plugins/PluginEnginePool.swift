@@ -9,7 +9,7 @@
 //  核心职责：提供高并发安全的 JSContext 连接池，控制沙箱资源并防止内存碎片与 OOM。
 //
 
-#if !os(watchOS)
+#if canImport(JavaScriptCore)
 
 import Foundation
 import JavaScriptCore

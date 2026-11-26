@@ -370,7 +370,7 @@ final class PluginLoader {
         validateReadmeFiles(manifest: manifest, extractedDir: extractedDir)
         persistPluginAssets(manifest: manifest, extractedDir: extractedDir)
 
-        #if canImport(JavaScriptCore) && !os(watchOS)
+        #if canImport(JavaScriptCore)
         if let jsPlugin = JavaScriptPlugin(script: script, manifest: manifest) {
             registry?.loadPlugin(jsPlugin)
             Logger.shared.info(successLog(manifest))

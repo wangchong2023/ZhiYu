@@ -19,6 +19,12 @@ public struct WikiLinkMatch: Identifiable, Equatable, Sendable {
     public var displayTitle: String {
         alias ?? targetTitle
     }
+
+    public init(rawMatch: String, targetTitle: String, alias: String? = nil) {
+        self.rawMatch = rawMatch
+        self.targetTitle = targetTitle
+        self.alias = alias
+    }
 }
 
 /// 全局双向链接提取工具

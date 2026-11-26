@@ -171,7 +171,8 @@ final class VectorAndAuthSupplementTests: XCTestCase {
     /// 空候选列表返回空结果
     func testContextReranker_emptyCandidates_returnsEmpty() {
         let reranker = ContextReranker()
-        let results = reranker.rerank(query: "test", candidates: [])
+        let emptyCandidates: [(chunk: PageChunk, score: Float)] = []
+        let results = reranker.rerank(query: "test", candidates: emptyCandidates)
         XCTAssertTrue(results.isEmpty)
     }
 

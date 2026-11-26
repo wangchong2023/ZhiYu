@@ -8,7 +8,7 @@
 //  系统层级：[L1] 基础设施层
 //  核心职责：插件系统：JavaScript 沙箱、市场服务、插件注册与生命周期。
 //
-#if canImport(JavaScriptCore) && !os(watchOS)
+#if canImport(JavaScriptCore)
 
 import Foundation
 import JavaScriptCore

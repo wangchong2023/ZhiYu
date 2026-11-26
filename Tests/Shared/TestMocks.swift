@@ -10,6 +10,7 @@
 //
 import Foundation
 import UFPCore
+import ZhiYuDomain
 import XCTest
 import Combine
 import UFPStorage

@@ -20,6 +20,11 @@ public enum ThinkingProcessor {
         public let thinkingContent: String?
         /// 剥离思考过程后的正式输出正文
         public let mainContent: String
+
+        public init(thinkingContent: String?, mainContent: String) {
+            self.thinkingContent = thinkingContent
+            self.mainContent = mainContent
+        }
     }
 
     /// 提取 AI 回答中的思考过程与正文

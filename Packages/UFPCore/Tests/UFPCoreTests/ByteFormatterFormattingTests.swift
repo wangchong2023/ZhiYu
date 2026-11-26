@@ -87,4 +87,24 @@ final class ByteFormatterFormattingTests: XCTestCase {
         XCTAssertTrue(result1MB.hasSuffix("MB"), "应以 MB 为单位: \(result1MB)")
         XCTAssertTrue(result1MB.contains("1.0"), "1MB 换算应包含 1.0: \(result1MB)")
     }
+
+    // MARK: - 并发格式化测试 (TC-CONCURRENCY-02)
+
+    func testConcurrentFormatSafety() async {
+        let taskCount = 100
+        let bytesMultiplier: Int64 = 1024 * 1024
+        await withTaskGroup(of: Void.self) { group in
+            for i in 0..<taskCount {
+                group.addTask {
+                    let bytes = Int64(i) * bytesMultiplier
+                    let formatted = ByteFormatter.format(bytes)
+                    let speed = ByteFormatter.formatSpeed(Double(bytes))
+                    let progress = ByteFormatter.formatProgress(downloadedBytes: bytes, totalBytes: bytes * 2)
+                    XCTAssertFalse(formatted.isEmpty)
+                    XCTAssertFalse(speed.isEmpty)
+                    XCTAssertFalse(progress.isEmpty)
+                }
+            }
+        }
+    }
 }

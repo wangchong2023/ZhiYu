@@ -175,4 +175,31 @@ final class AppConfigTests: XCTestCase {
         let url = AppConfig.cdnResource("nonexistent_resource")
         XCTAssertTrue(url.isEmpty, "未知 CDN 资源应返回空字符串")
     }
+
+    // MARK: - 并发安全测试 (TC-CONCURRENCY-01)
+
+    func testAppConfigConcurrentReadSafety() async {
+        let taskCount = 50
+        await withTaskGroup(of: Void.self) { group in
+            for _ in 0..<taskCount {
+                group.addTask {
+                    let url = AppConfig.productionURL
+                    let debounce = AppConfig.searchDebounceMS
+                    let cert = AppConfig.allowSelfSignedCert
+                    let temp = AppConfig.AI.defaultTemperature
+                    let topK = AppConfig.AI.topKResults
+                    let ollama = AppConfig.ollamaDefaultURL
+                    let deepseek = AppConfig.deepseekDefaultURL
+
+                    XCTAssertGreaterThanOrEqual(debounce, 0)
+                    XCTAssertGreaterThanOrEqual(temp, 0.0)
+                    XCTAssertGreaterThan(topK, 0)
+                    _ = url
+                    _ = cert
+                    _ = ollama
+                    _ = deepseek
+                }
+            }
+        }
+    }
 }
