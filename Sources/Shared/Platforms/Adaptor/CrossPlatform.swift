@@ -11,12 +11,6 @@
 import Foundation
 import SwiftUI
 import UFPCore
-#if os(macOS)
-import Darwin
-#endif
-#if os(iOS)
-import AVFoundation
-#endif
 #if canImport(SceneKit)
 import SceneKit
 #endif
@@ -25,15 +19,6 @@ import SceneKit
 public enum CrossPlatformConstants {
     /// 无主屏幕时的宽度回退值（375pt，与 iOS 端屏幕兜底宽度一致）
     public static let defaultScreenFallbackWidth: CGFloat = 375
-    /// 个人中心悬浮弹窗标准宽度（iPad 300pt，iPhone 280pt，桌面 320pt）
-    @MainActor
-    public static var profilePopoverMenuWidth: CGFloat {
-        #if os(iOS)
-        return UIDevice.current.userInterfaceIdiom == .pad ? 300 : 280
-        #else
-        return 320
-        #endif
-    }
 }
 
 /// 跨平台剪贴板包装器
@@ -42,54 +27,41 @@ enum AppPasteboard {
     /// 获取或设置系统剪贴板文本
     static var string: String? {
         get { service.string }
-        set { 
+        set {
             let s = service
-            s.string = newValue 
+            s.string = newValue
         }
     }
-    
+
     /// 内部持有的具体实现
     private static var service: any PasteboardProtocol {
         ServiceContainer.shared.resolveOptional((any PasteboardProtocol).self) ?? NoOpPasteboard()
     }
 }
 
-/// 跨平台图片类型别名
+// MARK: - 跨平台基础类型与桥接统一适配区（集中收敛平台宏）
+
 #if os(iOS)
+import AVFoundation
 import UIKit
 public typealias AppImage = UIImage
 public typealias AppColor = UIColor
 public typealias AppFont = UIFont
-#elseif os(macOS)
-import AppKit
-public typealias AppImage = NSImage
-public typealias AppColor = NSColor
-public typealias AppFont = NSFont
-#elseif os(watchOS)
-import WatchKit
-public struct AppImage: Sendable {}
-public struct AppColor: Sendable {}
-public struct AppFont: Sendable {}
-#else
-public struct AppImage: Sendable {}
-public struct AppColor: Sendable {}
-public struct AppFont: Sendable {}
-#endif
 
-// MARK: - 跨平台颜色 / 字体桥接
+public extension CrossPlatformConstants {
+    /// 个人中心悬浮弹窗标准宽度（iPad 300pt，iPhone 280pt）
+    @MainActor
+    static var profilePopoverMenuWidth: CGFloat {
+        UIDevice.current.userInterfaceIdiom == .pad ? 300 : 280
+    }
+}
 
-/// 从 SwiftUI `Color` 生成平台色（SceneKit / 绘制等需要 UIColor/NSColor 的场景）
+/// 从 SwiftUI `Color` 生成平台色（SceneKit / 绘制等需要 UIColor 的场景）
 @MainActor
 public enum AppColorBridge {
     /// 将 SwiftUI Color 转成当前平台的 AppColor
     public static func from(_ color: Color) -> AppColor {
-        #if os(iOS)
         UIColor(color)
-        #elseif os(macOS)
-        NSColor(color)
-        #else
-        AppColor()
-        #endif
     }
 }
 
@@ -97,105 +69,42 @@ public enum AppColorBridge {
 public enum AppFontBridge {
     /// 系统粗体字体
     public static func boldSystemFont(ofSize size: CGFloat) -> AppFont {
-        #if os(iOS)
         UIFont.boldSystemFont(ofSize: size)
-        #elseif os(macOS)
-        NSFont.boldSystemFont(ofSize: size)
-        #else
-        AppFont()
-        #endif
     }
 }
-
-// MARK: - 跨平台图片编码桥接
 
 /// 图片编解码桥接（UIImage / NSImage 差异收敛）
 public enum AppImageBridge {
     /// 将 CGImage 编码为 JPEG 数据
     public static func jpegData(from image: CGImage, compressionQuality: CGFloat) -> Data? {
-        #if os(iOS)
-        return UIImage(cgImage: image).jpegData(compressionQuality: compressionQuality)
-        #elseif os(macOS)
-        let rep = NSBitmapImageRep(cgImage: image)
-        return rep.representation(using: .jpeg, properties: [.compressionFactor: compressionQuality])
-        #else
-        return nil
-        #endif
+        UIImage(cgImage: image).jpegData(compressionQuality: compressionQuality)
     }
 
     /// 将跨平台图片编码为 JPEG 数据
     public static func jpegData(from image: AppImage?, compressionQuality: CGFloat) -> Data? {
         guard let image else { return nil }
-        #if os(iOS)
         return image.jpegData(compressionQuality: compressionQuality)
-        #elseif os(macOS)
-        guard let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else { return nil }
-        let rep = NSBitmapImageRep(cgImage: cgImage)
-        return rep.representation(using: .jpeg, properties: [.compressionFactor: compressionQuality])
-        #else
-        return nil
-        #endif
     }
 }
-
-// MARK: - 跨平台 SwiftUI Image 包装
 
 public extension Image {
-    /// 从跨平台图片类型创建 SwiftUI Image（iOS 走 UIImage，macOS 走 NSImage）
+    /// 从跨平台图片类型创建 SwiftUI Image（iOS 走 UIImage）
     init(appImage: AppImage) {
-        #if os(iOS)
         self.init(uiImage: appImage)
-        #elseif os(macOS)
-        self.init(nsImage: appImage)
-        #else
-        self.init(systemName: "photo")
-        #endif
     }
 }
 
-// MARK: - 跨平台系统内存桥接
-
-/// 系统内存信息桥接（os_proc_available_memory 为 iOS 专属，macOS 用 host_statistics64）
+/// 系统内存信息桥接（os_proc_available_memory 为 iOS 专属）
 public enum AppMemoryBridge {
     /// 获取当前可用内存字节数
     @MainActor
     public static func availableBytes() -> Double {
-        #if os(iOS)
-        return Double(os_proc_available_memory())
-        #elseif os(macOS)
-        return macAvailableBytes()
-        #else
-        return 0
-        #endif
+        Double(os_proc_available_memory())
     }
-
-    #if os(macOS)
-    /// macOS 可用内存 = free + inactive（来自 mach host_statistics64）
-    private static func macAvailableBytes() -> Double {
-        var stats = vm_statistics64_data_t()
-        var count = mach_msg_type_number_t(
-            MemoryLayout<vm_statistics64_data_t>.size / MemoryLayout<integer_t>.size
-        )
-        let result = withUnsafeMutablePointer(to: &stats) {
-            $0.withMemoryRebound(to: integer_t.self, capacity: Int(count)) {
-                host_statistics64(mach_host_self(), HOST_VM_INFO64, $0, &count)
-            }
-        }
-        guard result == KERN_SUCCESS else {
-            // 失败时回退到物理内存总量
-            return Double(ProcessInfo.processInfo.physicalMemory)
-        }
-        let pageSize = Double(sysconf(_SC_PAGESIZE))
-        return Double(stats.free_count + stats.inactive_count) * pageSize
-    }
-    #endif
 }
 
-// MARK: - 跨平台音频会话桥接
-
-/// 音频会话配置桥接：iOS 用 AVAudioSession 设置播放/录音模式，macOS/watchOS 无此概念时降级为安全默认实现
+/// 音频会话配置桥接：iOS 用 AVAudioSession 设置播放/录音模式
 public enum AppAudioSessionBridge {
-    #if os(iOS)
     /// 配置为播放模式并激活会话（仅 iOS 生效）
     public static func configurePlaybackSession() {
         try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
@@ -226,12 +135,133 @@ public enum AppAudioSessionBridge {
     public static func deactivateRecordSession() {
         try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
     }
-    #else
+}
+#elseif os(macOS)
+import AppKit
+import Darwin
+public typealias AppImage = NSImage
+public typealias AppColor = NSColor
+public typealias AppFont = NSFont
+
+public extension CrossPlatformConstants {
+    /// 个人中心悬浮弹窗标准宽度（桌面 320pt）
+    @MainActor
+    static var profilePopoverMenuWidth: CGFloat { 320 }
+}
+
+/// 从 SwiftUI `Color` 生成平台色（SceneKit / 绘制等需要 NSColor 的场景）
+@MainActor
+public enum AppColorBridge {
+    /// 将 SwiftUI Color 转成当前平台的 AppColor
+    public static func from(_ color: Color) -> AppColor {
+        NSColor(color)
+    }
+}
+
+/// 系统字体桥接（UIFont / NSFont 差异收敛）
+public enum AppFontBridge {
+    /// 系统粗体字体
+    public static func boldSystemFont(ofSize size: CGFloat) -> AppFont {
+        NSFont.boldSystemFont(ofSize: size)
+    }
+}
+
+/// 图片编解码桥接（UIImage / NSImage 差异收敛）
+public enum AppImageBridge {
+    /// 将 CGImage 编码为 JPEG 数据
+    public static func jpegData(from image: CGImage, compressionQuality: CGFloat) -> Data? {
+        let rep = NSBitmapImageRep(cgImage: image)
+        return rep.representation(using: .jpeg, properties: [.compressionFactor: compressionQuality])
+    }
+
+    /// 将跨平台图片编码为 JPEG 数据
+    public static func jpegData(from image: AppImage?, compressionQuality: CGFloat) -> Data? {
+        guard let image,
+              let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else {
+            return nil
+        }
+        let rep = NSBitmapImageRep(cgImage: cgImage)
+        return rep.representation(using: .jpeg, properties: [.compressionFactor: compressionQuality])
+    }
+}
+
+public extension Image {
+    /// 从跨平台图片类型创建 SwiftUI Image（macOS 走 NSImage）
+    init(appImage: AppImage) {
+        self.init(nsImage: appImage)
+    }
+}
+
+/// 系统内存信息桥接（macOS 用 host_statistics64）
+public enum AppMemoryBridge {
+    /// 获取当前可用内存字节数（free + inactive）
+    @MainActor
+    public static func availableBytes() -> Double {
+        var stats = vm_statistics64_data_t()
+        var count = mach_msg_type_number_t(
+            MemoryLayout<vm_statistics64_data_t>.size / MemoryLayout<integer_t>.size
+        )
+        let result = withUnsafeMutablePointer(to: &stats) {
+            $0.withMemoryRebound(to: integer_t.self, capacity: Int(count)) {
+                host_statistics64(mach_host_self(), HOST_VM_INFO64, $0, &count)
+            }
+        }
+        guard result == KERN_SUCCESS else {
+            return Double(ProcessInfo.processInfo.physicalMemory)
+        }
+        let pageSize = Double(sysconf(_SC_PAGESIZE))
+        return Double(stats.free_count + stats.inactive_count) * pageSize
+    }
+}
+
+/// 音频会话配置桥接（macOS 无此概念时降级为安全默认实现）
+public enum AppAudioSessionBridge {
     public static func configurePlaybackSession() {}
     public static func requestAndActivateRecordSession() async -> Bool { true }
     public static func deactivateRecordSession() {}
-    #endif
 }
+#else
+public struct AppImage: Sendable {}
+public struct AppColor: Sendable {}
+public struct AppFont: Sendable {}
+
+public extension CrossPlatformConstants {
+    /// 个人中心悬浮弹窗标准宽度
+    @MainActor
+    static var profilePopoverMenuWidth: CGFloat { 320 }
+}
+
+@MainActor
+public enum AppColorBridge {
+    public static func from(_ color: Color) -> AppColor { AppColor() }
+}
+
+public enum AppFontBridge {
+    public static func boldSystemFont(ofSize size: CGFloat) -> AppFont { AppFont() }
+}
+
+public enum AppImageBridge {
+    public static func jpegData(from image: CGImage, compressionQuality: CGFloat) -> Data? { nil }
+    public static func jpegData(from image: AppImage?, compressionQuality: CGFloat) -> Data? { nil }
+}
+
+public extension Image {
+    init(appImage: AppImage) {
+        self.init(systemName: "photo")
+    }
+}
+
+public enum AppMemoryBridge {
+    @MainActor
+    public static func availableBytes() -> Double { 0 }
+}
+
+public enum AppAudioSessionBridge {
+    public static func configurePlaybackSession() {}
+    public static func requestAndActivateRecordSession() async -> Bool { true }
+    public static func deactivateRecordSession() {}
+}
+#endif
 
 // MARK: - 跨平台 UIView/NSView 桥接 Representable
 

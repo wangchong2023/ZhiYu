@@ -224,56 +224,6 @@ public extension View {
     func appToolbarBackgroundMaterial(_ material: Material) -> some View {
         appToolbarBackgroundInternal(nil, material: material)
     }
-
-    /// 跨平台分页 TabView 样式：仅 iOS 应用 .page，macOS/watchOS 无此样式时降级为无操作
-    @ViewBuilder
-    func appPageTabViewStyle() -> some View {
-        #if os(iOS)
-        self.tabViewStyle(.page(indexDisplayMode: .never))
-        #else
-        self
-        #endif
-    }
-
-    /// 跨平台全屏覆盖（isPresented 版本）：iOS 用 fullScreenCover，macOS 用 sheet
-    @ViewBuilder
-    func appFullScreenCover<Content: View>(
-        isPresented: Binding<Bool>,
-        onDismiss: (() -> Void)? = nil,
-        @ViewBuilder content: @escaping () -> Content
-    ) -> some View {
-        #if os(iOS)
-        self.fullScreenCover(isPresented: isPresented, onDismiss: onDismiss, content: content)
-        #else
-        self.sheet(isPresented: isPresented, onDismiss: onDismiss) {
-            content()
-                .frame(
-                    minWidth: DesignTokens.Metrics.macSettingsWindowWidth,
-                    minHeight: DesignTokens.Metrics.macSettingsWindowHeight
-                )
-        }
-        #endif
-    }
-
-    /// 跨平台全屏覆盖（item 版本）：iOS 用 fullScreenCover，macOS 用 sheet
-    @ViewBuilder
-    func appFullScreenCover<Item, Content: View>(
-        item: Binding<Item?>,
-        onDismiss: (() -> Void)? = nil,
-        @ViewBuilder content: @escaping (Item) -> Content
-    ) -> some View where Item: Identifiable {
-        #if os(iOS)
-        self.fullScreenCover(item: item, onDismiss: onDismiss, content: content)
-        #else
-        self.sheet(item: item, onDismiss: onDismiss) { value in
-            content(value)
-                .frame(
-                    minWidth: DesignTokens.Metrics.macSettingsWindowWidth,
-                    minHeight: DesignTokens.Metrics.macSettingsWindowHeight
-                )
-        }
-        #endif
-    }
 }
 
 // MARK: - 跨平台输入配置（键盘类型 / 自动大写）
@@ -294,11 +244,36 @@ public enum AppNavigationBarTitleDisplayMode {
     case large
 }
 
+// MARK: - iOS 专属交互与弹窗修饰器集中适配块
+
+#if os(iOS)
 public extension View {
-    /// 跨平台 keyboardType：iOS 应用指定键盘，macOS/watchOS 无此概念时降级为无操作
+    /// 跨平台分页 TabView 样式：仅 iOS 应用 .page
+    func appPageTabViewStyle() -> some View {
+        self.tabViewStyle(.page(indexDisplayMode: .never))
+    }
+
+    /// 跨平台全屏覆盖（isPresented 版本）：iOS 用 fullScreenCover
+    func appFullScreenCover<Content: View>(
+        isPresented: Binding<Bool>,
+        onDismiss: (() -> Void)? = nil,
+        @ViewBuilder content: @escaping () -> Content
+    ) -> some View {
+        self.fullScreenCover(isPresented: isPresented, onDismiss: onDismiss, content: content)
+    }
+
+    /// 跨平台全屏覆盖（item 版本）：iOS 用 fullScreenCover
+    func appFullScreenCover<Item, Content: View>(
+        item: Binding<Item?>,
+        onDismiss: (() -> Void)? = nil,
+        @ViewBuilder content: @escaping (Item) -> Content
+    ) -> some View where Item: Identifiable {
+        self.fullScreenCover(item: item, onDismiss: onDismiss, content: content)
+    }
+
+    /// 跨平台 keyboardType：iOS 应用指定键盘
     @ViewBuilder
     func appKeyboardType(_ type: AppKeyboardType?) -> some View {
-        #if os(iOS)
         if let type {
             let uiType: UIKeyboardType = {
                 switch type {
@@ -309,18 +284,52 @@ public extension View {
         } else {
             self
         }
-        #else
-        self
-        #endif
     }
 
-    /// 跨平台禁用自动大写：iOS 应用 autocapitalization(.none)，其他平台降级为无操作
-    @ViewBuilder
+    /// 跨平台禁用自动大写：iOS 应用 autocapitalization(.none)
     func appAutocapitalizationDisabled() -> some View {
-        #if os(iOS)
         self.autocapitalization(.none)
-        #else
-        self
-        #endif
     }
 }
+#else
+public extension View {
+    /// 跨平台分页 TabView 样式：macOS/watchOS 无此样式时降级为无操作
+    func appPageTabViewStyle() -> some View { self }
+
+    /// 跨平台全屏覆盖（isPresented 版本）：非 iOS 平台用 sheet
+    func appFullScreenCover<Content: View>(
+        isPresented: Binding<Bool>,
+        onDismiss: (() -> Void)? = nil,
+        @ViewBuilder content: @escaping () -> Content
+    ) -> some View {
+        self.sheet(isPresented: isPresented, onDismiss: onDismiss) {
+            content()
+                .frame(
+                    minWidth: DesignTokens.Metrics.macSettingsWindowWidth,
+                    minHeight: DesignTokens.Metrics.macSettingsWindowHeight
+                )
+        }
+    }
+
+    /// 跨平台全屏覆盖（item 版本）：非 iOS 平台用 sheet
+    func appFullScreenCover<Item, Content: View>(
+        item: Binding<Item?>,
+        onDismiss: (() -> Void)? = nil,
+        @ViewBuilder content: @escaping (Item) -> Content
+    ) -> some View where Item: Identifiable {
+        self.sheet(item: item, onDismiss: onDismiss) { value in
+            content(value)
+                .frame(
+                    minWidth: DesignTokens.Metrics.macSettingsWindowWidth,
+                    minHeight: DesignTokens.Metrics.macSettingsWindowHeight
+                )
+        }
+    }
+
+    /// 跨平台 keyboardType：非 iOS 平台降级为无操作
+    func appKeyboardType(_ type: AppKeyboardType?) -> some View { self }
+
+    /// 跨平台禁用自动大写：非 iOS 平台降级为无操作
+    func appAutocapitalizationDisabled() -> some View { self }
+}
+#endif

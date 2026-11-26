@@ -15,107 +15,19 @@ import UIKit
 #endif
 
 public extension View {
-    
     /// 仅在支持的平台应用 Segmented Picker Style
     func segmentedPickerStyleIfAvailable() -> some View {
         modifier(SegmentedPickerStyleModifier())
     }
-    
-    /// 仅在 iOS 应用 navigationBarTitleDisplayMode
-    @ViewBuilder
 
-    /// inlineNavigationBarTitleIfAvailable
-    func inlineNavigationBarTitleIfAvailable() -> some View {
-        #if os(iOS)
-        self.navigationBarTitleDisplayMode(.inline)
-        #else
-        self
-        #endif
-    }
-    
-    /// 仅在 iOS 应用 large navigationBarTitleDisplayMode
-    @ViewBuilder
-
-    /// largeNavigationBarTitleIfAvailable
-    func largeNavigationBarTitleIfAvailable() -> some View {
-        #if os(iOS)
-        self.navigationBarTitleDisplayMode(.large)
-        #else
-        self
-        #endif
-    }
-    
-    /// 仅在 iOS 隐藏 Navigation Bar Back Button
-    @ViewBuilder
-
-    /// 隐藏BackButtonIfIOS
-    /// /// - Parameter hidden: hidden
-    func hideBackButtonIfIOS(_ hidden: Bool = true) -> some View {
-        #if os(iOS)
-        self.navigationBarBackButtonHidden(hidden)
-        #else
-        self
-        #endif
-    }
-    
-    /// 仅在 iOS 修改 Navigation Bar 可见性
-    @ViewBuilder
-
-    /// 隐藏NavigationBarIfIOS
-    /// /// - Parameter hidden: hidden
-    func hideNavigationBarIfIOS(_ hidden: Bool) -> some View {
-        #if os(iOS)
-        self.toolbar(hidden ? .hidden : .visible, for: .navigationBar)
-        #else
-        self
-        #endif
-    }
-    
     /// 仅在非 watchOS 上填满最大宽度
-    /// - Parameter alignment: alignment
     func maxWidthIfNotWatchOS(_ alignment: Alignment = .center) -> some View {
         modifier(MaxWidthIfNotWatchModifier(alignment: alignment))
     }
-    
-    /// 仅在 iOS 设置 listStyle 为 insetGrouped
-    @ViewBuilder
 
-    /// insetGroupedListStyleIfIOS
-    func insetGroupedListStyleIfIOS() -> some View {
-        #if os(iOS)
-        self.listStyle(.insetGrouped)
-        #else
-        self
-        #endif
-    }
-    
-    /// 仅在 macOS 设置 listStyle 为 inset
-    @ViewBuilder
-
-    /// insetListStyleIfMac
-    func insetListStyleIfMac() -> some View {
-        #if os(macOS)
-        self.listStyle(.inset)
-        #else
-        self
-        #endif
-    }
-    
     /// 仅在 iOS 或 macOS 设置 textFieldStyle 为 roundedBorder
     func roundedBorderTextFieldStyle() -> some View {
         modifier(RoundedBorderTextFieldStyleModifier())
-    }
-    
-    /// 仅在 iOS 或 macOS 应用 keyboardType
-    @ViewBuilder
-
-    /// numberPadKeyboardIfAvailable
-    func numberPadKeyboardIfAvailable() -> some View {
-        #if os(iOS)
-        self.keyboardType(.numberPad)
-        #else
-        self
-        #endif
     }
 
     /// 在 watchOS 上隐藏视图（手表端不支持的操作/控件）
@@ -128,20 +40,18 @@ public extension View {
         modifier(HiddenOnWatchModifier())
     }
 
-    /// 标准侧边栏列表样式（macOS 用 .sidebar，其他平台用默认）
-    @ViewBuilder
-    /// adaptiveSidebarListStyle
-    func adaptiveSidebarListStyle() -> some View {
-        #if os(macOS)
-        self.listStyle(.sidebar)
-        #else
-        self
-        #endif
+    /// 平台自适应列表样式：iOS 使用 insetGrouped，macOS 使用 inset，其他平台保持默认
+    func adaptiveListStyle() -> some View {
+        self.insetGroupedListStyleIfIOS().insetListStyleIfMac()
+    }
+
+    /// 平台自适应数字键盘：iOS 使用 numberPad，其他平台使用默认键盘
+    func adaptiveNumberPadKeyboard() -> some View {
+        self.numberPadKeyboardIfAvailable()
     }
 
     /// watchOS 上跳过，其他平台执行自定义 modifier
     @ViewBuilder
-    /// skipOnWatch
     func skipOnWatch<Content: View>(@ViewBuilder _ modifier: (Self) -> Content) -> some View {
         #if os(watchOS)
         self
@@ -149,68 +59,59 @@ public extension View {
         modifier(self)
         #endif
     }
+}
 
-    // MARK: - 列表样式适配
+// MARK: - iOS 专属视图修饰器集中适配块
 
-    /// 平台自适应列表样式：iOS 使用 insetGrouped，macOS 使用 inset，其他平台保持默认
-    @ViewBuilder
-    func adaptiveListStyle() -> some View {
-        #if os(iOS)
+#if os(iOS)
+public extension View {
+    /// 仅在 iOS 应用 inline navigationBarTitleDisplayMode
+    func inlineNavigationBarTitleIfAvailable() -> some View {
+        self.navigationBarTitleDisplayMode(.inline)
+    }
+
+    /// 仅在 iOS 应用 large navigationBarTitleDisplayMode
+    func largeNavigationBarTitleIfAvailable() -> some View {
+        self.navigationBarTitleDisplayMode(.large)
+    }
+
+    /// 仅在 iOS 隐藏 Navigation Bar Back Button
+    func hideBackButtonIfIOS(_ hidden: Bool = true) -> some View {
+        self.navigationBarBackButtonHidden(hidden)
+    }
+
+    /// 仅在 iOS 修改 Navigation Bar 可见性
+    func hideNavigationBarIfIOS(_ hidden: Bool) -> some View {
+        self.toolbar(hidden ? .hidden : .visible, for: .navigationBar)
+    }
+
+    /// 仅在 iOS 设置 listStyle 为 insetGrouped
+    func insetGroupedListStyleIfIOS() -> some View {
         self.listStyle(.insetGrouped)
-        #elseif os(macOS)
-        self.listStyle(.inset)
-        #else
-        self
-        #endif
     }
 
-    // MARK: - 键盘类型适配
-
-    /// 平台自适应数字键盘：iOS 使用 numberPad，其他平台使用默认键盘
-    @ViewBuilder
-    func adaptiveNumberPadKeyboard() -> some View {
-        #if os(iOS)
+    /// 仅在 iOS 应用 numberPad 键盘
+    func numberPadKeyboardIfAvailable() -> some View {
         self.keyboardType(.numberPad)
-        #else
-        self
-        #endif
     }
 
-    // MARK: - 全屏模式适配
-
-    /// 全屏沉浸模式：仅在 iOS 控制状态栏与 TabBar 可见性（macOS 无状态栏/TabBar，Watch 无该概念）
-    @ViewBuilder
+    /// 全屏沉浸模式：仅在 iOS 控制状态栏与 TabBar 可见性
     func adaptiveFullScreenImmersive(_ hidden: Bool) -> some View {
-        #if os(iOS)
         self.statusBarHidden(hidden)
             .toolbar(hidden ? .hidden : .visible, for: .tabBar)
-        #else
-        self
-        #endif
     }
 
-    // MARK: - 动画适配
-
-    /// 仅在 iOS 应用 matchedGeometryEffect（macOS/watchOS 上跳过）
-    @ViewBuilder
+    /// 仅在 iOS 应用 matchedGeometryEffect
     func matchedGeometryEffectIfAvailable<ID: Hashable>(
         id: ID,
         in namespace: Namespace.ID,
         isSource: Bool = true
     ) -> some View {
-        #if os(iOS)
         self.matchedGeometryEffect(id: id, in: namespace, isSource: isSource)
-        #else
-        self
-        #endif
     }
 
-    // MARK: - 键盘交互适配
-
     /// iOS 键盘自动收起：仅在 iOS 添加 tap gesture 收起键盘
-    @ViewBuilder
     func keyboardDismissOnTapIfAvailable() -> some View {
-        #if os(iOS)
         self.onTapGesture {
             UIApplication.shared.sendAction(
                 #selector(UIResponder.resignFirstResponder),
@@ -219,11 +120,89 @@ public extension View {
                 for: nil
             )
         }
-        #else
-        self
-        #endif
+    }
+}
+#else
+public extension View {
+    func inlineNavigationBarTitleIfAvailable() -> some View { self }
+    func largeNavigationBarTitleIfAvailable() -> some View { self }
+    func hideBackButtonIfIOS(_ hidden: Bool = true) -> some View { self }
+    func hideNavigationBarIfIOS(_ hidden: Bool) -> some View { self }
+    func insetGroupedListStyleIfIOS() -> some View { self }
+    func numberPadKeyboardIfAvailable() -> some View { self }
+    func adaptiveFullScreenImmersive(_ hidden: Bool) -> some View { self }
+    func matchedGeometryEffectIfAvailable<ID: Hashable>(
+        id: ID,
+        in namespace: Namespace.ID,
+        isSource: Bool = true
+    ) -> some View { self }
+    func keyboardDismissOnTapIfAvailable() -> some View { self }
+}
+#endif
+
+// MARK: - macOS 专属列表样式与侧边栏工具栏集中适配块
+
+#if os(macOS)
+public extension View {
+    /// 仅在 macOS 设置 listStyle 为 inset
+    func insetListStyleIfMac() -> some View {
+        self.listStyle(.inset)
     }
 
+    /// 标准侧边栏列表样式（macOS 用 .sidebar）
+    func adaptiveSidebarListStyle() -> some View {
+        self.listStyle(.sidebar)
+    }
+
+    /// macOS NavigationSplitView 侧边栏列移除系统默认 sidebarToggle（仅在 sidebar 列上生效）
+    func appHideSystemSidebarToggle() -> some View {
+        self.toolbar(removing: .sidebarToggle)
+    }
+
+    /// macOS NavigationSplitView 右侧 detail 窗体导航栏：
+    /// 主侧边栏折叠按钮已归位至左侧窗体交通灯旁（macOS 原生 sidebarToggle）；
+    /// 右侧 detail 工具栏仅保留本窗体控件：「（可选）知识库二级导航折叠 → VaultBadge」。
+    func appCustomSidebarToggle(
+        visibility _: Binding<NavigationSplitViewVisibility>,
+        secondaryVisibility: Binding<Bool>? = nil
+    ) -> some View {
+        self
+            .toolbar {
+                if let secondaryVisibility {
+                    ToolbarItem(placement: .navigation) {
+                        Button {
+                            withAnimation(DesignTokens.Animation.Config.prominentSpring) {
+                                secondaryVisibility.wrappedValue.toggle()
+                            }
+                        } label: {
+                            Image(systemName: DesignTokens.Icons.listBulletIndent)
+                                .foregroundStyle(secondaryVisibility.wrappedValue ? .appAccent : .appSecondary)
+                                .appToolbarItemStandardFrame()
+                        }
+                        .help(L10n.Common.Sidebar.title)
+                        .accessibilityIdentifier("toggleKnowledgeSidebarButton")
+                    }
+                }
+
+                ToolbarItem(placement: .navigation) {
+                    VaultBadge()
+                }
+            }
+    }
+}
+#else
+public extension View {
+    func insetListStyleIfMac() -> some View { self }
+    func adaptiveSidebarListStyle() -> some View { self }
+    func appHideSystemSidebarToggle() -> some View { self }
+    func appCustomSidebarToggle(
+        visibility _: Binding<NavigationSplitViewVisibility>,
+        secondaryVisibility: Binding<Bool>? = nil
+    ) -> some View { self }
+}
+#endif
+
+public extension View {
     // MARK: - 悬浮交互适配
 
     /// 仅在非 watchOS 平台应用 onHover（watchOS 无指针设备）
@@ -305,52 +284,6 @@ public extension View {
         self.sheet(item: item, onDismiss: onDismiss) { value in
             content(value).appDesktopSheetSize(preset)
         }
-    }
-
-    /// macOS NavigationSplitView 侧边栏列移除系统默认 sidebarToggle（仅在 sidebar 列上生效）
-    @ViewBuilder
-    func appHideSystemSidebarToggle() -> some View {
-        #if os(macOS)
-        self.toolbar(removing: .sidebarToggle)
-        #else
-        self
-        #endif
-    }
-
-    /// macOS NavigationSplitView 右侧 detail 窗体导航栏：
-    /// 主侧边栏折叠按钮已归位至左侧窗体交通灯旁（macOS 原生 sidebarToggle）；
-    /// 右侧 detail 工具栏仅保留本窗体控件：「（可选）知识库二级导航折叠 → VaultBadge」。
-    @ViewBuilder
-    func appCustomSidebarToggle(
-        visibility _: Binding<NavigationSplitViewVisibility>,
-        secondaryVisibility: Binding<Bool>? = nil
-    ) -> some View {
-        #if os(macOS)
-        self
-            .toolbar {
-                if let secondaryVisibility {
-                    ToolbarItem(placement: .navigation) {
-                        Button {
-                            withAnimation(DesignTokens.Animation.Config.prominentSpring) {
-                                secondaryVisibility.wrappedValue.toggle()
-                            }
-                        } label: {
-                            Image(systemName: DesignTokens.Icons.listBulletIndent)
-                                .foregroundStyle(secondaryVisibility.wrappedValue ? .appAccent : .appSecondary)
-                                .appToolbarItemStandardFrame()
-                        }
-                        .help(L10n.Common.Sidebar.title)
-                        .accessibilityIdentifier("toggleKnowledgeSidebarButton")
-                    }
-                }
-
-                ToolbarItem(placement: .navigation) {
-                    VaultBadge()
-                }
-            }
-        #else
-        self
-        #endif
     }
 }
 
