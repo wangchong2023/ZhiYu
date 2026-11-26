@@ -61,3 +61,7 @@ public typealias PDFIngestMode = ZhiYuDomain.PDFIngestMode
 public typealias PDFDocumentInfo = ZhiYuDomain.PDFDocumentInfo
 public typealias PDFHighlightColor = ZhiYuDomain.PDFHighlightColor
 public typealias PDFHighlight = ZhiYuDomain.PDFHighlight
+public typealias DemoMediaConstants = ZhiYuDomain.DemoMediaConstants
+#if canImport(AVFoundation)
+public typealias DemoAudioBuilder = ZhiYuDomain.DemoAudioBuilder
+#endif

@@ -27,7 +27,7 @@ struct EvaluationReport: Identifiable {
 }
 
 /// [L2] 领域服务：RAG 质量评估中心
-final class RAGEvaluationService: @unchecked Sendable {
+final class RAGEvaluationService: Sendable {
     private let llmService: any LLMServiceProtocol
     private let governanceStore: any RAGGovernanceRepository
 

@@ -29,7 +29,7 @@ public protocol MultimodalEmbeddingProtocol: Sendable {
 ///
 /// 模拟并对接 EmbeddingGemma-2-740M 的 768 维跨模态嵌入空间，
 /// 提供文本语义投影与图像视觉特征投射，输出 L2 归一化后的单位向量。
-public final class MultimodalEmbeddingEngine: MultimodalEmbeddingProtocol, @unchecked Sendable {
+public final class MultimodalEmbeddingEngine: MultimodalEmbeddingProtocol, Sendable {
 
     public enum Constants {
         public static let defaultDimension: Int = 768

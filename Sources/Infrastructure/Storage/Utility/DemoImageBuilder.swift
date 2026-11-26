@@ -259,6 +259,7 @@ public struct DemoImageBuilder {
 }
 #else
 import Foundation
+import ZhiYuDomain
 
 public struct DemoImageBuilder {
     public static func ensureDemoImagesExist(at directory: URL) -> [URL] {

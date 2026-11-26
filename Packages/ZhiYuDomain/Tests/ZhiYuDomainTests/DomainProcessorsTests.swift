@@ -111,4 +111,17 @@ final class DomainProcessorsTests: XCTestCase {
         XCTAssertEqual(PDFHighlightColor.allRawValues.count, 5)
         XCTAssertEqual(PDFIngestMode.allCases.count, 3)
     }
+
+    func testDemoMediaConstantsAndAudioBuilder() {
+        XCTAssertEqual(DemoMediaConstants.audioSampleRate, 44100.0)
+        XCTAssertEqual(DemoMediaConstants.chordFrequencies.count, 4)
+        #if canImport(AVFoundation)
+        let tempPath = FileManager.default.temporaryDirectory
+            .appendingPathComponent("test_demo_\(UUID().uuidString).wav").path
+        defer { try? FileManager.default.removeItem(atPath: tempPath) }
+        let url = DemoAudioBuilder.ensureAudioExists(at: tempPath, duration: 0.2)
+        XCTAssertNotNil(url)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: tempPath))
+        #endif
+    }
 }

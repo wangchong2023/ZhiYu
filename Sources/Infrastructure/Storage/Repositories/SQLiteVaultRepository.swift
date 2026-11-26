@@ -38,7 +38,7 @@ struct VaultRecord: Codable, FetchableRecord, MutablePersistableRecord, TableRec
 }
 
 /// [Infra] SQLite 笔记本仓储实现类
-final class SQLiteVaultRepository: VaultRepository, @unchecked Sendable {
+final class SQLiteVaultRepository: VaultRepository, Sendable {
     
     let dbWriter: any DatabaseWriter
     

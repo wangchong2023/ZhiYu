@@ -27,8 +27,13 @@ public enum DemoMediaConstants {
     public static let sineAngularCoefficient: Float = 2.0
     /// 音量缩放系数（防止削波）
     public static let volumeScale: Float = 0.25
+    /// 演示和弦音符频率常量（C5-E5-G5-C6，单位 Hz）
+    public static let chordFreqC5: Float = 523.25
+    public static let chordFreqE5: Float = 659.25
+    public static let chordFreqG5: Float = 783.99
+    public static let chordFreqC6: Float = 1046.50
     /// 演示和弦频率（C5-E5-G5-C6 悦耳和弦，单位 Hz）
-    public static let chordFrequencies: [Float] = [523.25, 659.25, 783.99, 1046.50]
+    public static let chordFrequencies: [Float] = [chordFreqC5, chordFreqE5, chordFreqG5, chordFreqC6]
 
     // MARK: - 演示图像 (Image)
     /// 高清图像最小宽度阈值（像素）
@@ -37,10 +42,15 @@ public enum DemoMediaConstants {
     public static let noteIconLineWidth: CGFloat = 1.5
     /// OCR 演示图像表格起始 Y 坐标
     public static let ocrTableStartY: CGFloat = 220
+    /// OCR 演示表格列宽常量
+    public static let ocrColumnWidthNarrow: CGFloat = 220
+    public static let ocrColumnWidthMedium: CGFloat = 260
+    public static let ocrColumnWidthWide: CGFloat = 420
+    public static let ocrColumnWidthExtraWide: CGFloat = 580
     /// OCR 神经元演示表格列宽（3 列等宽）
-    public static let ocrNeuronTableColumnWidths: [CGFloat] = [220, 420, 420]
+    public static let ocrNeuronTableColumnWidths: [CGFloat] = [ocrColumnWidthNarrow, ocrColumnWidthWide, ocrColumnWidthWide]
     /// OCR 咖啡演示表格列宽（3 列不等宽）
-    public static let ocrCoffeeTableColumnWidths: [CGFloat] = [220, 260, 580]
+    public static let ocrCoffeeTableColumnWidths: [CGFloat] = [ocrColumnWidthNarrow, ocrColumnWidthMedium, ocrColumnWidthExtraWide]
 
     // MARK: - 演示 PDF (PDF)
     /// US Letter 页面宽度（英寸）

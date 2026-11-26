@@ -250,6 +250,7 @@ public struct DemoPDFBuilder {
 }
 #else
 import Foundation
+import ZhiYuDomain
 
 public struct DemoPDFBuilder {
     public static func ensurePDFExists(at path: String, title: String, content: String) -> URL? {

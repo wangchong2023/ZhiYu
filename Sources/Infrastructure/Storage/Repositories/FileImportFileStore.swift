@@ -12,7 +12,7 @@ import Foundation
 import UFPCore
 import Dependencies
 
-final class FileImportFileStore: ImportFileStore, @unchecked Sendable {
+struct FileImportFileStore: ImportFileStore, Sendable {
 
     init() {
         // 无需预先创建 recordsDir，全部采用动态延迟计算
