@@ -50,16 +50,9 @@ struct AdaptiveSidebarView: View {
                 .accessibilityIdentifier("SidebarTab_taskCenter")
             }
         }
-        #if !os(watchOS)
         .listStyle(.sidebar)
-        #endif
         .navigationTitle(L10n.Common.appName)
         .toolbar {
-            #if os(watchOS)
-            ToolbarItem(placement: .automatic) {
-                VaultBadge()
-            }
-            #else
             // macOS 端由 NavigationSplitView 的 appCustomSidebarToggle 统一按「折叠按钮 → VaultBadge」顺序渲染，
             // 避免重复渲染及位置颠倒。
             if idiom != .mac {
@@ -67,7 +60,6 @@ struct AdaptiveSidebarView: View {
                     VaultBadge()
                 }
             }
-            #endif
             // macOS 原生 NavigationSplitView 会把各列 toolbar 合并到窗口顶部，
             // 内容区 appTabToolbar / appSubPageToolbar 已追加头像，此处不再重复注入。
             if idiom != .mac {

@@ -53,4 +53,35 @@ final class BaseProtocolsAndStubsTests: XCTestCase {
         stub.requestDailyBriefing()
         stub.handleBriefingResponse("今日简报")
     }
+
+    func testKeychainQueryHelperIncludesDataProtectionFlagByDefault() {
+        let query = KeychainQueryHelper.baseQuery(serviceName: "com.zhiyu.test", key: "token")
+        XCTAssertEqual(query[kSecAttrService as String] as? String, "com.zhiyu.test")
+        XCTAssertEqual(query[kSecAttrAccount as String] as? String, "token")
+        XCTAssertEqual(query[kSecUseDataProtectionKeychain as String] as? Bool, true)
+
+        let noDp = KeychainQueryHelper.baseQuery(serviceName: "com.zhiyu.test", key: "token", useDataProtection: false)
+        XCTAssertNil(noDp[kSecUseDataProtectionKeychain as String])
+    }
+
+    func testLogMaskerRedactsMultiProviderAPIKeysAndBearerToken() {
+        let raw = "key=sk-1234567890123456789012345678901234 and Authorization: Bearer my.jwt.token"
+        let masked = LogMasker.mask(raw)
+        XCTAssertTrue(masked.contains("sk-****"))
+        XCTAssertTrue(masked.contains("Authorization: Bearer ****"))
+        XCTAssertFalse(masked.contains("my.jwt.token"))
+    }
+
+    func testAudioSplitterSplitAndMergeRoundTrip() {
+        let payload = Data((0..<1024).map { UInt8($0 % 256) })
+        let chunks = AudioSplitter.split(data: payload, chunkSize: 300)
+        XCTAssertEqual(chunks.count, 4)
+        XCTAssertEqual(AudioSplitter.merge(chunks: chunks), payload)
+        XCTAssertTrue(AudioSplitter.split(data: Data()).isEmpty)
+    }
+
+    func testAppNotificationNamesAreStable() {
+        XCTAssertEqual(Notification.Name.toggleSidebar.rawValue, "toggleSidebar")
+        XCTAssertEqual(Notification.Name.vaultWillSwitch.rawValue, "vaultWillSwitch")
+    }
 }

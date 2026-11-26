@@ -246,9 +246,6 @@ targets:
       - path: Sources/Core/System/Logger/Logger.swift
       - path: Sources/Platforms/watchOS/Services/WatchHapticService.swift
       - path: Sources/Core/System/Routing/AppLinkProcessor.swift
-      - path: Sources/Core/System/Workflow/AudioSplitter.swift
-      - path: Sources/Core/System/Security/SecurityReinforcement.swift
-      - path: Sources/Core/System/Notifications/AppNotifications.swift
       # L1.5 领域层：模型、协议、RAG（核心纯模型/常量已下沉至 ZhiYuDomain SPM 包，经 Reexports 透传）
       - path: Sources/Domain/Models/ZhiYuDomainReexports.swift
       - path: Sources/Domain/Models/KnowledgePage.swift

@@ -153,9 +153,6 @@ extension ContentView {
     /// adaptive拆分View
     /// - Parameter tintColor: 着色Color
     func adaptiveSplitView(tintColor: Color) -> some View {
-        #if os(watchOS)
-        Text("Not used on watchOS")
-        #else
         @Bindable var store = store
         @Bindable var router = router
         Group {
@@ -209,7 +206,6 @@ extension ContentView {
         }
         .tint(tintColor)
         .commandPaletteSheet(isPresented: $router.showCommandPalette)
-        #endif
     }
     
     // MARK: - TabViews
@@ -220,9 +216,6 @@ extension ContentView {
     /// modernTabView
     /// - Parameter tintColor: 着色Color
     func modernTabView(tintColor: Color) -> some View {
-        #if os(watchOS)
-        Text("Not used on watchOS")
-        #else
         @Bindable var store = store
         @Bindable var router = router
         TabView(selection: $router.selectedTab) {
@@ -252,7 +245,6 @@ extension ContentView {
             .accessibilityIdentifier("Graph")
         }
         .applyTabViewCommonModifiers(tintColor: tintColor, deepLinkService: deepLinkService, showCommandPalette: $router.showCommandPalette, consumeDeepLink: consumeDeepLink)
-        #endif
     }
     
     @ViewBuilder
@@ -260,9 +252,6 @@ extension ContentView {
     /// legacyTabView
     /// - Parameter tintColor: 着色Color
     func legacyTabView(tintColor: Color) -> some View {
-        #if os(watchOS)
-        Text("Not used on watchOS")
-        #else
         @Bindable var store = store
         @Bindable var router = router
         TabView(selection: $router.selectedTab) {
@@ -302,7 +291,6 @@ extension ContentView {
                 .tag(AppTab.graph)
         }
         .applyTabViewCommonModifiers(tintColor: tintColor, deepLinkService: deepLinkService, showCommandPalette: $router.showCommandPalette, consumeDeepLink: consumeDeepLink)
-        #endif
     }
     
     // MARK: - Tab Contents

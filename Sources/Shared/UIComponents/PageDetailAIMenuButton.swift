@@ -17,6 +17,7 @@ import UFPDesignSystem
 /// watchOS 上展示为单一 AI 摘要生成按钮；
 /// iOS / macOS 上展示为完整嵌套 Menu（含摘要、行动提取、合成实验室、历史等）。
 public struct PageDetailAIMenuButton: View {
+    @Environment(\.interfaceIdiom) private var interfaceIdiom
     let isDisabled: Bool
     let onGenerateSummary: () -> Void
     let onExtractActions: () -> Void
@@ -56,16 +57,15 @@ public struct PageDetailAIMenuButton: View {
     }
 
     public var body: some View {
-        #if os(watchOS)
-        simpleButton
-        #else
-        fullMenu
-        #endif
+        if interfaceIdiom == .watch {
+            simpleButton
+        } else {
+            fullMenu
+        }
     }
 
     // MARK: - watchOS 简化按钮 / iOS & macOS 完整菜单
 
-    #if os(watchOS)
     private var simpleButton: some View {
         Button(action: onGenerateSummary) {
             Image(systemName: DesignTokens.Icons.sparkles)
@@ -73,7 +73,7 @@ public struct PageDetailAIMenuButton: View {
         }
         .disabled(isDisabled)
     }
-    #else
+
     private var fullMenu: some View {
         Menu {
             Group {
@@ -107,5 +107,4 @@ public struct PageDetailAIMenuButton: View {
         .appToolbarButtonStyle()
         .disabled(isDisabled)
     }
-    #endif
 }

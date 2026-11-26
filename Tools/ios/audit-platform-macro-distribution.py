@@ -35,7 +35,7 @@ CHECK_DIRS = [
 ]
 
 # 宏总数棘轮上限（只减不增；收敛清理后请同步调低此阈值）
-MAX_TOTAL_MACROS = 160
+MAX_TOTAL_MACROS = 148
 
 # 统一平台宏正则（去注释后匹配，拦截正向/反向/括号/复合条件中的 os() 与 macCatalyst）
 OS_MACRO_PATTERN = re.compile(
@@ -84,19 +84,13 @@ LEGACY_VIEW_FILES = {
     "Sources/App/Scenes/ContentView.swift",
     "Sources/App/Scenes/Layout/Components/AppLayoutComponents.swift",
     "Sources/App/Scenes/Layout/Components/SidebarRowComponents.swift",
-    "Sources/App/Scenes/Layout/SidebarView.swift",
     "Sources/Shared/UIComponents/Backgrounds/PageBackground.swift",
-    "Sources/Shared/UIComponents/Badges/VaultBadge.swift",
     "Sources/Shared/UIComponents/Editors/MarkdownEditorView.swift",
     "Sources/Shared/UIComponents/Editors/MarkdownRendererView.swift",
     "Sources/Shared/UIComponents/Editors/MermaidWebView.swift",
     "Sources/Shared/UIComponents/Editors/PlatformTextEditor.swift",
     "Sources/Shared/UIComponents/Menus/UserProfileMenu.swift",
-    "Sources/Shared/UIComponents/Navigation/AdaptiveSidebarView.swift",
-    "Sources/Shared/UIComponents/Navigation/FloatingContextCapsule.swift",
     "Sources/Shared/UIComponents/Overlays/ActivityView.swift",
-    "Sources/Shared/UIComponents/PageDetailAIMenuButton.swift",
-    "Sources/Shared/UIComponents/PageDetailMetaSectionView.swift",
 }
 
 # 5) 已知豁免（精确行号 + 原因说明）

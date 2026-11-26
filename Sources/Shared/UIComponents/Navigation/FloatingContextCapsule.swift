@@ -16,6 +16,7 @@ import UFPDesignSystem
 struct FloatingContextCapsule: View {
     @Environment(VaultService.self) var vaultService
     @Environment(ThemeManager.self) var themeManager
+    @Environment(\.interfaceIdiom) private var interfaceIdiom
     
     var onToggleSidebar: (() -> Void)?
     var onShowInsights: (() -> Void)?
@@ -72,36 +73,36 @@ struct FloatingContextCapsule: View {
     
     @ViewBuilder
     private func vaultMenu(_ vault: Vault) -> some View {
-        #if os(watchOS)
-        HStack(spacing: DesignTokens.Spacing.small) {
-            Text(vault.name)
-                .font(.custom("AvenirNext", size: 18).weight(.bold))
-                .lineLimit(1)
-        }
-        .padding(.trailing, DesignTokens.Spacing.medium)
-        .frame(minHeight: DesignTokens.Spacing.Action.buttonHeight)
-        #else
-        Menu {
-            Group {
-                Button(L10n.Dashboard.index.overview, systemImage: DesignTokens.Icons.comparison) {
-                    HapticFeedback.shared.trigger(.selection)
-                    onShowInsights?()
-                }
-
-                Divider()
-
-                Button(L10n.Vault.backToHub, systemImage: DesignTokens.Icons.backToHub, role: .destructive) {
-                    withAnimation(.spring(response: DesignTokens.Animation.springResponse, dampingFraction: DesignTokens.Animation.springDamping)) {
-                        vaultService.exitVault()
-                    }
-                }
-                .accessibilityIdentifier("vaultBackToHubButton")
+        if interfaceIdiom == .watch {
+            HStack(spacing: DesignTokens.Spacing.small) {
+                Text(vault.name)
+                    .font(.custom("AvenirNext", size: 18).weight(.bold))
+                    .lineLimit(1)
             }
-            .labelStyle(.titleAndIcon)
-        } label: {
-            capsuleLabel(text: vault.name)
+            .padding(.trailing, DesignTokens.Spacing.medium)
+            .frame(minHeight: DesignTokens.Spacing.Action.buttonHeight)
+        } else {
+            Menu {
+                Group {
+                    Button(L10n.Dashboard.index.overview, systemImage: DesignTokens.Icons.comparison) {
+                        HapticFeedback.shared.trigger(.selection)
+                        onShowInsights?()
+                    }
+
+                    Divider()
+
+                    Button(L10n.Vault.backToHub, systemImage: DesignTokens.Icons.backToHub, role: .destructive) {
+                        withAnimation(.spring(response: DesignTokens.Animation.springResponse, dampingFraction: DesignTokens.Animation.springDamping)) {
+                            vaultService.exitVault()
+                        }
+                    }
+                    .accessibilityIdentifier("vaultBackToHubButton")
+                }
+                .labelStyle(.titleAndIcon)
+            } label: {
+                capsuleLabel(text: vault.name)
+            }
         }
-        #endif
     }
     
     private var hubIndicator: some View {

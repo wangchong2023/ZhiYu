@@ -42,3 +42,6 @@ public typealias LLMLatencyCalculator = UFPCore.LLMLatencyCalculator
 public typealias RegexReplacementHelper = UFPCore.RegexReplacementHelper
 public typealias CJKSpacingFormatter = UFPCore.CJKSpacingFormatter
 public typealias PanguFormatter = UFPCore.CJKSpacingFormatter
+public typealias KeychainQueryHelper = UFPCore.KeychainQueryHelper
+public typealias LogMasker = UFPCore.LogMasker
+public typealias AudioSplitter = UFPCore.AudioSplitter

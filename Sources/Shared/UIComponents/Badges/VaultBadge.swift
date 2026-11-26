@@ -39,13 +39,10 @@ struct VaultBadge: View {
     
     @ViewBuilder
     private func adaptiveContainer(currentVault: Vault) -> some View {
-        #if os(watchOS)
-        // watchOS 降级处理：仅显示标签，不支持下拉菜单
-        badgeLabel(currentVault: currentVault)
-        #else
-        // 具有指针/触控能力的设备使用 Menu
-        // UI 测试模式：附加一个透明直通按钮绕过 SwiftUI Menu（XCUITest 对 Menu 交互不可靠）
-        if usesPassthroughButton {
+        if platformEnv.interactionStyle == InteractionStyle.crown {
+            // 旋钮/紧凑设备：仅显示标签，不支持下拉菜单
+            badgeLabel(currentVault: currentVault)
+        } else if usesPassthroughButton {
             Button {
                 withAnimation(.appStandard) {
                     vaultService.exitVault()
@@ -69,7 +66,6 @@ struct VaultBadge: View {
             }
             .vaultBadgeStyling(name: currentVault.name)
         }
-        #endif
     }
     
     @ViewBuilder

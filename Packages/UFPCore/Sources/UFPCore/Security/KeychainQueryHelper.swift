@@ -14,7 +14,7 @@ import Security
 /// Keychain 查询字典构造辅助
 /// 抽取 KeychainService.store / retrieve / delete 中重复的
 /// `kSecClass` + `kSecAttrService` + `kSecAttrAccount` 基础字典构造模式。
-enum KeychainQueryHelper {
+public enum KeychainQueryHelper {
 
     /// 构造 Keychain 基础查询字典（class=genericPassword + service + account）
     /// - Parameters:
@@ -22,7 +22,7 @@ enum KeychainQueryHelper {
     ///   - key: 账户键名
     ///   - useDataProtection: 是否启用 Data Protection Keychain（默认 true；在 macOS 上可避免每次重编触发传统登录钥匙串密码弹窗）
     /// - Returns: 基础查询字典，调用方可追加额外字段
-    static func baseQuery(
+    public static func baseQuery(
         serviceName: String,
         key: String,
         useDataProtection: Bool = true

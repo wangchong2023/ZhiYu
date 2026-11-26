@@ -17,6 +17,7 @@ import UFPDesignSystem
 /// watchOS 上始终展开显示为 VStack；
 /// iOS / macOS 上使用 DisclosureGroup 支持折叠/展开。
 public struct PageDetailMetaSectionView: View {
+    @Environment(\.interfaceIdiom) private var interfaceIdiom
     let page: KnowledgePage
     @Binding var isExpanded: Bool
 
@@ -26,16 +27,15 @@ public struct PageDetailMetaSectionView: View {
     }
 
     public var body: some View {
-        #if os(watchOS)
-        watchOSLayout
-        #else
-        standardLayout
-        #endif
+        if interfaceIdiom == .watch {
+            watchOSLayout
+        } else {
+            standardLayout
+        }
     }
 
     // MARK: - watchOS 平铺展开 / iOS & macOS 可折叠
 
-    #if os(watchOS)
     private var watchOSLayout: some View {
         VStack(alignment: .leading) {
             metaHeaderLabel
@@ -44,7 +44,7 @@ public struct PageDetailMetaSectionView: View {
         }
         .metaSectionContainerStyle()
     }
-    #else
+
     private var standardLayout: some View {
         DisclosureGroup(
             isExpanded: $isExpanded,
@@ -59,7 +59,6 @@ public struct PageDetailMetaSectionView: View {
         .tint(.appSecondary)
         .metaSectionContainerStyle()
     }
-    #endif
 
     // MARK: - 共享元信息组件
 

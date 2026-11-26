@@ -134,15 +134,9 @@ struct SidebarToolbarModifier: ViewModifier {
                     // macOS 三栏工具栏会合并各列内容：第一列已提供 VaultBadge，
                     // 此处只保留导航标题，避免窗口顶部出现两个「项目调研」选择器。
                     if idiom != .mac {
-                        #if os(watchOS)
-                        ToolbarItem(placement: .automatic) {
-                            VaultBadge()
-                        }
-                        #else
                         ToolbarItem(placement: .principal) {
                             VaultBadge()
                         }
-                        #endif
                     }
                 }
         }

@@ -10,7 +10,7 @@
 //
 import Foundation
 
-extension Notification.Name {
+public extension Notification.Name {
     static let toggleSidebar = Notification.Name("toggleSidebar")
     static let splashDismissed = Notification.Name("splashDismissed")
     static let importFromClipboard = Notification.Name("importFromClipboard")

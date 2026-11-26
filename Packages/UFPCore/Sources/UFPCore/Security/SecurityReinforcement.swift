@@ -11,10 +11,10 @@
 import Foundation
 
 /// 日志脱敏层 (Security Item)
-struct LogMasker {
+public struct LogMasker {
     /// 脱敏 PII 信息（如 API Key, 用户邮箱等）
     /// - Note: VULN-015 修复：覆盖多提供商 key 格式 + Authorization header
-    static func mask(_ content: String) -> String {
+    public static func mask(_ content: String) -> String {
         let rules: [(pattern: String, template: String)] = [
             ("sk-[a-zA-Z0-9]{32,}", "sk-****"),                          // OpenAI / DeepSeek / Qwen
             ("sk-ant-[a-zA-Z0-9_-]{20,}", "sk-ant-****"),                // Anthropic
