@@ -20,7 +20,8 @@ import UFPStorage
 /// 负责全局状态同步、跨服务协调及业务流程封装。
 @Observable
 @MainActor
-public final class AppStore {
+// swiftlint:disable:next redundant_sendable
+public final class AppStore: Sendable {
 
     // MARK: - 辅助类型
 

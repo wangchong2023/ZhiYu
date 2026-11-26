@@ -92,21 +92,27 @@ final class KnowledgePageRepository: KnowledgeRepository, DatabaseWriterProvider
     /// - Parameter id: id
     /// - Returns: 可选值
     func fetch(id: UUID) async throws -> KnowledgePage? {
-        try await fetchOneFiltered(KnowledgePage.filter(KnowledgePage.Columns.id == id))
+        try await fetchOneFiltered { type in
+            type.filter(KnowledgePage.Columns.id == id)
+        }
     }
 
     /// 拉取
     /// - Parameter title: title
     /// - Returns: 可选值
     func fetch(title: String) async throws -> KnowledgePage? {
-        try await fetchOneFiltered(KnowledgePage.filter(KnowledgePage.Columns.title == title))
+        try await fetchOneFiltered { type in
+            type.filter(KnowledgePage.Columns.title == title)
+        }
     }
 
-    /// 共享的单条查询辅助：按指定过滤请求查询单条 KnowledgePage 并解密，消除 fetch(id:) 与 fetch(title:) 间的样板重复。
-    private func fetchOneFiltered(_ request: QueryInterfaceRequest<KnowledgePage>) async throws -> KnowledgePage? {
+    /// 共享的单条查询辅助：在 writer.read 闭包内直接构造过滤请求并解密，避免外部 QueryInterfaceRequest 跨 actor 捕获。
+    private func fetchOneFiltered(
+        _ queryBuilder: @escaping @Sendable (KnowledgePage.Type) -> QueryInterfaceRequest<KnowledgePage>
+    ) async throws -> KnowledgePage? {
         let writer = try await dbWriter
         return try await writer.read { db in
-            try request.fetchOne(db).map { self.decryptIfPrivate($0) }
+            try queryBuilder(KnowledgePage.self).fetchOne(db).map { self.decryptIfPrivate($0) }
         }
     }
 

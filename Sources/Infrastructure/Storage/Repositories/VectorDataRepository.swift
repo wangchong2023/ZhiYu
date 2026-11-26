@@ -50,20 +50,26 @@ final class VectorDataRepository: VectorRepository, DatabaseWriterProvider, Send
     /// 拉取Chunks
     /// - Returns: 列表
     func fetchChunks(for pageID: UUID) async throws -> [PageChunk] {
-        try await fetchChunksFiltered(PageChunk.filter(PageChunk.Columns.pageID == pageID))
+        try await fetchChunksFiltered { type in
+            type.filter(PageChunk.Columns.pageID == pageID)
+        }
     }
 
     /// 拉取AllChunksWithEmbeddings
     /// - Returns: 列表
     func fetchAllChunksWithEmbeddings() async throws -> [PageChunk] {
-        try await fetchChunksFiltered(PageChunk.filter(PageChunk.Columns.embedding != nil))
+        try await fetchChunksFiltered { type in
+            type.filter(PageChunk.Columns.embedding != nil)
+        }
     }
 
-    /// 共享的分块查询辅助：按指定过滤请求查询 PageChunk 列表，消除 fetchChunks 与 fetchAllChunksWithEmbeddings 间的样板重复。
-    private func fetchChunksFiltered(_ request: QueryInterfaceRequest<PageChunk>) async throws -> [PageChunk] {
+    /// 共享的分块查询辅助：在 writer.read 闭包内直接构造过滤请求，避免外部 QueryInterfaceRequest 跨 actor 捕获。
+    private func fetchChunksFiltered(
+        _ queryBuilder: @escaping @Sendable (PageChunk.Type) -> QueryInterfaceRequest<PageChunk>
+    ) async throws -> [PageChunk] {
         let writer = try await dbWriter
         return try await writer.read { db in
-            try request.fetchAll(db)
+            try queryBuilder(PageChunk.self).fetchAll(db)
         }
     }
 

@@ -10,8 +10,9 @@
 //
 import UFPStorage
 import Foundation
+import ZhiYuDomain
 
 // MARK: - GRDB 协议遵循
-extension PageType: DatabaseValueConvertible {}
-extension PageStatus: DatabaseValueConvertible {}
-extension Confidence: DatabaseValueConvertible {}
+extension PageType: @retroactive DatabaseValueConvertible, @retroactive StatementBinding, @retroactive SQLExpressible {}
+extension PageStatus: @retroactive DatabaseValueConvertible, @retroactive StatementBinding, @retroactive SQLExpressible {}
+extension Confidence: @retroactive DatabaseValueConvertible, @retroactive StatementBinding, @retroactive SQLExpressible {}
