@@ -10,6 +10,7 @@
 //
 import SwiftUI
 import Dependencies
+import os
 
 #if canImport(UIKit)
 import UIKit
@@ -118,8 +119,17 @@ extension DesignTokens {
 
 // MARK: - 主题强调色解析器（可注册闭包，由 app 层在启动时注册）
 extension Color {
+    private static let accentColorResolverLock = OSAllocatedUnfairLock<@Sendable () -> Color>(initialState: { .blue })
+
     /// 主题强调色解析闭包（默认返回 .blue，app 层在启动时注册真实实现）
-    nonisolated(unsafe) public static var accentColorResolver: @Sendable () -> Color = { .blue }
+    public static var accentColorResolver: @Sendable () -> Color {
+        get {
+            accentColorResolverLock.withLock { $0 }
+        }
+        set {
+            accentColorResolverLock.withLock { $0 = newValue }
+        }
+    }
 }
 
 // MARK: - Color 扩展 (Semantic Colors)

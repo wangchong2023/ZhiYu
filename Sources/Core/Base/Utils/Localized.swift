@@ -20,16 +20,10 @@ import os
 /// - 支持跨表 Fallback 策略：当在特定垂直业务域（如 `Knowledge`）表查无此 Key 时，自动降级至 `Common` 共享表检索，彻底规避线上 Missing 崩溃。
 internal struct Localized {
     
-    /// 锁屏障，保证静态缓存读写的并发安全
-    private static let cacheLock = OSAllocatedUnfairLock()
-    
-    /// 缓存的已加载本地化 Bundle 实例，实现内存级常驻。
-    /// 由 `cacheLock` 保护，所有读写必须在 `cacheLock.withLock { }` 内执行。
-    private nonisolated(unsafe) static var cachedBundle: Bundle?
-    
-    /// 当前缓存的 Bundle 对应的语言标识码（如 "zh-Hans" 或 "en"）。
-    /// 由 `cacheLock` 保护，所有读写必须在 `cacheLock.withLock { }` 内执行。
-    private nonisolated(unsafe) static var cachedLanguage: String?
+    /// 锁屏障，保证静态缓存读写的并发安全（包含 Bundle 与语言代码状态）
+    private static let cacheLock = OSAllocatedUnfairLock<UnsafeAnySendable>(
+        initialState: UnsafeAnySendable((bundle: nil as Bundle?, language: nil as String?))
+    )
     
     /// 获取当前应用处于激活状态的首选语言代码（如 "zh-Hans", "zh-Hant", "en", "es", "fr", "ar", "ru", "ko", "ja", "pt"）。
     static var currentLanguage: String {
@@ -80,22 +74,20 @@ internal struct Localized {
         currentLanguage.hasPrefix(CoreConstants.LanguageCode.zh)
     }
     
-    /// 内存回退：当 KeyStoreProtocol 未就绪时（单测环境），用静态变量暂存语言偏好。
-    /// 由 `fallbackLock` 保护，所有读写必须在 `fallbackLock.withLock { }` 内执行。
-    private static let fallbackLock = OSAllocatedUnfairLock()
-    private nonisolated(unsafe) static var _inMemoryFallback: String?
+    /// 内存回退：当 KeyStoreProtocol 未就绪时（单测环境），用锁内状态暂存语言偏好。
+    private static let fallbackLock = OSAllocatedUnfairLock<String?>(initialState: nil)
 
     /// 用户在应用偏好设置中手动指定的语言模式。
     /// getter 始终从线程安全的内存缓存读取，避免跨 actor 访问 keyStore 导致 crash。
     /// 缓存由 setter 及 `loadCachedLanguageMode()` 在 @MainActor 上写入。
     static var languageMode: LanguageMode {
         get {
-            // 仅依赖 _inMemoryFallback（setter 始终同步写入，线程安全）
-            fallbackLock.withLock { LanguageMode(rawValue: _inMemoryFallback ?? "auto") ?? .auto }
+            // 仅依赖 fallbackLock 内部状态（setter 始终同步写入，线程安全）
+            fallbackLock.withLock { state in LanguageMode(rawValue: state ?? "auto") ?? .auto }
         }
         set {
             let value = newValue.rawValue
-            fallbackLock.withLock { _inMemoryFallback = value }
+            fallbackLock.withLock { state in state = value }
             // 持久化写入委托至 @MainActor，避免 assumeIsolated 在非主线程 crash
             Task { @MainActor in
                 if let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) {
@@ -112,22 +104,21 @@ internal struct Localized {
     static func loadCachedLanguageMode() {
         guard let keyStore = ServiceContainer.shared.resolveOptional((any KeyStoreProtocol).self) else { return }
         let rawValue = keyStore.string(forKey: AppConstants.Keys.Storage.languageMode)
-        fallbackLock.withLock { _inMemoryFallback = rawValue }
+        fallbackLock.withLock { state in state = rawValue }
     }
 
     /// 重置本地化状态与缓存。
     /// 清理 `_inMemoryFallback` 与 Bundle 缓存。
     @MainActor
     static func resetCache() {
-        fallbackLock.withLock { _inMemoryFallback = nil }
+        fallbackLock.withLock { state in state = nil }
         clearBundleCache()
     }
 
     /// 清除当前的 Bundle 缓存，迫使下一次翻译查找时执行磁盘装载。
     private static func clearBundleCache() {
-        cacheLock.withLock {
-            cachedBundle = nil
-            cachedLanguage = nil
+        cacheLock.withLock { state in
+            state = UnsafeAnySendable((bundle: nil as Bundle?, language: nil as String?))
         }
     }
 
@@ -137,10 +128,11 @@ internal struct Localized {
     private static func getOrLoadBundle() -> Bundle {
         let currentLang = currentLanguage
 
-        return cacheLock.withLock {
+        return cacheLock.withLock { state in
+            let cached = state.value as? (bundle: Bundle?, language: String?)
             // 击中缓存：如果已经装载过相同语言的 Bundle，直接闪回内存对象
-            if let cached = cachedBundle, cachedLanguage == currentLang {
-                return cached
+            if let cachedBundle = cached?.bundle, cached?.language == currentLang {
+                return cachedBundle
             }
 
             // 未击中缓存：执行物理路径扫描与重装载
@@ -153,8 +145,7 @@ internal struct Localized {
             }
 
             // 缓存实体与时序标记
-            cachedBundle = bundle
-            cachedLanguage = currentLang
+            state = UnsafeAnySendable((bundle: bundle, language: currentLang))
             return bundle
         }
     }

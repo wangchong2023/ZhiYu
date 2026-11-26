@@ -249,7 +249,7 @@ targets:
       # L1.5 领域层：模型、协议、RAG（核心纯模型/常量已下沉至 ZhiYuDomain SPM 包，经 Reexports 透传）
       - path: Sources/Domain/Models/ZhiYuDomainReexports.swift
       - path: Sources/Domain/Models/KnowledgePage.swift
-      - path: Sources/Domain/Models/PageType.swift
+      - path: Sources/Domain/Models/PageType+Display.swift
       - path: Sources/Domain/Models/RAGModels.swift
       - path: Sources/Domain/Models/CreatePageInput.swift
       - path: Sources/Domain/Models/PromptConstants+AppModels.swift

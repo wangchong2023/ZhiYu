@@ -47,13 +47,21 @@ public final class ServiceContainer: @unchecked Sendable {
     /// 上次 reset 的时间戳
     var lastResetTimestamp: Date?
 
+    private static let failureHandlerLock = OSAllocatedUnfairLock<(@Sendable (String) -> Void)?>(initialState: nil)
+
     /// 可注入的致命失败处理器（缺陷 #5 修复）
     /// - 生产环境：默认 nil，走 assertionFailure + fatalError（fail-fast 契约）
     /// - 测试环境：替换为非崩溃闭包，使失败路径可被单元测试覆盖
     /// - 用法：`ServiceContainer.fatalFailureHandler = { msg in XCTFail(msg) }`
-    /// - 并发安全：仅在测试 setUp/tearDown 单线程设置，用 nonisolated(unsafe) 标注
-    ///   避免多线程并发读写数据竞争（生产环境不修改）
-    public nonisolated(unsafe) static var fatalFailureHandler: ((String) -> Void)?
+    /// - 并发安全：通过 OSAllocatedUnfairLock 保护并发读写
+    public static var fatalFailureHandler: (@Sendable (String) -> Void)? {
+        get {
+            failureHandlerLock.withLock { $0 }
+        }
+        set {
+            failureHandlerLock.withLock { $0 = newValue }
+        }
+    }
 
     private init() {}
 
@@ -397,9 +405,9 @@ extension Optional: OptionalDetectableProtocol {
 /// 类型擦除的 Sendable 包装器，用于在 @Sendable 闭包中传递非 Sendable 服务实例。
 /// - Note: DI 容器需接受 ObservableObject 等非 Sendable 类型，
 ///   此包装器仅绕过编译器检查，实际线程安全由 ServiceContainer 的 lock 保证。
-internal struct UnsafeAnySendable: @unchecked Sendable {
-    let value: Any
-    init(_ value: Any) { self.value = value }
+public struct UnsafeAnySendable: @unchecked Sendable {
+    public let value: Any
+    public init(_ value: Any) { self.value = value }
 }
 
 /// 依赖注入属性包装器（Factory 风格）。

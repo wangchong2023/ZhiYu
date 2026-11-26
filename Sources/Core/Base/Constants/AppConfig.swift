@@ -15,14 +15,73 @@ import UFPCore
 /// 采用“动态读取 + 静态分区”模式，确保系统的高可配置性与类型安全。
 enum AppConfig {
     
-    // MARK: - 动态配置加载器
-    private nonisolated(unsafe) static let configData: [String: Any] = {
+    // MARK: - 强类型 Sendable 配置数据模型
+    private struct ConfigData: Sendable {
+        let network: [String: String]
+        let security: [String: Bool]
+        let llmProviders: [String: String]
+        let cdn: [String: String]
+        let performanceNumbers: [String: Double]
+        let performanceStrings: [String: String]
+        let storage: [String: String]
+        
+        static let empty = ConfigData(
+            network: [:],
+            security: [:],
+            llmProviders: [:],
+            cdn: [:],
+            performanceNumbers: [:],
+            performanceStrings: [:],
+            storage: [:]
+        )
+    }
+
+    // MARK: - 动态配置加载器（不可变只读 Sendable 模型，完全并发安全）
+    private static let config: ConfigData = {
         guard let url = Bundle.main.url(forResource: CoreConstants.BundleResource.appConfig, withExtension: SystemConstants.FileExtension.json),
               let data = try? Data(contentsOf: url),
               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-            return [:]
+            return .empty
         }
-        return json
+        
+        let network = json["network"] as? [String: String] ?? [:]
+        
+        var securityMap: [String: Bool] = [:]
+        if let secDict = json["security"] as? [String: Any] {
+            for (k, v) in secDict {
+                if let b = v as? Bool {
+                    securityMap[k] = b
+                } else if let s = v as? String {
+                    securityMap[k] = (s == SystemConstants.BooleanString.trueValue)
+                }
+            }
+        }
+        
+        let llmProviders = json["llm_providers"] as? [String: String] ?? [:]
+        let cdn = json["cdn"] as? [String: String] ?? [:]
+        let storage = json["storage"] as? [String: String] ?? [:]
+        
+        var perfNumbers: [String: Double] = [:]
+        var perfStrings: [String: String] = [:]
+        if let perfDict = json["performance"] as? [String: Any] {
+            for (k, v) in perfDict {
+                if let num = v as? NSNumber {
+                    perfNumbers[k] = num.doubleValue
+                } else if let s = v as? String {
+                    perfStrings[k] = s
+                }
+            }
+        }
+        
+        return ConfigData(
+            network: network,
+            security: securityMap,
+            llmProviders: llmProviders,
+            cdn: cdn,
+            performanceNumbers: perfNumbers,
+            performanceStrings: perfStrings,
+            storage: storage
+        )
     }()
     
     // MARK: - 内部键名定义
@@ -66,7 +125,7 @@ enum AppConfig {
     /// - Parameter key: key
     /// - Returns: 字符串
     private static func getNetwork(_ key: ConfigKey.Network) -> String {
-        (configData["network"] as? [String: String])?[key.rawValue] ?? ""
+        config.network[key.rawValue] ?? ""
     }
     
     /// 获取Performance
@@ -74,7 +133,24 @@ enum AppConfig {
     /// - Parameter default: default
     /// - Returns: 返回值
     private static func getPerformance<T>(_ key: ConfigKey.Performance, default: T) -> T {
-        (configData["performance"] as? [String: Any])?[key.rawValue] as? T ?? `default`
+        if let val = config.performanceNumbers[key.rawValue] {
+            if let intVal = Int(exactly: val) as? T {
+                return intVal
+            }
+            if let dblVal = val as? T {
+                return dblVal
+            }
+            if let fltVal = Float(val) as? T {
+                return fltVal
+            }
+            if let intCast = Int(val) as? T {
+                return intCast
+            }
+        }
+        if let str = config.performanceStrings[key.rawValue], let strVal = str as? T {
+            return strVal
+        }
+        return `default`
     }
 
     /// 获取 Network 段布尔值（JSON 值可能为 Bool，兼容字符串）
@@ -82,33 +158,28 @@ enum AppConfig {
     /// - Parameter default: default
     /// - Returns: 布尔值
     private static func getSecurityBool(_ key: ConfigKey.Security, default: Bool) -> Bool {
-        guard let raw = (configData["security"] as? [String: Any])?[key.rawValue] else {
-            return `default`
-        }
-        if let bool = raw as? Bool { return bool }
-        if let str = raw as? String { return str == SystemConstants.BooleanString.trueValue }
-        return `default`
+        config.security[key.rawValue] ?? `default`
     }
     
     /// 获取Storage
     /// - Parameter key: key
     /// - Returns: 字符串
     private static func getStorage(_ key: ConfigKey.Storage) -> String {
-        (configData["storage"] as? [String: String])?[key.rawValue] ?? ""
+        config.storage[key.rawValue] ?? ""
     }
 
     /// 获取 LLM 提供商 URL
     /// - Parameter provider: 提供商 ID
     /// - Returns: Base URL
     static func llmProviderURL(for provider: String) -> String {
-        (configData["llm_providers"] as? [String: String])?[provider] ?? ""
+        config.llmProviders[provider] ?? ""
     }
 
     /// 获取 CDN 资源配置
     /// - Parameter resource: 资源名称
     /// - Returns: CDN URL 或 "local"
     static func cdnResource(_ resource: String) -> String {
-        (configData["cdn"] as? [String: String])?[resource] ?? ""
+        config.cdn[resource] ?? ""
     }
 
     // MARK: - 网络与服务器

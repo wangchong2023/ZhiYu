@@ -411,7 +411,7 @@ public struct PlatformSettingsLink<Content: View>: View {
     }
 
     public var body: some View {
-        SettingsLink(destination: content)
+        SettingsLink(label: content)
     }
 }
 #endif

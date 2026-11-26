@@ -12,6 +12,7 @@
 
 import UFPCoreTestMocks
 import XCTest
+import os
 @testable import UFPCore
 
 private protocol AssertServiceA: Sendable { var tag: String { get } }
@@ -44,23 +45,27 @@ final class ServiceContainerAssertRegisteredTests: XCTestCase {
         container.register(ImplB() as AssertServiceB, for: AssertServiceB.self)
 
         // 不应触发失败处理器 — 若触发则 capturedMessages 非空
-        var capturedMessages: [String] = []
-        ServiceContainer.fatalFailureHandler = { msg in capturedMessages.append(msg) }
+        let capturedMessages = OSAllocatedUnfairLock<[String]>(initialState: [])
+        ServiceContainer.fatalFailureHandler = { msg in
+            capturedMessages.withLock { $0.append(msg) }
+        }
 
         container.assertRegistered(
             [AssertServiceA.self, AssertServiceB.self],
             context: "testAllRegistered"
         )
-        XCTAssertTrue(capturedMessages.isEmpty, "全部已注册时不应触发失败处理器")
+        XCTAssertTrue(capturedMessages.withLock { $0.isEmpty }, "全部已注册时不应触发失败处理器")
     }
 
     /// 空列表时静默通过
     func testEmptyListPassesSilently() {
-        var capturedMessages: [String] = []
-        ServiceContainer.fatalFailureHandler = { msg in capturedMessages.append(msg) }
+        let capturedMessages = OSAllocatedUnfairLock<[String]>(initialState: [])
+        ServiceContainer.fatalFailureHandler = { msg in
+            capturedMessages.withLock { $0.append(msg) }
+        }
 
         ServiceContainer.shared.assertRegistered([], context: "empty list")
-        XCTAssertTrue(capturedMessages.isEmpty, "空列表应静默通过")
+        XCTAssertTrue(capturedMessages.withLock { $0.isEmpty }, "空列表应静默通过")
     }
 
     /// 部分缺失时，assertRegistered 必须调用失败处理器并报告缺失服务
@@ -70,18 +75,21 @@ final class ServiceContainerAssertRegisteredTests: XCTestCase {
         container.register(ImplA() as AssertServiceA, for: AssertServiceA.self)
         // 故意不注册 AssertServiceB
 
-        var capturedMessages: [String] = []
-        ServiceContainer.fatalFailureHandler = { msg in capturedMessages.append(msg) }
+        let capturedMessages = OSAllocatedUnfairLock<[String]>(initialState: [])
+        ServiceContainer.fatalFailureHandler = { msg in
+            capturedMessages.withLock { $0.append(msg) }
+        }
 
         container.assertRegistered(
             [AssertServiceA.self, AssertServiceB.self],
             context: "testMissingService"
         )
 
-        XCTAssertEqual(capturedMessages.count, 1, "缺失服务时必须调用一次失败处理器")
-        XCTAssertTrue(capturedMessages.first?.contains("AssertServiceB") == true,
+        let messages = capturedMessages.withLock { $0 }
+        XCTAssertEqual(messages.count, 1, "缺失服务时必须调用一次失败处理器")
+        XCTAssertTrue(messages.first?.contains("AssertServiceB") == true,
                       "失败消息必须包含缺失的服务名 AssertServiceB")
-        XCTAssertTrue(capturedMessages.first?.contains("testMissingService") == true,
+        XCTAssertTrue(messages.first?.contains("testMissingService") == true,
                       "失败消息必须包含上下文 testMissingService")
     }
 
@@ -93,31 +101,37 @@ final class ServiceContainerAssertRegisteredTests: XCTestCase {
         container.register(impl, for: ImplA.self)
         // 注册了具体类型 ImplA，但断言协议 AssertServiceA — key 不同应失败
 
-        var capturedMessages: [String] = []
-        ServiceContainer.fatalFailureHandler = { msg in capturedMessages.append(msg) }
+        let capturedMessages = OSAllocatedUnfairLock<[String]>(initialState: [])
+        ServiceContainer.fatalFailureHandler = { msg in
+            capturedMessages.withLock { $0.append(msg) }
+        }
 
         container.assertRegistered(
             [AssertServiceA.self],
             context: "testExistentialKey"
         )
 
-        XCTAssertEqual(capturedMessages.count, 1, "协议与具体类型 key 不同，断言协议应失败")
-        XCTAssertTrue(capturedMessages.first?.contains("AssertServiceA") == true,
+        let messages = capturedMessages.withLock { $0 }
+        XCTAssertEqual(messages.count, 1, "协议与具体类型 key 不同，断言协议应失败")
+        XCTAssertTrue(messages.first?.contains("AssertServiceA") == true,
                       "失败消息必须包含缺失的协议名 AssertServiceA")
     }
 
     /// 单个服务缺失时触发失败处理器
     func testSingleMissingServiceTriggersHandler() {
-        var capturedMessages: [String] = []
-        ServiceContainer.fatalFailureHandler = { msg in capturedMessages.append(msg) }
+        let capturedMessages = OSAllocatedUnfairLock<[String]>(initialState: [])
+        ServiceContainer.fatalFailureHandler = { msg in
+            capturedMessages.withLock { $0.append(msg) }
+        }
 
         ServiceContainer.shared.assertRegistered(
             [AssertServiceC.self],
             context: "testSingleMissing"
         )
 
-        XCTAssertEqual(capturedMessages.count, 1, "单个服务缺失应触发失败处理器")
-        XCTAssertTrue(capturedMessages.first?.contains("AssertServiceC") == true,
+        let messages = capturedMessages.withLock { $0 }
+        XCTAssertEqual(messages.count, 1, "单个服务缺失应触发失败处理器")
+        XCTAssertTrue(messages.first?.contains("AssertServiceC") == true,
                       "失败消息必须包含缺失的服务名 AssertServiceC")
     }
 
@@ -127,12 +141,15 @@ final class ServiceContainerAssertRegisteredTests: XCTestCase {
         container.register(ImplA() as AssertServiceA, for: AssertServiceA.self)
         container.register(ImplB() as AssertServiceB, for: AssertServiceB.self)
 
-        var capturedMessages: [String] = []
-        ServiceContainer.fatalFailureHandler = { msg in capturedMessages.append(msg) }
+        let capturedMessages = OSAllocatedUnfairLock<[String]>(initialState: [])
+        ServiceContainer.fatalFailureHandler = { msg in
+            capturedMessages.withLock { $0.append(msg) }
+        }
 
         container.assertRegistered([AssertServiceC.self], context: "countTest")
 
-        XCTAssertTrue(capturedMessages.first?.contains("Total registered: 2") == true,
+        let messages = capturedMessages.withLock { $0 }
+        XCTAssertTrue(messages.first?.contains("Total registered: 2") == true,
                       "失败消息必须包含已注册服务数量")
     }
 }

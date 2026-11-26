@@ -28,9 +28,16 @@ SCAN_ROOTS = [
 ]
 EXCLUDE_DIRS = {".git", ".build", ".swiftpm", "build", "DerivedData", "Tests"}
 
-# 存量水位线基线（2026-11-25 审计精准锁死：71 -> 62 -> 52 -> 46 / 10，零松弛余量，禁止新增）
+# 存量水位线基线（2026-11-26 审计精准锁死：37 / 3，零松弛余量，禁止新增）
 MAX_UNCHECKED_SENDABLE = 37
-MAX_NONISOLATED_UNSAFE = 10
+MAX_NONISOLATED_UNSAFE = 3
+
+# 允许使用 nonisolated(unsafe) 的合法文件白名单（精准指纹控制）
+ALLOWED_NONISOLATED_UNSAFE_FILES = {
+    "Logger.swift",                   # Combine entriesSubject 当前值订阅
+    "KnowledgePageRepository.swift",  # GRDB TableRecord belongsTo 静态关联定义
+    "iOSSpeechService.swift",         # 跨 actor 音频识别请求 SFSpeechAudioBufferRecognitionRequest
+}
 
 UNCHECKED_SENDABLE_PATTERN = re.compile(r"@unchecked\s+Sendable\b")
 NONISOLATED_UNSAFE_PATTERN = re.compile(r"nonisolated\(unsafe\)")
@@ -54,9 +61,10 @@ def _count_in_file(file_path):
 
 
 def _scan_roots():
-    """遍历所有生产源码目录，聚合并发逃生舱总数。"""
+    """遍历所有生产源码目录，聚合并发逃生舱总数与违规文件。"""
     total_unchecked = 0
     total_nonisolated = 0
+    disallowed_nonisolated = []
     for root_dir in SCAN_ROOTS:
         if not os.path.isdir(root_dir):
             continue
@@ -64,15 +72,19 @@ def _scan_roots():
             dirs[:] = [name for name in dirs if name not in EXCLUDE_DIRS]
             for file_name in files:
                 if file_name.endswith(".swift"):
-                    unchecked, nonisolated = _count_in_file(os.path.join(current_root, file_name))
+                    file_path = os.path.join(current_root, file_name)
+                    unchecked, nonisolated = _count_in_file(file_path)
                     total_unchecked += unchecked
                     total_nonisolated += nonisolated
-    return total_unchecked, total_nonisolated
+                    if nonisolated > 0 and file_name not in ALLOWED_NONISOLATED_UNSAFE_FILES:
+                        rel_path = os.path.relpath(file_path, PROJECT_DIR)
+                        disallowed_nonisolated.append((rel_path, nonisolated))
+    return total_unchecked, total_nonisolated, disallowed_nonisolated
 
 
 def run_audit():
-    """扫描全量生产源码并校验并发逃生舱是否突破水位线。"""
-    total_unchecked, total_nonisolated = _scan_roots()
+    """扫描全量生产源码并校验并发逃生舱是否突破水位线与白名单。"""
+    total_unchecked, total_nonisolated, disallowed_nonisolated = _scan_roots()
 
     print(
         f"📊 [Concurrency Escapes Audit] @unchecked Sendable: {total_unchecked}/{MAX_UNCHECKED_SENDABLE} | "
@@ -95,6 +107,14 @@ def run_audit():
             file=sys.stderr,
         )
         violations += 1
+
+    if disallowed_nonisolated:
+        for path, count in disallowed_nonisolated:
+            print(
+                f"❌ [Concurrency Escapes Audit] 未授权文件使用了 nonisolated(unsafe) ({count} 处): {path}",
+                file=sys.stderr,
+            )
+        violations += len(disallowed_nonisolated)
 
     if violations == 0:
         print("✅ [Concurrency Escapes Audit] Swift 6 并发逃生舱水位线审计通过。")
