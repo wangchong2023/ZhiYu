@@ -25,17 +25,13 @@ struct ScaleOnHoverModifier: ViewModifier {
     /// - Parameter content: content
     /// - Returns: 返回值
     func body(content: Content) -> some View {
-        #if os(watchOS)
-        content
-        #else
         content
             .scaleEffect(isHovered ? scale : 1.0)
-            .onHover { hovering in
+            .onHoverIfAvailable { hovering in
                 withAnimation(.appProminent) {
                     isHovered = hovering
                 }
             }
-        #endif
     }
 }
 
@@ -155,23 +151,6 @@ public extension View {
     ) -> some View {
         self.modifier(GlowingNeonBorderModifier(isGlowing: isGlowing, cornerRadius: cornerRadius, gradientColors: gradientColors))
     }
-    
-    @ViewBuilder
-    /// 跨平台 NavigationBarTitleDisplayMode 修饰符，自动在不支持的平台降级屏蔽
-    func appNavigationBarTitleDisplayMode(_ mode: AppNavigationBarTitleDisplayMode) -> some View {
-        #if os(iOS)
-        let displayMode: NavigationBarItem.TitleDisplayMode = {
-            switch mode {
-            case .automatic: return .automatic
-            case .inline: return .inline
-            case .large: return .large
-            }
-        }()
-        self.navigationBarTitleDisplayMode(displayMode)
-        #else
-        self
-        #endif
-    }
 
     /// 跨平台 Toolbar 左侧（leading）Item 放置：iOS 用 navigationBarLeading，macOS 用 navigation
     @ToolbarContentBuilder
@@ -290,11 +269,26 @@ public extension View {
     func appAutocapitalizationDisabled() -> some View {
         self.autocapitalization(.none)
     }
+
+    /// 跨平台 NavigationBarTitleDisplayMode 修饰符
+    func appNavigationBarTitleDisplayMode(_ mode: AppNavigationBarTitleDisplayMode) -> some View {
+        let displayMode: NavigationBarItem.TitleDisplayMode = {
+            switch mode {
+            case .automatic: return .automatic
+            case .inline: return .inline
+            case .large: return .large
+            }
+        }()
+        return self.navigationBarTitleDisplayMode(displayMode)
+    }
 }
 #else
 public extension View {
     /// 跨平台分页 TabView 样式：macOS/watchOS 无此样式时降级为无操作
     func appPageTabViewStyle() -> some View { self }
+
+    /// 跨平台 NavigationBarTitleDisplayMode 修饰符（非 iOS 降级）
+    func appNavigationBarTitleDisplayMode(_ mode: AppNavigationBarTitleDisplayMode) -> some View { self }
 
     /// 跨平台全屏覆盖（isPresented 版本）：非 iOS 平台用 sheet
     func appFullScreenCover<Content: View>(

@@ -96,11 +96,8 @@ extension EnvironmentValues {
 /// - Note: 硬件触控能力在 App 运行期间不会变化，故用静态 `defaultValue`。
 internal struct SupportsTouchKey: EnvironmentKey {
     static let defaultValue: Bool = {
-        #if os(iOS) || os(watchOS)
-        return true
-        #else
-        return false
-        #endif
+        let idiom = InterfaceIdiomKey.defaultValue
+        return idiom != .mac && idiom != .macCatalyst
     }()
 }
 
@@ -118,13 +115,7 @@ extension EnvironmentValues {
 ///
 /// - Note: 平台 API 能力在 App 运行期间不会变化，故用静态 `defaultValue`。
 internal struct SupportsFullScreenImmersiveKey: EnvironmentKey {
-    static let defaultValue: Bool = {
-        #if os(iOS) || os(macOS)
-        return true
-        #else
-        return false
-        #endif
-    }()
+    static let defaultValue: Bool = InterfaceIdiomKey.defaultValue != .watch
 }
 
 extension EnvironmentValues {
