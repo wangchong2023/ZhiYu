@@ -12,6 +12,7 @@ import Foundation
 
 public extension Notification.Name {
     static let toggleSidebar = Notification.Name("toggleSidebar")
+    static let createNewPage = Notification.Name("AppCreateNewPage")
     static let splashDismissed = Notification.Name("splashDismissed")
     static let importFromClipboard = Notification.Name("importFromClipboard")
     static let languageChanged = Notification.Name("languageChanged")

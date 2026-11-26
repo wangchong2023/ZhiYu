@@ -9,7 +9,7 @@
 //  核心职责：为示例演示数据生成真正的原生的 PDF 物理文件，确保在点击预览时拉起 100% 原生的 QuickLook/PDFKit 渲染器。
 //
 
-#if canImport(UIKit) && canImport(PDFKit) && !os(watchOS)
+#if canImport(UIKit) && canImport(PDFKit)
 import UIKit
 import PDFKit
 import SwiftUI
