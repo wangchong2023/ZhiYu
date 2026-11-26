@@ -1,17 +1,16 @@
 //
 //  AIRainbowBadgeHelper.swift
-//  ZhiYu
+//  UFPDesignSystem
 //
 //  Created by Antigravity on 2026/09/04.
 //  Copyright © 2026 WangChong. All rights reserved.
 //
-//  系统层级：[Shared] 共享标准层 / 通用 UI 组件
-//  核心职责：提供 AI 呼吸光晕微标色彩配置、状态文本与平台宽度自适应纯计算函数
+//  系统层级：[UFPDesignSystem] 共享设计系统包
+//  核心职责：提供 AI 呼吸光晕微标色彩配置、状态解析与平台宽度自适应纯计算函数。
 //
 
 import SwiftUI
 import UFPCore
-import UFPDesignSystem
 
 /// 全局 AI 呼吸指示微标逻辑与视觉计算辅助
 public enum AIRainbowBadgeHelper {

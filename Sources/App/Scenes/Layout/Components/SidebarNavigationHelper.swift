@@ -11,6 +11,7 @@
 
 import SwiftUI
 import UFPCore
+import UFPDesignSystem
 
 /// 侧边栏与自适应导航辅助类
 public enum SidebarNavigationHelper {

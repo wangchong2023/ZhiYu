@@ -132,4 +132,78 @@ final class ExtractedAtomicComponentsTests: XCTestCase {
         let shadowed = Text("Card").appStandardShadow()
         XCTAssertNotNil(shadowed)
     }
+
+    // MARK: - AppDotPattern
+
+    func testAppDotPatternDefaultAndCustomTokens() {
+        let defaultPattern = AppDotPattern()
+        XCTAssertEqual(defaultPattern.spacing, DesignTokens.Spacing.wide)
+        XCTAssertEqual(defaultPattern.dotSize, DesignTokens.Spacing.atomic)
+        XCTAssertNotNil(defaultPattern.body)
+
+        let customPattern = AppDotPattern(dotColor: .blue, spacing: 12, dotSize: 4)
+        XCTAssertEqual(customPattern.spacing, 12)
+        XCTAssertEqual(customPattern.dotSize, 4)
+    }
+
+    // MARK: - Color+ModelName
+
+    func testColorFromModelColorNameKnownAndFallback() {
+        XCTAssertEqual(Color.fromModelColorName("entity"), .appEntity)
+        XCTAssertEqual(Color.fromModelColorName("concept"), .appConcept)
+        XCTAssertEqual(Color.fromModelColorName("green"), .green)
+        XCTAssertEqual(Color.fromModelColorName("nonexistent_color"), .gray)
+    }
+
+    // MARK: - SharedViewModifiers
+
+    func testSharedViewModifiersAtomicComponents() {
+        let safeGeo = SafeGeometryReader { _ in Color.clear }
+        XCTAssertNotNil(safeGeo.body)
+
+        let sep = BreadcrumbSeparator()
+        XCTAssertEqual(sep.icon, DesignTokens.Icons.forward)
+        XCTAssertNotNil(sep.body)
+
+        let label = SectionCaptionLabel(title: "Metrics", weight: .semibold)
+        XCTAssertEqual(label.title, "Metrics")
+        XCTAssertNotNil(label.body)
+
+        let touched = Image(systemName: "plus").higTouchTarget()
+        XCTAssertNotNil(touched)
+    }
+
+    // MARK: - AIRainbowBadgeHelper
+
+    func testAIRainbowBadgeHelperStateColorWidthAndMemoryFormatting() {
+        XCTAssertEqual(
+            AIRainbowBadgeHelper.resolveVisualState(isLocalReady: true, isCloudEscalationEnabled: true),
+            .localReady
+        )
+        XCTAssertEqual(
+            AIRainbowBadgeHelper.resolveVisualState(isLocalReady: false, isCloudEscalationEnabled: true),
+            .cloudEscalation
+        )
+        XCTAssertEqual(
+            AIRainbowBadgeHelper.resolveVisualState(isLocalReady: false, isCloudEscalationEnabled: false),
+            .idleNormal
+        )
+        XCTAssertNotNil(AIRainbowBadgeHelper.resolveMainColor(isLocalReady: true, isCloudEscalationEnabled: false))
+        XCTAssertNotNil(AIRainbowBadgeHelper.resolveMainColor(isLocalReady: false, isCloudEscalationEnabled: true))
+        XCTAssertNotNil(AIRainbowBadgeHelper.resolveMainColor(isLocalReady: false, isCloudEscalationEnabled: false))
+        XCTAssertNotNil(AIRainbowBadgeHelper.resolveGlowColor(isLocalReady: true))
+        XCTAssertNotNil(AIRainbowBadgeHelper.resolveGlowColor(isLocalReady: false))
+        XCTAssertEqual(
+            AIRainbowBadgeHelper.resolveControlCenterWidth(isPad: false, isMacCatalyst: true),
+            DesignTokens.Spacing.Sidebar.macCompactWidth
+        )
+        XCTAssertEqual(
+            AIRainbowBadgeHelper.resolveControlCenterWidth(isPad: true, isMacCatalyst: false),
+            DesignTokens.Spacing.Sidebar.padSidebarWidth
+        )
+        XCTAssertEqual(
+            AIRainbowBadgeHelper.formatMemoryInGB(UInt64(8) * 1024 * 1024 * 1024),
+            "8.0 GB"
+        )
+    }
 }

@@ -1,26 +1,30 @@
 //
 //  AppDecorators.swift
-//  ZhiYu
+//  UFPDesignSystem
 //
 //  Created by Antigravity on 2026/05/23.
 //  Copyright © 2026 WangChong. All rights reserved.
 //
-//  系统层级：[Shared] 共享标准层
-//  核心职责：可复用 UI 组件库：编辑器、卡片、加载态、空状态等通用视图。
+//  系统层级：[UFPDesignSystem] 共享设计系统包
+//  核心职责：工业级点阵背景装饰原子组件，使用 Canvas 高性能绘制重复圆点模式。
 //
+
 import SwiftUI
-import UFPDesignSystem
 
 // MARK: - App Dot Pattern
 
 /// 工业级点阵背景
 /// 使用 Canvas 高性能渲染重复的圆点模式，常用于背景装饰。
 public struct AppDotPattern: View {
-    public var dotColor: Color = .appBorder
-    public var spacing: CGFloat = DesignTokens.Spacing.wide
-    public var dotSize: CGFloat = DesignTokens.Spacing.atomic
+    public var dotColor: Color
+    public var spacing: CGFloat
+    public var dotSize: CGFloat
 
-    public init(dotColor: Color = .appBorder, spacing: CGFloat = DesignTokens.Spacing.wide, dotSize: CGFloat = DesignTokens.Spacing.atomic) {
+    public init(
+        dotColor: Color = .appBorder,
+        spacing: CGFloat = DesignTokens.Spacing.wide,
+        dotSize: CGFloat = DesignTokens.Spacing.atomic
+    ) {
         self.dotColor = dotColor
         self.spacing = spacing
         self.dotSize = dotSize
