@@ -35,7 +35,7 @@ CHECK_DIRS = [
 ]
 
 # 宏总数棘轮上限（只减不增；收敛清理后请同步调低此阈值）
-MAX_TOTAL_MACROS = 169
+MAX_TOTAL_MACROS = 160
 
 # 统一平台宏正则（去注释后匹配，拦截正向/反向/括号/复合条件中的 os() 与 macCatalyst）
 OS_MACRO_PATTERN = re.compile(
@@ -94,9 +94,7 @@ LEGACY_VIEW_FILES = {
     "Sources/Shared/UIComponents/Menus/UserProfileMenu.swift",
     "Sources/Shared/UIComponents/Navigation/AdaptiveSidebarView.swift",
     "Sources/Shared/UIComponents/Navigation/FloatingContextCapsule.swift",
-    "Sources/Shared/UIComponents/OCRImageContentView.swift",
     "Sources/Shared/UIComponents/Overlays/ActivityView.swift",
-    "Sources/Shared/UIComponents/Overlays/LockOverlayView.swift",
     "Sources/Shared/UIComponents/PageDetailAIMenuButton.swift",
     "Sources/Shared/UIComponents/PageDetailMetaSectionView.swift",
 }

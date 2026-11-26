@@ -15,12 +15,14 @@ import Foundation
 /// Markdown 内容的纯解析层（MarkdownProcessor）。
 /// 该解析器负责将输入的 Markdown 原始文本转换为结构化的数据块（BlockType）与行内标记（InlineType）模型，
 /// 以屏蔽排版细节并暴露给高层业务。渲染工作由 `MarkdownRendererView` 独立处理，完美遵循单一职责原则（SRP）。
-final class MarkdownProcessor: Sendable {
+public final class MarkdownProcessor: Sendable {
+
+    public init() {}
 
     // MARK: - 块类型
 
     /// 代表 Markdown 结构化文档中的高级排版物理块 (BlockType)。
-    enum BlockType {
+    public enum BlockType {
         /// 标题块。
         /// - Parameters:
         ///   - text: 标题文字内容。
@@ -71,7 +73,7 @@ final class MarkdownProcessor: Sendable {
     // MARK: - 行内类型
 
     /// 标记文本行内部微观样式的行内类型 (InlineType)。
-    enum InlineType {
+    public enum InlineType {
         /// 普通纯文本。
         case text
         /// 加粗文本（如 `**内容**`）。
@@ -91,11 +93,16 @@ final class MarkdownProcessor: Sendable {
     }
 
     /// 行内分割实体，表示具有特定微观样式的局部片段 (InlineSegment)。
-    struct InlineSegment {
+    public struct InlineSegment {
         /// 当前片段的行内样式类型。
-        let type: InlineType
+        public let type: InlineType
         /// 当前片段的实际文本或目标跳转载荷。
-        let content: String
+        public let content: String
+
+        public init(type: InlineType, content: String) {
+            self.type = type
+            self.content = content
+        }
     }
 
     // MARK: - 解析完整内容
@@ -103,7 +110,7 @@ final class MarkdownProcessor: Sendable {
     /// 将输入的整段 Markdown 原始字符串解析为有序的结构化物理块数组。
     /// - Parameter content: 需要解析的原始 Markdown 文本。
     /// - Returns: 解析完成后的 `BlockType` 物理块数组。
-    func parse(_ content: String) -> [BlockType] {
+    public func parse(_ content: String) -> [BlockType] {
         let lines = content.components(separatedBy: ProcessorConstants.Whitespace.newline)
         var blocks: [BlockType] = []
         var i = 0
@@ -157,7 +164,7 @@ final class MarkdownProcessor: Sendable {
     ///
     /// - Parameter text: 包含各种行内标记的原始单行 Markdown 字符串。
     /// - Returns: 有序排列的行内样式片段（`InlineSegment`）实体数组。
-    func parseInlineSegments(_ text: String) -> [InlineSegment] {
+    public func parseInlineSegments(_ text: String) -> [InlineSegment] {
         // 步骤 1.1：为避免 Objective-C NSString 范围与 Swift String.Index 偏移冲突导致崩溃，将输入字符串安全转换为 NSString
         let nsText = text as NSString
         var result: [InlineSegment] = []

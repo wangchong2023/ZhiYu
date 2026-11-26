@@ -55,3 +55,4 @@ public typealias DocxProcessor = ZhiYuDomain.DocxProcessor
 public typealias ExcelProcessor = ZhiYuDomain.ExcelProcessor
 public typealias XlsxSharedStringsParser = ZhiYuDomain.XlsxSharedStringsParser
 public typealias SwiftMarkdownASTCleaner = ZhiYuDomain.SwiftMarkdownASTCleaner
+public typealias MarkdownProcessor = ZhiYuDomain.MarkdownProcessor

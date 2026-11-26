@@ -77,4 +77,21 @@ final class DomainProcessorsTests: XCTestCase {
         XCTAssertFalse(cleaned.contains("\n\n\n"))
         XCTAssertTrue(cleaned.hasSuffix("**"))
     }
+
+    func testMarkdownProcessorParsesBlocksAndInlineAppLinks() {
+        let md = """
+        # 标题一
+        - 列表项 A
+        - 列表项 B
+
+        正文包含 **加粗** 与 [[目标页面|显示名]]。
+        """
+        let processor = MarkdownProcessor()
+        let blocks = processor.parse(md)
+        XCTAssertEqual(blocks.count, 3)
+
+        let segments = processor.parseInlineSegments("前文 **重点** 与 [[知识图谱|图谱]] 后文")
+        XCTAssertTrue(segments.contains { $0.type == .bold && $0.content == "重点" })
+        XCTAssertTrue(segments.contains { $0.type == .applink && $0.content == "知识图谱|图谱" })
+    }
 }

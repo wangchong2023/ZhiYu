@@ -63,7 +63,7 @@ public struct PageDetailAIMenuButton: View {
         #endif
     }
 
-    // MARK: - watchOS: 简化按钮
+    // MARK: - watchOS 简化按钮 / iOS & macOS 完整菜单
 
     #if os(watchOS)
     private var simpleButton: some View {
@@ -73,11 +73,7 @@ public struct PageDetailAIMenuButton: View {
         }
         .disabled(isDisabled)
     }
-    #endif
-
-    // MARK: - iOS / macOS: 完整菜单
-
-    #if !os(watchOS)
+    #else
     private var fullMenu: some View {
         Menu {
             Group {

@@ -17,6 +17,7 @@ import UFPDesignSystem
 /// watchOS 端由于系统限制无法展示相册图片，降级为提示文本；
 /// iOS / macOS 端渲染带圆角、阴影、描边的等比例缩放图片。
 public struct OCRImageContentView: View {
+    @Environment(\.interfaceIdiom) private var interfaceIdiom
     let image: AppImage?
 
     public init(image: AppImage?) {
@@ -24,34 +25,12 @@ public struct OCRImageContentView: View {
     }
 
     public var body: some View {
-        #if os(watchOS)
-        Text(L10n.Common.Status.simulatorNotSupported)
-        #elseif canImport(UIKit)
-        imageContent(uiImage: image)
-        #else
-        imageContent(nsImage: image)
-        #endif
-    }
-
-    #if canImport(UIKit) && !os(watchOS)
-    private func imageContent(uiImage: AppImage?) -> some View {
-        Group {
-            if let img = uiImage {
-                styledImage(Image(uiImage: img))
-            }
+        if interfaceIdiom == .watch {
+            Text(L10n.Common.Status.simulatorNotSupported)
+        } else if let img = image {
+            styledImage(Image(appImage: img))
         }
     }
-    #endif
-
-    #if os(macOS)
-    private func imageContent(nsImage: AppImage?) -> some View {
-        Group {
-            if let img = nsImage {
-                styledImage(Image(nsImage: img))
-            }
-        }
-    }
-    #endif
 
     /// 统一图片样式（消除 UIKit/macOS 平台条件下的重复修饰符链）
     @ViewBuilder

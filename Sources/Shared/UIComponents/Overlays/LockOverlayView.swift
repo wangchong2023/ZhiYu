@@ -15,24 +15,28 @@ import UFPDesignSystem
 /// 负责在应用进入后台或由于空闲触发锁定时，提供全屏的生物识别解锁界面，确保知识库内容的安全性
 struct LockOverlayView: View {
     @Environment(AppStore.self) var store
+    @Environment(\.interfaceIdiom) private var interfaceIdiom
     @State private var isAnimating = false
-    
-    private var unlockIcon: String {
-        #if os(macOS)
-        return "touchid"
-        #else
-        return "faceid"
-        #endif
+
+    private enum LockTypography {
+        static let desktopTitleSize: CGFloat = 36
+        static let phoneTitleSize: CGFloat = 28
+        static let watchTitleSize: CGFloat = 24
     }
-    
+
+    private var unlockIcon: String {
+        interfaceIdiom == .mac ? "touchid" : "faceid"
+    }
+
     private var titleSize: CGFloat {
-        #if os(macOS)
-        return 36
-        #elseif os(iOS)
-        return UIDevice.current.userInterfaceIdiom == .pad ? 36 : 28
-        #else
-        return 24
-        #endif
+        switch interfaceIdiom {
+        case .mac, .macCatalyst, .iPad:
+            return LockTypography.desktopTitleSize
+        case .iPhone:
+            return LockTypography.phoneTitleSize
+        case .watch:
+            return LockTypography.watchTitleSize
+        }
     }
 
     var body: some View {
@@ -115,9 +119,7 @@ struct LockOverlayView: View {
                 
                 // 4. Elegant Unlock Button
                 Button(action: { 
-                    #if os(iOS)
                     HapticFeedback.shared.trigger(.selection)
-                    #endif
                     Task { await store.securityService.unlock() }
                 }) {
                     HStack(spacing: DesignTokens.Spacing.standardPadding) {

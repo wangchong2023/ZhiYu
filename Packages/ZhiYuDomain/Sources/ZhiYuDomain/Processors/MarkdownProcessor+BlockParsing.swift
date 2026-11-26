@@ -11,7 +11,7 @@
 //
 import Foundation
 
-extension MarkdownProcessor {
+public extension MarkdownProcessor {
 
     // MARK: - 私有解析辅助方法
 

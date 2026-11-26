@@ -33,7 +33,7 @@ public struct PageDetailMetaSectionView: View {
         #endif
     }
 
-    // MARK: - watchOS: 平铺展开
+    // MARK: - watchOS 平铺展开 / iOS & macOS 可折叠
 
     #if os(watchOS)
     private var watchOSLayout: some View {
@@ -44,11 +44,7 @@ public struct PageDetailMetaSectionView: View {
         }
         .metaSectionContainerStyle()
     }
-    #endif
-
-    // MARK: - iOS / macOS: 可折叠
-
-    #if !os(watchOS)
+    #else
     private var standardLayout: some View {
         DisclosureGroup(
             isExpanded: $isExpanded,
