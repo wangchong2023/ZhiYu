@@ -12,10 +12,13 @@
 //
 
 import Foundation
-import UFPCore
 
-/// 自签名证书信任代理
-public final class SelfSignedSessionDelegate: NSObject, URLSessionDelegate, @unchecked Sendable {
+/// 自签名证书信任代理（无可变存储状态，遵循严格 Sendable）
+public final class SelfSignedSessionDelegate: NSObject, URLSessionDelegate, Sendable {
+    public override init() {
+        super.init()
+    }
+
     public func urlSession(
         _ session: URLSession,
         didReceive challenge: URLAuthenticationChallenge,

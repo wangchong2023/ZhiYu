@@ -84,4 +84,11 @@ final class BaseProtocolsAndStubsTests: XCTestCase {
         XCTAssertEqual(Notification.Name.toggleSidebar.rawValue, "toggleSidebar")
         XCTAssertEqual(Notification.Name.vaultWillSwitch.rawValue, "vaultWillSwitch")
     }
+
+    func testSelfSignedSessionDelegateProviderCreatesDelegate() {
+        let provider = SelfSignedSessionDelegateProvider()
+        let delegate = provider.makeSessionDelegate()
+        XCTAssertNotNil(delegate)
+        XCTAssertTrue(delegate is SelfSignedSessionDelegate)
+    }
 }

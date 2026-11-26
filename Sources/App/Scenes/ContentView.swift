@@ -222,26 +222,21 @@ extension View {
     /// 在 iPad/Mac 大屏使用 `.form` 级别尺寸（约 540×680pt）
     @ViewBuilder
     func applyPresentationSizing() -> some View {
-        #if os(iOS)
-        if #available(iOS 18.0, *) {
+        if #available(iOS 18.0, macOS 15.0, macCatalyst 18.0, *) {
             self.presentationSizing(.form)
         } else {
             self
                 .frame(minWidth: 540, minHeight: 680)
                 .presentationDetents([.large])
         }
-        #else
-        self.frame(minWidth: 540, minHeight: 680)
-        #endif
     }
 
     /// 大页面弹窗尺寸适配修饰符（内容丰富页面，如插件中心、开发者设置）
     /// 在 iPad/Mac 大屏使用 `.page` 级别尺寸，充分利用可用空间
     @ViewBuilder
     func applyPagePresentationSizing() -> some View {
-        #if os(iOS)
-        if #available(iOS 18.0, *) {
-            // iOS 18+ 使用 .page 撑满更大区域，比 .form 更宽更高
+        if #available(iOS 18.0, macOS 15.0, macCatalyst 18.0, *) {
+            // iOS 18+ / macOS 15+ 使用 .page 撑满更大区域，比 .form 更宽更高
             applyPageSizing()
         } else {
             // iOS 17 及以下：设定足够大的最小尺寸以近似 .page 效果
@@ -249,10 +244,6 @@ extension View {
                 .frame(minWidth: 680, minHeight: 780)
                 .presentationDetents([.large])
         }
-        #else
-        // macOS Catalyst：固定宽高以适配桌面窗口比例
-        self.frame(minWidth: 720, minHeight: 820)
-        #endif
     }
     
     /// 设置页面专用的自适应宽屏弹窗尺寸修饰符

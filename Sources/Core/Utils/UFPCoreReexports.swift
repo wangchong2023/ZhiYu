@@ -45,3 +45,5 @@ public typealias PanguFormatter = UFPCore.CJKSpacingFormatter
 public typealias KeychainQueryHelper = UFPCore.KeychainQueryHelper
 public typealias LogMasker = UFPCore.LogMasker
 public typealias AudioSplitter = UFPCore.AudioSplitter
+public typealias SelfSignedSessionDelegate = UFPCore.SelfSignedSessionDelegate
+public typealias SelfSignedSessionDelegateProvider = UFPCore.SelfSignedSessionDelegateProvider

@@ -71,16 +71,13 @@ struct OCRPickerModifier: ViewModifier {
     let ingestStore: IngestStore?
     @Binding var isPresented: Bool
     let onResult: (String) -> Void
-    #if !os(watchOS)
     @State private var selectedItem: PhotosPickerItem?
-    #endif
 
     /// 视图主体
     /// - Parameter content: content
     /// - Returns: 返回值
     func body(content: Content) -> some View {
         content
-            #if !os(watchOS)
             .photosPicker(isPresented: $isPresented, selection: $selectedItem, matching: .images)
             .onChange(of: selectedItem) { _, newValue in
                 guard let newItem = newValue else { return }
@@ -103,6 +100,5 @@ struct OCRPickerModifier: ViewModifier {
                     selectedItem = nil
                 }
             }
-            #endif
     }
 }

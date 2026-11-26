@@ -94,4 +94,21 @@ final class DomainProcessorsTests: XCTestCase {
         XCTAssertTrue(segments.contains { $0.type == .bold && $0.content == "重点" })
         XCTAssertTrue(segments.contains { $0.type == .applink && $0.content == "知识图谱|图谱" })
     }
+
+    func testVoiceRecordingAndPDFModelsCodableRoundTrip() throws {
+        let rec = VoiceRecording(title: "会议录音", text: "纪要内容", language: "zh-CN", duration: 42.5)
+        let recData = try JSONEncoder().encode(rec)
+        let decodedRec = try JSONDecoder().decode(VoiceRecording.self, from: recData)
+        XCTAssertEqual(decodedRec.title, "会议录音")
+        XCTAssertEqual(decodedRec.duration, 42.5)
+
+        let highlight = PDFHighlight(pageIndex: 2, text: "核心定理", color: PDFHighlightColor.green.rawValue, note: "重点")
+        let pdfInfo = PDFDocumentInfo(title: "论文", fileName: "paper.pdf", pageCount: 12, highlights: [highlight])
+        let pdfData = try JSONEncoder().encode(pdfInfo)
+        let decodedPDF = try JSONDecoder().decode(PDFDocumentInfo.self, from: pdfData)
+        XCTAssertEqual(decodedPDF.pageCount, 12)
+        XCTAssertEqual(decodedPDF.highlights.first?.text, "核心定理")
+        XCTAssertEqual(PDFHighlightColor.allRawValues.count, 5)
+        XCTAssertEqual(PDFIngestMode.allCases.count, 3)
+    }
 }

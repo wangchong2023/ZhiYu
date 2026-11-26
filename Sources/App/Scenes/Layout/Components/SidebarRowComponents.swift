@@ -57,9 +57,6 @@ struct SidebarRowWrapper<Content: View>: View {
     @Dependency(\.appEnvironment) private var appEnv: any AppEnvironmentProtocol
     
     var body: some View {
-        #if os(watchOS)
-        content()
-        #else
         // 注意：iPadOS 的 SwiftUI 会将 NavigationSplitView 侧边栏内部子视图的 horizontalSizeClass
         // 强行覆写为 .compact，这导致大屏设备会被误判为 compact 并展示错误的 NavigationLink。
         // 我们通过 appEnv.screenClass 来精确判定是否应以手机紧凑模式进行导航渲染。
@@ -78,7 +75,6 @@ struct SidebarRowWrapper<Content: View>: View {
                     router.sidebarSelection = value
                 }
         }
-        #endif
     }
 }
 
@@ -416,17 +412,11 @@ struct SidebarListStyleModifier: ViewModifier {
     /// - Parameter content: content
     /// - Returns: 返回值
     func body(content: Content) -> some View {
-        #if os(iOS)
         if horizontalSizeClass == .compact {
-            content.listStyle(.insetGrouped)
+            content.insetGroupedListStyleIfIOS()
         } else {
-            content.listStyle(.sidebar)
+            content.adaptiveSidebarListStyle()
         }
-        #elseif os(macOS)
-        content.listStyle(.sidebar)
-        #else
-        content.listStyle(.plain)
-        #endif
     }
 }
 

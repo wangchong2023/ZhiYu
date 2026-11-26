@@ -35,7 +35,7 @@ CHECK_DIRS = [
 ]
 
 # 宏总数棘轮上限（只减不增；收敛清理后请同步调低此阈值）
-MAX_TOTAL_MACROS = 148
+MAX_TOTAL_MACROS = 139
 
 # 统一平台宏正则（去注释后匹配，拦截正向/反向/括号/复合条件中的 os() 与 macCatalyst）
 OS_MACRO_PATTERN = re.compile(
@@ -83,10 +83,6 @@ PLATFORM_CAPABILITY_FILES = {
 LEGACY_VIEW_FILES = {
     "Sources/App/Scenes/ContentView.swift",
     "Sources/App/Scenes/Layout/Components/AppLayoutComponents.swift",
-    "Sources/App/Scenes/Layout/Components/SidebarRowComponents.swift",
-    "Sources/Shared/UIComponents/Backgrounds/PageBackground.swift",
-    "Sources/Shared/UIComponents/Editors/MarkdownEditorView.swift",
-    "Sources/Shared/UIComponents/Editors/MarkdownRendererView.swift",
     "Sources/Shared/UIComponents/Editors/MermaidWebView.swift",
     "Sources/Shared/UIComponents/Editors/PlatformTextEditor.swift",
     "Sources/Shared/UIComponents/Menus/UserProfileMenu.swift",

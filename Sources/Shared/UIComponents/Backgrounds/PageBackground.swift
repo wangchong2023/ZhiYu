@@ -16,6 +16,8 @@ import UFPDesignSystem
 
 /// 动态网格背景渲染器
 public struct MeshGradientView: View {
+    @Environment(\.interfaceIdiom) private var interfaceIdiom
+
     public init() {}
     
     public var body: some View {
@@ -25,10 +27,7 @@ public struct MeshGradientView: View {
                 Color.appBackground
                 
                 if size.width > 1 && size.height > 1 {
-                    if #available(iOS 18.0, macOS 15.0, *) {
-                        #if os(watchOS)
-                        legacyCanvasBackground(size: size)
-                        #else
+                    if #available(iOS 18.0, macOS 15.0, *), interfaceIdiom != .watch {
                         MeshGradient(
                             width: 3,
                             height: 3,
@@ -45,7 +44,6 @@ public struct MeshGradientView: View {
                             ],
                             smoothsColors: true
                         )
-                        #endif
                     } else {
                         legacyCanvasBackground(size: size)
                     }
