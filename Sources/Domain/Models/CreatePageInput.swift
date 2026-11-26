@@ -8,6 +8,7 @@
 //  核心职责：封装 createPage / anyCreatePage 的参数列表，消除跨层参数转发重复。
 //
 import Foundation
+import ZhiYuDomain
 
 /// 创建知识页面的输入参数封装。
 ///

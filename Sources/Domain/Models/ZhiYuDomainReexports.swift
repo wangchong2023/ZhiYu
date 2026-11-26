@@ -65,3 +65,7 @@ public typealias DemoMediaConstants = ZhiYuDomain.DemoMediaConstants
 #if canImport(AVFoundation)
 public typealias DemoAudioBuilder = ZhiYuDomain.DemoAudioBuilder
 #endif
+public typealias PageType = ZhiYuDomain.PageType
+public typealias PageStatus = ZhiYuDomain.PageStatus
+public typealias Confidence = ZhiYuDomain.Confidence
+public typealias PageSchema = ZhiYuDomain.PageSchema

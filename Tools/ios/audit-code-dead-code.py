@@ -150,6 +150,12 @@ def main():
     else:
         print("✅ 无物理迁移残留文件。")
 
+    # 在 Xcode 构建环境（即作为 Run Script Phase 运行时），跳过 Periphery 重新编译以避免递归 xcodebuild 锁冲突
+    import os
+    if os.environ.get("XCODE_VERSION_ACTUAL") or os.environ.get("BUILT_PRODUCTS_DIR"):
+        print("ℹ️  检测到处于 Xcode 构建流程中，跳过 Periphery 二次编译以避免构建死锁，仅执行物理迁移残留校验。")
+        return 0
+
     # ── 第二步：Periphery 死代码全量扫描 ──
     print("\n🔍 [第二步] 运行 Periphery 死代码扫描（首次需编译约 2-5 分钟）...")
     raw = _run_periphery()

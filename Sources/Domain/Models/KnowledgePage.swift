@@ -10,6 +10,7 @@
 //
 import Foundation
 import UFPCore
+import ZhiYuDomain
 
 // MARK: - Knowledge Page
 /// 知识管理系统核心数据模型
