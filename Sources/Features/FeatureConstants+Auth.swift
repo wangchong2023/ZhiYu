@@ -30,6 +30,14 @@ extension FeatureConstants {
         static let github: String = "auth.thirdparty.github"
     }
 
+    // MARK: - OAuth 提供商显示标签 (OAuth Provider Display Label)
+    /// 第三方登录展示标签
+    enum OAuthProviderName {
+        static let apple: String = "Apple"
+        static let google: String = "Google"
+        static let github: String = "GitHub"
+    }
+
     // MARK: - OAuth 授权类型 (OAuth Grant Type)
     /// OAuth 登录授权类型字面量
     enum GrantType {

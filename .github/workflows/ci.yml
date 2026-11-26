@@ -28,6 +28,34 @@ on:
     branches: [ main, develop ]
 
 jobs:
+  # ── Stage 0: 本地 6 大 SPM 模块极速单测守门（15秒极速熔断） ─────────
+  fast-spm-test:
+    name: Fast SPM Unit Tests (Pre-gate)
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Select Xcode Version
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: 'latest-stable'
+
+      - name: Cache SwiftPM & Local Modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.swiftpm/cache
+            .build
+          key: spm-packages-${{ runner.os }}-${{ hashFiles('Packages/**/Package.swift') }}
+          restore-keys: |
+            spm-packages-${{ runner.os }}-
+
+      - name: Run All SPM Unit Tests (UFPCore / Storage / DesignSystem / Domain / AICore / Features)
+        run: |
+          make test-spm-all
+
   # ── Stage 1: 代码质量快速检查 ───────────────────────────────────────
   lint-and-audit:
     name: Audit Code Quality
@@ -49,58 +77,10 @@ jobs:
       - name: Generate Xcode Project
         run: xcodegen generate
 
-      - name: Audit SPM Dependencies
-        run: python3 Tools/CI/Analyze/audit_spm_dependencies.py
-
-      - name: Lint Swift Sources
-        run: swiftlint lint --strict --reporter github-actions-logging
-
-      - name: Scan Hardcoded Secrets
-        run: python3 Tools/Gatekeeper/Release/check_hardcoded_secrets.py
-
-      - name: Validate Localization
-        run: python3 Tools/Gatekeeper/Compliance/check_localization.py
-
-      - name: Validate Layer Dependencies
-        run: python3 Tools/Gatekeeper/Architecture/check_architecture_dependency.py
-
-      - name: Validate Domain Purity
-        run: python3 Tools/Gatekeeper/Architecture/check_domain_purity.py
-
-      - name: Scan Magic Numbers
-        run: python3 Tools/Gatekeeper/Compliance/check_magic_numbers.py
-
-      - name: Scan Root Hygiene
-        run: python3 Tools/Gatekeeper/Sanity/check_root_hygiene.py
-
-      - name: Validate Test DI Setup
-        run: python3 Tools/Gatekeeper/Architecture/check_test_di_setup.py
-
-
-      - name: Verify Commit Signature
+      - name: Run Full Static Analysis & Quality Gatekeepers (42 Concurrent Audits)
         run: |
-          if git log --show-signature -1 | grep -q "Good signature"; then
-            echo "✅ Commit signed"
-          else
-            echo "⚠️  Commit NOT signed — 请配置 GPG"
-          fi
-        continue-on-error: true
-
-      - name: Verify SPM Integrity
-        run: bash Tools/CI/Analyze/verify_spm_integrity.sh
-
-      - name: Generate SBOM
-        run: |
-          python3 Tools/CI/Analyze/generate_sbom.py
-          brew install syft 2>/dev/null || true
-          syft . -o cyclonedx-json=build/syft.cdx.json 2>/dev/null || echo "Syft unavailable"
-          python3 Tools/CI/Analyze/merge_sbom.py
-
-      - name: SonarQube 全语言 Quality Gate 质量门禁校验 (Swift, Python, Shell, YAML)
-        run: |
-          sonar-scanner \
-            -Dsonar.qualitygate.wait=true
-
+          bash Tools/scripts/python-venv-bootstrap.sh >/dev/null
+          bash Tools/CI/run-code-static-analysis.sh
 
       - name: Upload SBOM Artifact
         uses: actions/upload-artifact@v4
@@ -119,7 +99,7 @@ jobs:
   # ── Stage 2: 构建 + 单元测试 + 覆盖率 ────────────────────────────────
   test:
     name: Test & Verify Coverage
-    needs: lint-and-audit
+    needs: [lint-and-audit, fast-spm-test]
     runs-on: macos-15
 
     steps:
@@ -136,6 +116,13 @@ jobs:
         with:
           name: xcode-project
           path: ZhiYu.xcodeproj/
+
+      - name: Restore SPM Cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData/*/SourcePackages
+          key: spm-${{ runner.os }}-${{ hashFiles('ZhiYu.xcodeproj/project.pbxproj') }}
+          restore-keys: spm-${{ runner.os }}-
 
       - name: Inject Version
         run: bash Tools/CI/Build/inject_version.sh Sources/Info.plist
@@ -157,6 +144,11 @@ jobs:
       - name: Enforce Coverage Threshold
         run: python3 Tools/CI/Test/check_coverage.py
 
+      - name: SonarQube 全语言 Quality Gate 质量门禁校验 (Swift, Python, Shell, YAML)
+        run: |
+          sonar-scanner \
+            -Dsonar.qualitygate.wait=true
+
       - name: Upload Test Artifacts
         if: failure()
         uses: actions/upload-artifact@v4
@@ -177,7 +169,7 @@ jobs:
   # ── Stage 3: UI 测试（独立阶段）──────────────────────────────────────
   ui-test:
     name: Validate UI (iPhone)
-    needs: lint-and-audit
+    needs: [lint-and-audit, fast-spm-test]
     runs-on: macos-15
 
     steps:
@@ -194,6 +186,13 @@ jobs:
         with:
           name: xcode-project
           path: ZhiYu.xcodeproj/
+
+      - name: Restore SPM Cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData/*/SourcePackages
+          key: spm-${{ runner.os }}-${{ hashFiles('ZhiYu.xcodeproj/project.pbxproj') }}
+          restore-keys: spm-${{ runner.os }}-
 
       - name: Inject Version
         run: bash Tools/CI/Build/inject_version.sh Sources/Info.plist
@@ -215,7 +214,7 @@ jobs:
   # ── Stage 3b: iPad UI 验证 ──────────────────────────────────
   ipad-ui-test:
     name: Validate UI (iPad)
-    needs: lint-and-audit
+    needs: [lint-and-audit, fast-spm-test]
     runs-on: macos-15
     continue-on-error: true
 
@@ -260,7 +259,7 @@ jobs:
   # ── Stage 3c: Mac Catalyst UI 验证 ──────────────────────────
   mac-catalyst-ui-test:
     name: Validate UI (Mac)
-    needs: lint-and-audit
+    needs: [lint-and-audit, fast-spm-test]
     runs-on: macos-15
     continue-on-error: true
 
@@ -305,7 +304,7 @@ jobs:
   # ── Stage 4: 多平台编译验证 ──────────────────────────────────
   multi-platform:
     name: Compile ${{ matrix.platform.name }}
-    needs: lint-and-audit
+    needs: [lint-and-audit, fast-spm-test]
     runs-on: macos-15
     strategy:
       matrix:
@@ -335,6 +334,13 @@ jobs:
         with:
           name: xcode-project
           path: ZhiYu.xcodeproj/
+
+      - name: Restore SPM Cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData/*/SourcePackages
+          key: spm-${{ runner.os }}-${{ hashFiles('ZhiYu.xcodeproj/project.pbxproj') }}
+          restore-keys: spm-${{ runner.os }}-
 
       - name: Inject Version
         run: bash Tools/CI/Build/inject_version.sh Sources/Info.plist

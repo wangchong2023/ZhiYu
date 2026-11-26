@@ -42,7 +42,7 @@ struct AuthOAuthPanel: View {
             HStack(spacing: isDesktop ? DesignTokens.Spacing.medium : DesignTokens.Spacing.large) {
                 ThirdPartyIconButton(
                     id: FeatureConstants.OAuthProviderId.apple,
-                    label: "Apple",
+                    label: FeatureConstants.OAuthProviderName.apple,
                     icon: DesignTokens.Icons.appleLogo,
                     isSystem: true,
                     color: .primary,
@@ -52,7 +52,7 @@ struct AuthOAuthPanel: View {
                 }
                 ThirdPartyIconButton(
                     id: FeatureConstants.OAuthProviderId.google,
-                    label: "Google",
+                    label: FeatureConstants.OAuthProviderName.google,
                     icon: DesignTokens.Icons.googleLogo,
                     isSystem: false,
                     color: Color.theme.blue,
@@ -62,7 +62,7 @@ struct AuthOAuthPanel: View {
                 }
                 ThirdPartyIconButton(
                     id: FeatureConstants.OAuthProviderId.github,
-                    label: "GitHub",
+                    label: FeatureConstants.OAuthProviderName.github,
                     icon: DesignTokens.Icons.githubLogo,
                     isSystem: false,
                     color: .primary,

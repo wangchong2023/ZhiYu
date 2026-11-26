@@ -21,6 +21,7 @@
 
 stages:
   - prepare
+  - fast-gate
   - analyze
   - build
   - test
@@ -54,6 +55,21 @@ build-prepare:
       - ZhiYu.xcodeproj/
       - Config/.env.local
     expire_in: 1 hour
+
+# ════════════════════════════════════════════════════════════
+# fast-gate — 本地 6 大 SPM 模块极速单测套件 (15s 熔断守门)
+# ════════════════════════════════════════════════════════════
+
+fast-spm-test:
+  stage: fast-gate
+  needs: [build-prepare]
+  dependencies: [build-prepare]
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH =~ /^(main|develop|release\/.*)$/'
+  script:
+    - echo "===> 运行全量 6 大 SPM 本地包极速单测套件 (15s 熔断守门)"
+    - make test-spm-all
 
 # ════════════════════════════════════════════════════════════
 # analyze — 静态代码分析 + Swift 编译告警门禁（39 项并行检查）
@@ -94,7 +110,7 @@ plugin-validation:
 
 build-ios:
   stage: build
-  needs: [build-prepare, static-analysis]
+  needs: [build-prepare, static-analysis, fast-spm-test]
   dependencies: [build-prepare]
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'

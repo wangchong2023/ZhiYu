@@ -2216,5 +2216,9 @@ business_magic_exempt:
   line: 43
   reason: OCR 表格列宽常量定义行，整体已命名 ocrCoffeeTableColumnWidths
   expiry_check: false
+- file: Sources/Domain/Contracts/Generated/zhiyu/domain/common.pb.swift
+  line: 93
+  reason: SwiftProtobuf 自动生成的内部 _NameMap 字节码字面量，非业务代码
+  expiry_check: false
 magic_string_exempt: []
 ufpcore_pure_exempt: []

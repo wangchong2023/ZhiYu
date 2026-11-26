@@ -92,6 +92,16 @@ run_check "重复代码静态检测" \
     "python3 Tools/ios/assert-code-duplication.py" \
     || exit 1
 
+# 1.2b 魔鬼字符串审计
+run_check "魔鬼字符串静态检测" \
+    "python3 Tools/ios/audit-code-magic-strings.py" \
+    || exit 1
+
+# 1.2c 业务魔鬼数字审计
+run_check "业务魔鬼数字静态审计" \
+    "python3 Tools/ios/audit-code-business-magic-numbers.py" \
+    || exit 1
+
 # 1.3 架构分层依赖
 run_check "架构分层依赖检查（L0-L3）" \
     "python3 Tools/ios/audit-arch-dependency.py" \
