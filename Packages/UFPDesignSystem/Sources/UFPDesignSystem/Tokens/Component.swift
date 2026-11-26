@@ -12,6 +12,9 @@ import SwiftUI
 extension DesignTokens {
     // MARK: - ComponentSpacing（组件特定尺寸）
     public enum ComponentSpacing {
+        // MARK: 组件语义间距（对齐 System 语义层）
+        public static let defaultSpacing: CGFloat = SystemSpacing.element
+
         // MARK: 大值（超出 Layer 1 10档范围）
         public static let section: CGFloat = 20
         public static let sectionLarge: CGFloat = 24

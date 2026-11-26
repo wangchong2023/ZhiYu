@@ -208,7 +208,7 @@ struct SearchView: View {
                         Spacer()
                         Image(systemName: searchText.isEmpty ? DesignTokens.Icons.search : DesignTokens.Icons.weeklyInsight)
                             .font(.system(size: DesignTokens.Metrics.heroValueSize * FeatureConstants.SearchView.emptyIconSizeMultiplier)) // 48
-                            .foregroundStyle(.appSecondary.opacity(DesignTokens.Reference.Opacity.fifty)) // 0.5
+                            .foregroundStyle(.appSecondary.opacity(DesignTokens.SystemOpacity.soft)) // 0.5
                         
                         Text(searchText.isEmpty ? L10n.SearchPlaceholder : L10n.Search.noResults)
                             .font(.headline)
@@ -260,7 +260,7 @@ struct SearchView: View {
             
             // Footer
             if !filteredPages.isEmpty {
-                Divider().background(Color.appBorder.opacity(DesignTokens.Reference.Opacity.fifty)) // 0.5
+                Divider().background(Color.appBorder.opacity(DesignTokens.SystemOpacity.soft)) // 0.5
                 HStack {
                     Text(L10n.Search.pagesCount(filteredPages.count))
                         .font(.caption)

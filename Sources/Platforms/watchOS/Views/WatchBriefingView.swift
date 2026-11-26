@@ -51,7 +51,7 @@ struct WatchBriefingView: View {
                         }
                     }) {
                         Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
-                            .font(.system(size: DesignTokens.Reference.FontSize.hero)) // Dynamic Type
+                            .font(.system(size: DesignTokens.SystemFontSize.hero)) // Dynamic Type
                             .foregroundStyle(Color.theme.purple)
                     }
                     .buttonStyle(.plain)
@@ -61,7 +61,7 @@ struct WatchBriefingView: View {
                         isPlaying = false
                     }) {
                         Image(systemName: "stop.circle.fill")
-                            .font(.system(size: DesignTokens.Reference.FontSize.largeTitle)) // Dynamic Type
+                            .font(.system(size: DesignTokens.SystemFontSize.largeTitle)) // Dynamic Type
                             .foregroundStyle(Color.theme.red)
                     }
                     .buttonStyle(.plain)

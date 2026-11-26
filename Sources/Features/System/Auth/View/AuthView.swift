@@ -187,7 +187,7 @@ struct AuthView: View {
                 Text(L10n.Common.appName)
                     .font(.system(size: DesignTokens.Typography.titleFontSize, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
-                    .tracking(DesignTokens.Reference.Spacing.one)
+                    .tracking(DesignTokens.SystemSpacing.divider)
             }
 
             // 品牌主标语

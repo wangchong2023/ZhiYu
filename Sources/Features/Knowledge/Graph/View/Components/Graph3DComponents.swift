@@ -25,7 +25,7 @@ enum Graph3DUIConstants {
     static let filterShadowRadius: CGFloat = DesignTokens.SystemSpacing.element
     static let filterShadowX: CGFloat = -4
     static let filterShadowY: CGFloat = DesignTokens.SystemSpacing.tiny
-    static let filterPopupScale: CGFloat = CGFloat(DesignTokens.Reference.Opacity.eighty)
+    static let filterPopupScale: CGFloat = CGFloat(DesignTokens.SystemOpacity.textSecondary)
     static let cameraZMin: Float = Float(DesignTokens.SystemSpacing.extraSmall)
 }
 

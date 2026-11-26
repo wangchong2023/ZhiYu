@@ -201,7 +201,7 @@ extension SettingsView {
     func emptyDetailPlaceholder(router: Router) -> some View {
         VStack(spacing: DesignTokens.Spacing.medium) {
             Image(systemName: DesignTokens.Icons.gearshape2)
-                .font(.system(size: DesignTokens.Reference.FontSize.mega)) // Dynamic Type
+                .font(.system(size: DesignTokens.SystemFontSize.mega)) // Dynamic Type
                 .foregroundStyle(.appAccent)
             Text(L10n.Settings.selectCategoryTip)
                 .font(.headline)

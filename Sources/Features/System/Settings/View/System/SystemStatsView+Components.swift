@@ -39,7 +39,7 @@ extension SystemStatsView {
                 Text(L10n.Dashboard.totalStorage)
                     .font(.system(size: DesignTokens.Typography.microFontSize, weight: .black))
                     .foregroundStyle(.appSecondary)
-                    .kerning(DesignTokens.Reference.Spacing.one)
+                    .kerning(DesignTokens.SystemSpacing.divider)
                     .textCase(.uppercase)
             }
         }

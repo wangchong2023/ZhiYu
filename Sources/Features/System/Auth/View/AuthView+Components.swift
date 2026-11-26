@@ -117,7 +117,7 @@ extension AuthView {
                     .blur(radius: DesignTokens.Spacing.shadowRadius)
 
                 Image(systemName: DesignTokens.Icons.knowledge)
-                    .font(.system(size: DesignTokens.Reference.FontSize.mega))
+                    .font(.system(size: DesignTokens.SystemFontSize.mega))
                     .foregroundStyle(LinearGradient(colors: [.appAccent, .appConcept], startPoint: .topLeading, endPoint: .bottomTrailing))
                     .shadow(color: .appAccent.opacity(DesignTokens.Opacity.disabled), radius: DesignTokens.Spacing.shadowRadius, y: DesignTokens.Spacing.shadowY)
             }
@@ -126,7 +126,7 @@ extension AuthView {
                 Text(L10n.Common.appName)
                     .font(.system(size: DesignTokens.Typography.titleFontSize, weight: .black, design: .rounded))
                     .foregroundStyle(.appText)
-                    .tracking(DesignTokens.Reference.Spacing.one)
+                    .tracking(DesignTokens.SystemSpacing.divider)
 
                 Text(L10n.Onboarding.subtitle)
                     .font(.system(size: DesignTokens.Typography.subheadlineFontSize, weight: .medium))

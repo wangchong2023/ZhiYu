@@ -114,7 +114,7 @@ def check_dependency_direction():
                 level="ERROR"
             )
         # System 必须引用 Reference
-        if 'DesignTokens.Reference.' not in content:
+        if not re.search(r'(?:DesignTokens\.)?Reference\.', content):
             reporter.add_issue(
                 filepath=os.path.relpath(SYSTEM_FILE, PROJECT_ROOT),
                 line_no=1,
@@ -126,7 +126,7 @@ def check_dependency_direction():
     if os.path.exists(COMPONENT_FILE):
         with open(COMPONENT_FILE, 'r', encoding='utf-8', errors='ignore') as f:
             content = f.read()
-        if 'DesignTokens.SystemSpacing.' not in content:
+        if not re.search(r'(?:DesignTokens\.)?SystemSpacing\.', content):
             reporter.add_issue(
                 filepath=os.path.relpath(COMPONENT_FILE, PROJECT_ROOT),
                 line_no=1,

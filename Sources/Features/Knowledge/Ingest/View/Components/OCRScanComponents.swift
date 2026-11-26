@@ -54,7 +54,7 @@ struct OCRImagePickerArea: View {
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius)
-                            .strokeBorder(style: StrokeStyle(lineWidth: DesignTokens.Reference.Stroke.two, dash: [CGFloat(DesignTokens.Spacing.small)])) // 2, 8
+                            .strokeBorder(style: StrokeStyle(lineWidth: DesignTokens.SystemStroke.selected, dash: [CGFloat(DesignTokens.Spacing.small)])) // 2, 8
                             .foregroundStyle(.appBorder)
                     )
             }

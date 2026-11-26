@@ -124,7 +124,7 @@ struct CollaborationViewContent: View {
                 .foregroundStyle(.appSecondary)
         }
         .padding()
-        .background(Color.theme.orange.opacity(DesignTokens.Reference.Opacity.five)) // 0.08
+        .background(Color.theme.orange.opacity(DesignTokens.SystemOpacity.ghost)) // 0.08
         .clipShape(RoundedRectangle(cornerRadius: DesignTokens.SystemRadius.card))
     }
     

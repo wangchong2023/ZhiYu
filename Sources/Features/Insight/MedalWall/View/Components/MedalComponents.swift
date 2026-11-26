@@ -28,7 +28,7 @@ struct MedalCard: View {
                 
                 Image(systemName: medal.icon)
                     .font(.system(size: DesignSystem.Gallery.iconSize, weight: .bold))
-                    .foregroundStyle(isEarned ? baseColor : .appSecondary.opacity(DesignTokens.Reference.Opacity.fifty)) // 0.5
+                    .foregroundStyle(isEarned ? baseColor : .appSecondary.opacity(DesignTokens.SystemOpacity.soft)) // 0.5
                 
                 if !isEarned {
                     Image(systemName: DesignTokens.Icons.lock)
@@ -74,7 +74,7 @@ struct MedalRewardPopup: View {
     
     var body: some View {
         ZStack {
-            Color.theme.black.opacity(DesignTokens.Reference.Opacity.forty) // 0.4
+            Color.theme.black.opacity(DesignTokens.SystemOpacity.disabled) // 0.4
                 .ignoresSafeArea()
                 .onTapGesture(perform: onDismiss)
             
@@ -97,7 +97,7 @@ struct MedalRewardPopup: View {
                                 endPoint: .bottomTrailing
                             )
                         )
-                        .shadow(color: baseColor.opacity(DesignTokens.Reference.Opacity.fifty), radius: DesignTokens.Spacing.loosePadding, y: DesignTokens.Spacing.standardPadding) // 0.5, 20, 10
+                        .shadow(color: baseColor.opacity(DesignTokens.SystemOpacity.soft), radius: DesignTokens.Spacing.loosePadding, y: DesignTokens.Spacing.standardPadding) // 0.5, 20, 10
                         .scaleEffect(isAnimating ? FeatureConstants.MedalAnimationScale.iconMax : FeatureConstants.MedalAnimationScale.iconMin)
                 }
                 .padding(.top, DesignSystem.Gallery.blurRadius)
@@ -106,7 +106,7 @@ struct MedalRewardPopup: View {
                     Text(L10n.Insight.Medal.congrats)
                         .font(.subheadline.bold())
                         .foregroundStyle(.appAccent)
-                        .kerning(DesignTokens.Reference.Spacing.two)
+                        .kerning(DesignTokens.SystemSpacing.atomic)
                     
                     Text(L10n.Insight.tr(medal.titleKey))
                         .font(.title.bold())

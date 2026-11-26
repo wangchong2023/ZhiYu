@@ -191,7 +191,7 @@ struct GraphNodeView: View {
                 Text(node.title)
                     .font(.caption.bold())
                 Text(node.pageType.displayName)
-                    .font(.system(size: DesignTokens.Reference.FontSize.micro))
+                    .font(.system(size: DesignTokens.SystemFontSize.micro))
                     .foregroundStyle(.secondary)
             }
             .padding(.horizontal, DesignTokens.Spacing.small)

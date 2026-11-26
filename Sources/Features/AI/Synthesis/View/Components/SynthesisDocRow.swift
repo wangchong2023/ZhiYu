@@ -19,7 +19,7 @@ struct SynthesisDocRow: View {
     private enum UIConstants {
         static let unselectedIconOpacity: Double = DesignTokens.SystemOpacity.disabled
         static let formatColorOpacity: Double = DesignTokens.SystemOpacity.faint
-        static let trailingIconOpacity: Double = DesignTokens.Reference.Opacity.fifty
+        static let trailingIconOpacity: Double = DesignTokens.SystemOpacity.soft
     }
     
     let doc: SynthesisStore.SynthesisDocument

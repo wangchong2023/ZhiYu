@@ -236,7 +236,7 @@ public struct SubscriptionPlanView: View {
         AppCard {
             VStack(spacing: DesignTokens.Spacing.medium) {
                 Image(systemName: DesignTokens.Icons.crown)
-                    .font(.system(size: DesignTokens.Reference.FontSize.mega)) // Dynamic Type
+                    .font(.system(size: DesignTokens.SystemFontSize.mega)) // Dynamic Type
                     .foregroundStyle(
                         LinearGradient(
                             colors: [Color.theme.yellow, Color.theme.orange],

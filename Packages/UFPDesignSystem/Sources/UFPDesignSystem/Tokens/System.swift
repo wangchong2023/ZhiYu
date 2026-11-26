@@ -45,6 +45,7 @@ extension DesignTokens {
         public static let textTertiary: Double = Reference.Opacity.seventy
 
         // 增强状态
+        public static let soft: Double = Reference.Opacity.fifty
         public static let strong: Double = Reference.Opacity.ninety
     }
 
@@ -87,6 +88,7 @@ extension DesignTokens {
         public static let largeTitle: CGFloat = Reference.FontSize.largeTitle
         public static let display: CGFloat = Reference.FontSize.display
         public static let hero: CGFloat = Reference.FontSize.hero
+        public static let mega: CGFloat = Reference.FontSize.mega
     }
 
     // MARK: - SystemShadow（语义阴影）

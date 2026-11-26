@@ -119,7 +119,7 @@ public struct OnDeviceLLMSettingsView: View {
         VStack(spacing: DesignTokens.Spacing.medium) {
             Spacer(minLength: DesignTokens.Spacing.tiny)
             Image(systemName: DesignTokens.Icons.cpuOutline)
-                .font(.system(size: DesignTokens.Reference.FontSize.mega))
+                .font(.system(size: DesignTokens.SystemFontSize.mega))
                 .foregroundStyle(
                     LinearGradient(
                         colors: [.appSource, .appAccent],

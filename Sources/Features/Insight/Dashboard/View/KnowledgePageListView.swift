@@ -328,7 +328,7 @@ struct KnowledgeStatItem: View {
             RoundedRectangle(cornerRadius: DesignTokens.Spacing.cardRadius)
                 .stroke(color.opacity(DesignTokens.Colors.Opacity.dimmedOpacity), lineWidth: DesignTokens.Spacing.borderWidth)
         )
-        .shadow(color: .primary.opacity(DesignTokens.Reference.Opacity.five), radius: DesignTokens.Spacing.medium, x: 0, y: DesignTokens.Spacing.tiny)
+        .shadow(color: .primary.opacity(DesignTokens.SystemOpacity.ghost), radius: DesignTokens.Spacing.medium, x: 0, y: DesignTokens.Spacing.tiny)
     }
 }
 

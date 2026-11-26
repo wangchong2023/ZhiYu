@@ -21,7 +21,7 @@ TOKENS_DIR = os.path.join(PROJECT_ROOT, 'Packages/UFPDesignSystem/Sources/UFPDes
 # token 数量上限（对齐 Tailwind CSS 严格有限原则）
 LIMITS = {
     'Reference.swift': 70,
-    'System.swift': 60,
+    'System.swift': 65,
     'Component.swift': 25,
 }
 TOTAL_LIMIT = 155
