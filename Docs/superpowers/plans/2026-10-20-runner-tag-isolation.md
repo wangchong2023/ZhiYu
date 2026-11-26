@@ -16,9 +16,9 @@
 - gitlab-runner 服务重启需要 sudo: `sudo gitlab-runner restart`
 - 执行顺序铁律：**先加新 tag → 改项目 CI → 再去旧 tag**，避免 job pending
 - 4 个项目仓库本地路径：
-  - ZhiYu: `~/Documents/work/code/projects/ZhiYu`
-  - ZhiYu-Backend: `~/Documents/work/code/projects/ZhiYu-Backend`
-  - UTP: `~/Documents/work/code/projects/Uniform-ThirdParty-Platform`
+  - ZhiYu: `/Users/constantine/Documents/work/code/projects/ZhiYu`
+  - ZhiYu-Backend: `/Users/constantine/Documents/work/code/projects/ZhiYu-Backend`
+  - UTP: `/Users/constantine/Documents/work/code/projects/Uniform-ThirdParty-Platform`
   - UCP: 仅通过 GitLab API 操作（本地无仓库）
 
 ---
@@ -56,8 +56,8 @@ id=5 name=zhiyu-docker-runner tags=['docker', 'zhiyu', 'ucp'] active=True
 - [ ] **Step 3: 确认 ZhiYu-Backend 和 UTP 仓库可访问**
 
 ```bash
-git -C ~/Documents/work/code/projects/ZhiYu-Backend remote -v
-git -C ~/Documents/work/code/projects/Uniform-ThirdParty-Platform remote -v
+git -C /Users/constantine/Documents/work/code/projects/ZhiYu-Backend remote -v
+git -C /Users/constantine/Documents/work/code/projects/Uniform-ThirdParty-Platform remote -v
 ```
 
 Expected: 两个仓库都显示 origin remote 指向 GitLab。
@@ -99,7 +99,7 @@ Expected: `tags=['docker', 'zhiyu', 'ucp', 'zhiyu-backend', 'utp']`
 ### Task 3: UTP 项目 CI tag 改为 [utp]
 
 **Files:**
-- Modify: `~/Documents/work/code/projects/Uniform-ThirdParty-Platform/.gitlab-ci.yml`
+- Modify: `/Users/constantine/Documents/work/code/projects/Uniform-ThirdParty-Platform/.gitlab-ci.yml`
 
 **Interfaces:**
 - Consumes: Task 2 已让 zhiyu-docker-runner 含 `utp` tag
@@ -108,8 +108,8 @@ Expected: `tags=['docker', 'zhiyu', 'ucp', 'zhiyu-backend', 'utp']`
 - [ ] **Step 1: 确认 UTP 当前分支和 .gitlab-ci.yml 的 tag 声明**
 
 ```bash
-git -C ~/Documents/work/code/projects/Uniform-ThirdParty-Platform branch --show-current
-grep -n "tags:" ~/Documents/work/code/projects/Uniform-ThirdParty-Platform/.gitlab-ci.yml
+git -C /Users/constantine/Documents/work/code/projects/Uniform-ThirdParty-Platform branch --show-current
+grep -n "tags:" /Users/constantine/Documents/work/code/projects/Uniform-ThirdParty-Platform/.gitlab-ci.yml
 ```
 
 Expected: 显示当前分支（应为 dev 或 main）和 `tags: - ucp` 声明位置。
@@ -117,7 +117,7 @@ Expected: 显示当前分支（应为 dev 或 main）和 `tags: - ucp` 声明位
 - [ ] **Step 2: 创建功能分支**
 
 ```bash
-git -C ~/Documents/work/code/projects/Uniform-ThirdParty-Platform checkout -b feat/runner-tag-isolation
+git -C /Users/constantine/Documents/work/code/projects/Uniform-ThirdParty-Platform checkout -b feat/runner-tag-isolation
 ```
 
 - [ ] **Step 3: 修改 .gitlab-ci.yml 的 tag 从 ucp 改为 utp**
@@ -126,7 +126,7 @@ git -C ~/Documents/work/code/projects/Uniform-ThirdParty-Platform checkout -b fe
 
 ```bash
 # 先查看 default 块的精确内容
-grep -A3 "default:" ~/Documents/work/code/projects/Uniform-ThirdParty-Platform/.gitlab-ci.yml
+grep -A3 "default:" /Users/constantine/Documents/work/code/projects/Uniform-ThirdParty-Platform/.gitlab-ci.yml
 ```
 
 然后用 edit 工具替换 `- ucp` 为 `- utp`（在 default.tags 上下文中）。
@@ -134,7 +134,7 @@ grep -A3 "default:" ~/Documents/work/code/projects/Uniform-ThirdParty-Platform/.
 - [ ] **Step 4: 验证改动**
 
 ```bash
-grep -A3 "default:" ~/Documents/work/code/projects/Uniform-ThirdParty-Platform/.gitlab-ci.yml
+grep -A3 "default:" /Users/constantine/Documents/work/code/projects/Uniform-ThirdParty-Platform/.gitlab-ci.yml
 ```
 
 Expected: `tags:` 下显示 `- utp`。
@@ -142,9 +142,9 @@ Expected: `tags:` 下显示 `- utp`。
 - [ ] **Step 5: Commit 并推送**
 
 ```bash
-git -C ~/Documents/work/code/projects/Uniform-ThirdParty-Platform add .gitlab-ci.yml
-git -C ~/Documents/work/code/projects/Uniform-ThirdParty-Platform commit -m "ci: UTP runner tag 从 ucp 改为 utp 实现项目隔离"
-git -C ~/Documents/work/code/projects/Uniform-ThirdParty-Platform push -u origin feat/runner-tag-isolation
+git -C /Users/constantine/Documents/work/code/projects/Uniform-ThirdParty-Platform add .gitlab-ci.yml
+git -C /Users/constantine/Documents/work/code/projects/Uniform-ThirdParty-Platform commit -m "ci: UTP runner tag 从 ucp 改为 utp 实现项目隔离"
+git -C /Users/constantine/Documents/work/code/projects/Uniform-ThirdParty-Platform push -u origin feat/runner-tag-isolation
 ```
 
 - [ ] **Step 6: 触发 UTP pipeline 验证 job 匹配 zhiyu-docker-runner**
@@ -176,9 +176,9 @@ Expected: job 的 runner 显示 `zhiyu-docker-runner`，status 不是 `pending`�
 ### Task 4: ZhiYu-Backend CI tag 改为 [zhiyu-backend]
 
 **Files:**
-- Modify: `~/Documents/work/code/projects/ZhiYu-Backend/.gitlab-ci.yml`（test-browser-frontend job 的 tags）
-- Modify: `~/Documents/work/code/projects/ZhiYu-Backend/.gitlab/ci/online-pipeline.yml`（default.tags）
-- Modify: `~/Documents/work/code/projects/ZhiYu-Backend/.gitlab/ci/offline-pipeline.yml`（default.tags）
+- Modify: `/Users/constantine/Documents/work/code/projects/ZhiYu-Backend/.gitlab-ci.yml`（test-browser-frontend job 的 tags）
+- Modify: `/Users/constantine/Documents/work/code/projects/ZhiYu-Backend/.gitlab/ci/online-pipeline.yml`（default.tags）
+- Modify: `/Users/constantine/Documents/work/code/projects/ZhiYu-Backend/.gitlab/ci/offline-pipeline.yml`（default.tags）
 
 **Interfaces:**
 - Consumes: Task 2 已让 zhiyu-docker-runner 含 `zhiyu-backend` tag
@@ -187,13 +187,13 @@ Expected: job 的 runner 显示 `zhiyu-docker-runner`，status 不是 `pending`�
 - [ ] **Step 1: 确认 ZhiYu-Backend 当前分支和 3 个文件的 tag 声明**
 
 ```bash
-git -C ~/Documents/work/code/projects/ZhiYu-Backend branch --show-current
+git -C /Users/constantine/Documents/work/code/projects/ZhiYu-Backend branch --show-current
 echo "=== .gitlab-ci.yml ==="
-grep -n "tags:" ~/Documents/work/code/projects/ZhiYu-Backend/.gitlab-ci.yml
+grep -n "tags:" /Users/constantine/Documents/work/code/projects/ZhiYu-Backend/.gitlab-ci.yml
 echo "=== online-pipeline.yml ==="
-grep -n "tags:" ~/Documents/work/code/projects/ZhiYu-Backend/.gitlab/ci/online-pipeline.yml
+grep -n "tags:" /Users/constantine/Documents/work/code/projects/ZhiYu-Backend/.gitlab/ci/online-pipeline.yml
 echo "=== offline-pipeline.yml ==="
-grep -n "tags:" ~/Documents/work/code/projects/ZhiYu-Backend/.gitlab/ci/offline-pipeline.yml
+grep -n "tags:" /Users/constantine/Documents/work/code/projects/ZhiYu-Backend/.gitlab/ci/offline-pipeline.yml
 ```
 
 Expected: 3 个文件都显示 `tags: [docker, zhiyu]`。
@@ -201,7 +201,7 @@ Expected: 3 个文件都显示 `tags: [docker, zhiyu]`。
 - [ ] **Step 2: 创建功能分支**
 
 ```bash
-git -C ~/Documents/work/code/projects/ZhiYu-Backend checkout -b feat/runner-tag-isolation
+git -C /Users/constantine/Documents/work/code/projects/ZhiYu-Backend checkout -b feat/runner-tag-isolation
 ```
 
 - [ ] **Step 3: 修改 .gitlab/ci/online-pipeline.yml 的 default.tags**
@@ -220,11 +220,11 @@ git -C ~/Documents/work/code/projects/ZhiYu-Backend checkout -b feat/runner-tag-
 
 ```bash
 echo "=== .gitlab-ci.yml ==="
-grep "tags:" ~/Documents/work/code/projects/ZhiYu-Backend/.gitlab-ci.yml
+grep "tags:" /Users/constantine/Documents/work/code/projects/ZhiYu-Backend/.gitlab-ci.yml
 echo "=== online-pipeline.yml ==="
-grep "tags:" ~/Documents/work/code/projects/ZhiYu-Backend/.gitlab/ci/online-pipeline.yml
+grep "tags:" /Users/constantine/Documents/work/code/projects/ZhiYu-Backend/.gitlab/ci/online-pipeline.yml
 echo "=== offline-pipeline.yml ==="
-grep "tags:" ~/Documents/work/code/projects/ZhiYu-Backend/.gitlab/ci/offline-pipeline.yml
+grep "tags:" /Users/constantine/Documents/work/code/projects/ZhiYu-Backend/.gitlab/ci/offline-pipeline.yml
 ```
 
 Expected: 3 个文件都显示 `tags: [zhiyu-backend]`。
@@ -232,9 +232,9 @@ Expected: 3 个文件都显示 `tags: [zhiyu-backend]`。
 - [ ] **Step 7: Commit 并推送**
 
 ```bash
-git -C ~/Documents/work/code/projects/ZhiYu-Backend add .gitlab-ci.yml .gitlab/ci/online-pipeline.yml .gitlab/ci/offline-pipeline.yml
-git -C ~/Documents/work/code/projects/ZhiYu-Backend commit -m "ci: Backend runner tag 从 docker,zhiyu 改为 zhiyu-backend 实现项目隔离"
-git -C ~/Documents/work/code/projects/ZhiYu-Backend push -u origin feat/runner-tag-isolation
+git -C /Users/constantine/Documents/work/code/projects/ZhiYu-Backend add .gitlab-ci.yml .gitlab/ci/online-pipeline.yml .gitlab/ci/offline-pipeline.yml
+git -C /Users/constantine/Documents/work/code/projects/ZhiYu-Backend commit -m "ci: Backend runner tag 从 docker,zhiyu 改为 zhiyu-backend 实现项目隔离"
+git -C /Users/constantine/Documents/work/code/projects/ZhiYu-Backend push -u origin feat/runner-tag-isolation
 ```
 
 - [ ] **Step 8: 触发 ZhiYu-Backend pipeline 验证 job 匹配 zhiyu-docker-runner**
@@ -479,7 +479,7 @@ Expected: 2 个 runner 都显示最近的 contacted_at 时间（重启后应刚�
 ### Task 10: ZhiYu 加 default.timeout
 
 **Files:**
-- Modify: `~/Documents/work/code/projects/ZhiYu/.gitlab-ci.yml`
+- Modify: `/Users/constantine/Documents/work/code/projects/ZhiYu/.gitlab-ci.yml`
 
 **Interfaces:**
 - Produces: ZhiYu CI 有 `default.timeout: 1h` 兜底
@@ -487,7 +487,7 @@ Expected: 2 个 runner 都显示最近的 contacted_at 时间（重启后应刚�
 - [ ] **Step 1: 确认当前 default 块内容**
 
 ```bash
-grep -A5 "default:" ~/Documents/work/code/projects/ZhiYu/.gitlab-ci.yml
+grep -A5 "default:" /Users/constantine/Documents/work/code/projects/ZhiYu/.gitlab-ci.yml
 ```
 
 Expected: 显示 `tags:` 下有 `- zhiyu-ios`（MR 分支已改）。
@@ -513,7 +513,7 @@ default:
 - [ ] **Step 3: 验证改动**
 
 ```bash
-grep -A6 "default:" ~/Documents/work/code/projects/ZhiYu/.gitlab-ci.yml
+grep -A6 "default:" /Users/constantine/Documents/work/code/projects/ZhiYu/.gitlab-ci.yml
 ```
 
 Expected: 显示 `timeout: 1h`。
@@ -673,7 +673,7 @@ git commit -m "docs: CI_CD_WORKFLOW 更新 runner tag 为 zhiyu-ios 并修正 ru
 ### Task 13: 更新 ZhiYu-Backend 仓库 ci-cd.md 文档
 
 **Files:**
-- Modify: `~/Documents/work/code/projects/ZhiYu-Backend/docs/2-how-to/ci-cd.md`（Runner 标签匹配规则表 + 配置文件表）
+- Modify: `/Users/constantine/Documents/work/code/projects/ZhiYu-Backend/docs/2-how-to/ci-cd.md`（Runner 标签匹配规则表 + 配置文件表）
 
 **Interfaces:**
 - Consumes: Task 4 已改 ZhiYu-Backend CI tag，Task 6 已改 macos-xcode-runner tag
@@ -696,13 +696,13 @@ git commit -m "docs: CI_CD_WORKFLOW 更新 runner tag 为 zhiyu-ios 并修正 ru
 
 用 edit 工具将：
 ```
-| Runner 1 | `~/.gitlab-runner/config.toml` | `brew services log gitlab-runner` |
-| Runner 2 | `~/devs/rnd-cicd/gitlab/runner-config/config.toml` | `docker logs rnd-cicd-gitlab-runner-1` |
+| Runner 1 | `/Users/constantine/.gitlab-runner/config.toml` | `brew services log gitlab-runner` |
+| Runner 2 | `/Users/constantine/devs/rnd-cicd/gitlab/runner-config/config.toml` | `docker logs rnd-cicd-gitlab-runner-1` |
 ```
 改为：
 ```
-| Runner 1 | `~/.gitlab-runner/config.toml` | `brew services log gitlab-runner` |
-| Runner 2 | `~/.gitlab-runner/config.toml` | `brew services log gitlab-runner` |
+| Runner 1 | `/Users/constantine/.gitlab-runner/config.toml` | `brew services log gitlab-runner` |
+| Runner 2 | `/Users/constantine/.gitlab-runner/config.toml` | `brew services log gitlab-runner` |
 ```
 
 注意：两个 runner 现在都在同一个 config.toml 中（zhiyu-docker-runner 是 docker executor，但配置文件与 macos-xcode-runner 同路径）。
@@ -710,7 +710,7 @@ git commit -m "docs: CI_CD_WORKFLOW 更新 runner tag 为 zhiyu-ios 并修正 ru
 - [ ] **Step 3: 验证改动**
 
 ```bash
-grep -n "macos-shell-runner\|local-runner" ~/Documents/work/code/projects/ZhiYu-Backend/docs/2-how-to/ci-cd.md
+grep -n "macos-shell-runner\|local-runner" /Users/constantine/Documents/work/code/projects/ZhiYu-Backend/docs/2-how-to/ci-cd.md
 ```
 
 Expected: 无输出（旧 runner 名称已全部替换）。
@@ -718,9 +718,9 @@ Expected: 无输出（旧 runner 名称已全部替换）。
 - [ ] **Step 4: Commit 并推送**
 
 ```bash
-git -C ~/Documents/work/code/projects/ZhiYu-Backend add docs/2-how-to/ci-cd.md
-git -C ~/Documents/work/code/projects/ZhiYu-Backend commit -m "docs: ci-cd 更新 runner 标签匹配规则为项目专属 tag"
-git -C ~/Documents/work/code/projects/ZhiYu-Backend push
+git -C /Users/constantine/Documents/work/code/projects/ZhiYu-Backend add docs/2-how-to/ci-cd.md
+git -C /Users/constantine/Documents/work/code/projects/ZhiYu-Backend commit -m "docs: ci-cd 更新 runner 标签匹配规则为项目专属 tag"
+git -C /Users/constantine/Documents/work/code/projects/ZhiYu-Backend push
 ```
 
 ---
@@ -728,10 +728,10 @@ git -C ~/Documents/work/code/projects/ZhiYu-Backend push
 ### Task 14: 更新 rnd-cicd 仓库 README 和 Runner 注册脚本/模板
 
 **Files:**
-- Modify: `~/Documents/work/rnd-env/rnd-cicd/README.md`（Runner 注册章节 + 新增 tag 命名规范）
-- Modify: `~/Documents/work/rnd-env/rnd-cicd/.env.example`（Runner tag 默认值）
-- Modify: `~/Documents/work/rnd-env/rnd-cicd/tools/register-runners.sh`（默认 tag + 移除 ucp 注册函数）
-- Modify: `~/Documents/work/rnd-env/rnd-cicd/gitlab/runner-config/config.toml.template`（concurrent + tag 注释 + 移除 ucp-shell-runner 块）
+- Modify: `/Users/constantine/Documents/work/rnd-env/rnd-cicd/README.md`（Runner 注册章节 + 新增 tag 命名规范）
+- Modify: `/Users/constantine/Documents/work/rnd-env/rnd-cicd/.env.example`（Runner tag 默认值）
+- Modify: `/Users/constantine/Documents/work/rnd-env/rnd-cicd/tools/register-runners.sh`（默认 tag + 移除 ucp 注册函数）
+- Modify: `/Users/constantine/Documents/work/rnd-env/rnd-cicd/gitlab/runner-config/config.toml.template`（concurrent + tag 注释 + 移除 ucp-shell-runner 块）
 
 **Interfaces:**
 - Consumes: 所有 runner tag 改动已完成（Task 2-9）
@@ -884,13 +884,13 @@ Runner tag 采用**项目专属 tag** 策略，确保精确调度、无跨项目
 
 ```bash
 echo "=== .env.example 无旧 tag ==="
-grep -n "docker,zhiyu\|shell,ucp" ~/Documents/work/rnd-env/rnd-cicd/.env.example
+grep -n "docker,zhiyu\|shell,ucp" /Users/constantine/Documents/work/rnd-env/rnd-cicd/.env.example
 echo "=== register-runners.sh 无 ucp 函数 ==="
-grep -n "register_ucp\|ucp-shell" ~/Documents/work/rnd-env/rnd-cicd/tools/register-runners.sh
+grep -n "register_ucp\|ucp-shell" /Users/constantine/Documents/work/rnd-env/rnd-cicd/tools/register-runners.sh
 echo "=== config.toml.template concurrent=1 ==="
-grep "^concurrent" ~/Documents/work/rnd-env/rnd-cicd/gitlab/runner-config/config.toml.template
+grep "^concurrent" /Users/constantine/Documents/work/rnd-env/rnd-cicd/gitlab/runner-config/config.toml.template
 echo "=== README 无旧 tag ==="
-grep -n "docker,zhiyu\|shell,ucp\|ucp-shell-runner" ~/Documents/work/rnd-env/rnd-cicd/README.md
+grep -n "docker,zhiyu\|shell,ucp\|ucp-shell-runner" /Users/constantine/Documents/work/rnd-env/rnd-cicd/README.md
 ```
 
 Expected: 前两个 grep 无输出（旧内容已删除），第三个显示 `concurrent = 1`，第四个无输出（或仅保留"已删除"说明行）。
@@ -898,14 +898,14 @@ Expected: 前两个 grep 无输出（旧内容已删除），第三个显示 `co
 - [ ] **Step 8: Commit 并推送**
 
 ```bash
-git -C ~/Documents/work/rnd-env add rnd-cicd/README.md rnd-cicd/.env.example rnd-cicd/tools/register-runners.sh rnd-cicd/gitlab/runner-config/config.toml.template
-git -C ~/Documents/work/rnd-env commit -m "ci: runner tag 隔离——更新注册脚本/模板/文档为项目专属 tag
+git -C /Users/constantine/Documents/work/rnd-env add rnd-cicd/README.md rnd-cicd/.env.example rnd-cicd/tools/register-runners.sh rnd-cicd/gitlab/runner-config/config.toml.template
+git -C /Users/constantine/Documents/work/rnd-env commit -m "ci: runner tag 隔离——更新注册脚本/模板/文档为项目专属 tag
 
 - zhiyu-docker-runner tag: docker,zhiyu → zhiyu-backend,ucp,utp
 - 删除 ucp-shell-runner（闲置，UCP/UTP 已改用 docker executor）
 - concurrent 2→1 避免 OOM
 - 新增 Runner Tag 命名规范小节"
-git -C ~/Documents/work/rnd-env push
+git -C /Users/constantine/Documents/work/rnd-env push
 ```
 
 ---

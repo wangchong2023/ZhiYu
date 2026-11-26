@@ -160,6 +160,19 @@ enum AppConfig {
     private static func getSecurityBool(_ key: ConfigKey.Security, default: Bool) -> Bool {
         config.security[key.rawValue] ?? `default`
     }
+
+    /// 获取 Network 段布尔值（JSON 值可能为 Bool，兼容字符串）
+    /// - Parameter key: key
+    /// - Parameter default: default
+    /// - Returns: 布尔值
+    private static func getSecurityBool(_ key: ConfigKey.Security, default: Bool) -> Bool {
+        guard let raw = (configData["security"] as? [String: Any])?[key.rawValue] else {
+            return `default`
+        }
+        if let bool = raw as? Bool { return bool }
+        if let str = raw as? String { return str == SystemConstants.BooleanLiteral.true }
+        return `default`
+    }
     
     /// 获取Storage
     /// - Parameter key: key
