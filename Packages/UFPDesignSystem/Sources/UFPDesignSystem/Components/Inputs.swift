@@ -153,25 +153,16 @@ public struct AppMonospacedEditor: View {
     }
 
     public var body: some View {
-        #if os(watchOS)
-        TextField("", text: $text, axis: .vertical)
-            .font(.system(.body, design: .monospaced))
-            .foregroundStyle(.appText)
-            .padding(DesignTokens.Spacing.medium)
-            .appCardClip(cornerRadius: DesignTokens.Spacing.standardRadius)
-        #else
-        TextEditor(text: $text)
+        AdaptiveTextEditor(text: $text)
             .font(.system(.body, design: .monospaced))
             .scrollContentBackground(.hidden)
             .foregroundStyle(.appText)
             .frame(minHeight: minHeight)
             .padding(DesignTokens.Spacing.medium)
             .appCardClip(cornerRadius: DesignTokens.Spacing.standardRadius)
-        #endif
     }
 }
 
-#if !os(watchOS)
 // MARK: - App Text Editor
 
 /// 统一输入文本编辑器
@@ -215,8 +206,8 @@ public struct AppTextEditor: View {
                         .allowsHitTesting(false) // 允许点击穿透到底层 TextEditor
                 }
 
-                // 原生编辑器层
-                TextEditor(text: $text)
+                // 核心多行输入编辑器（全平台自适应）
+                AdaptiveTextEditor(text: $text)
                     .font(.system(size: DesignTokens.SystemFontSize.subheadline)) // Dynamic Type
                     .scrollContentBackground(.hidden) // 隐藏原生背景以便显示自定义半透明底色
                     .background(Color.clear)
@@ -255,4 +246,3 @@ public struct AppTextEditor: View {
         }
     }
 }
-#endif
