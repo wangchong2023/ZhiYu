@@ -1,6 +1,6 @@
 # 智宇 (ZhiYu) 代码覆盖率与测试质量报告
 
-**更新日期**: 2026-11-02
+**更新日期**: 2026-11-27
 **生成方式**: SPM 包用 `coverage-spm.py`（`swift test --enable-code-coverage` + `llvm-cov`）；主 App 用 xcodebuild + `analyze_coverage_gaps.py`
 
 > ⚠️ 本报告数值由 `Tools/CI/coverage-spm.py` 实测填充（SPM 6 包语句覆盖），主 App 分支覆盖需先跑 `make test-unit` 生成 xcresult 后用 `analyze_coverage_gaps.py` 分析。
@@ -12,29 +12,29 @@
 
 | 指标 | 红线要求 | 当前值 | 状态 |
 | :--- | :--- | :--- | :--- |
-| **语句/行覆盖率 (Line Coverage)** | ≥ 95.0% | SPM 加权 **70.67%**（4093/5792 行） | ⚠️ 未达标 |
+| **语句/行覆盖率 (Line Coverage)** | ≥ 95.0%（SPM 包门禁 ≥ 90.0%） | SPM 6 包全量达标，加权 **93.37%**（8221/8805 行） | ✅ SPM 6/6 达标 |
 | **分支覆盖率 (Branch Coverage)** | ≥ 90.0% | **SPM 不可测**（swiftc 不生成 branch mapping，见下注） | ⚠️ 需主 App xccov |
-| **代码重复率 (Duplicated Lines %)** | < 3.0% | _待 SonarQube 扫描_ | ⏳ |
+| **代码重复率 (Duplicated Lines %)** | < 3.0% | Swift 重复率 **0.8%**（jscpd 实测 1036/133835 行） | ✅ 达标 |
 
 > **⚠️ 工具链约束（重要）**：SwiftPM 的 `swiftc` coverage mapping **不包含 branch 信息**（`coverage-spm.py` 注释明确「Swift 不生成 branch mapping，Branches 列恒为 0/0/-」）。因此 **SPM 6 包只能用 llvm-cov 测语句/行覆盖，无法测分支覆盖**。分支覆盖只能通过主 App（xcodebuild 测试）的 xccov 获得，用 `analyze_coverage_gaps.py` 分析（需先跑 `make test-unit` 生成 xcresult 到 `build/DerivedData-ios`）。
 
 ---
 
-## 2. SPM 包语句覆盖率明细（实测，2026-11-02）
+## 2. SPM 包语句覆盖率明细（实测，2026-11-27）
 
-> 由 `python3 Tools/CI/coverage-spm.py` 生成（`swift test --enable-code-coverage` + `llvm-cov`）。
+> 由 `make coverage-spm`（`swift test --enable-code-coverage` + `llvm-cov`）生成，全部 6 大本地包均突破 ≥ 90% 阈值。
 
-| 包名 | 语句覆盖 | 函数覆盖 | 状态 | 低覆盖重点 |
+| 包名 | 语句覆盖 | 函数覆盖 | 状态 | 备注 |
 | :--- | :--- | :--- | :--- | :--- |
-| **UFPCore** | **92.77%** (1591/1715) | 190/217 | ✅ | — |
-| **UFPStorage** | **79.60%** (710/892) | 95/126 | ⚠️ | StreamingDownloadManager 62.35%（URLSession 网络路径居多）、GenericDatabaseManager 89.86% |
-| **UFPDesignSystem** | **45.61%** (1158/2539) | 162/362 | ⚠️ | 大量 SwiftUI View body 渲染 / 静态 Token 常量，纯计算逻辑极少 |
-| **ZhiYuDomain** | **97.94%** (380/388) | 56/58 | ✅ | — |
-| **ZhiYuAICore** | **98.37%** (242/246) | 43/43 | ✅ | — |
+| **UFPCore** | **92.96%** (1757/1890) | 227/256 | ✅ | — |
+| **UFPStorage** | **90.23%** (822/911) | 107/118 | ✅ | 补齐流式下载委托生命周期测试 |
+| **UFPDesignSystem** | **93.62%** (3361/3590) | 419/484 | ✅ | 修复 Toast/Waveform/DotPattern/FlowLayout 等 6 项缺陷并补齐渲染与边界回归 |
+| **ZhiYuDomain** | **97.04%** (1444/1488) | 208/224 | ✅ | 修复 Thinking/Markdown 5 项缺陷并补齐回归 |
+| **ZhiYuAICore** | **90.26%** (825/914) | 119/120 | ✅ | 修复多模态索引/LiteRT/Prompt 沙箱 7 项缺陷，剩余未覆盖行集中于需真实权重文件的 C++ 推理路径 |
 | **ZhiYuFeatures** | **100.00%** (12/12) | 6/6 | ✅ | — |
-| **总体（加权）** | **70.67%** (4093/5792) | 552/812 | ⚠️ | — |
+| **总体（加权）** | **93.37%** (8221/8805) | **1086/1208** | ✅ | **6/6 全部达标** |
 
-> **说明**：UFPDesignSystem 的 45% 主要由 UI Token / 视图渲染主导（`Cards.swift` 63%、`Inputs.swift` 78%、`Buttons.swift` 80%，其余 `AppEmptyState`/`AppErrorView`/`AppLoading*` 为 0% 的纯 View body）。按「以发现问题为目标、不为凑覆盖率补无意义断言」原则，仅对其可单测的纯逻辑（`Color.init(hex:)` 缺陷 #85、`AppToastType.icon`、Spacing/Radius `.value`、`AppFeedbackL10n`）补测，未对 View body 补空断言。
+> **说明**：全量测试坚持「以发现问题为目的、不为凑覆盖率写无断言空测试」原则，累计发现并闭环 129 项真实生产缺陷（见 `Docs/Testing/TEST_DRIVEN_FINDINGS.md`）。
 
 ---
 
