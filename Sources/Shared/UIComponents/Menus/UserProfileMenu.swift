@@ -20,6 +20,7 @@ struct UserProfileMenu: View {
     // property wrapper 必须位于 struct 顶层，禁止放在 body 内 #if 分支
     @Environment(\.openWindow) private var openWindow
     @Environment(\.dismissWindow) private var dismissWindow
+    @Environment(\.interfaceIdiom) private var idiom
     
     @State private var isShowingPopover = false
     @State private var isHoveringMacSettingsRow = false
@@ -51,7 +52,18 @@ struct UserProfileMenu: View {
     }
     
     var body: some View {
-        #if os(watchOS)
+        if idiom == .watch {
+            watchProfileButton
+        } else if idiom == .mac {
+            macProfileButton
+        } else {
+            iosProfileMenu
+        }
+    }
+
+    // MARK: - Platform Specific Menus
+
+    private var watchProfileButton: some View {
         Button(action: { showWatchMenu = true }) {
             profileLabel
         }
@@ -74,9 +86,9 @@ struct UserProfileMenu: View {
                     .navigationTitle(L10n.Common.settings)
             }
         }
-        #elseif os(macOS)
-        // macOS：使用宽敞的桌面悬浮 Popover（320pt 宽 + 头像/邮箱头部 + .body 字号 + 悬停态），
-        // 避免系统原生 NSMenu 13pt 紧凑排版导致视觉偏小。
+    }
+
+    private var macProfileButton: some View {
         Button(action: {
             HapticFeedback.shared.trigger(.selection)
             isShowingPopover.toggle()
@@ -105,13 +117,11 @@ struct UserProfileMenu: View {
                     for otherId in ProfilePopoverConstants.auxWindowIDs where otherId != targetId {
                         dismissWindow(id: otherId)
                     }
-                    NSApp?.windows
-                        .filter { $0.identifier?.rawValue.contains("Settings") == true }
-                        .forEach { $0.close() }
+                    AppWindowHelper.closeWindows(matching: "Settings")
                     openWindow(id: targetId)
                 },
                 customSettingsRow: {
-                    SettingsLink {
+                    PlatformSettingsLink {
                         CustomProfilePopover<EmptyView>.menuRowLabel(
                             icon: DesignTokens.Icons.settings,
                             color: .blue,
@@ -138,8 +148,9 @@ struct UserProfileMenu: View {
             .environment(authService)
             .environment(themeManager)
         }
-        #else
-        // iOS/iPadOS：使用原生 Menu 控件，彻底解决 ToolbarItem 内部 popover 状态失效导致的点击无响应问题
+    }
+
+    private var iosProfileMenu: some View {
         Menu {
             Button(action: {
                 HapticFeedback.shared.trigger(.selection)
@@ -194,7 +205,6 @@ struct UserProfileMenu: View {
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("userProfileMenuButton")
-        #endif
     }
 
     private func executeMenuAction(_ action: MenuAction) {
@@ -283,12 +293,8 @@ struct UserProfileMenuSheetContent: View {
 // MARK: - 自定义个人中心悬浮弹窗
 @MainActor
 private enum ProfilePopoverConstants {
-    #if os(iOS)
-    /// iPad 大屏：菜单宽度 300pt
-    static let menuWidth: CGFloat = UIDevice.current.userInterfaceIdiom == .pad ? 300 : 280
-    #else
-    static let menuWidth: CGFloat = 320
-    #endif
+    /// 菜单标准宽度由 CrossPlatformConstants.profilePopoverMenuWidth 统一根据设备形态提供
+    static var menuWidth: CGFloat { CrossPlatformConstants.profilePopoverMenuWidth }
     static let macMenuWidth: CGFloat = 236
     static let menuHeight: CGFloat = 360
     static let iconBoxSize: CGFloat = 30

@@ -27,14 +27,16 @@ public struct PlatformTextEditor: View {
         self.minHeight = minHeight
     }
 
+    @Environment(\.interfaceIdiom) private var idiom
+
     public var body: some View {
-        #if os(watchOS)
-        TextField("", text: $text, axis: .vertical)
-            .font(.body)
-        #else
-        TextEditor(text: $text)
-            .font(.body)
-            .frame(minHeight: minHeight)
-        #endif
+        if idiom == .watch {
+            TextField("", text: $text, axis: .vertical)
+                .font(.body)
+        } else {
+            TextEditor(text: $text)
+                .font(.body)
+                .frame(minHeight: minHeight)
+        }
     }
 }

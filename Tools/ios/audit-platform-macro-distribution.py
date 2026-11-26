@@ -35,7 +35,7 @@ CHECK_DIRS = [
 ]
 
 # 宏总数棘轮上限（只减不增；收敛清理后请同步调低此阈值）
-MAX_TOTAL_MACROS = 139
+MAX_TOTAL_MACROS = 125
 
 # 统一平台宏正则（去注释后匹配，拦截正向/反向/括号/复合条件中的 os() 与 macCatalyst）
 OS_MACRO_PATTERN = re.compile(
@@ -79,15 +79,8 @@ PLATFORM_CAPABILITY_FILES = {
     "Packages/ZhiYuAICore/Sources/ZhiYuAICore/Multimodal/VideoMomentIndexer.swift",
 }
 
-# 4) 存量 UI 组件/布局文件冻结基线（替代过宽的目录白名单，禁止新增文件；应逐步向 PlatformModifiers / interfaceIdiom 收敛）
-LEGACY_VIEW_FILES = {
-    "Sources/App/Scenes/ContentView.swift",
-    "Sources/App/Scenes/Layout/Components/AppLayoutComponents.swift",
-    "Sources/Shared/UIComponents/Editors/MermaidWebView.swift",
-    "Sources/Shared/UIComponents/Editors/PlatformTextEditor.swift",
-    "Sources/Shared/UIComponents/Menus/UserProfileMenu.swift",
-    "Sources/Shared/UIComponents/Overlays/ActivityView.swift",
-}
+# 4) 存量 UI 组件/布局文件冻结基线：已 100% 清零并移除 (原 LEGACY_VIEW_FILES 6 个视图文件全量清零)
+LEGACY_VIEW_FILES: set[str] = set()
 
 # 5) 已知豁免（精确行号 + 原因说明）
 KNOWN_EXEMPTIONS = {

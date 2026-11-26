@@ -25,6 +25,15 @@ import SceneKit
 public enum CrossPlatformConstants {
     /// 无主屏幕时的宽度回退值（375pt，与 iOS 端屏幕兜底宽度一致）
     public static let defaultScreenFallbackWidth: CGFloat = 375
+    /// 个人中心悬浮弹窗标准宽度（iPad 300pt，iPhone 280pt，桌面 320pt）
+    @MainActor
+    public static var profilePopoverMenuWidth: CGFloat {
+        #if os(iOS)
+        return UIDevice.current.userInterfaceIdiom == .pad ? 300 : 280
+        #else
+        return 320
+        #endif
+    }
 }
 
 /// 跨平台剪贴板包装器
@@ -338,6 +347,28 @@ public enum PlatformPresentationAnchor {
         preconditionFailure("PlatformPresentationAnchor.keyWindow: No UIWindowScene available")
     }
 }
+
+/// 跨平台原生窗口调度辅助工具（iOS / watchOS 为空实现兜底，macOS 调度原生 NSWindow）
+public enum AppWindowHelper {
+    /// 关闭 identifier 包含特定标识的窗口（如 "Settings"）
+    @MainActor
+    public static func closeWindows(matching identifierSubstring: String) {
+        // iOS 端采用 UIWindowScene / sheet 架构，无需单独关闭 NSWindow
+    }
+}
+
+/// 跨平台设置链接容器（iOS / watchOS 回退为通用 View）
+public struct PlatformSettingsLink<Content: View>: View {
+    private let content: () -> Content
+
+    public init(@ViewBuilder content: @escaping () -> Content) {
+        self.content = content
+    }
+
+    public var body: some View {
+        content()
+    }
+}
 #elseif canImport(AppKit)
 import AppKit
 
@@ -357,6 +388,30 @@ public enum PlatformPresentationAnchor {
         }
         // 极端边界：无任何窗口（理论上 App 完全启动后不可达）
         preconditionFailure("PlatformPresentationAnchor.keyWindow: No NSWindow available")
+    }
+}
+
+/// 跨平台原生窗口调度辅助工具（macOS 原生）
+public enum AppWindowHelper {
+    /// 关闭 identifier 包含特定标识的窗口（如 "Settings"）
+    @MainActor
+    public static func closeWindows(matching identifierSubstring: String) {
+        NSApplication.shared.windows
+            .filter { $0.identifier?.rawValue.contains(identifierSubstring) == true }
+            .forEach { $0.close() }
+    }
+}
+
+/// 跨平台设置链接容器（macOS 原生使用 SettingsLink，iOS/watchOS 使用标准 Button/View）
+public struct PlatformSettingsLink<Content: View>: View {
+    private let content: () -> Content
+
+    public init(@ViewBuilder content: @escaping () -> Content) {
+        self.content = content
+    }
+
+    public var body: some View {
+        SettingsLink(destination: content)
     }
 }
 #endif

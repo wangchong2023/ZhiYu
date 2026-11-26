@@ -494,3 +494,25 @@ private struct DesktopReadableWidthModifier: ViewModifier {
         }
     }
 }
+
+// MARK: - 侧边栏列宽修饰器
+public extension View {
+    /// 仅 macOS 桌面应用侧边栏列首选宽度（基于运行时 Trait `interfaceIdiom`，零平台宏）
+    @ViewBuilder
+    func macSidebarColumnWidth(_ width: CGFloat = DesignTokens.Metrics.macSidebarWidth) -> some View {
+        modifier(MacSidebarColumnWidthModifier(width: width))
+    }
+}
+
+private struct MacSidebarColumnWidthModifier: ViewModifier {
+    @Environment(\.interfaceIdiom) private var idiom
+    let width: CGFloat
+
+    func body(content: Content) -> some View {
+        if idiom == .mac {
+            content.navigationSplitViewColumnWidth(width)
+        } else {
+            content
+        }
+    }
+}

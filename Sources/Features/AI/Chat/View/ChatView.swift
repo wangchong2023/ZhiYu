@@ -36,6 +36,7 @@ struct ChatViewContent: View {
     @EnvironmentObject var llmService: LLMService
     @Dependency(\.promptService) private var promptService
     @Dependency(\.taskCenter) private var taskCenter
+    @Dependency(\.shareSheet) private var shareSheet: any ShareSheetProtocol
     @Binding var selectedTab: AppTab
     
     // 使用协调器管理状态与交互
@@ -59,9 +60,14 @@ struct ChatViewContent: View {
         .appTabToolbar(title: "") {
             chatMenu
         }
-        .skipOnWatch { $0.sheet(item: $coordinator.exportURL) { identifiable in
-            ActivityView(activityItems: [identifiable.url])
-        } }
+        .onChange(of: coordinator.exportURL?.id) { _, newID in
+            // 导出完成后通过 L0 ShareSheetProtocol 拉起系统分享面板（平台差异由 Platforms 层服务实现）
+            guard newID != nil, let url = coordinator.exportURL?.url else { return }
+            Task {
+                await shareSheet.presentShareSheet(items: [url])
+                coordinator.exportURL = nil
+            }
+        }
         .alert(L10n.Common.error, isPresented: $coordinator.showError) {
             Button(L10n.Common.ok) { coordinator.showError = false }
         } message: {

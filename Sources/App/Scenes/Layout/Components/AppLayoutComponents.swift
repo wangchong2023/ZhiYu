@@ -72,35 +72,35 @@ extension ContentView {
     /// - Returns: 返回经过平台决策后的主内容容器视图
     @ViewBuilder
     private func adaptiveTabView(tintColor: Color) -> some View {
-        #if !os(macOS)
-        // 1. 若布局策略偏好传统模式，强制使用 legacyTabView
-        if navigationLayoutPolicy.prefersLegacyTabView {
-            legacyTabView(tintColor: tintColor)
-        } else if appEnv.screenClass != .compact {
-            if #available(iOS 18.0, *) {
-                modernTabView(tintColor: tintColor)
+        if idiom == .mac {
+            // 1. macOS 桌面端运行环境：非 compact 屏使用 2 栏 SplitView，紧凑屏降级为 TabView
+            if appEnv.screenClass != .compact {
+                adaptiveSplitView(tintColor: tintColor)
             } else {
-                legacyTabView(tintColor: tintColor)
+                if #available(iOS 18.0, macOS 15.0, macCatalyst 18.0, *) {
+                    modernTabView(tintColor: tintColor)
+                } else {
+                    legacyTabView(tintColor: tintColor)
+                }
             }
         } else {
-            if #available(iOS 18.0, *) {
-                modernTabView(tintColor: tintColor)
-            } else {
+            // 2. iOS/iPadOS 移动端与平板运行环境：遵循布局策略与屏幕类型
+            if navigationLayoutPolicy.prefersLegacyTabView {
                 legacyTabView(tintColor: tintColor)
+            } else if appEnv.screenClass != .compact {
+                if #available(iOS 18.0, macOS 15.0, macCatalyst 18.0, *) {
+                    modernTabView(tintColor: tintColor)
+                } else {
+                    legacyTabView(tintColor: tintColor)
+                }
+            } else {
+                if #available(iOS 18.0, macOS 15.0, macCatalyst 18.0, *) {
+                    modernTabView(tintColor: tintColor)
+                } else {
+                    legacyTabView(tintColor: tintColor)
+                }
             }
         }
-        #else
-        // 2. macOS 桌面端或 macCatalyst 物理运行环境
-        if appEnv.screenClass != .compact {
-            adaptiveSplitView(tintColor: tintColor)
-        } else {
-            if #available(macOS 15.0, macCatalyst 18.0, *) {
-                modernTabView(tintColor: tintColor)
-            } else {
-                legacyTabView(tintColor: tintColor)
-            }
-        }
-        #endif
     }
 
     /// 渲染全局弹出的各种 Sheet 及悬浮引导图层
@@ -393,15 +393,4 @@ extension ContentView {
 }
 
 // MARK: - 侧边栏列宽修饰器
-/// 仅 macOS 应用 `DesignTokens.Metrics.macSidebarWidth` 作为侧边栏列首选宽度；
-/// iPad 保持系统默认宽度，不做干预。
-private extension View {
-    @ViewBuilder
-    func macSidebarColumnWidth() -> some View {
-        #if os(macOS)
-        navigationSplitViewColumnWidth(DesignTokens.Metrics.macSidebarWidth)
-        #else
-        self
-        #endif
-    }
-}
+// 侧边栏列宽修饰器已统一收敛至 PlatformModifiers.swift (macSidebarColumnWidth)，消除重复定义。

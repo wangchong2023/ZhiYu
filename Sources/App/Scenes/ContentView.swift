@@ -98,63 +98,16 @@ struct ContentView: View {
             }
         }
         // macOS 原生场景由 openWindow/SettingsLink 提供设置等入口，不再挂载全屏弹窗（iOS/watchOS 保留 sheet 路径）。
-        #if !os(macOS)
-        .appFullScreenCover(isPresented: $router.isShowingSettingsSheet) {
-            SettingsView()
-                .environment(store)
-                .environment(router)
-                .environment(appEnvironment)
-                .environment(settingsStore)
-                .environmentObject(onboardingService)
-                .environment(themeManager)
-                .environment(\.locale, router.currentLocale)
-                .preferredColorScheme(themeManager.colorSchemeMode.preferredColorScheme)
-        }
-        .appFullScreenCover(isPresented: $router.isShowingAISettingsSheet) {
-            NavigationStack {
-                AISettingsView()
-            }
-            .environment(store)
-            .environment(router)
-            .environment(themeManager)
-            .preferredColorScheme(themeManager.colorSchemeMode.preferredColorScheme)
-            .applyPagePresentationSizing()
-        }
-
-        .appFullScreenCover(isPresented: $router.isShowingProfileSheet) {
-            NavigationStack {
-                UserProfileView()
-            }
-            .environment(authService)
-            .globalSheetTheme()
-            .applyPresentationSizing()
-        }
-        .appFullScreenCover(isPresented: $router.isShowingPlanSheet) {
-            NavigationStack {
-                SubscriptionPlanView()
-            }
-            .environment(authService)
-            .globalSheetTheme()
-            .applyPagePresentationSizing()
-        }
-        .appFullScreenCover(isPresented: $router.isShowingPluginsSheet) {
-            NavigationStack {
-                PluginCenterView()
-            }
-            // Bug #70 修复：PluginCenterView 依赖 Router，缺失注入会导致 fatalError。
-            .environment(router)
-            .globalSheetTheme()
-            .applyPagePresentationSizing()
-        }
-        .appFullScreenCover(isPresented: $router.isShowingAboutSheet) {
-            NavigationStack {
-                AboutView()
-            }
-            .environment(store)
-            .globalSheetTheme()
-            .applyPresentationSizing()
-        }
-        #endif
+        .modifier(MainOverlayCoversModifier(
+            idiom: idiom,
+            router: router,
+            store: store,
+            appEnvironment: appEnvironment,
+            settingsStore: settingsStore,
+            onboardingService: onboardingService,
+            themeManager: themeManager,
+            authService: authService
+        ))
         .animation(DesignTokens.Animation.Config.prominentSpring, value: authSession.isLoggedIn || authSession.isGuest)
         .animation(DesignTokens.Animation.Config.prominentSpring, value: vaultService.selectedVaultID)
         .environmentObject(MedalService.shared)
@@ -386,6 +339,81 @@ struct DatabaseCorruptedBanner: View {
                 Logger.shared.error("[DatabaseCorruptedBanner] Reverification" + " failed: \(error)", error: error)
             }
             isRetrying = false
+        }
+    }
+}
+
+// MARK: - 主场景全屏覆盖弹窗修饰符
+/// 针对 iOS/watchOS 挂载设置、AI设置、用户中心、订阅与插件等全屏 Sheet；
+/// macOS 原生场景由 openWindow/SettingsLink 提供对应入口，不在此挂载全屏弹窗。
+private struct MainOverlayCoversModifier: ViewModifier {
+    let idiom: InterfaceIdiom
+    @Bindable var router: Router
+    let store: AppStore
+    let appEnvironment: AppEnvironment
+    let settingsStore: SettingsStore
+    let onboardingService: OnboardingService
+    let themeManager: ThemeManager
+    let authService: AuthService
+
+    func body(content: Content) -> some View {
+        if idiom == .mac {
+            content
+        } else {
+            content
+                .appFullScreenCover(isPresented: $router.isShowingSettingsSheet) {
+                    SettingsView()
+                        .environment(store)
+                        .environment(router)
+                        .environment(appEnvironment)
+                        .environment(settingsStore)
+                        .environmentObject(onboardingService)
+                        .environment(themeManager)
+                        .environment(\.locale, router.currentLocale)
+                        .preferredColorScheme(themeManager.colorSchemeMode.preferredColorScheme)
+                }
+                .appFullScreenCover(isPresented: $router.isShowingAISettingsSheet) {
+                    NavigationStack {
+                        AISettingsView()
+                    }
+                    .environment(store)
+                    .environment(router)
+                    .environment(themeManager)
+                    .preferredColorScheme(themeManager.colorSchemeMode.preferredColorScheme)
+                    .applyPagePresentationSizing()
+                }
+                .appFullScreenCover(isPresented: $router.isShowingProfileSheet) {
+                    NavigationStack {
+                        UserProfileView()
+                    }
+                    .environment(authService)
+                    .globalSheetTheme()
+                    .applyPresentationSizing()
+                }
+                .appFullScreenCover(isPresented: $router.isShowingPlanSheet) {
+                    NavigationStack {
+                        SubscriptionPlanView()
+                    }
+                    .environment(authService)
+                    .globalSheetTheme()
+                    .applyPagePresentationSizing()
+                }
+                .appFullScreenCover(isPresented: $router.isShowingPluginsSheet) {
+                    NavigationStack {
+                        PluginCenterView()
+                    }
+                    .environment(router)
+                    .globalSheetTheme()
+                    .applyPagePresentationSizing()
+                }
+                .appFullScreenCover(isPresented: $router.isShowingAboutSheet) {
+                    NavigationStack {
+                        AboutView()
+                    }
+                    .environment(store)
+                    .globalSheetTheme()
+                    .applyPresentationSizing()
+                }
         }
     }
 }

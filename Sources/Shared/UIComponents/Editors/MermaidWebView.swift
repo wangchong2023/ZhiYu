@@ -28,7 +28,7 @@ struct IdentifiableURL: Identifiable {
 ///   - viewportMeta: 是否注入 `<meta name="viewport">` 标签（仅 iOS 需要）
 ///   - bodyExtraStyle: 追加到 body CSS 的额外样式片段
 ///   - fallbackBulletPrefix: fallback 列表项前缀（iOS 无，macOS 使用 `'• '`）
-private func generateMermaidHTML(
+func generateMermaidHTML(
     mermaidCode: String,
     theme: String,
     viewportMeta: Bool = false,
@@ -101,36 +101,42 @@ private func generateMermaidHTML(
 
 @MainActor
 /// Mermaid 图表渲染视图
-/// 负责在 WebKit 容器中加载 Mermaid.js 并渲染流程图、甘特图等知识图谱扩展内容
+/// 负责在 WebKit 容器中加载 Mermaid.js 并渲染流程图、甘特图等知识图谱扩展内容。
+/// 平台容器由 Sources/Platforms/{iOS,macOS}/Views 下的 `MermaidPlatformWebView` 提供，本文件不含平台宏。
 struct MermaidWebView: View {
     let mermaidCode: String
     #if canImport(WebKit)
     @State private var webView: WKWebView?
     #endif
-    @State private var showExportSheet = false
-    @State private var identifiablePDFURL: IdentifiableURL?
+
+    /// 缩放步进系数
+    private enum ZoomStep {
+        static let zoomOut: CGFloat = 0.8
+        static let zoomIn: CGFloat = 1.2
+    }
 
     var body: some View {
         #if canImport(WebKit)
         ZStack(alignment: .bottomTrailing) {
-            #if os(macOS)
-            MermaidWKWebViewMac(mermaidCode: mermaidCode, webView: $webView)
+            MermaidPlatformWebView(mermaidCode: mermaidCode, webView: $webView)
                 .appCardClip()
-            #else
-            MermaidWKWebView(mermaidCode: mermaidCode, webView: $webView)
-                .appCardClip()
-            #endif
-            
+
             // Zoom Controls (统一图谱风格：合拢式排列)
             HStack(spacing: 0) {
-                zoomButton(icon: DesignTokens.Icons.minusMagnifyingglass) { zoom(by: 0.8) }
-                zoomButton(icon: DesignTokens.Icons.plusMagnifyingglass) { zoom(by: 1.2) }
-                
+                zoomButton(icon: DesignTokens.Icons.minusMagnifyingglass) {
+                    MermaidPlatformWebView.zoom(webView, by: ZoomStep.zoomOut)
+                }
+                zoomButton(icon: DesignTokens.Icons.plusMagnifyingglass) {
+                    MermaidPlatformWebView.zoom(webView, by: ZoomStep.zoomIn)
+                }
+
                 Divider()
                     .frame(width: DesignTokens.Metrics.dividerThickness, height: DesignTokens.IconSize.small)
                     .background(Color.appBorder.opacity(DesignTokens.Opacity.soft))
-                
-                zoomButton(icon: DesignTokens.Icons.refresh) { resetZoom() }
+
+                zoomButton(icon: DesignTokens.Icons.refresh) {
+                    MermaidPlatformWebView.resetZoom(webView)
+                }
             }
             .background(.ultraThinMaterial)
             .clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius))
@@ -142,11 +148,6 @@ struct MermaidWebView: View {
             .padding(DesignSystem.Layout.cardContentPadding)
         }
         .frame(minHeight: DesignTokens.Spacing.Grid.emptyStateHeight)
-        .sheet(item: $identifiablePDFURL) { identifiable in
-            #if os(iOS)
-            ActivityView(activityItems: [identifiable.url])
-            #endif
-        }
         #else
         VStack {
             Image(systemName: DesignTokens.Icons.chartBarDoc)
@@ -173,93 +174,4 @@ struct MermaidWebView: View {
         }
         .buttonStyle(ScaleButtonStyle()) // 使用统一的缩放反馈样式
     }
-
-    private func zoom(by factor: CGFloat) {
-        #if os(iOS)
-        guard let webView = webView else { return }
-        let currentScale = webView.scrollView.zoomScale
-        let newScale = min(max(currentScale * factor, webView.scrollView.minimumZoomScale), webView.scrollView.maximumZoomScale)
-        webView.scrollView.setZoomScale(newScale, animated: true)
-        #endif
-    }
-
-    private func resetZoom() {
-        #if os(iOS)
-        webView?.scrollView.setZoomScale(1.0, animated: true)
-        #endif
-    }
 }
-
-#if canImport(WebKit)
-#if os(iOS)
-struct MermaidWKWebView: UIViewRepresentable {
-    let mermaidCode: String
-    @Binding var webView: WKWebView?
-    
-    /// 创建UIView
-    /// - Parameter context: context
-    /// - Returns: 返回值
-    func makeUIView(context: Context) -> WKWebView {
-        let webView = WKWebView()
-        webView.isOpaque = false
-        webView.backgroundColor = .clear
-        webView.scrollView.isScrollEnabled = true
-        webView.scrollView.maximumZoomScale = 5.0
-        webView.scrollView.minimumZoomScale = 1.0
-        DispatchQueue.main.async {
-            self.webView = webView
-        }
-        return webView
-    }
-    
-    /// 更新UIView
-    /// - Parameter uiView: uiView
-    /// - Parameter context: context
-    func updateUIView(_ uiView: WKWebView, context: Context) {
-        uiView.loadHTMLString(generateHTML(), baseURL: Bundle.main.bundleURL)
-    }
-    
-    private func generateHTML() -> String {
-        generateMermaidHTML(
-            mermaidCode: mermaidCode,
-            theme: "neutral",
-            viewportMeta: true,
-            bodyExtraStyle: " width: 100vw;"
-        )
-    }
-}
-
-#elseif os(macOS)
-struct MermaidWKWebViewMac: NSViewRepresentable {
-    let mermaidCode: String
-    @Binding var webView: WKWebView?
-    
-    /// 创建NSView
-    /// - Parameter context: context
-    /// - Returns: 返回值
-    func makeNSView(context: Context) -> WKWebView {
-        let webView = WKWebView()
-        webView.setValue(false, forKey: "drawsBackground")
-        DispatchQueue.main.async {
-            self.webView = webView
-        }
-        return webView
-    }
-    
-    /// 更新NSView
-    /// - Parameter nsView: nsView
-    /// - Parameter context: context
-    func updateNSView(_ nsView: WKWebView, context: Context) {
-        nsView.loadHTMLString(generateHTML(), baseURL: Bundle.main.bundleURL)
-    }
-    
-    private func generateHTML() -> String {
-        generateMermaidHTML(
-            mermaidCode: mermaidCode,
-            theme: "dark",
-            fallbackBulletPrefix: "• "
-        )
-    }
-}
-#endif
-#endif
