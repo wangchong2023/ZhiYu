@@ -1466,6 +1466,7 @@
 		3E3D4D1CC18A945776834163 /* PluginEnginePool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 371FCB95A47FEF84D9117F1D /* PluginEnginePool.swift */; };
 		3E59925F9772D4B6734E20BB /* DynamicComplianceManager+Patch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EB1EB638D518882AA2A76C3 /* DynamicComplianceManager+Patch.swift */; };
 		3E64ED27B2B2DFB5DBCC6AE5 /* PluginSettingsGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 178C70BF94F52DE1520AD65B /* PluginSettingsGenerator.swift */; };
+		3E6A522EFD108252CC9F6AC2 /* LLMConfigStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FD720BDA38D8BD640283722 /* LLMConfigStore.swift */; };
 		3E6C50CDAB9D7E9997E877E4 /* ModelStoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E8545C593A20702C48AE347 /* ModelStoreView.swift */; };
 		3E731681B887826EA3A3CCBC /* IngestService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A27F6CBD30D6A3664B1E3A0 /* IngestService.swift */; };
 		3E892C42CF1CF648F604E102 /* LiveActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72A050AB2C1AE624CB0180A5 /* LiveActivityView.swift */; };
@@ -1783,6 +1784,7 @@
 		4D21A44CD9B861539C8C018C /* StatCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E5FA92A0002FCE1320C6DBE /* StatCard.swift */; };
 		4D2551F92F71A80C2020635E /* TagCloudSubViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9081600A56F76E9C593D050 /* TagCloudSubViews.swift */; };
 		4D2C712F3FE55B606A7E7DF6 /* L10n+Chat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 894214A0A9869DEF7A51D46F /* L10n+Chat.swift */; };
+		4D2E3DF1EFE721EC3AB5422E /* LLMConfigStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FD720BDA38D8BD640283722 /* LLMConfigStore.swift */; };
 		4D36284B68F8FF0788B00E94 /* SettingsView+Sections.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E9A364A237F4258DE20E45A /* SettingsView+Sections.swift */; };
 		4D5371AE6165FB6178F539CF /* InsightProgressBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6913628E07E9265E37D48C19 /* InsightProgressBar.swift */; };
 		4D7199EA374C7F7F8A40E865 /* Markdown in Frameworks */ = {isa = PBXBuildFile; productRef = 1E1921ECBC373298393043E1 /* Markdown */; };
@@ -4048,6 +4050,7 @@
 		ADD1581DA6D734B450726B28 /* WikiLinkTextSanitizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BE7EE6AC72CC7E45B3599ED /* WikiLinkTextSanitizer.swift */; };
 		ADE28D8008D49EE82A56EEEE /* ModelDownloadDocumentProcessorDeepTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1554A0A5E060F4DC30226F2F /* ModelDownloadDocumentProcessorDeepTests.swift */; };
 		ADEBA0B4DB70BD5EA39E151A /* KnowledgePageRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70036C4A620278A0352D027C /* KnowledgePageRepository.swift */; };
+		ADF5F5E28D201118BABCE3A6 /* LLMConfigStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FD720BDA38D8BD640283722 /* LLMConfigStore.swift */; };
 		ADF6C8214C51AD6B00BFCBEE /* GraphFilterPillsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6505AB6895A4F5F1DAF951A5 /* GraphFilterPillsView.swift */; };
 		AE0FB6669B0DF9EF0EE0552E /* RegionSelectorToggle.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3930069FAC9FC7C5D1CBC1E /* RegionSelectorToggle.swift */; };
 		AE179BA38467F53E97144913 /* PromptSecurityGuard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D8E143FC1868EC6ACE6C99 /* PromptSecurityGuard.swift */; };
@@ -4250,6 +4253,7 @@
 		B69B0330C7AE10D77FBBDA24 /* UIComponentsAnimationAndTokensTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 042B1BE6A789C2C3E98533A0 /* UIComponentsAnimationAndTokensTests.swift */; };
 		B69B2342350D85A00484A30A /* StoreKitTransactionVerificationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32FFD8584853EB2F60AC005B /* StoreKitTransactionVerificationTests.swift */; };
 		B69E16843448C435D5FB8E96 /* WatchFeaturePlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14E2C10CE4399816407B00E5 /* WatchFeaturePlaceholderView.swift */; };
+		B6A21A773707392B0EBDF5D5 /* LLMConfigStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FD720BDA38D8BD640283722 /* LLMConfigStore.swift */; };
 		B6B977471909210EF6E5B9FD /* PhoneAuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FBD347875AB4FCC36E07EB4 /* PhoneAuthService.swift */; };
 		B6CC27AFD5B4103E16050F71 /* SynthesisSlidesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 283392E7911FC70AC432C463 /* SynthesisSlidesView.swift */; };
 		B6D6D37F539DBD1729990669 /* AuthModuleRegistrar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E247775F27F649B0330C4CC /* AuthModuleRegistrar.swift */; };
@@ -5874,6 +5878,7 @@
 		FC4EB022A8CD11D7EF5503F2 /* SpotlightService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9942F81B14C0062D145574D /* SpotlightService.swift */; };
 		FC5065AFF2C9AD5ECDAA752F /* L10n+Knowledge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 342E4984E7BE18961CA140B7 /* L10n+Knowledge.swift */; };
 		FC5316A1D712FDAC3897FAB3 /* testSettingsView.1.png in Resources */ = {isa = PBXBuildFile; fileRef = 5A282DE798084F26CEDD70A4 /* testSettingsView.1.png */; };
+		FC6467085668DAC27636A690 /* LLMConfigStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FD720BDA38D8BD640283722 /* LLMConfigStore.swift */; };
 		FC93D2F3A37EC44E008E4C16 /* Graph.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = A99E81CD203899D47AE64ED3 /* Graph.xcstrings */; };
 		FCA681C7034CE7EEF3BDFD6F /* ImportRecordRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1920ECA24AAAC4A387BD4B4 /* ImportRecordRepository.swift */; };
 		FCA88B78279FDC570424BBD4 /* IngestStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0671133E268EB2E7EE0CFE6 /* IngestStore.swift */; };
@@ -5885,6 +5890,7 @@
 		FCDE64359C0314AC4119310F /* MermaidWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CEBE188CC30225A4692F171 /* MermaidWebView.swift */; };
 		FCE1A85677F50AF8F8B03423 /* ZhiYuDomainReexports.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42B5208FCE91F54F4AD3BB3F /* ZhiYuDomainReexports.swift */; };
 		FCEC8F81396FCBB344E7FCB7 /* VersionInfoFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51FAD49CE8F1DF1692F29AE1 /* VersionInfoFormatter.swift */; };
+		FCF5B861B41E7AD6EFFF1D09 /* LLMConfigStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FD720BDA38D8BD640283722 /* LLMConfigStore.swift */; };
 		FCFD554B325DBD7645FC769E /* IngestWorkflowAndImportSheetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30A3A701468791E169B6AB6C /* IngestWorkflowAndImportSheetTests.swift */; };
 		FD0C3AED533FD647A94D03CF /* PageHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9402E17F9360F24F175187D4 /* PageHistoryView.swift */; };
 		FD0EE766E697F44F93CF6CCF /* IngestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A14ECF17C7DE8EA2C6306AC /* IngestView.swift */; };
@@ -6450,6 +6456,7 @@
 		2F6B64188CE5C789EC4DBA22 /* UITestChatService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestChatService.swift; sourceTree = "<group>"; };
 		2F905120793F13DB14C54AD9 /* testQuizView_AnsweringState_RendersQuestionAndOptions.1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testQuizView_AnsweringState_RendersQuestionAndOptions.1.png; sourceTree = "<group>"; };
 		2FBA2AD001B81B2540679AA6 /* ZhiYuWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZhiYuWidgetBundle.swift; sourceTree = "<group>"; };
+		2FD720BDA38D8BD640283722 /* LLMConfigStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMConfigStore.swift; sourceTree = "<group>"; };
 		2FF8131F2D908076B6E82C46 /* OnDeviceLLMDeepTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnDeviceLLMDeepTests.swift; sourceTree = "<group>"; };
 		300DA47B34718CA59D0F7361 /* TagCapsuleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagCapsuleView.swift; sourceTree = "<group>"; };
 		301A59D48508DAB934AA2C80 /* PluginIconResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PluginIconResolver.swift; sourceTree = "<group>"; };
@@ -11047,6 +11054,7 @@
 				69E4B085428A719FF280AFB9 /* LLMChatService.swift */,
 				BA3E1F1517AF26B3495A36A1 /* LLMClient.swift */,
 				A8F188E1D92F345438EBB106 /* LLMConfigManager.swift */,
+				2FD720BDA38D8BD640283722 /* LLMConfigStore.swift */,
 				3FB00671B8090A4261724DEF /* LLMConstants.swift */,
 				8D0492E89753819D4046036B /* LLMContextBuilder.swift */,
 				856622CAC4CAB31FEA7C3D2A /* LLMIngestService.swift */,
@@ -14237,6 +14245,7 @@
 				10F5E97BCC176BE7D1AECFD5 /* LLMChatService.swift in Sources */,
 				3D235E8025844F32D1A2F513 /* LLMClient.swift in Sources */,
 				86126CDEB5F0987F29968AAC /* LLMConfigManager.swift in Sources */,
+				FC6467085668DAC27636A690 /* LLMConfigStore.swift in Sources */,
 				3CF10353FC96391CD4EBC81F /* LLMConstants.swift in Sources */,
 				D28807773BB70C791651E172 /* LLMContextBuilder.swift in Sources */,
 				A1E4A28DE343996732DA93F6 /* LLMIngestService.swift in Sources */,
@@ -15769,6 +15778,7 @@
 				DE06DF41B536FDCFDE08C103 /* LLMChatService.swift in Sources */,
 				5ED6CA559C7A4C9345836175 /* LLMClient.swift in Sources */,
 				0E2DEAA5D8A98F3676A57AC6 /* LLMConfigManager.swift in Sources */,
+				3E6A522EFD108252CC9F6AC2 /* LLMConfigStore.swift in Sources */,
 				69B1A06C27F1EE60DC1373F4 /* LLMConstants.swift in Sources */,
 				22969F3362B9C56CF6EC4B7C /* LLMContextBuilder.swift in Sources */,
 				EE435DA3AC10C72BF261ADCE /* LLMIngestService.swift in Sources */,
@@ -16484,6 +16494,7 @@
 				3A6EAA275FAA12E240F33898 /* LLMChatService.swift in Sources */,
 				EE9030A3C956F6E57157AB43 /* LLMClient.swift in Sources */,
 				D3C1A93F54EC336869C13DED /* LLMConfigManager.swift in Sources */,
+				FCF5B861B41E7AD6EFFF1D09 /* LLMConfigStore.swift in Sources */,
 				C63A87B1277D9A8C0F64D33D /* LLMConstants.swift in Sources */,
 				D1414BC6C0308684239F4AB8 /* LLMContextBuilder.swift in Sources */,
 				7ABB19386EA63BD8B6BFA14A /* LLMIngestService.swift in Sources */,
@@ -17205,6 +17216,7 @@
 				9CEF05C9EAC30601CE42B481 /* LLMChatService.swift in Sources */,
 				358620C793F5D47710473ED3 /* LLMClient.swift in Sources */,
 				A55756AEDBAE867B81C1F878 /* LLMConfigManager.swift in Sources */,
+				B6A21A773707392B0EBDF5D5 /* LLMConfigStore.swift in Sources */,
 				4046575E25CC506D0638588D /* LLMConstants.swift in Sources */,
 				C1F93FA1E2CD0236C122A563 /* LLMContextBuilder.swift in Sources */,
 				DEA1D1A8E4B4C9964A74413B /* LLMIngestService.swift in Sources */,
@@ -17925,6 +17937,7 @@
 				51D3AFABB35C44736780F3FA /* LLMChatService.swift in Sources */,
 				4A62DE08A9C091BE8FB2F242 /* LLMClient.swift in Sources */,
 				84146CB4CC742B713EF0BBF0 /* LLMConfigManager.swift in Sources */,
+				4D2E3DF1EFE721EC3AB5422E /* LLMConfigStore.swift in Sources */,
 				D81BA822B5A903ACB3F32DBF /* LLMConstants.swift in Sources */,
 				B8EB897689C5C52515F0B401 /* LLMContextBuilder.swift in Sources */,
 				BDB9774B163BEB57F248A046 /* LLMIngestService.swift in Sources */,
@@ -18690,6 +18703,7 @@
 				F14ABA21E36C8C0D69461AD4 /* LLMChatService.swift in Sources */,
 				24E735A30DB1137CD1FD85B0 /* LLMClient.swift in Sources */,
 				6CEA3142FCDCB28D959A6F6F /* LLMConfigManager.swift in Sources */,
+				ADF5F5E28D201118BABCE3A6 /* LLMConfigStore.swift in Sources */,
 				744DA3F514DCD6AC24FD2DED /* LLMConstants.swift in Sources */,
 				5D2CD603FDD87F8B26C26651 /* LLMContextBuilder.swift in Sources */,
 				EBD58483885FA166E55C54FE /* LLMIngestService.swift in Sources */,
