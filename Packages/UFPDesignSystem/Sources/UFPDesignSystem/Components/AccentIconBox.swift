@@ -1,21 +1,17 @@
 //
 //  AccentIconBox.swift
-//  ZhiYu
+//  UFPDesignSystem
 //
 //  Created by Antigravity on 2026/09/14.
 //  Copyright © 2026 WangChong. All rights reserved.
 //
-//  系统层级：[Shared] 共享标准层
-//  核心职责：Accent 图标块组件，消除 Features 中重复的 Image + font + foregroundStyle + frame + background + clipShape 链。
+//  系统层级：[UFPDesignSystem] 共享设计系统包
+//  核心职责：Accent 图标块通用原子组件，统一带主题色底框的 SF Symbol 视觉容器。
 //
 
 import SwiftUI
-import UFPDesignSystem
 
 /// Accent 图标块组件
-///
-/// 消除 `SourceDetailBodyView` 与 `RawStorageListView` 中重复的
-/// `Image(systemName:).font(.system(size: DesignTokens.Spacing.large)).foregroundStyle(.appAccent).frame(width:height:).background(Color.appAccent.opacity(DesignTokens.Colors.Opacity.glassOpacity)).clipShape(RoundedRectangle(cornerRadius: DesignTokens.Spacing.smallRadius))` 模式。
 public struct AccentIconBox: View {
     public let iconName: String
     public var fontSize: CGFloat

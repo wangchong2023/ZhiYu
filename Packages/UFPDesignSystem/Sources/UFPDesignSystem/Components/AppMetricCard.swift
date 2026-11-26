@@ -1,26 +1,26 @@
 //
 //  AppMetricCard.swift
-//  ZhiYu
+//  UFPDesignSystem
 //
 //  Created by Antigravity on 2026/06/07.
 //  Copyright © 2026 WangChong. All rights reserved.
 //
-//  系统层级：[Shared] 共享标准层
-//  核心职责：统一指标卡片组件——消除 LintView/DeveloperSettingsView 中的重复 metricCard 定义。
+//  系统层级：[UFPDesignSystem] 共享设计系统包
+//  核心职责：统一指标卡片通用组件，消除多视图中重复的 metricCard 定义。
 //
+
 import SwiftUI
-import UFPDesignSystem
 
 /// 统一指标卡片
 /// 用于展示带图标、标题、数值的指标摘要。
 @MainActor
 public struct AppMetricCard: View {
-    let title: String
-    let value: String
-    let icon: String
-    let color: Color
-    var iconSize: CGFloat
-    var fontSize: Font
+    public let title: String
+    public let value: String
+    public let icon: String
+    public let color: Color
+    public var iconSize: CGFloat
+    public var fontSize: Font
 
     /// 创建指标卡片
     /// - Parameters:
@@ -35,7 +35,7 @@ public struct AppMetricCard: View {
         value: String,
         icon: String,
         color: Color,
-        iconSize: CGFloat = DesignTokens.Metrics.iconBoxSize - DesignTokens.Spacing.small,
+        iconSize: CGFloat = DesignTokens.ComponentSpacing.huge,
         fontSize: Font = .system(size: DesignTokens.Typography.subheadlineFontSize, weight: .bold)
     ) {
         self.title = title

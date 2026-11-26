@@ -1,27 +1,27 @@
 //
 //  GuideStepRow.swift
-//  ZhiYu
+//  UFPDesignSystem
 //
 //  Created by Antigravity on 2026/05/23.
 //  Copyright © 2026 WangChong. All rights reserved.
 //
-//  系统层级：[Shared] 共享标准层
-//  核心职责：可复用 UI 组件库：编辑器、卡片、加载态、空状态等通用视图。
+//  系统层级：[UFPDesignSystem] 共享设计系统包
+//  核心职责：引导步骤行通用组件，提供带数字序号的渐变圆圈和描述文本。
 //
+
 import SwiftUI
-import UFPDesignSystem
 
 /// 引导步骤行组件
 /// 提供带数字序号的渐变圆圈和描述文本。
 public struct GuideStepRow: View {
     // MARK: - Properties
-    
+
     public let number: Int
     public let text: String
     public let icon: String
 
     // MARK: - Initialization
-    
+
     public init(number: Int, text: String, icon: String) {
         self.number = number
         self.text = text
@@ -29,9 +29,9 @@ public struct GuideStepRow: View {
     }
 
     // MARK: - Body
-    
+
     public var body: some View {
-        HStack(spacing: DesignTokens.Spacing.medium + DesignTokens.Spacing.atomic * 2) { // 14
+        HStack(spacing: DesignTokens.SystemSpacing.contentMedium) {
             // 带数字序号的渐变圆
             ZStack {
                 Circle()
@@ -42,12 +42,12 @@ public struct GuideStepRow: View {
                             endPoint: .bottomTrailing
                         )
                     )
-                    .frame(width: DesignTokens.Spacing.largeIconSize, height: DesignTokens.Spacing.largeIconSize) // 32
+                    .frame(width: DesignTokens.Spacing.largeIconSize, height: DesignTokens.Spacing.largeIconSize)
                     .shadow(
-                        color: .appAccent.opacity(DesignTokens.Colors.disabledOpacity), 
-                        radius: DesignTokens.Spacing.shadowRadius / 2.5, 
-                        x: 0, 
-                        y: DesignTokens.Spacing.shadowY / 2
+                        color: .appAccent.opacity(DesignTokens.Colors.disabledOpacity),
+                        radius: DesignTokens.SystemSpacing.tiny,
+                        x: 0,
+                        y: DesignTokens.SystemSpacing.atomic
                     )
 
                 Text("\(number)")

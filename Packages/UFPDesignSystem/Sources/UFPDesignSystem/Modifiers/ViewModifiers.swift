@@ -55,4 +55,10 @@ public extension View {
     func appCardClip(cornerRadius: CGFloat, backgroundOpacity: Double) -> some View {
         modifier(AppCardClipModifier(cornerRadius: cornerRadius, backgroundOpacity: backgroundOpacity))
     }
+
+    /// 应用设计系统标准阴影
+    func appStandardShadow() -> some View {
+        let shadow = DesignTokens.Shadows.standard
+        return self.shadow(color: shadow.color, radius: shadow.radius, x: shadow.x, y: shadow.y)
+    }
 }
