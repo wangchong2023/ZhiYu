@@ -12,6 +12,7 @@
 import XCTest
 @testable import ZhiYuUnitTestHost
 import UFPCore
+import AVFoundation
 
 @MainActor
 final class ModelLabRealFeaturesTests: XCTestCase {
@@ -53,6 +54,11 @@ final class ModelLabRealFeaturesTests: XCTestCase {
 
     func testAudioRecorderSafeStartAndStopNeverCrashes() async throws {
         let recorder = LabAudioRecorder.shared
+        #if os(iOS)
+        if #available(iOS 17.0, *) {
+            try XCTSkipUnless(AVAudioApplication.shared.recordPermission == .granted, "当前环境未预先授予麦克风权限，跳过真实录音验证以防系统弹窗挂起")
+        }
+        #endif
         await recorder.startRecording()
         try XCTSkipUnless(recorder.isRecording, "当前环境无麦克风权限，跳过真实录音验证")
 
