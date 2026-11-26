@@ -34,6 +34,46 @@ final class PPTXProcessor {
         let bullets: [String]
     }
 
+    private enum XMLConstants {
+        static let fallbackTitle = "Presentation"
+        static let fileExtension = ".pptx"
+        static let ampersand = "&"
+        static let ampersandEntity = "&amp;"
+        static let lessThan = "<"
+        static let lessThanEntity = "&lt;"
+        static let greaterThan = ">"
+        static let greaterThanEntity = "&gt;"
+        static let doubleQuote = "\""
+        static let doubleQuoteEntity = "&quot;"
+        static let singleQuote = "'"
+        static let singleQuoteEntity = "&apos;"
+        static let pathInvalidCharacters = CharacterSet(
+            charactersIn: SystemConstants.Character.slash
+                + SystemConstants.Character.backslash
+                + SystemConstants.Character.dot
+        )
+    }
+
+    /// 清理输出文件名，防止标题含 `/`、`\`、`..` 触发路径穿越或子目录写入失败
+    internal static func sanitizeOutputFilename(_ rawTitle: String) -> String {
+        let cleaned = rawTitle
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .components(separatedBy: XMLConstants.pathInvalidCharacters)
+            .joined(separator: SystemConstants.Character.underscore)
+            .trimmingCharacters(in: CharacterSet(charactersIn: SystemConstants.Character.underscore))
+        return cleaned.isEmpty ? XMLConstants.fallbackTitle : cleaned
+    }
+
+    /// 转义 OpenXML 文本节点中的保留实体字符，防止生成损坏的 PPTX XML
+    internal static func escapeXML(_ text: String) -> String {
+        text
+            .replacingOccurrences(of: XMLConstants.ampersand, with: XMLConstants.ampersandEntity)
+            .replacingOccurrences(of: XMLConstants.lessThan, with: XMLConstants.lessThanEntity)
+            .replacingOccurrences(of: XMLConstants.greaterThan, with: XMLConstants.greaterThanEntity)
+            .replacingOccurrences(of: XMLConstants.doubleQuote, with: XMLConstants.doubleQuoteEntity)
+            .replacingOccurrences(of: XMLConstants.singleQuote, with: XMLConstants.singleQuoteEntity)
+    }
+
     /// 生成
     /// - Parameter markdown: markdown
     /// - Parameter title: title
@@ -42,6 +82,7 @@ final class PPTXProcessor {
         let slides = parseMarkdown(markdown)
         let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: tempDir) }
 
         // 1. 创建目录结构
         try createDirectoryStructure(at: tempDir)
@@ -58,7 +99,8 @@ final class PPTXProcessor {
         }
 
         // 4. 打包为 .pptx (本质是 zip)
-        let outputURL = FileManager.default.temporaryDirectory.appendingPathComponent("\(title).pptx")
+        let safeTitle = Self.sanitizeOutputFilename(title)
+        let outputURL = FileManager.default.temporaryDirectory.appendingPathComponent(safeTitle + XMLConstants.fileExtension)
         if FileManager.default.fileExists(atPath: outputURL.path) {
             try FileManager.default.removeItem(at: outputURL)
         }
@@ -119,8 +161,10 @@ final class PPTXProcessor {
     /// 生成 ppt/presentation.xml — 主演示文稿定义，包含幻灯片 ID 列表。
     private func generatePresentation(at url: URL, slideCount: Int) throws {
         var slideList = ""
-        for i in 1...slideCount {
-            slideList += ["<p:sldId", "id=\"\(ProcessorConstants.OOXML.pptxSlideIdBase + i)\"", "r:id=\"rId\(i + 1)\"/>"].joined(separator: " ")
+        if slideCount > 0 {
+            for i in 1...slideCount {
+                slideList += ["<p:sldId", "id=\"\(ProcessorConstants.OOXML.pptxSlideIdBase + i)\"", "r:id=\"rId\(i + 1)\"/>"].joined(separator: " ")
+            }
         }
 
         let xml = """
@@ -136,8 +180,10 @@ final class PPTXProcessor {
     /// 生成 ppt/_rels/presentation.xml.rels — 演示文稿关系文件，映射每张幻灯片与主题。
     private func generatePresentationRels(at url: URL, slideCount: Int) throws {
         var rels = ""
-        for i in 1...slideCount {
-            rels += "<Relationship Id=\"rId\(i + 1)\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/slide\" Target=\"slides/slide\(i).xml\"/>"
+        if slideCount > 0 {
+            for i in 1...slideCount {
+                rels += "<Relationship Id=\"rId\(i + 1)\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/slide\" Target=\"slides/slide\(i).xml\"/>"
+            }
         }
 
         let xml = """
@@ -155,17 +201,19 @@ final class PPTXProcessor {
     private func generateSlide(at url: URL, slide: Slide, index: Int) throws {
         var bodyText = ""
         for bullet in slide.bullets {
+            let escapedBullet = Self.escapeXML(bullet)
             bodyText += """
             <a:p>
                 <a:pPr lvl="0"/>
                 <a:r>
                     <a:rPr lang="zh-CN" smtClean="0"/>
-                    <a:t>\(bullet)</a:t>
+                    <a:t>\(escapedBullet)</a:t>
                 </a:r>
             </a:p>
             """
         }
 
+        let escapedTitle = Self.escapeXML(slide.title)
         let xml = """
         <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
         <p:sld xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main">
@@ -178,7 +226,7 @@ final class PPTXProcessor {
                         <p:spPr/>
                         <p:txBody>
                             <a:bodyPr/><a:lstStyle/>
-                            <a:p><a:r><a:t>\(slide.title)</a:t></a:r></a:p>
+                            <a:p><a:r><a:t>\(escapedTitle)</a:t></a:r></a:p>
                         </p:txBody>
                     </p:sp>
                     <p:sp>

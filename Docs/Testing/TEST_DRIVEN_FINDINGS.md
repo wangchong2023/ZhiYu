@@ -116,21 +116,27 @@
 | **105** | `AppEmptyState.buildAccessibilityLabel()` 未过滤纯空白 `description`/`hint`，会拼接出 `"Title.  ."` 脏 VoiceOver 播报文本 | 直接插值拼接可选字符串未先 trim 判空 | 视障用户在空白描述场景下听到重复停顿与异常标点 | **Low** | UI/交互与防御性缺陷 | 改为按非空 trimmed 段落数组 `joined(separator: ". ")` 构建无障碍标签 | **✅ 已解决** | 是 (VoiceOver 无障碍标签清洗) | 是 (`FeedbackAndGlassRegressionTests`) | ✅ 已闭环 |
 | **106** | `AppDotPattern` 未校验 `spacing >= 1.0` 与 `dotSize > 0`，传入 `spacing <= 0` 或 `.nan` 时 `Int(size.width / spacing)` 触发浮点转整型崩溃或 `0..<rows` 负范围致命崩溃 | 缺少构造参数下限与有限性校验 | 异常参数渲染背景点阵直接引发 App 闪退或 OOM | **High** | UI/交互与防御性缺陷 | 在 `AppDotPattern.init` 强制 `spacing.isFinite && spacing >= Constants.minSpacing` 与 `dotSize.isFinite && dotSize > 0` 安全回退 | **✅ 已解决** | 是 (Canvas 网格步长防崩守卫) | 是 (`FeedbackAndGlassRegressionTests`) | ✅ 已闭环 |
 | **107** | `FlowLayout.arrangeSubviews` 在累加 `currentX += size.width + spacing` 后才更新 `maxX`，导致容器报告宽度恒定多出一个尾随 `spacing`；且未防御负数/非有限 `spacing` | `maxX` 更新时机落后于尾随间距累加 | 居中流式标签云右缘视觉偏斜，且异常 `spacing` 会导致子视图重叠或 `NaN` 尺寸 | **Medium** | UI/交互与防御性缺陷 | 在累加 `spacing` 之前以 `currentX + size.width` 更新 `maxX`，并在构造器中对非负有限 `spacing` 做安全回退 | **✅ 已解决** | 是 (自定义 Layout 精确测量审计) | 是 (`FeedbackAndGlassRegressionTests`) | ✅ 已闭环 |
+| **108** | `DeepLinkService` 的 `URL.queryParameters` 使用 `Dictionary(uniqueKeysWithValues:)`，外部链接携带重复 query key（如 `zhiyu://search?q=a&q=b`）直接触发远程 DoS 致命崩溃；且 `scheme` 校验大小写敏感、未拦截空白 `title` 参数 | 未处理 URL 规范允许的重复查询参数键与大小写不敏感 Scheme | 任意外部 URL 重复参数即可导致 App 秒退闪退 | **High** | 架构设计与安全/网络健壮性 | 改用 `Dictionary(..., uniquingKeysWith: { _, latest in latest })`；`scheme` 改为 `.lowercased()` 比对；过滤纯空白 `title` | **✅ 已解决** | 是 (URL 解析抗 DoS 规范) | 是 (`DeepLinkTests`) | ✅ 已闭环 |
+| **109** | `PPTXProcessor` 存在 4 处缺陷：OpenXML `<a:t>` 未转义 `& < > " '` 导致含特殊字符的笔记导出 PPTX 损坏；输出文件名未过滤 `/`/`\`/`..` 存在路径穿越风险；临时目录打包后未清理；`slideCount == 0` 触发 `1...0` 范围崩溃 | 直接字符串插值拼装 XML 与输出路径，缺少 `defer` 清理 | 含 `&`/`<` 的笔记导出 PPTX 无法打开；特殊标题触发路径穿越或写入失败 | **High** | 架构设计与安全/网络健壮性 | 新增 `escapeXML` 与 `sanitizeOutputFilename` 强类型常量转义/清理；添加 `defer` 清理临时目录与 `slideCount > 0` 守卫 | **✅ 已解决** | 是 (OpenXML 实体转义与导出文件名沙箱校验) | 是 (`PPTXProcessorTests`) | ✅ 已闭环 |
+| **110** | `EmbeddingManager` 的 `search` 与 `searchChunkCache` 未校验 `topK > 0`，传入负数触发 `Array.prefix` 致命崩溃；且 `loadInitialCache` 直接对原始 `Data` 调用 `bindMemory(to: Float.self)`，遇到截断/非对齐字节存在崩溃风险 | 缺少 `topK` 入口守卫与字节对齐安全反序列化 | 异常检索参数或损坏 DB 向量记录直接引发 App 闪退 | **High** | 架构设计与安全/网络健壮性 | 增加 `guard topK > 0`；新增 `decodeFloatVector(from:)` 校验 `MemoryLayout<Float>.stride` 并通过 `copyBytes` 安全反序列化 | **✅ 已解决** | 是 (向量检索配额守卫与二进制反序列化安全) | 是 (`EmbeddingManagerCrashResistanceTests`) | ✅ 已闭环 |
+| **111** | `GraphLayoutProcessor.computeAttractionForces` 使用 `Dictionary(uniqueKeysWithValues:)` 构建节点索引表，重复节点 ID 直接崩溃；且 `config.iterations < 0` 与 `Int(position.x / gridSize)` 遇到 `NaN` 均会触发致命崩溃 | 缺少重复键合并、迭代下限与浮点有限性校验 | 图谱异常数据或迭代溢出直接导致图谱页闪退 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 改用 `uniquingKeysWith`、`max(0, config.iterations)` 及 `gridCoordinates` 有限性守卫 | **✅ 已解决** | 是 (物理仿真引擎防 NaN 与重复键崩溃) | 是 (`GraphLayoutProcessorEdgeTests`) | ✅ 已闭环 |
+| **112** | `PromptTemplateEngine.renderPrompt` 仅对 `skill.skillId` 做了 `sanitizeFilename`，遗漏对 `skill.version` 路径分隔符过滤，存在经由 `version` 字段的路径穿越隐患；且 `init` 中硬索引 `paths[0]` | 路径清理未覆盖缓存文件名的全部动态段 | 恶意/异常远程配置版本号可逃逸缓存目录 | **High** | 架构设计与安全/网络健壮性 | 对 `skill.version` 同步执行 `sanitizeFilename`，`cachesDirectory` 改为 `paths.first ?? temporaryDirectory` 安全解包 | **✅ 已解决** | 是 (缓存文件名全段沙箱清理) | 是 (`PromptTemplateEngineTests`) | ✅ 已闭环 |
+| **113** | `UndoService` 的 `redoStack` 与 `redo()` 回推 `undoStack` 均未执行容量上限裁剪，长会话连续撤销/重做存在内存无界增长隐患 | 容量限制仅施加在 `pushSnapshot` 路径 | 大知识库高频撤销/重做累积大量快照占用内存 | **Low** | 状态机并发与数据生命周期 | 抽取 `Config.maxStackSize` 强类型常量，在 `undo`/`redo` 双向栈写入均执行上限裁剪 | **✅ 已解决** | 是 (撤销/重做双向栈容量守卫) | 是 (`UndoServiceEdgeCaseTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**107 项**
+- **收录问题总数**：**113 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：24 项 (22.4%)
-  - 状态机并发与数据生命周期：21 项 (19.6%)
-  - 架构设计与安全/网络健壮性：25 项 (23.4%)
-  - UI/交互与防御性缺陷：14 项 (13.1%)
-  - 代码坏味道与去魔鬼化/DRY 治理：23 项 (21.5%)
+  - 功能缺陷与核心算法/解析器/数据完整性：25 项 (22.1%)
+  - 状态机并发与数据生命周期：22 项 (19.5%)
+  - 架构设计与安全/网络健壮性：29 项 (25.7%)
+  - UI/交互与防御性缺陷：14 项 (12.4%)
+  - 代码坏味道与去魔鬼化/DRY 治理：23 项 (20.4%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：42 项 (39.3%)
-  - **Medium（功能异常/算法边界/性能损耗）**：41 项 (38.3%)
-  - **Low（样式异味/边界校验/门禁规范）**：24 项 (22.4%)
-- **修复闭环率**：**100% (107/107 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：47 项 (41.6%)
+  - **Medium（功能异常/算法边界/性能损耗）**：41 项 (36.3%)
+  - **Low（样式异味/边界校验/门禁规范）**：25 项 (22.1%)
+- **修复闭环率**：**100% (113/113 项已修复闭环)**
 

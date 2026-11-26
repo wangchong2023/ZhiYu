@@ -35,7 +35,7 @@ final class DeepLinkService: ObservableObject {
             Logger.shared.warning(" [DeepLinkService]" + " Rate limit" + " exceeded! Dropping" + " request: \(url.absoluteString)")
             return false
         }
-        guard url.scheme == CoreConstants.DeepLink.scheme else { return false }
+        guard url.scheme?.lowercased() == CoreConstants.DeepLink.scheme.lowercased() else { return false }
         return handleKnownHost(url.host, url: url)
     }
 
@@ -57,7 +57,8 @@ final class DeepLinkService: ObservableObject {
             pendingDeepLink = .openPage(id: id)
             return true
         }
-        if let title = url.queryParameters["title"] {
+        if let title = url.queryParameters["title"]?.trimmingCharacters(in: .whitespacesAndNewlines),
+           !title.isEmpty {
             pendingDeepLink = .openPageByTitle(title)
             return true
         }
@@ -93,9 +94,10 @@ extension URL {
     var queryParameters: [String: String] {
         guard let components = URLComponents(url: self, resolvingAgainstBaseURL: false),
               let queryItems = components.queryItems else { return [:] }
-        return Dictionary(uniqueKeysWithValues: queryItems.compactMap { item in
+        let pairs: [(String, String)] = queryItems.compactMap { item in
             guard let value = item.value else { return nil }
             return (item.name, value)
-        })
+        }
+        return Dictionary(pairs, uniquingKeysWith: { _, latest in latest })
     }
 }

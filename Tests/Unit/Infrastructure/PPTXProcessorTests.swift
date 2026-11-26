@@ -42,4 +42,30 @@ final class PPTXProcessorTests: XCTestCase {
         // 2. 清理测试文件
         try? FileManager.default.removeItem(at: outputURL)
     }
+
+    /// 缺陷 #109 回归：XML 保留字符必须转义，且含路径穿越符的标题不得逃逸 temporaryDirectory
+    func testPPTXProcessor_EscapesXMLAndSanitizesTraversalTitle() async throws {
+        let escaped = PPTXProcessor.escapeXML(#"A & B <tag> "quote" 'single'"#)
+        XCTAssertEqual(escaped, "A &amp; B &lt;tag&gt; &quot;quote&quot; &apos;single&apos;")
+
+        let sanitized = PPTXProcessor.sanitizeOutputFilename("../../Q1/Q2\\Report")
+        XCTAssertFalse(sanitized.contains("/"))
+        XCTAssertFalse(sanitized.contains("\\"))
+        XCTAssertFalse(sanitized.contains(".."))
+        XCTAssertEqual(PPTXProcessor.sanitizeOutputFilename("///..."), "Presentation")
+
+        let processor = PPTXProcessor(archiver: ZIPFoundationArchiver())
+        let outputURL = try await processor.generate(
+            markdown: "# R&D <2026>\n\n## Budget & Goals\n- x < y && y > 0",
+            title: "../Evil/Title"
+        )
+        defer { try? FileManager.default.removeItem(at: outputURL) }
+
+        XCTAssertEqual(
+            outputURL.deletingLastPathComponent().standardizedFileURL,
+            FileManager.default.temporaryDirectory.standardizedFileURL,
+            "输出文件必须严格限制在 temporaryDirectory 根目录内"
+        )
+        XCTAssertTrue(FileManager.default.fileExists(atPath: outputURL.path))
+    }
 }

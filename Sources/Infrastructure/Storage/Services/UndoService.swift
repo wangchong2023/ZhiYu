@@ -20,16 +20,19 @@ final class UndoService: ObservableObject, @unchecked Sendable {
     @Published var canUndo: Bool = false
     @Published var canRedo: Bool = false
 
+    private enum Config {
+        static let maxStackSize: Int = 50
+    }
+
     private var undoStack: [[KnowledgePage]] = []
     private var redoStack: [[KnowledgePage]] = []
-    private let maxStackSize = 50
 
     // MARK: - Snapshot Management
     /// 推送Snapshot
     /// - Parameter pages: pages
     func pushSnapshot(_ pages: [KnowledgePage]) {
         undoStack.append(pages.map { $0 })
-        if undoStack.count > maxStackSize {
+        if undoStack.count > Config.maxStackSize {
             undoStack.removeFirst()
         }
         // Any new action clears the redo stack
@@ -44,6 +47,9 @@ final class UndoService: ObservableObject, @unchecked Sendable {
         guard !undoStack.isEmpty else { return nil }
         // Save current state to redo stack
         redoStack.append(currentPages.map { $0 })
+        if redoStack.count > Config.maxStackSize {
+            redoStack.removeFirst()
+        }
         let previous = undoStack.removeLast()
         updatePublishedState()
         return previous
@@ -56,6 +62,9 @@ final class UndoService: ObservableObject, @unchecked Sendable {
         guard !redoStack.isEmpty else { return nil }
         // Save current state to undo stack
         undoStack.append(currentPages.map { $0 })
+        if undoStack.count > Config.maxStackSize {
+            undoStack.removeFirst()
+        }
         let next = redoStack.removeLast()
         updatePublishedState()
         return next

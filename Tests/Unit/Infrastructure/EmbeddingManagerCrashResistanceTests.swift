@@ -22,13 +22,28 @@ final class EmbeddingManagerCrashResistanceTests: XCTestCase {
         XCTAssertNotNil(results)
     }
 
-    /// 验证非4字节对齐的损坏 Data 在反序列化时不引发崩溃
-    func testVectorDeserialization_unalignedData_handlesSafely() {
-        let corruptedData = Data([0x01, 0x02, 0x03])
-        let vector = corruptedData.withUnsafeBytes { buffer in
-            [Float](buffer.bindMemory(to: Float.self))
-        }
-        XCTAssertFalse(corruptedData.isEmpty, "损坏数据已输入")
-        _ = vector
+    /// 缺陷 #110 回归：非 4 字节对齐/截断字节安全拒绝，合法字节精准还原，负数/零 topK 不触发 Array.prefix 崩溃
+    func testVectorDeserializationAndNegativeTopKHandledSafely() async {
+        // 1. 截断字节（3 字节）与空 Data 必须返回 nil，不得触发 bindMemory 崩溃
+        XCTAssertNil(EmbeddingManager.decodeFloatVector(from: Data([0x01, 0x02, 0x03])))
+        XCTAssertNil(EmbeddingManager.decodeFloatVector(from: Data()))
+
+        // 2. 合法 Float 序列化数据（含非对齐 Data Slice）必须精准反序列化
+        let original: [Float] = [0.25, -0.5, 1.0]
+        let rawBytes = original.withUnsafeBufferPointer { Data(buffer: $0) }
+        var padded = Data([0xFF])
+        padded.append(rawBytes)
+        let unalignedSlice = padded.dropFirst()
+        let decoded = EmbeddingManager.decodeFloatVector(from: Data(unalignedSlice))
+        XCTAssertEqual(decoded, original)
+
+        // 3. topK <= 0 不得触发 Array.prefix(topK) 致命崩溃
+        let manager = EmbeddingManager(repository: MockVectorRepository())
+        let negPageResults = await manager.search(query: "Swift", topK: -3)
+        XCTAssertTrue(negPageResults.isEmpty)
+        let zeroPageResults = await manager.search(query: "Swift", topK: 0)
+        XCTAssertTrue(zeroPageResults.isEmpty)
+        let negChunkResults = await manager.multiQuerySearch(query: "Swift", topK: -5)
+        XCTAssertTrue(negChunkResults.isEmpty)
     }
 }

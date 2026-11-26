@@ -38,7 +38,7 @@ public actor PromptTemplateEngine: PromptTemplateEngineCapabilities {
         
         // 初始化沙盒缓存目录
         let paths = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)
-        let cachesDirectory = paths[0]
+        let cachesDirectory = paths.first ?? FileManager.default.temporaryDirectory
         self.cacheDirectoryURL = cachesDirectory.appendingPathComponent("AgentPrompts", isDirectory: true)
         
         // 确保缓存目录存在
@@ -74,9 +74,10 @@ public actor PromptTemplateEngine: PromptTemplateEngineCapabilities {
         
         // 1. 检查是否存在外部托管的 Markdown Prompt
         if let remoteURLString = skill.remotePromptURLString, let url = URL(string: remoteURLString) {
-            // 安全修复：对 skillId 进行路径分隔符过滤，防止路径遍历攻击
+            // 安全修复：对 skillId 与 version 同步执行路径分隔符过滤，防止路径遍历攻击
             let safeSkillId = sanitizeFilename(skill.skillId)
-            let cachedFileURL = cacheDirectoryURL.appendingPathComponent("\(safeSkillId)_\(skill.version).md")
+            let safeVersion = sanitizeFilename(skill.version)
+            let cachedFileURL = cacheDirectoryURL.appendingPathComponent("\(safeSkillId)_\(safeVersion).md")
             
             // 2. 尝试从本地缓存读取，命中则使用缓存内容
             if let cachedContent = readCacheIfNeeded(fileURL: cachedFileURL, skill: skill) {

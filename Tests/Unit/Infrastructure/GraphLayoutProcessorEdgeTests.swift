@@ -160,4 +160,34 @@ final class GraphLayoutProcessorEdgeTests: XCTestCase {
         )
         XCTAssertTrue(nodes.isEmpty)
     }
+
+    // MARK: - 重复节点 ID、负数迭代与 NaN 坐标防护（缺陷 #111）
+
+    func testApplyForces_duplicateNodeIDsAndNaNPositionDoNotCrash() {
+        let sharedID = UUID()
+        var nodes = [
+            GraphNode(id: sharedID, title: "DupA", pageType: .concept, position: CGPoint(x: 100, y: 100)),
+            GraphNode(id: sharedID, title: "DupB", pageType: .concept, position: CGPoint(x: CGFloat.nan, y: 200))
+        ]
+        let edge = GraphEdge(source: sharedID, target: sharedID)
+        GraphLayoutProcessor.applyForces(
+            nodes: &nodes,
+            edges: [edge],
+            canvasWidth: 800,
+            canvasHeight: 600,
+            config: GraphLayoutProcessor.Config.default
+        )
+        XCTAssertEqual(nodes.count, 2)
+
+        var negativeIterConfig = GraphLayoutProcessor.Config.default
+        negativeIterConfig.iterations = -5
+        let page = KnowledgePage(title: "SafeNode")
+        let result = GraphLayoutProcessor.layout(
+            pages: [page],
+            linkResolver: { _ in nil },
+            canvasSize: CGSize(width: 800, height: 600),
+            config: negativeIterConfig
+        )
+        XCTAssertEqual(result.nodes.count, 1)
+    }
 }

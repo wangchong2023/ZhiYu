@@ -70,11 +70,8 @@ public actor EmbeddingManager: EmbeddingProvider {
             let chunks = try await repository.fetchAllChunksWithEmbeddings()
             for chunk in chunks {
                 chunkMetadata[chunk.id] = chunk
-                // 如果分块包含序列化的嵌入数据，反序列化到缓存
-                if let data = chunk.embedding {
-                    let vector = data.withUnsafeBytes { buffer in
-                        [Float](buffer.bindMemory(to: Float.self))
-                    }
+                // 如果分块包含序列化的嵌入数据，安全反序列化到缓存（防止非对齐或截断字节触发崩溃）
+                if let data = chunk.embedding, let vector = Self.decodeFloatVector(from: data) {
                     chunkVectorCache[chunk.id] = vector
                 }
             }
@@ -137,6 +134,7 @@ public actor EmbeddingManager: EmbeddingProvider {
     ///   - topK: 最多召回的候选数量。
     /// - Returns: 匹配命中的页面 UUID 标识和相似度得分列表。
     public func search(query: String, topK: Int = SearchDefaults.defaultTopK) async -> [(id: UUID, score: Float)] {
+        guard topK > 0 else { return [] }
         let queryVector = getVector(for: query)
         var results: [(id: UUID, score: Float)] = []
         
@@ -184,6 +182,7 @@ public actor EmbeddingManager: EmbeddingProvider {
         topK: Int,
         threshold: Float
     ) -> [(chunk: PageChunk, score: Float)] {
+        guard topK > 0 else { return [] }
         let queryVector = getVector(for: query)
         var results: [(chunk: PageChunk, score: Float)] = []
 
@@ -224,6 +223,17 @@ public actor EmbeddingManager: EmbeddingProvider {
             deterministicVector[i] = Float(mixed % UInt64(SearchDefaults.deterministicModulus)) / SearchDefaults.deterministicModulus
         }
         return deterministicVector
+    }
+
+    /// 安全反序列化二进制向量，避免非对齐 raw pointer 或截断字节触发 bindMemory 致命崩溃
+    internal static func decodeFloatVector(from data: Data) -> [Float]? {
+        let stride = MemoryLayout<Float>.stride
+        guard !data.isEmpty, data.count % stride == 0 else { return nil }
+        var vector = [Float](repeating: 0, count: data.count / stride)
+        _ = vector.withUnsafeMutableBytes { destination in
+            data.copyBytes(to: destination)
+        }
+        return vector
     }
 
     /// 计算两个向量的余弦相似度

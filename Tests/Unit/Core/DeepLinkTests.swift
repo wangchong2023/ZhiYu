@@ -191,4 +191,29 @@ final class DeepLinkTests: XCTestCase {
         XCTAssertEqual(allowedCount, 10, "并发环境下应当仅允许 10 次请求")
         XCTAssertEqual(blockedCount, 10, "并发环境下应当拦截并拒绝 10 次请求")
     }
+
+    // MARK: - 7. 重复查询参数防崩溃、大小写 Scheme 与空白标题防护（缺陷 #108）
+    func testHandleURL_DuplicateQueryKeysUppercaseSchemeAndBlankTitle() throws {
+        IntentRateLimiter.shared.reset()
+
+        // 1. 重复 query key 不得触发 Dictionary(uniqueKeysWithValues:) 致命崩溃，取最后值
+        let dupQueryURL = try XCTUnwrap(URL(string: "zhiyu://search?q=first&q=latest"))
+        XCTAssertTrue(service.handleURL(dupQueryURL))
+        guard case .search(let query) = service.consumeDeepLink() else {
+            XCTFail("重复 query 参数应安全解析为 .search"); return
+        }
+        XCTAssertEqual(query, "latest")
+
+        // 2. RFC 3986 大小写不敏感 Scheme 支持
+        let upperSchemeURL = try XCTUnwrap(URL(string: "ZHIYU://chat"))
+        XCTAssertTrue(service.handleURL(upperSchemeURL))
+        guard case .chat = service.consumeDeepLink() else {
+            XCTFail("大写 Scheme 应被正常路由"); return
+        }
+
+        // 3. 空或纯空白 title 参数应被拦截而非设置空路由
+        let blankTitleURL = try XCTUnwrap(URL(string: "zhiyu://page?title=%20%20"))
+        XCTAssertFalse(service.handleURL(blankTitleURL))
+        XCTAssertNil(service.consumeDeepLink())
+    }
 }

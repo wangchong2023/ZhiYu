@@ -40,8 +40,9 @@ struct GraphLayoutProcessor {
         var nodes = createInitialCircularLayout(pages: pages, canvas: canvas)
         let edges = createEdges(pages: pages, linkResolver: linkResolver)
 
-        for iteration in 0..<config.iterations {
-            let progress = CGFloat(iteration) / CGFloat(config.iterations)
+        let safeIterations = max(0, config.iterations)
+        for iteration in 0..<safeIterations {
+            let progress = CGFloat(iteration) / CGFloat(safeIterations)
             let temperature = GraphConstants.Layout.temperatureBaseline - progress * GraphConstants.Layout.temperatureDecayFactor
             applyForces(nodes: &nodes, edges: edges, canvasWidth: canvas.width, canvasHeight: canvas.height, config: config, temperature: temperature)
         }
@@ -233,13 +234,13 @@ struct GraphLayoutProcessor {
         var grid: [Int: [Int]] = [:]
 
         for i in nodes.indices {
-            let key = gridKey(for: nodes[i].position, gridSize: gridSize)
+            guard let (gx, gy) = gridCoordinates(for: nodes[i].position, gridSize: gridSize) else { continue }
+            let key = (gx << GraphConstants.Layout.gridHashShift) | (gy & GraphConstants.Layout.gridHashMask)
             grid[key, default: []].append(i)
         }
 
         for i in nodes.indices {
-            let gx = Int(nodes[i].position.x / gridSize)
-            let gy = Int(nodes[i].position.y / gridSize)
+            guard let (gx, gy) = gridCoordinates(for: nodes[i].position, gridSize: gridSize) else { continue }
 
             for ox in -1...1 {
                 for oy in -1...1 {
@@ -262,7 +263,10 @@ struct GraphLayoutProcessor {
 
     /// 计算节点间的吸引力（边）
     private static func computeAttractionForces(nodes: [GraphNode], edges: [GraphEdge], forces: inout [CGPoint], config: Config) {
-        let nodeIndexMap = Dictionary(uniqueKeysWithValues: nodes.enumerated().map { ($0.element.id, $0.offset) })
+        let nodeIndexMap = Dictionary(
+            nodes.enumerated().map { ($0.element.id, $0.offset) },
+            uniquingKeysWith: { first, _ in first }
+        )
 
         for edge in edges {
             guard let i = nodeIndexMap[edge.source], let j = nodeIndexMap[edge.target] else { continue }
@@ -301,11 +305,13 @@ struct GraphLayoutProcessor {
         return NodeDelta(dx: dx, dy: dy, distSq: distSq, dist: sqrt(distSq))
     }
 
-    /// 根据节点坐标计算空间网格哈希键，消除 buildGrid / 遍历两处重复的 gx/gy/gridHashShift 样板。
-    private static func gridKey(for position: CGPoint, gridSize: CGFloat) -> Int {
-        let gx = Int(position.x / gridSize)
-        let gy = Int(position.y / gridSize)
-        return (gx << GraphConstants.Layout.gridHashShift) | (gy & GraphConstants.Layout.gridHashMask)
+    /// 安全计算空间网格整型坐标，过滤非有限浮点避免 Int(NaN/Inf) 致命崩溃
+    private static func gridCoordinates(for position: CGPoint, gridSize: CGFloat) -> (Int, Int)? {
+        guard gridSize.isFinite, gridSize > 0, position.x.isFinite, position.y.isFinite else { return nil }
+        let rawX = position.x / gridSize
+        let rawY = position.y / gridSize
+        guard rawX.isFinite, rawY.isFinite else { return nil }
+        return (Int(rawX), Int(rawY))
     }
 
     /// 计算中心向心力与社区聚合力
