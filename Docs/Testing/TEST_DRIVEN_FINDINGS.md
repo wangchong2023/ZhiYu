@@ -110,21 +110,27 @@
 | **99** | `LiteRTInferenceBackend.loadModel` 与 `LiteRTMultimodalEmbeddingEngine.loadModel` 仅检查 `fileExists(atPath:)` 未拦截目录路径，传入目录时直接送入 C++ 运行时引发异常 | 未通过 `fileExists(atPath:isDirectory:)` 排除目录 | 误传目录路径导致底层 C++ 运行时报晦涩错误或不稳定 | **High** | 架构设计与安全/网络健壮性 | 统一改用 `fileExists(atPath:isDirectory:)` 拦截目录并抛出 `LiteRTBackendError.missingModelFile` | **✅ 已解决** | 是 (本地模型路径校验规范) | 是 (`LocalInferenceBackendProtocolTests`) | ✅ 已闭环 |
 | **100** | `LiteRTInferenceBackend` 流式指标计算直接对 `UInt64` 时间戳执行减法，若遇到时钟回拨或乱序时间戳会触发无符号整数下溢致命崩溃 | 未在 `UInt64` 减法前校验被减数不小于减数 | 端侧推理收尾阶段偶发算术溢出闪退 | **High** | 架构设计与安全/网络健壮性 | 抽取 `computeStreamMetrics` 使用安全减法与 `Config.zeroNanoseconds`/`Config.minEstimatedTokens` 常量兜底 | **✅ 已解决** | 是 (无符号时间差安全减法范式) | 是 (`LocalInferenceBackendProtocolTests`) | ✅ 已闭环 |
 | **101** | `PromptSecuritySanitizer.sanitizeAndWrap` 的 XML 冲突标签转义大小写敏感，攻击者可通过 `</CONTEXT>`/`</Context>` 绕过沙箱逃逸；同时 `MultimodalEmbeddingEngine(dimension: <= 0)` 未钳位下限触发除零/负数组崩溃 | 字符串替换漏设 `.caseInsensitive`；维度构造参数缺少正数下限 | 恶意输入可逃逸 XML 提示词沙箱；非法维度参数直接闪退 | **High** | 架构设计与安全/网络健壮性 | `sanitizeAndWrap` 补齐 `.caseInsensitive` 全量转义；`MultimodalEmbeddingEngine` 构造器强制 `max(Constants.minDimension, dimension)` | **✅ 已解决** | 是 (安全沙箱大小写逃逸 + 构造参数下限守卫) | 是 (`PromptSecuritySanitizerEscapeTests`, `MultimodalIndexerRegressionTests`) | ✅ 已闭环 |
+| **102** | `ToastManager.dismiss()` 未取消悬挂的 Combine 自动关闭计时器，且 `show(duration:)` 未拦截 `.infinity`/`.nan` 非有限时长；同时 `AppToast.duration` 误把间距令牌 `SystemSpacing.tight` (4.0pt) 当作时间秒数，与 `show` 默认 3.0s 不一致，且 `.zIndex(9999)` 硬编码魔鬼数字 | 手动关闭漏清 `timer`；时间与间距令牌混用；缺少 `isFinite` 校验 | 手动关闭后旧定时器悬挂泄露并二次触发动画；非法时长导致 Combine 定时异常 | **Medium** | 状态机并发与数据生命周期 | `dismiss()` 强制 `timer?.cancel(); timer = nil`；统一抽取 `ToastTimingConfig.defaultDurationSeconds` 并校验 `duration.isFinite && duration > 0`；新增 `DesignTokens.ZIndex.toast` 消除魔鬼数字 | **✅ 已解决** | 是 (Toast 计时器生命周期与语义令牌对齐) | 是 (`FeedbackAndGlassRegressionTests`) | ✅ 已闭环 |
+| **103** | `SiriWaveformView` 在布局初期 `width == 0` 或传入非有限速度/振幅时，执行 `x / width` 产生 `0/0 = NaN` 并写入 `CGPath`，触发 CoreGraphics 非法点渲染异常 | `Canvas` 绘制未对尺寸与浮点参数执行有限正值守卫 | 视图折叠/初帧布局时产生 `CGPathAddLineToPoint: invalid point (NaN)` 渲染故障 | **Medium** | UI/交互与防御性缺陷 | 抽取 `buildWavePath` 纯函数并在入口强制 `width/height > 0` 与 `isFinite` 校验，所有波形参数收敛至 `WaveConfig` 常量枚举 | **✅ 已解决** | 是 (Canvas 零宽除零防 NaN 规范) | 是 (`FeedbackAndGlassRegressionTests`) | ✅ 已闭环 |
+| **104** | `AppPulseDot` 启用 `.repeatForever` 动画但缺少 `.onDisappear` 停止逻辑导致视图销毁后动画资源残留；同时 `AppPulseDot` 与 `AppGlow` 未防御非正/非有限 `size`，传入 `<= 0` 或 `.nan` 触发非法 frame/font 尺寸告警 | 缺少 `onDisappear` 复位与构造参数尺寸守卫 | 列表滚动复用场景下动画持续消耗 GPU/CPU；异常尺寸引发运行时布局告警 | **Medium** | UI/交互与防御性缺陷 | 为 `AppPulseDot` 补齐 `.onDisappear { isPulsing = false }`，并为 `AppPulseDot`/`AppGlow` 构造器增加 `size.isFinite && size > 0` 安全回退 | **✅ 已解决** | 是 (无限动画释放 + UI 尺寸守卫) | 是 (`FeedbackAndGlassRegressionTests`) | ✅ 已闭环 |
+| **105** | `AppEmptyState.buildAccessibilityLabel()` 未过滤纯空白 `description`/`hint`，会拼接出 `"Title.  ."` 脏 VoiceOver 播报文本 | 直接插值拼接可选字符串未先 trim 判空 | 视障用户在空白描述场景下听到重复停顿与异常标点 | **Low** | UI/交互与防御性缺陷 | 改为按非空 trimmed 段落数组 `joined(separator: ". ")` 构建无障碍标签 | **✅ 已解决** | 是 (VoiceOver 无障碍标签清洗) | 是 (`FeedbackAndGlassRegressionTests`) | ✅ 已闭环 |
+| **106** | `AppDotPattern` 未校验 `spacing >= 1.0` 与 `dotSize > 0`，传入 `spacing <= 0` 或 `.nan` 时 `Int(size.width / spacing)` 触发浮点转整型崩溃或 `0..<rows` 负范围致命崩溃 | 缺少构造参数下限与有限性校验 | 异常参数渲染背景点阵直接引发 App 闪退或 OOM | **High** | UI/交互与防御性缺陷 | 在 `AppDotPattern.init` 强制 `spacing.isFinite && spacing >= Constants.minSpacing` 与 `dotSize.isFinite && dotSize > 0` 安全回退 | **✅ 已解决** | 是 (Canvas 网格步长防崩守卫) | 是 (`FeedbackAndGlassRegressionTests`) | ✅ 已闭环 |
+| **107** | `FlowLayout.arrangeSubviews` 在累加 `currentX += size.width + spacing` 后才更新 `maxX`，导致容器报告宽度恒定多出一个尾随 `spacing`；且未防御负数/非有限 `spacing` | `maxX` 更新时机落后于尾随间距累加 | 居中流式标签云右缘视觉偏斜，且异常 `spacing` 会导致子视图重叠或 `NaN` 尺寸 | **Medium** | UI/交互与防御性缺陷 | 在累加 `spacing` 之前以 `currentX + size.width` 更新 `maxX`，并在构造器中对非负有限 `spacing` 做安全回退 | **✅ 已解决** | 是 (自定义 Layout 精确测量审计) | 是 (`FeedbackAndGlassRegressionTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**101 项**
+- **收录问题总数**：**107 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：24 项 (23.8%)
-  - 状态机并发与数据生命周期：20 项 (19.8%)
-  - 架构设计与安全/网络健壮性：25 项 (24.8%)
-  - UI/交互与防御性缺陷：9 项 (8.9%)
-  - 代码坏味道与去魔鬼化/DRY 治理：23 项 (22.8%)
+  - 功能缺陷与核心算法/解析器/数据完整性：24 项 (22.4%)
+  - 状态机并发与数据生命周期：21 项 (19.6%)
+  - 架构设计与安全/网络健壮性：25 项 (23.4%)
+  - UI/交互与防御性缺陷：14 项 (13.1%)
+  - 代码坏味道与去魔鬼化/DRY 治理：23 项 (21.5%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：41 项 (40.6%)
-  - **Medium（功能异常/算法边界/性能损耗）**：37 项 (36.6%)
-  - **Low（样式异味/边界校验/门禁规范）**：23 项 (22.8%)
-- **修复闭环率**：**100% (101/101 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：42 项 (39.3%)
+  - **Medium（功能异常/算法边界/性能损耗）**：41 项 (38.3%)
+  - **Low（样式异味/边界校验/门禁规范）**：24 项 (22.4%)
+- **修复闭环率**：**100% (107/107 项已修复闭环)**
 

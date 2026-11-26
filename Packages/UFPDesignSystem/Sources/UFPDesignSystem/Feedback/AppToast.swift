@@ -49,7 +49,7 @@ public struct AppToast: Identifiable, Equatable {
     public let id = UUID()
     public let type: AppToastType
     public let message: String
-    public var duration: Double = UIConstants.toastDuration // 3.0
+    public var duration: Double = ToastTimingConfig.defaultDurationSeconds
 }
 
 // MARK: - 提示管理器
@@ -62,21 +62,28 @@ public final class ToastManager: @unchecked Sendable {
 
     public var currentToast: AppToast?
 
+    /// 当前是否存在活跃的自动隐藏计时器（用于验证生命周期释放，防止泄露）
+    internal var hasActiveTimer: Bool {
+        timer != nil
+    }
+
     public init() {}
 
     /// 展示
     /// - Parameter type: type
     /// - Parameter message: message
     /// - Parameter duration: duration
-    public func show(type: AppToastType, message: String, duration: Double = 3.0) {
-        withAnimation(.spring(response: ToastAnimationConfig.toastSpringResponse, dampingFraction: DesignTokens.Animation.standardDamping)) { // 0.4, 0.8
-            currentToast = AppToast(type: type, message: message, duration: duration)
+    public func show(type: AppToastType, message: String, duration: Double = ToastTimingConfig.defaultDurationSeconds) {
+        let sanitizedDuration = (duration.isFinite && duration > 0) ? duration : 0
+        withAnimation(.spring(response: ToastAnimationConfig.toastSpringResponse, dampingFraction: DesignTokens.Animation.standardDamping)) {
+            currentToast = AppToast(type: type, message: message, duration: sanitizedDuration)
         }
 
         timer?.cancel()
-        if duration > 0 {
+        timer = nil
+        if sanitizedDuration > 0 {
             timer = Just(())
-                .delay(for: .seconds(duration), scheduler: RunLoop.main)
+                .delay(for: .seconds(sanitizedDuration), scheduler: RunLoop.main)
                 .sink { [weak self] _ in
                     self?.dismiss()
                 }
@@ -85,7 +92,9 @@ public final class ToastManager: @unchecked Sendable {
 
     /// 关闭
     public func dismiss() {
-        withAnimation(.spring(response: ToastAnimationConfig.toastSpringResponse, dampingFraction: DesignTokens.Animation.standardDamping)) { // 0.4, 0.8
+        timer?.cancel()
+        timer = nil
+        withAnimation(.spring(response: ToastAnimationConfig.toastSpringResponse, dampingFraction: DesignTokens.Animation.standardDamping)) {
             currentToast = nil
         }
     }
@@ -176,8 +185,8 @@ struct AppToastModifier: ViewModifier {
                 AppToastView(toast: toast) {
                     manager.dismiss()
                 }
-                .padding(.top, DesignTokens.SystemSpacing.elementLarge) // 10
-                .zIndex(9999)
+                .padding(.top, DesignTokens.SystemSpacing.elementLarge)
+                .zIndex(DesignTokens.ZIndex.toast)
             }
         }
     }
@@ -191,9 +200,9 @@ extension View {
     }
 }
 
-// MARK: - 常量
-private enum UIConstants {
-    static let toastDuration: Double = Double(DesignTokens.SystemSpacing.tight)
+// MARK: - Toast 时间配置（非 UI 语境）
+public enum ToastTimingConfig {
+    public static let defaultDurationSeconds: Double = 3.0
 }
 
 // MARK: - Toast 动画配置（非 UI 语境）

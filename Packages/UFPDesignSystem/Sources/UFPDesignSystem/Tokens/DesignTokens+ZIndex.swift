@@ -19,5 +19,6 @@ extension DesignTokens {
         public static let medalPopup: Double = 200
         public static let coachMark: Double = 300
         public static let sidebarOverlay: Double = 1000
+        public static let toast: Double = 9999
     }
 }

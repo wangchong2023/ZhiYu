@@ -25,7 +25,7 @@ public struct FlowLayout: Layout {
     // MARK: - Initialization
 
     public init(spacing: CGFloat = DesignTokens.Spacing.small) {
-        self.spacing = spacing
+        self.spacing = (spacing.isFinite && spacing >= 0) ? spacing : DesignTokens.Spacing.small
     }
 
     // MARK: - Layout Implementation
@@ -77,8 +77,8 @@ public struct FlowLayout: Layout {
 
             positions.append(CGPoint(x: currentX, y: currentY))
             rowHeight = max(rowHeight, size.height)
+            maxX = max(maxX, currentX + size.width)
             currentX += size.width + spacing
-            maxX = max(maxX, currentX)
         }
 
         return (CGSize(width: maxX, height: currentY + rowHeight), positions)

@@ -26,67 +26,101 @@ public struct SiriWaveformView: View {
 
     // MARK: - 波形参数配置
 
-    private struct WaveConfig {
-        let count: Int = 3
+    private enum WaveConfig {
+        static let count: Int = 3
+        static let sampleStep: CGFloat = 2.0
+        static let fullCircleRadians: CGFloat = .pi * 2.0
+        static let primaryLineWidth: CGFloat = 3.0
+        static let secondaryLineWidth: CGFloat = 2.0
+        static let blurRadius: CGFloat = 1.5
         // 三个波浪分别赋予不同的初相（Phase offset）、频率（Frequency）和基准高度比例
-        let frequencies: [CGFloat] = [1.2, 2.0, 0.8]
-        let amplitudes: [CGFloat] = [25.0, 15.0, 8.0]
-        let phaseOffsets: [CGFloat] = [0.0, .pi / 3, .pi / 1.5]
-        let speeds: [CGFloat] = [2.0, 3.5, 1.5]
-        let colors: [[Color]] = [
+        static let frequencies: [CGFloat] = [1.2, 2.0, 0.8]
+        static let amplitudes: [CGFloat] = [25.0, 15.0, 8.0]
+        static let phaseOffsets: [CGFloat] = [0.0, .pi / 3, .pi / 1.5]
+        static let speeds: [CGFloat] = [2.0, 3.5, 1.5]
+        static let colors: [[Color]] = [
             [.cyan, .blue],
             [.purple, .pink],
             [.indigo, .cyan]
         ]
     }
 
-    private let config = WaveConfig()
+    /// 构造单路正弦波路径；对非正尺寸或非有限浮点参数返回空路径，防止 0/0 注入 NaN 坐标污染 CoreGraphics
+    internal static func buildWavePath(
+        waveIndex: Int,
+        width: CGFloat,
+        height: CGFloat,
+        time: Double,
+        amplitudeMultiplier: Double
+    ) -> Path {
+        guard waveIndex >= 0,
+              waveIndex < WaveConfig.count,
+              width.isFinite, width > 0,
+              height.isFinite, height > 0,
+              time.isFinite,
+              amplitudeMultiplier.isFinite else {
+            return Path()
+        }
+
+        let centerY = height / 2
+        let freq = WaveConfig.frequencies[waveIndex]
+        let amp = WaveConfig.amplitudes[waveIndex] * CGFloat(amplitudeMultiplier)
+        let phaseOffset = WaveConfig.phaseOffsets[waveIndex]
+        let speed = WaveConfig.speeds[waveIndex]
+
+        var path = Path()
+        path.move(to: CGPoint(x: 0, y: centerY))
+
+        for x in stride(from: CGFloat(0), through: width, by: WaveConfig.sampleStep) {
+            let normalizedX = x / width * WaveConfig.fullCircleRadians
+            let t = CGFloat(time) * speed
+            let y = amp * sin(normalizedX * freq + t + phaseOffset) + centerY
+            path.addLine(to: CGPoint(x: x, y: y))
+        }
+        return path
+    }
 
     public var body: some View {
         TimelineView(.animation) { timeline in
-            let time = timeline.date.timeIntervalSinceReferenceDate * speedMultiplier
+            let safeSpeed = speedMultiplier.isFinite ? speedMultiplier : 0
+            let time = timeline.date.timeIntervalSinceReferenceDate * safeSpeed
 
             Canvas { context, size in
                 let width = size.width
                 let height = size.height
+                guard width.isFinite, width > 0, height.isFinite, height > 0 else { return }
                 let centerY = height / 2
 
                 // 绘制三路交错正弦波
-                for i in 0..<config.count {
-                    let freq = config.frequencies[i]
-                    let amp = config.amplitudes[i] * CGFloat(amplitudeMultiplier)
-                    let phaseOffset = config.phaseOffsets[i]
-                    let speed = config.speeds[i]
-                    let colors = config.colors[i]
+                for i in 0..<WaveConfig.count {
+                    let path = Self.buildWavePath(
+                        waveIndex: i,
+                        width: width,
+                        height: height,
+                        time: time,
+                        amplitudeMultiplier: amplitudeMultiplier
+                    )
+                    guard !path.isEmpty else { continue }
 
-                    var path = Path()
-                    path.move(to: CGPoint(x: 0, y: centerY))
-
-                    // 用密集线条点连成平滑正弦曲线
-                    for x in stride(from: CGFloat(0), through: width, by: 2) {
-                        let normalizedX = x / width * .pi * 2
-                        let t = CGFloat(time) * speed
-                        let y = amp * sin(normalizedX * freq + t + phaseOffset) + centerY
-                        path.addLine(to: CGPoint(x: x, y: y))
-                    }
-
-                    // 绘制渐变曲线
-                    let gradient = Gradient(colors: colors)
+                    let gradient = Gradient(colors: WaveConfig.colors[i])
                     let shading = GraphicsContext.Shading.linearGradient(
                         gradient,
                         startPoint: CGPoint(x: 0, y: centerY),
                         endPoint: CGPoint(x: width, y: centerY)
                     )
 
-                    // 应用发光线条描边
                     context.stroke(
                         path,
                         with: shading,
-                        style: StrokeStyle(lineWidth: i == 0 ? 3.0 : 2.0, lineCap: .round, lineJoin: .round)
+                        style: StrokeStyle(
+                            lineWidth: i == 0 ? WaveConfig.primaryLineWidth : WaveConfig.secondaryLineWidth,
+                            lineCap: .round,
+                            lineJoin: .round
+                        )
                     )
                 }
             }
-            .blur(radius: 1.5)
+            .blur(radius: WaveConfig.blurRadius)
             .blendMode(.screen)
         }
     }

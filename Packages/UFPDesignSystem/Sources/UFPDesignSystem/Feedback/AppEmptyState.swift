@@ -150,9 +150,9 @@ public struct AppEmptyState: View {
         .accessibilityLabel(buildAccessibilityLabel())
     }
 
-    // MARK: - Private Methods
+    // MARK: - Internal Methods
 
-    private func actionForegroundColor(for role: Action.Role?) -> Color {
+    internal func actionForegroundColor(for role: Action.Role?) -> Color {
         switch role {
         case .primary, .none: return .white
         case .secondary: return .appAccent
@@ -160,12 +160,31 @@ public struct AppEmptyState: View {
         }
     }
 
-    private func buildAccessibilityLabel() -> String {
-        var label = "\(title)."
-        if let description = description { label += " \(description)." }
-        if let hint = hint { label += " Hint: \(hint)" }
-        if let action = action { label += " Action: \(action.label)." }
-        return label
+    internal func buildAccessibilityLabel() -> String {
+        var segments: [String] = []
+        let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmedTitle.isEmpty {
+            segments.append(trimmedTitle)
+        }
+        if let description {
+            let trimmedDescription = description.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmedDescription.isEmpty {
+                segments.append(trimmedDescription)
+            }
+        }
+        if let hint {
+            let trimmedHint = hint.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmedHint.isEmpty {
+                segments.append("Hint: \(trimmedHint)")
+            }
+        }
+        if let action {
+            let trimmedAction = action.label.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmedAction.isEmpty {
+                segments.append("Action: \(trimmedAction)")
+            }
+        }
+        return segments.joined(separator: ". ")
     }
 }
 

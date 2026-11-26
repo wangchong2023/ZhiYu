@@ -16,6 +16,11 @@ import SwiftUI
 /// 工业级点阵背景
 /// 使用 Canvas 高性能渲染重复的圆点模式，常用于背景装饰。
 public struct AppDotPattern: View {
+    private enum Constants {
+        static let minSpacing: CGFloat = 1.0
+        static let minCanvasDimension: CGFloat = 1.0
+    }
+
     public var dotColor: Color
     public var spacing: CGFloat
     public var dotSize: CGFloat
@@ -26,13 +31,15 @@ public struct AppDotPattern: View {
         dotSize: CGFloat = DesignTokens.Spacing.atomic
     ) {
         self.dotColor = dotColor
-        self.spacing = spacing
-        self.dotSize = dotSize
+        self.spacing = (spacing.isFinite && spacing >= Constants.minSpacing) ? spacing : DesignTokens.Spacing.wide
+        self.dotSize = (dotSize.isFinite && dotSize > 0) ? dotSize : DesignTokens.Spacing.atomic
     }
 
     public var body: some View {
         Canvas { context, size in
-            guard size.width > 1 && size.height > 1 else { return }
+            guard size.width.isFinite, size.height.isFinite,
+                  size.width > Constants.minCanvasDimension,
+                  size.height > Constants.minCanvasDimension else { return }
             let cols = Int(size.width / spacing) + 1
             let rows = Int(size.height / spacing) + 1
             for row in 0..<rows {

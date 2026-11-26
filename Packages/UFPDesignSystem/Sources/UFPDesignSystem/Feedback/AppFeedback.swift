@@ -23,7 +23,7 @@ public struct AppPulseDot: View {
 
     public init(color: Color = .appAccent, size: CGFloat = DesignTokens.Spacing.small) {
         self.color = color
-        self.size = size
+        self.size = (size.isFinite && size > 0) ? size : DesignTokens.Spacing.small
     }
 
     public var body: some View {
@@ -42,6 +42,9 @@ public struct AppPulseDot: View {
             withAnimation(.easeOut(duration: DesignTokens.Animations.Decorator.pulseDuration).repeatForever(autoreverses: false)) {
                 isPulsing = true
             }
+        }
+        .onDisappear {
+            isPulsing = false
         }
     }
 }
@@ -170,7 +173,7 @@ public struct AppGlow: View {
     public init(icon: String, color: Color = .appAccent, size: CGFloat = DesignTokens.Spacing.huge) {
         self.icon = icon
         self.color = color
-        self.size = size
+        self.size = (size.isFinite && size > 0) ? size : DesignTokens.Spacing.huge
     }
 
     public var body: some View {
