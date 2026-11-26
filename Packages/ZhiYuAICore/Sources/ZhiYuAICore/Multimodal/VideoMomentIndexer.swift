@@ -69,6 +69,8 @@ public actor VideoMomentIndexer {
         public static let preferredTimescale: Int32 = 600
         public static let clusterWindowSeconds: Double = 1.5
         public static let secondsPerMinute: Int = 60
+        public static let defaultFormattedTime: String = "00:00"
+        public static let maxSupportedSeconds: Double = 359_999.0
     }
 
     public static let shared = VideoMomentIndexer()
@@ -98,8 +100,9 @@ public actor VideoMomentIndexer {
         } catch {
             return 0
         }
+        guard sampleInterval.isFinite, sampleInterval > 0 else { return 0 }
         let durationSeconds = CMTimeGetSeconds(duration)
-        guard durationSeconds > 0 else { return 0 }
+        guard durationSeconds.isFinite, durationSeconds > 0 else { return 0 }
 
         let generator = AVAssetImageGenerator(asset: asset)
         generator.appliesPreferredTrackTransform = true
@@ -143,7 +146,7 @@ public actor VideoMomentIndexer {
         query: String,
         topK: Int = Config.defaultTopK
     ) async throws -> [VideoMomentResult] {
-        guard !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+        guard topK > 0, !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             return []
         }
         let queryVector = try await embeddingEngine.embedText(query)
@@ -207,7 +210,9 @@ public actor VideoMomentIndexer {
 
     /// 格式化时间为 mm:ss
     public static func formatTime(seconds: Double) -> String {
-        let totalSeconds = Int(max(0, seconds))
+        guard seconds.isFinite else { return Config.defaultFormattedTime }
+        let clamped = min(max(0, seconds), Config.maxSupportedSeconds)
+        let totalSeconds = Int(clamped)
         let minutes = totalSeconds / Config.secondsPerMinute
         let secs = totalSeconds % Config.secondsPerMinute
         return String(format: "%02d:%02d", minutes, secs)

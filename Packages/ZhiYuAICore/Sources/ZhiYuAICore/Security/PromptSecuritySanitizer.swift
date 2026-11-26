@@ -24,8 +24,8 @@ public struct PromptSecuritySanitizer: Sendable {
         let closeTag = "</\(tag)>"
         let escapedCloseTag = "&lt;/\(tag)&gt;"
         let escapedInput = input
-            .replacingOccurrences(of: openTag, with: escapedOpenTag)
-            .replacingOccurrences(of: closeTag, with: escapedCloseTag)
+            .replacingOccurrences(of: openTag, with: escapedOpenTag, options: .caseInsensitive)
+            .replacingOccurrences(of: closeTag, with: escapedCloseTag, options: .caseInsensitive)
 
         return "\(openTag)\n\(escapedInput)\n\(closeTag)"
     }

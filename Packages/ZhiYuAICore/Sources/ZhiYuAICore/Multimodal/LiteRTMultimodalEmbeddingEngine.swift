@@ -37,7 +37,9 @@ public actor LiteRTMultimodalEmbeddingEngine: MultimodalEmbeddingProtocol {
 
     /// 加载本地 EmbeddingGemma-2 `.litertlm` 权重
     public func loadModel(at url: URL) async throws {
-        guard FileManager.default.fileExists(atPath: url.path) else {
+        var isDirectory: ObjCBool = false
+        guard FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory),
+              !isDirectory.boolValue else {
             throw LiteRTBackendError.missingModelFile(url.path)
         }
         #if canImport(LiteRTLM)

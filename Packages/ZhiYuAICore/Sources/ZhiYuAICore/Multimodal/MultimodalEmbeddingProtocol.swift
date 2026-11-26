@@ -53,6 +53,10 @@ public final class MultimodalEmbeddingEngine: MultimodalEmbeddingProtocol, Senda
         static let maxChannelValue: Float = 255.0
         static let dominantColorWeight: Float = 0.5
         static let minNormEpsilon: Float = 0.00001
+        static let minRGBBytesPerPixel: Int = 3
+        static let greenChannelOffset: Int = 1
+        static let blueChannelOffset: Int = 2
+        static let minDimension: Int = 1
     }
 
     private enum ColorSemanticKeywords {
@@ -68,7 +72,7 @@ public final class MultimodalEmbeddingEngine: MultimodalEmbeddingProtocol, Senda
     public let dimension: Int
 
     public init(dimension: Int = Constants.defaultDimension) {
-        self.dimension = dimension
+        self.dimension = max(Constants.minDimension, dimension)
     }
 
     // MARK: - 文本特征编码
@@ -134,6 +138,7 @@ public final class MultimodalEmbeddingEngine: MultimodalEmbeddingProtocol, Senda
             return [Float](repeating: 0.0, count: dimension)
         }
 
+        let dataLength = CFDataGetLength(data)
         let bytesPerPixel = max(1, image.bitsPerPixel / Constants.bitsPerByte)
         let bytesPerRow = image.bytesPerRow
         let sampleStep = max(1, min(width, height) / Constants.imageSampleGridDivisor)
@@ -146,9 +151,12 @@ public final class MultimodalEmbeddingEngine: MultimodalEmbeddingProtocol, Senda
         for y in stride(from: 0, to: height, by: sampleStep) {
             for x in stride(from: 0, to: width, by: sampleStep) {
                 let offset = y * bytesPerRow + x * bytesPerPixel
+                guard offset >= 0, offset < dataLength else { continue }
                 let r = Float(ptr[offset])
-                let g = Float(ptr[offset + 1])
-                let b = Float(ptr[offset + 2])
+                let hasRGBChannels = bytesPerPixel >= Constants.minRGBBytesPerPixel
+                    && offset + Constants.blueChannelOffset < dataLength
+                let g = hasRGBChannels ? Float(ptr[offset + Constants.greenChannelOffset]) : r
+                let b = hasRGBChannels ? Float(ptr[offset + Constants.blueChannelOffset]) : r
                 rSum += r
                 gSum += g
                 bSum += b

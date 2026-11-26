@@ -98,21 +98,33 @@
 | **87** | `GlobalModelManager.validateAndAlignDiskFile` 在沙盒文件对齐时使用静态清单中的概略整数与真实下载文件做强等比对（`fileSize == expectedSize`），导致正常下载的大模型权重在 Tab 切换触发 `reload()` 时被误判为坏包静默物理删除（`removeItem`），致使下载按钮变回“下载”且离线问答误报“本地大模型未下载”；同时既有单测多为浅层“不崩溃”空测试，未覆盖下载完成到切 Tab 的生命周期闭环 | 用户在模型库下载完成大模型权重后，切换 Tab（如切换至“任务实验室”或返回）时 | 用户下载好的数 GB 本地大模型文件被后台静默删除，造成用户流量损失，卡片下载按钮变回“下载”，且实验室问答误报“未下载” | **High** | 状态机并发与数据生命周期 | 1. 废除粗估大小强等删除逻辑，只要沙盒文件合法有效（魔数探针/非空）绝不静默删除；2. 增加沙盒物理文件存在性兜底与 OnDeviceLLM 全局单例注册；3. 编写 `ModelDownloadLifecycleTests` 覆盖端到端下载与 Tab 切换生命周期闭环，死锁防退化 | **✅ 已解决** | 是 (模型文件生命周期防误删与魔数探针范式) | 是 (`ModelDownloadLifecycleTests` 全生命周期状态机验证) | ✅ 已闭环 |
 | **88** | 核心基座层中存在多处非必要的 `nonisolated(unsafe)` 逃生舱（`AppConfig.configData` 动态字典逃逸、`ByteFormatter.formatter` 非 Sendable 全局单例、`Localized` 静态 Bundle 缓存未同步加锁），破坏 Swift 6 严格并发安全性，高并发读取时存在未受保护的数据竞争风险 | 多个 Task 并发高频执行配置项读取、字节转换或多语言动态切换 | 违反严格并发检查契约，潜在数据竞争与跨 actor 脏读 | **Medium** | 状态机并发与数据生命周期 | 1. 将 `AppConfig` 重构为只读强类型 `ConfigData: Sendable`；2. 将 `ByteFormatter` 升级为官方静态 Sendable 方法；3. 将 `Localized` 缓存收敛入 `OSAllocatedUnfairLock` 保护并下调 CI 门禁上限至 3 处严格指纹白名单 | **✅ 已解决** | 是 (Sendable不可变模型与锁封装范式) | 是 (补充 `TC-CONCURRENCY-01/02/03` 并发安全测试) | ✅ 已闭环 |
 | **89** | 表现层存在直接侵入视图代码的平台宏历史残留（存量视图白名单含 ActivityView、`MermaidWebView`、`UserProfileMenu` 等），使得平台差异直接耦合在视图树内，违反跨平台架构分层规范与设计系统 Token 约束 | 在视图内直接使用 `#if os(macOS)` 或 `#if os(iOS)` 分支逻辑 | 代码难以跨端复用，多平台渲染行为不一致，平台宏数量持续漂移 | **Medium** | 架构分层与跨平台纯净化 | 1. 废弃直接调用 Representable 的 ActivityView，全量统一为 DI 容器的 `ShareSheetProtocol`；2. 将 `MermaidWebView` 物理分层为 iOS 与 Mac 专属独立容器；3. 抽象 `PlatformSettingsLink` 消除视图平台分支；4. 物理注销门禁中原存量视图白名单分类 | **✅ 已解决** | 是 (跨平台适配器物理归位范式) | 是 (补充 `TC-LEGACY-01/02` 跨平台渲染测试) | ✅ 已闭环 |
+| **90** | `ThinkingProcessor` 处理流式未闭合思考块时未启用 `.caseInsensitive`，遇到大写 `<THINK>`/`<Thinking>` 标签时无法剥离思考内容，直接泄露到正文渲染 | 正则/范围匹配未统一启用大小写不敏感选项 | 流式 AI 输出大写思考标签时正文污染、思考折叠失效 | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | 在 `extractUnclosedThinking` 补齐 `.caseInsensitive` 匹配并复用强类型常量 | **✅ 已解决** | 是 (解析器大小写敏感性审计) | 是 (`MarkdownAndThinkingRegressionTests`) | ✅ 已闭环 |
+| **91** | `ThinkingProcessor` 提取前缀式思考（如 `Thought:`）且无后续正文时返回空字符串 `""` 而非 `nil`，导致上层误判存在有效思考内容并渲染空思考卡片 | 未通过 `makeResult` 对空白思考文本执行归一化剪裁 | 流式首包仅含前缀时 UI 闪现空白思考框 | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | `extractPrefixThinking` 统一改为经由 `makeResult(thinking:main:)` 规范化输出 | **✅ 已解决** | 是 (空字符串与 `nil` 语义统一) | 是 (`MarkdownAndThinkingRegressionTests`) | ✅ 已闭环 |
+| **92** | `MarkdownProcessor+BlockParsing` 解析未闭合围栏代码块至文档末尾时返回 `lines.count + 1` 越界下标 | 未对循环结束后的行游标做上界钳位 | 调用方按返回游标继续索引行数组存在越界崩溃风险 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 改为 `i < lines.count ? i + 1 : lines.count` 严格钳位在合法边界内 | **✅ 已解决** | 是 (游标返回契约边界审计) | 是 (`MarkdownAndThinkingRegressionTests`) | ✅ 已闭环 |
+| **93** | `MarkdownProcessor+BlockParsing` 解析无序列表遇到更深缩进的嵌套子列表项时仅递增下标未中断，静默吞噬全部子列表内容 | 缩进判断分支直接跳过而非交回外层块解析循环 | 用户 Markdown 嵌套子列表内容丢失、渲染不完整 | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | 对 `indent > startIndent` 增加 `break` 将嵌套子块交由外层循环保留 | **✅ 已解决** | 是 (Markdown 嵌套块解析审计) | 是 (`MarkdownAndThinkingRegressionTests`) | ✅ 已闭环 |
+| **94** | `MarkdownProcessor+BlockParsing` 过滤表格对齐分隔行时判断过宽，导致包含负数的表格单元格（如 `-15%`）被误判为分隔符丢弃 | 未按纯对齐字符集（`-`/`:`/空格）精确判定分隔符 | 财务/统计类 Markdown 表格负数数据无声丢失 | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | 基于 `ProcessorConstants.MarkdownSyntax` 强类型字符集精确判定纯分隔符单元格 | **✅ 已解决** | 是 (去魔鬼字符 + 表格解析审计) | 是 (`MarkdownAndThinkingRegressionTests`) | ✅ 已闭环 |
+| **95** | `MediaSearchIndexer` 的 `search` 与 `searchByImage` 未校验 `topK > 0`，传入负数 `topK` 时调用 `Array.prefix(topK)` 触发 Swift 运行时致命崩溃 | 缺少入口参数合法性前置守卫 | 外部配置或异常检索参数直接引发 App 闪退 | **High** | 架构设计与安全/网络健壮性 | 在 `search` 与 `searchByImage` 入口增加 `guard topK > 0` 安全返回空数组 | **✅ 已解决** | 是 (检索器 `topK` 边界全量排查) | 是 (`MultimodalIndexerRegressionTests`) | ✅ 已闭环 |
+| **96** | `VideoMomentIndexer.indexVideo` 未校验 `sampleInterval.isFinite && sampleInterval > 0`，传入 `0`/负数/`NaN` 会陷入无限死循环与 OOM；同时 `searchMoments` 在 `topK == 0` 时后置截断错误返回 1 条结果 | 缺少浮点有限性/正值守卫与前置 `topK > 0` 拦截 | 异常采样间隔导致线程卡死/内存耗尽，零配额检索返回脏数据 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | `indexVideo` 增加 `sampleInterval` 与 `durationSeconds` 有限正值校验；`searchMoments` 增加前置 `guard topK > 0` | **✅ 已解决** | 是 (视频抽帧步长与检索配额守卫) | 是 (`MultimodalIndexerRegressionTests`) | ✅ 已闭环 |
+| **97** | `VideoMomentIndexer.formatTime(seconds:)` 未拦截 `.nan`/`.infinity` 及超大浮点值，直接执行 `Int(...)` 强转触发运行时致命崩溃 | 浮点转整型前未验证 `isFinite` 与安全上界 | 损坏视频元数据或异常时间戳引发 App 闪退 | **High** | 架构设计与安全/网络健壮性 | 增加 `guard seconds.isFinite` 兜底返回 `Config.defaultFormattedTime` 并按 `Config.maxSupportedSeconds` 钳位 | **✅ 已解决** | 是 (浮点转整型防崩规范) | 是 (`MultimodalIndexerRegressionTests`) | ✅ 已闭环 |
+| **98** | `MultimodalEmbeddingEngine.embedImage` 假设所有 `CGImage` 均为 3/4 字节 RGB，处理 1 字节灰度图时访问 `ptr[offset + 1/2]` 导致堆缓冲区越界读崩溃 | 未结合 `CFDataGetLength(data)` 与 `bytesPerPixel` 校验通道偏移 | 索引单通道灰度图（如扫描件/黑白截图）时触发越界闪退 | **High** | 架构设计与安全/网络健壮性 | 引入 `Constants.minRGBBytesPerPixel`/`greenChannelOffset`/`blueChannelOffset` 强类型边界检查，灰度图安全复用单通道亮度 | **✅ 已解决** | 是 (裸指针图像缓冲区安全审计) | 是 (`MultimodalIndexerRegressionTests`) | ✅ 已闭环 |
+| **99** | `LiteRTInferenceBackend.loadModel` 与 `LiteRTMultimodalEmbeddingEngine.loadModel` 仅检查 `fileExists(atPath:)` 未拦截目录路径，传入目录时直接送入 C++ 运行时引发异常 | 未通过 `fileExists(atPath:isDirectory:)` 排除目录 | 误传目录路径导致底层 C++ 运行时报晦涩错误或不稳定 | **High** | 架构设计与安全/网络健壮性 | 统一改用 `fileExists(atPath:isDirectory:)` 拦截目录并抛出 `LiteRTBackendError.missingModelFile` | **✅ 已解决** | 是 (本地模型路径校验规范) | 是 (`LocalInferenceBackendProtocolTests`) | ✅ 已闭环 |
+| **100** | `LiteRTInferenceBackend` 流式指标计算直接对 `UInt64` 时间戳执行减法，若遇到时钟回拨或乱序时间戳会触发无符号整数下溢致命崩溃 | 未在 `UInt64` 减法前校验被减数不小于减数 | 端侧推理收尾阶段偶发算术溢出闪退 | **High** | 架构设计与安全/网络健壮性 | 抽取 `computeStreamMetrics` 使用安全减法与 `Config.zeroNanoseconds`/`Config.minEstimatedTokens` 常量兜底 | **✅ 已解决** | 是 (无符号时间差安全减法范式) | 是 (`LocalInferenceBackendProtocolTests`) | ✅ 已闭环 |
+| **101** | `PromptSecuritySanitizer.sanitizeAndWrap` 的 XML 冲突标签转义大小写敏感，攻击者可通过 `</CONTEXT>`/`</Context>` 绕过沙箱逃逸；同时 `MultimodalEmbeddingEngine(dimension: <= 0)` 未钳位下限触发除零/负数组崩溃 | 字符串替换漏设 `.caseInsensitive`；维度构造参数缺少正数下限 | 恶意输入可逃逸 XML 提示词沙箱；非法维度参数直接闪退 | **High** | 架构设计与安全/网络健壮性 | `sanitizeAndWrap` 补齐 `.caseInsensitive` 全量转义；`MultimodalEmbeddingEngine` 构造器强制 `max(Constants.minDimension, dimension)` | **✅ 已解决** | 是 (安全沙箱大小写逃逸 + 构造参数下限守卫) | 是 (`PromptSecuritySanitizerEscapeTests`, `MultimodalIndexerRegressionTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**89 项**
+- **收录问题总数**：**101 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：18 项 (20.2%)
-  - 状态机并发与数据生命周期：20 项 (22.5%)
-  - 架构设计与安全/网络健壮性：19 项 (21.3%)
-  - UI/交互与防御性缺陷：9 项 (10.1%)
-  - 代码坏味道与去魔鬼化/DRY 治理：23 项 (25.8%)
+  - 功能缺陷与核心算法/解析器/数据完整性：24 项 (23.8%)
+  - 状态机并发与数据生命周期：20 项 (19.8%)
+  - 架构设计与安全/网络健壮性：25 项 (24.8%)
+  - UI/交互与防御性缺陷：9 项 (8.9%)
+  - 代码坏味道与去魔鬼化/DRY 治理：23 项 (22.8%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：33 项 (37.1%)
-  - **Medium（功能异常/算法边界/性能损耗）**：33 项 (37.1%)
-  - **Low（样式异味/边界校验/门禁规范）**：23 项 (25.8%)
-- **修复闭环率**：**100% (89/89 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：41 项 (40.6%)
+  - **Medium（功能异常/算法边界/性能损耗）**：37 项 (36.6%)
+  - **Low（样式异味/边界校验/门禁规范）**：23 项 (22.8%)
+- **修复闭环率**：**100% (101/101 项已修复闭环)**
 

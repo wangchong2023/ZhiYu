@@ -65,7 +65,7 @@ public enum ThinkingProcessor {
 
     private static func extractUnclosedThinking(_ text: String) -> Result? {
         for pattern in ProcessorConstants.Thinking.unclosedPatterns {
-            if let (_, match) = matchFirstCaptureGroup(pattern: pattern, options: [.dotMatchesLineSeparators], text: text, captureGroup: 2) {
+            if let (_, match) = matchFirstCaptureGroup(pattern: pattern, options: [.caseInsensitive, .dotMatchesLineSeparators], text: text, captureGroup: 2) {
                 let content = String(text[match]).trimmingCharacters(in: .whitespacesAndNewlines)
                 return Result(thinkingContent: content.isEmpty ? nil : content, mainContent: "")
             }
@@ -95,7 +95,7 @@ public enum ThinkingProcessor {
                 let (thinking, main) = splitAtDivider(afterPrefix, dividerRange: dividerRange)
                 return makeResult(thinking: thinking, main: main)
             }
-            return Result(thinkingContent: afterPrefix, mainContent: "")
+            return makeResult(thinking: afterPrefix, main: "")
         }
         return nil
     }

@@ -136,4 +136,11 @@ final class JSONRepairProcessorBasicTests: XCTestCase {
         XCTAssertTrue(result.contains(#""inner""#), "嵌套对象内的裸 key `inner` 应被补引号，实际：\(result)")
         XCTAssertNotNil(try? JSONSerialization.jsonObject(with: Data(result.utf8)))
     }
+
+    /// 彻底损坏且两层均无法修复的非 JSON 文本必须安全兜底返回非空字符串而不崩溃
+    func testIrreparableNonJsonFallsBackSafely() {
+        let garbage = "@@@not_json_at_all@@@"
+        let result = JSONRepairProcessor.repair(garbage)
+        XCTAssertFalse(result.isEmpty, "无法修复的文本应返回兜底内容供上层 Markdown 降级处理")
+    }
 }

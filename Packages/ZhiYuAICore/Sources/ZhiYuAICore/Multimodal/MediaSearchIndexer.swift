@@ -85,7 +85,7 @@ public actor MediaSearchIndexer {
         topK: Int = Defaults.topK,
         minScore: Float = Defaults.minScore
     ) async throws -> [MediaSearchResult] {
-        guard !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+        guard topK > 0, !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             return []
         }
         let queryVector = try await embeddingEngine.embedText(query)
@@ -103,7 +103,7 @@ public actor MediaSearchIndexer {
         topK: Int = Defaults.topK,
         minScore: Float = Defaults.minScore
     ) -> [MediaSearchResult] {
-        guard let targetItem = items.first(where: { $0.id == targetId }) else {
+        guard topK > 0, let targetItem = items.first(where: { $0.id == targetId }) else {
             return []
         }
         let results: [MediaSearchResult] = items.compactMap { item in

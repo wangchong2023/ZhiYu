@@ -42,6 +42,9 @@ public actor LiteRTInferenceBackend: LocalInferenceBackendProtocol {
         public static let nanosecondsPerSecond: Double = 1_000_000_000.0
         public static let minElapsedSeconds: Double = 0.001
         public static let estimatedCharsPerToken: Int = 4
+        public static let minEstimatedTokens: Int = 1
+        public static let emptyPathPlaceholder: String = ""
+        public static let zeroNanoseconds: UInt64 = 0
     }
 
     public nonisolated let backendIdentifier: String = Config.backendId
@@ -65,9 +68,11 @@ public actor LiteRTInferenceBackend: LocalInferenceBackendProtocol {
 
     public func loadModel(at url: URL?, accelerator: LocalInferenceAccelerator) async throws {
         guard let url else {
-            throw LiteRTBackendError.missingModelFile("")
+            throw LiteRTBackendError.missingModelFile(Config.emptyPathPlaceholder)
         }
-        guard FileManager.default.fileExists(atPath: url.path) else {
+        var isDirectory: ObjCBool = false
+        guard FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory),
+              !isDirectory.boolValue else {
             throw LiteRTBackendError.missingModelFile(url.path)
         }
 
@@ -161,7 +166,7 @@ public actor LiteRTInferenceBackend: LocalInferenceBackendProtocol {
         let conversation = try await engine.createConversation(with: conversationConfig)
         self.activeConversation = conversation
 
-        let message = buildMessage(trimmedPrompt: trimmedPrompt, imageData: imageData, audioData: audioData)
+        let message = Self.buildMessage(trimmedPrompt: trimmedPrompt, imageData: imageData, audioData: audioData)
         let thinking = ThinkingConfig(enableThinking: options.enableThinking)
 
         let startNano = DispatchTime.now().uptimeNanoseconds
@@ -174,38 +179,77 @@ public actor LiteRTInferenceBackend: LocalInferenceBackendProtocol {
             thinkingConfig: thinking
         ) {
             if Task.isCancelled { break }
-            if let thought = chunk.channels[Config.thoughtChannelKey], !thought.isEmpty {
+            let payloads = Self.extractChunkPayloads(
+                thought: chunk.channels[Config.thoughtChannelKey],
+                text: chunk.toString
+            )
+            for payload in payloads {
                 if firstTokenNano == nil {
                     firstTokenNano = DispatchTime.now().uptimeNanoseconds
                 }
-                generatedChars += thought.count
-                continuation.yield(.thought(thought))
-            }
-            let text = chunk.toString
-            if !text.isEmpty {
-                if firstTokenNano == nil {
-                    firstTokenNano = DispatchTime.now().uptimeNanoseconds
-                }
-                generatedChars += text.count
-                continuation.yield(.text(text))
+                generatedChars += payload.characterCount
+                continuation.yield(payload.chunk)
             }
         }
 
         let endNano = DispatchTime.now().uptimeNanoseconds
-        let ttftMs = Double((firstTokenNano ?? endNano) - startNano) / Config.nanosecondsPerMillisecond
-        let elapsedSeconds = max(Double(endNano - startNano) / Config.nanosecondsPerSecond, Config.minElapsedSeconds)
-        let estimatedTokens = max(generatedChars / Config.estimatedCharsPerToken, 1)
-        let decodeTPS = Double(estimatedTokens) / elapsedSeconds
+        let metrics = Self.computeStreamMetrics(
+            startNano: startNano,
+            firstTokenNano: firstTokenNano,
+            endNano: endNano,
+            generatedChars: generatedChars
+        )
 
-        continuation.yield(.completed(ttftMilliseconds: ttftMs, decodeTokensPerSecond: decodeTPS))
+        continuation.yield(
+            .completed(
+                ttftMilliseconds: metrics.ttftMilliseconds,
+                decodeTokensPerSecond: metrics.decodeTokensPerSecond
+            )
+        )
         continuation.finish()
         #else
         throw LiteRTBackendError.runtimeUnavailable
         #endif
     }
 
+    internal struct StreamChunkPayload: Sendable {
+        let chunk: LocalInferenceChunk
+        let characterCount: Int
+    }
+
+    internal static func extractChunkPayloads(
+        thought: String?,
+        text: String
+    ) -> [StreamChunkPayload] {
+        var payloads: [StreamChunkPayload] = []
+        if let thought, !thought.isEmpty {
+            payloads.append(StreamChunkPayload(chunk: .thought(thought), characterCount: thought.count))
+        }
+        if !text.isEmpty {
+            payloads.append(StreamChunkPayload(chunk: .text(text), characterCount: text.count))
+        }
+        return payloads
+    }
+
+    internal static func computeStreamMetrics(
+        startNano: UInt64,
+        firstTokenNano: UInt64?,
+        endNano: UInt64,
+        generatedChars: Int
+    ) -> (ttftMilliseconds: Double, decodeTokensPerSecond: Double) {
+        let effectiveFirstNano = firstTokenNano ?? endNano
+        let ttftDelta = effectiveFirstNano >= startNano ? (effectiveFirstNano - startNano) : Config.zeroNanoseconds
+        let totalDelta = endNano >= startNano ? (endNano - startNano) : Config.zeroNanoseconds
+        let ttftMs = Double(ttftDelta) / Config.nanosecondsPerMillisecond
+        let elapsedSeconds = max(Double(totalDelta) / Config.nanosecondsPerSecond, Config.minElapsedSeconds)
+        let sanitizedChars = max(generatedChars, 0)
+        let estimatedTokens = max(sanitizedChars / Config.estimatedCharsPerToken, Config.minEstimatedTokens)
+        let decodeTPS = Double(estimatedTokens) / elapsedSeconds
+        return (ttftMs, decodeTPS)
+    }
+
     #if canImport(LiteRTLM)
-    private func buildMessage(trimmedPrompt: String, imageData: [Data], audioData: Data?) -> Message {
+    internal static func buildMessage(trimmedPrompt: String, imageData: [Data], audioData: Data?) -> Message {
         var contents: [Content] = []
         for img in imageData where !img.isEmpty {
             contents.append(.imageData(img))

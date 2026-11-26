@@ -87,7 +87,9 @@ public extension MarkdownProcessor {
             i += 1
         }
 
-        return (.codeBlock(code: codeLines.joined(separator: ProcessorConstants.Whitespace.newline), language: language), i + 1)
+        // 仅在命中闭合围栏行时推进 i + 1，未闭合代码块不越界返回 lines.count
+        let nextIndex = i < lines.count ? i + 1 : lines.count
+        return (.codeBlock(code: codeLines.joined(separator: ProcessorConstants.Whitespace.newline), language: language), nextIndex)
     }
 
     /// 尝试解析 Markdown 标准标题（H1 - H6）。
@@ -217,7 +219,8 @@ public extension MarkdownProcessor {
                     } else {
                         break
                     }
-                } else if indent < startIndent {
+                } else {
+                    // 遇见更浅或更深缩进（子列表）均终止当前同级列表，交由外层循环独立解析，防止吞掉子列表项
                     break
                 }
             } else {
@@ -304,8 +307,17 @@ public extension MarkdownProcessor {
 	/// - Parameter line: 包含管线符的原始表格行。
 	/// - Returns: 过滤掉空单元格和对齐分隔符后的字符串数组。
     func parseTableCells(_ line: String) -> [String] {
-        line.split(separator: Character(ProcessorConstants.MarkdownSyntax.tablePipe))
+        let dashChar = Character(ProcessorConstants.MarkdownSyntax.dash)
+        let colonChar = Character(ProcessorConstants.MarkdownSyntax.colon)
+        let spaceChar = Character(ProcessorConstants.Whitespace.space)
+        return line.split(separator: Character(ProcessorConstants.MarkdownSyntax.tablePipe))
             .map { $0.trimmingCharacters(in: .whitespaces) }
-            .filter { !$0.isEmpty && !$0.hasPrefix(ProcessorConstants.MarkdownSyntax.dash) }
-}
+            .filter { cell in
+                guard !cell.isEmpty else { return false }
+                // 仅过滤纯 Markdown 表格对齐分隔符（由 '-' / ':' / 空格组成），保留负数单元格（如 "-15%"）
+                let isAlignmentSeparator = cell.contains(ProcessorConstants.MarkdownSyntax.dash)
+                    && cell.allSatisfy { $0 == dashChar || $0 == colonChar || $0 == spaceChar }
+                return !isAlignmentSeparator
+            }
+    }
 }
