@@ -95,7 +95,6 @@
 		039B33599B7353590646EE7E /* WatchAppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 339FC7901E120581444030C3 /* WatchAppEnvironment.swift */; };
 		03A85EDE70D19B234E7413E2 /* SynthesisView+Presentations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4716EAD39609C5CD5EC47E65 /* SynthesisView+Presentations.swift */; };
 		03A9E70D42ACCD3006D3D852 /* EmbeddingProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 425E256B99BF6438233AD5DA /* EmbeddingProvider.swift */; };
-		03B7FD67CF70F4065EEBACD2 /* SelfSignedSessionDelegateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D47E6E5A6A01851B8EE69E41 /* SelfSignedSessionDelegateProvider.swift */; };
 		03B920AFBCC1DC281DCAF3EA /* SystemStatsCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2376A3A79D6CF289F25A16A9 /* SystemStatsCoordinator.swift */; };
 		03BAE563550D0B8D38003816 /* SettingsDemoInjectHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 808A73C3729300FB710B223B /* SettingsDemoInjectHelper.swift */; };
 		03BC90BB41B1139B0A48DF1A /* PIIMasker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B95B178C24733C25370CCCC3 /* PIIMasker.swift */; };
@@ -704,7 +703,6 @@
 		1E9582405D061942F6B82412 /* ScenesSharedComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 780883407FD1CB84B7968645 /* ScenesSharedComponents.swift */; };
 		1EB1027AE816C99ECA492786 /* Markdown in Frameworks */ = {isa = PBXBuildFile; productRef = A2C4E58F224BBF94FA5A3DAA /* Markdown */; };
 		1EB2A004134F053B04B1FB37 /* PromptServiceSupplementTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27D8D30516E1D03FA8557FE4 /* PromptServiceSupplementTests.swift */; };
-		1EB2E5136F735879337A2D1E /* SelfSignedSessionDelegateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D47E6E5A6A01851B8EE69E41 /* SelfSignedSessionDelegateProvider.swift */; };
 		1EBF9087087C52343B8D664A /* BadgesAndSidebarDeepTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9CC9B078ED17E070ED043A2 /* BadgesAndSidebarDeepTests.swift */; };
 		1EC249ADD20AF7E4D68726C9 /* AppError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C7CF462168E9AA6CE525306 /* AppError.swift */; };
 		1EC914C37F588CD044186296 /* L10n+Graph.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E6B0D0DF8E322859419C80D /* L10n+Graph.swift */; };
@@ -1400,7 +1398,6 @@
 		3BE3F254BBAAFB58D8737A72 /* LLMServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D50B2E511C5C88F18D070A1 /* LLMServiceTests.swift */; };
 		3BEC6D23A9CFD7763EA1101C /* testOnDeviceLLMSettingsViewDefaultNoModel.1.png in Resources */ = {isa = PBXBuildFile; fileRef = FC57CAB374B0A201E019901A /* testOnDeviceLLMSettingsViewDefaultNoModel.1.png */; };
 		3BF90673ADA212B436B426DC /* testLogViewContentEmptyStateBoundary.1.png in Resources */ = {isa = PBXBuildFile; fileRef = 6DCB1BB9ADB227EE9FA31BB0 /* testLogViewContentEmptyStateBoundary.1.png */; };
-		3BFE70B00BB2F0274DB1EF06 /* SelfSignedSessionDelegateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D47E6E5A6A01851B8EE69E41 /* SelfSignedSessionDelegateProvider.swift */; };
 		3C038F0ABD186EB6E67396CD /* EmbeddingProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 425E256B99BF6438233AD5DA /* EmbeddingProvider.swift */; };
 		3C0DB13F1C0D22B4EF36ADB1 /* LLMClientNetworkFailureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CC771C58683088C9ABF52C1 /* LLMClientNetworkFailureTests.swift */; };
 		3C0E16E7C005010635191CEC /* MacPlatformRegistrar.swift in Sources */ = {isa = PBXBuildFile; fileRef = B04B76FEE35F78A36849E8A8 /* MacPlatformRegistrar.swift */; };
@@ -1657,7 +1654,6 @@
 		46E2122F6B565CC9845F2793 /* GraphComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC94C91880AB20A5F71B503E /* GraphComponents.swift */; };
 		46ED720AAB9D853414273317 /* OnDeviceActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3541ADEECDC4486332341B6F /* OnDeviceActionButton.swift */; };
 		46F85ED5148367E5ED7D0183 /* EditorComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2895695A2F07F94FD51F1108 /* EditorComponents.swift */; };
-		46F96E56263DB4973A6D6315 /* SelfSignedSessionDelegateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D47E6E5A6A01851B8EE69E41 /* SelfSignedSessionDelegateProvider.swift */; };
 		46FE86CB7BAB36554890CA27 /* PluginSettingsGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 178C70BF94F52DE1520AD65B /* PluginSettingsGenerator.swift */; };
 		470F126957962F8F1E2AA842 /* testPageDetailHeader_ConceptType_MediumConfidence.1.png in Resources */ = {isa = PBXBuildFile; fileRef = 88B14B8377B15A64F53B5C05 /* testPageDetailHeader_ConceptType_MediumConfidence.1.png */; };
 		4725EEB7C5053669B1A56B6D /* LabAudioRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECCCD0B5BEB5540F923F9D2A /* LabAudioRecorder.swift */; };
@@ -4352,7 +4348,6 @@
 		BAE0065271E1D52C3D41912D /* KeychainService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CFBAAF41B7B064820E8022A /* KeychainService.swift */; };
 		BAE0EAA18D6ACA2530FED954 /* NotebookThemeFactoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD28B4DB9AC45B45F7EE5109 /* NotebookThemeFactoryTests.swift */; };
 		BAE1B953040B2C5F9A8074C8 /* ScenesSharedComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 780883407FD1CB84B7968645 /* ScenesSharedComponents.swift */; };
-		BAE308109376A101A0721306 /* SelfSignedSessionDelegateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D47E6E5A6A01851B8EE69E41 /* SelfSignedSessionDelegateProvider.swift */; };
 		BAE5158B3E9B0DA2CC97AFD6 /* KnowledgeViewSnapshots.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5695F495B821A13A78B7C6CA /* KnowledgeViewSnapshots.swift */; };
 		BAF0119AED1846175C128D5F /* ThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 311C9B98A4351AEBDD9BA1FC /* ThemeManager.swift */; };
 		BAF6800444B9896C611DE5AF /* PageDetailCoordinatorInteractiveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEFAE3AA4790A345A46B81F6 /* PageDetailCoordinatorInteractiveTests.swift */; };
@@ -4646,7 +4641,6 @@
 		C7EC34187C4FDF5302E48379 /* KnowledgePageListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 486560C5BD5242F271F8ACA1 /* KnowledgePageListView.swift */; };
 		C7F795F19CA760BFCD81BF44 /* FeatureConstants+Knowledge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DC8C39E19CC70B00E4A6F48 /* FeatureConstants+Knowledge.swift */; };
 		C7FAA6FC87C9939A010374B5 /* PluginDetailMetadataSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6C75745A91C84A1B37373AE /* PluginDetailMetadataSection.swift */; };
-		C805ABED9D48B6CF5A2E6594 /* SelfSignedSessionDelegateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D47E6E5A6A01851B8EE69E41 /* SelfSignedSessionDelegateProvider.swift */; };
 		C81C19E6D20F7ED4D8E083A2 /* Graph.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = A99E81CD203899D47AE64ED3 /* Graph.xcstrings */; };
 		C820A7A60EC03998D9B0849D /* AppStoreProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 244A79AD070C266715CFEBC4 /* AppStoreProtocol.swift */; };
 		C827FB109677336CA5827C30 /* SnapshotHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = F07945BF97A8FFAC77599B8A /* SnapshotHelper.swift */; };
@@ -7712,7 +7706,6 @@
 		D4267B4EA67E18085634AAEC /* VaultTestHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultTestHelpers.swift; sourceTree = "<group>"; };
 		D435D0CE4D56BAE0411088DB /* IOSExportServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IOSExportServiceTests.swift; sourceTree = "<group>"; };
 		D446EB5067F79C546B205263 /* DomainRAGSupplementTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DomainRAGSupplementTests.swift; sourceTree = "<group>"; };
-		D47E6E5A6A01851B8EE69E41 /* SelfSignedSessionDelegateProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelfSignedSessionDelegateProvider.swift; sourceTree = "<group>"; };
 		D4B14A5742B81351DBE87968 /* BatchIngestWorkflowStressTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatchIngestWorkflowStressTests.swift; sourceTree = "<group>"; };
 		D4B588D58D4F1EF8DFD02352 /* L10n+Vault.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "L10n+Vault.swift"; sourceTree = "<group>"; };
 		D4D106D891E8E0E9CE63AE70 /* JailbreakDetectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JailbreakDetectorTests.swift; sourceTree = "<group>"; };
@@ -11969,7 +11962,6 @@
 				F226E6A44E63495F9910C9E4 /* ModelDownloadManager.swift */,
 				C3B31BE8D03CDA71C15E602F /* NetworkClient.swift */,
 				0BBACC9C467DD88E737F5E2D /* RemoteConfigService.swift */,
-				D47E6E5A6A01851B8EE69E41 /* SelfSignedSessionDelegateProvider.swift */,
 			);
 			path = Network;
 			sourceTree = "<group>";
@@ -14492,7 +14484,6 @@
 				C7DCFCC61E11DEE938D83D79 /* SecureEnclaveCryptoService.swift in Sources */,
 				E73CF76645E9FC3925EA0EA0 /* SecurityLogHelper.swift in Sources */,
 				7211CF44158FD3138CEBF916 /* SecurityManager.swift in Sources */,
-				1EB2E5136F735879337A2D1E /* SelfSignedSessionDelegateProvider.swift in Sources */,
 				524E98BEBE77B682465ACC80 /* ServerCardView.swift in Sources */,
 				DBE1EB3CD6E235D4B62221FA /* ServerConfigView.swift in Sources */,
 				480214F0B710F48744568E69 /* SettingsComponents.swift in Sources */,
@@ -16038,7 +16029,6 @@
 				FC417FA3DD0D9D7F811CC41E /* SecureEnclaveCryptoService.swift in Sources */,
 				E32B53BCF65165DAB7319F0E /* SecurityLogHelper.swift in Sources */,
 				282C0CA34CA107271CED5591 /* SecurityManager.swift in Sources */,
-				3BFE70B00BB2F0274DB1EF06 /* SelfSignedSessionDelegateProvider.swift in Sources */,
 				9F4D7AE83CC9109E8BC12DC6 /* ServerCardView.swift in Sources */,
 				50DD2AC933A90CC8E6E902B3 /* ServerConfigView.swift in Sources */,
 				9F558D5C09226D8F90541BE1 /* SettingsComponents.swift in Sources */,
@@ -16743,7 +16733,6 @@
 				6B49163B016C3C9401B75DD8 /* SecureEnclaveCryptoService.swift in Sources */,
 				7B6A0C8F48F49B8F815439F0 /* SecurityLogHelper.swift in Sources */,
 				8263324A269D7AF20EBD41AE /* SecurityManager.swift in Sources */,
-				03B7FD67CF70F4065EEBACD2 /* SelfSignedSessionDelegateProvider.swift in Sources */,
 				12782E9D58A3F3307C510987 /* ServerCardView.swift in Sources */,
 				FF4E099B6A78A7359E4365D3 /* ServerConfigView.swift in Sources */,
 				6EEAD792F90EC745AA1554EE /* SettingsComponents.swift in Sources */,
@@ -17478,7 +17467,6 @@
 				C5F38C91220F8C0C204E3A62 /* SecureEnclaveCryptoService.swift in Sources */,
 				DBB6BF51279D91ACB4AC8314 /* SecurityLogHelper.swift in Sources */,
 				00C4B541B8AED4A8F68B031C /* SecurityManager.swift in Sources */,
-				C805ABED9D48B6CF5A2E6594 /* SelfSignedSessionDelegateProvider.swift in Sources */,
 				C5F14BB7BF5C5ED5D1D76AE4 /* ServerCardView.swift in Sources */,
 				6FB0536D92C66C81D6FDCAA1 /* ServerConfigView.swift in Sources */,
 				9D26027CEDDF5B7DD9024057 /* SettingsComponents.swift in Sources */,
@@ -18200,7 +18188,6 @@
 				4142AD2D3C61505D482E5B42 /* SecureEnclaveCryptoService.swift in Sources */,
 				303D5E8BBF50B0DEE7406292 /* SecurityLogHelper.swift in Sources */,
 				D00EBF1C6F90CFA1CB65A93E /* SecurityManager.swift in Sources */,
-				46F96E56263DB4973A6D6315 /* SelfSignedSessionDelegateProvider.swift in Sources */,
 				E47759D94F44DF5A41B95A54 /* ServerCardView.swift in Sources */,
 				100D89183844B395C8FAF56B /* ServerConfigView.swift in Sources */,
 				58D21536E7529E06E8C63281 /* SettingsComponents.swift in Sources */,
@@ -18955,7 +18942,6 @@
 				78FEC4B45FA151B4D183B0A0 /* SecureEnclaveCryptoService.swift in Sources */,
 				722EF9278906E44B93CBA0E1 /* SecurityLogHelper.swift in Sources */,
 				A343F1E148FA398206EECA2E /* SecurityManager.swift in Sources */,
-				BAE308109376A101A0721306 /* SelfSignedSessionDelegateProvider.swift in Sources */,
 				BBA6372F62CFCC07F65ABA94 /* ServerCardView.swift in Sources */,
 				D282DB2AC411932583E89B1C /* ServerConfigView.swift in Sources */,
 				281216B0ED8CB8337E593EFC /* SettingsComponents.swift in Sources */,
