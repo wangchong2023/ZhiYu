@@ -50,9 +50,7 @@ FEATURES_CANIMPORT_BASELINE = {
     "Sources/Features/System/Auth/Strategy/AppleAuthStrategy.swift",
     "Sources/Features/System/Auth/Strategy/CarrierAuthStrategy.swift",
     "Sources/Features/System/Auth/Strategy/WeChatAuthStrategy.swift",
-    "Sources/Features/System/ModelManager/Utility/LabAudioSampleProvider.swift",
     "Sources/Features/System/ModelManager/Utility/MobileActionExecutor.swift",
-    "Sources/Features/System/ModelManager/View/Sections/InstantMediaSearchPanel.swift",
 }
 
 # 统一平台宏正则（去注释后匹配，拦截正向/反向/括号/复合条件中的 os() 与 macCatalyst）

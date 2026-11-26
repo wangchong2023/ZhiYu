@@ -387,8 +387,8 @@ struct VideoMomentSearchContentView: View {
             HStack(spacing: DesignTokens.Spacing.medium) {
                 // 缩略图
                 if let data = moment.thumbnailData,
-                   let platformImage = makePlatformImage(from: data) {
-                    Image(platformImage: platformImage)
+                   let appImage = AppImage(data: data) {
+                    Image(appImage: appImage)
                         .resizable()
                         .scaledToFill()
                         .frame(width: DesignTokens.Spacing.Gallery.splashIconSize, height: DesignTokens.Spacing.Gallery.iconSize)

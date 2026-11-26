@@ -297,8 +297,8 @@ struct InstantMediaSearchContentView: View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
             ZStack(alignment: .topTrailing) {
                 if let data = item.thumbnailData,
-                   let platformImage = makePlatformImage(from: data) {
-                    Image(platformImage: platformImage)
+                   let appImage = AppImage(data: data) {
+                    Image(appImage: appImage)
                         .resizable()
                         .scaledToFill()
                         .frame(height: FeatureConstants.MediaSearch.thumbnailHeight)
@@ -402,29 +402,3 @@ struct InstantMediaSearchContentView: View {
         .frame(maxWidth: .infinity, minHeight: FeatureConstants.MediaSearch.previewImageHeight)
     }
 }
-
-// MARK: - 跨平台图片生成辅助
-
-#if canImport(UIKit)
-import UIKit
-typealias LabCrossPlatformImage = UIImage
-func makePlatformImage(from data: Data) -> LabCrossPlatformImage? {
-    UIImage(data: data)
-}
-extension Image {
-    init(platformImage: LabCrossPlatformImage) {
-        self.init(uiImage: platformImage)
-    }
-}
-#elseif canImport(AppKit)
-import AppKit
-typealias LabCrossPlatformImage = NSImage
-func makePlatformImage(from data: Data) -> LabCrossPlatformImage? {
-    NSImage(data: data)
-}
-extension Image {
-    init(platformImage: LabCrossPlatformImage) {
-        self.init(nsImage: platformImage)
-    }
-}
-#endif

@@ -11,13 +11,6 @@
 import Foundation
 @preconcurrency import UFPStorage
 
-/// 通用 @unchecked Sendable 包装器，用于在 @Sendable 闭包中安全捕获非 Sendable 的值类型（如 GRDB 的 QueryInterfaceRequest）。
-/// 值类型在闭包内只读使用，无数据竞争风险。
-private struct UnsafeSendableBox<T>: @unchecked Sendable {
-    let value: T
-    init(_ value: T) { self.value = value }
-}
-
 /// [Infra] 向量存储实现
 final class VectorDataRepository: VectorRepository, DatabaseWriterProvider, Sendable {
     init(dbWriter _: any DatabaseWriter) {
@@ -69,10 +62,8 @@ final class VectorDataRepository: VectorRepository, DatabaseWriterProvider, Send
     /// 共享的分块查询辅助：按指定过滤请求查询 PageChunk 列表，消除 fetchChunks 与 fetchAllChunksWithEmbeddings 间的样板重复。
     private func fetchChunksFiltered(_ request: QueryInterfaceRequest<PageChunk>) async throws -> [PageChunk] {
         let writer = try await dbWriter
-        // QueryInterfaceRequest 不是 Sendable，用 @unchecked Sendable 包装器安全跨 actor 边界
-        let box = UnsafeSendableBox(request)
         return try await writer.read { db in
-            try box.value.fetchAll(db)
+            try request.fetchAll(db)
         }
     }
 

@@ -125,13 +125,9 @@ final class LabAudioPlayer: NSObject, ObservableObject, AVAudioPlayerDelegate {
     func play(url: URL) {
         stop()
         do {
-            #if canImport(UIKit)
             Task.detached(priority: .userInitiated) {
-                let session = AVAudioSession.sharedInstance()
-                try? session.setCategory(.playback, mode: .default)
-                try? session.setActive(true)
+                AppAudioSessionBridge.configurePlaybackSession()
             }
-            #endif
             let player = try AVAudioPlayer(contentsOf: url)
             player.delegate = self
             player.play()
@@ -162,11 +158,9 @@ final class LabAudioPlayer: NSObject, ObservableObject, AVAudioPlayerDelegate {
         audioPlayer = nil
         isPlaying = false
         currentPlaybackProgress = 0.0
-        #if canImport(UIKit)
         Task.detached(priority: .utility) {
-            try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+            AppAudioSessionBridge.deactivateRecordSession()
         }
-        #endif
     }
 
     nonisolated func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
