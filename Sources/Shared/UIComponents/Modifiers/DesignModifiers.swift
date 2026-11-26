@@ -96,6 +96,36 @@ struct GlowingNeonBorderModifier: ViewModifier {
     }
 }
 
+// MARK: - 跨平台工具栏位置与背景扩展 (File Scope)
+
+#if os(macOS)
+@MainActor
+private extension ToolbarItemPlacement {
+    static let appLeading: ToolbarItemPlacement = .navigation
+    static let appTrailing: ToolbarItemPlacement = .primaryAction
+}
+@MainActor
+private extension ToolbarPlacement {
+    static let appNavigation: ToolbarPlacement = .windowToolbar
+}
+#elseif os(iOS)
+@MainActor
+private extension ToolbarItemPlacement {
+    static let appLeading: ToolbarItemPlacement = .navigationBarLeading
+    static let appTrailing: ToolbarItemPlacement = .topBarTrailing
+}
+@MainActor
+private extension ToolbarPlacement {
+    static let appNavigation: ToolbarPlacement = .navigationBar
+}
+#else
+@MainActor
+private extension ToolbarItemPlacement {
+    static let appLeading: ToolbarItemPlacement = .automatic
+    static let appTrailing: ToolbarItemPlacement = .automatic
+}
+#endif
+
 // MARK: - View 语义链式调用扩展
 
 public extension View {
@@ -150,73 +180,53 @@ public extension View {
     /// 跨平台 Toolbar 左侧（leading）Item 放置：iOS 用 navigationBarLeading，macOS 用 navigation
     @ToolbarContentBuilder
     func appToolbarLeading<Content: View>(@ViewBuilder content: () -> Content) -> some ToolbarContent {
-        #if os(iOS)
-        ToolbarItem(placement: .navigationBarLeading) { content() }
-        #elseif os(macOS)
-        ToolbarItem(placement: .navigation) { content() }
-        #else
-        ToolbarItem(placement: .automatic) { content() }
-        #endif
+        ToolbarItem(placement: .appLeading) { content() }
     }
 
     /// 跨平台 Toolbar 右侧（trailing）Item 放置：iOS 用 topBarTrailing，macOS 用 primaryAction
     @ToolbarContentBuilder
     func appToolbarTrailing<Content: View>(@ViewBuilder content: () -> Content) -> some ToolbarContent {
-        #if os(iOS)
-        ToolbarItem(placement: .topBarTrailing) { content() }
-        #elseif os(macOS)
-        ToolbarItem(placement: .primaryAction) { content() }
-        #else
-        ToolbarItem(placement: .automatic) { content() }
-        #endif
+        ToolbarItem(placement: .appTrailing) { content() }
     }
 
     /// 跨平台 Toolbar 右侧（trailing）ItemGroup 放置：iOS 用 topBarTrailing，macOS 用 primaryAction
     @ToolbarContentBuilder
     func appToolbarTrailingGroup<Content: View>(@ViewBuilder content: () -> Content) -> some ToolbarContent {
-        #if os(iOS)
-        ToolbarItemGroup(placement: .topBarTrailing) { content() }
-        #elseif os(macOS)
-        ToolbarItemGroup(placement: .primaryAction) { content() }
+        ToolbarItemGroup(placement: .appTrailing) { content() }
+    }
+
+    /// 跨平台 Toolbar 背景控制统一收敛
+    @ViewBuilder
+    private func appToolbarBackgroundInternal(_ visibility: Visibility?, material: Material? = nil) -> some View {
+        #if os(iOS) || os(macOS)
+        if let visibility {
+            self.toolbarBackground(visibility, for: .appNavigation)
+        } else if let material {
+            self.toolbarBackground(material, for: .appNavigation)
+        } else {
+            self
+        }
         #else
-        ToolbarItemGroup(placement: .automatic) { content() }
+        self
         #endif
     }
 
     /// 跨平台隐藏 Toolbar 背景：iOS 用 navigationBar，macOS 用 windowToolbar
     @ViewBuilder
     func appToolbarBackgroundHidden() -> some View {
-        #if os(iOS)
-        self.toolbarBackground(.hidden, for: .navigationBar)
-        #elseif os(macOS)
-        self.toolbarBackground(.hidden, for: .windowToolbar)
-        #else
-        self
-        #endif
+        appToolbarBackgroundInternal(.hidden)
     }
 
     /// 跨平台显示 Toolbar 背景：iOS 用 navigationBar，macOS 用 windowToolbar
     @ViewBuilder
     func appToolbarBackgroundVisible() -> some View {
-        #if os(iOS)
-        self.toolbarBackground(.visible, for: .navigationBar)
-        #elseif os(macOS)
-        self.toolbarBackground(.visible, for: .windowToolbar)
-        #else
-        self
-        #endif
+        appToolbarBackgroundInternal(.visible)
     }
 
     /// 跨平台设置 Toolbar 背景材质：iOS 用 navigationBar，macOS 用 windowToolbar
     @ViewBuilder
     func appToolbarBackgroundMaterial(_ material: Material) -> some View {
-        #if os(iOS)
-        self.toolbarBackground(material, for: .navigationBar)
-        #elseif os(macOS)
-        self.toolbarBackground(material, for: .windowToolbar)
-        #else
-        self
-        #endif
+        appToolbarBackgroundInternal(nil, material: material)
     }
 
     /// 跨平台分页 TabView 样式：仅 iOS 应用 .page，macOS/watchOS 无此样式时降级为无操作

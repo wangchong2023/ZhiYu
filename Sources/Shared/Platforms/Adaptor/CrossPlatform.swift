@@ -419,83 +419,61 @@ public struct PlatformSettingsLink<Content: View>: View {
 // MARK: - 跨平台 SceneKit 向量桥接
 
 #if canImport(SceneKit)
+#if os(macOS)
+private extension SCNVector3 {
+    @inline(__always) var appFloatX: Float { Float(x) }
+    @inline(__always) var appFloatY: Float { Float(y) }
+    @inline(__always) var appFloatZ: Float { Float(z) }
+    @inline(__always) static func appMake(_ x: Float, _ y: Float, _ z: Float) -> SCNVector3 {
+        SCNVector3(CGFloat(x), CGFloat(y), CGFloat(z))
+    }
+}
+#else
+private extension SCNVector3 {
+    @inline(__always) var appFloatX: Float { x }
+    @inline(__always) var appFloatY: Float { y }
+    @inline(__always) var appFloatZ: Float { z }
+    @inline(__always) static func appMake(_ x: Float, _ y: Float, _ z: Float) -> SCNVector3 {
+        SCNVector3(x, y, z)
+    }
+}
+#endif
+
 /// SCNVector3 分量读写桥接：iOS 分量为 Float，macOS 为 CGFloat，收敛平台差异
 public enum AppSceneKitVector3 {
     /// 保留 y/z，写入 x（Float 值）
     public static func withX(_ value: Float, in vector: SCNVector3) -> SCNVector3 {
-        #if os(iOS)
-        return SCNVector3(value, vector.y, vector.z)
-        #elseif os(macOS)
-        return SCNVector3(CGFloat(value), vector.y, vector.z)
-        #else
-        return vector
-        #endif
+        SCNVector3.appMake(value, vector.appFloatY, vector.appFloatZ)
     }
 
     /// 保留 x/z，写入 y（Float 值）
     public static func withY(_ value: Float, in vector: SCNVector3) -> SCNVector3 {
-        #if os(iOS)
-        return SCNVector3(vector.x, value, vector.z)
-        #elseif os(macOS)
-        return SCNVector3(vector.x, CGFloat(value), vector.z)
-        #else
-        return vector
-        #endif
+        SCNVector3.appMake(vector.appFloatX, value, vector.appFloatZ)
     }
 
     /// 保留 x/y，写入 z（Float 值）
     public static func withZ(_ value: Float, in vector: SCNVector3) -> SCNVector3 {
-        #if os(iOS)
-        return SCNVector3(vector.x, vector.y, value)
-        #elseif os(macOS)
-        return SCNVector3(vector.x, vector.y, CGFloat(value))
-        #else
-        return vector
-        #endif
+        SCNVector3.appMake(vector.appFloatX, vector.appFloatY, value)
     }
 
     /// 保留 x，对 y/z 增加 Float 偏移
     public static func adding(dy: Float, dz: Float, to vector: SCNVector3) -> SCNVector3 {
-        #if os(iOS)
-        return SCNVector3(vector.x, vector.y + dy, vector.z + dz)
-        #elseif os(macOS)
-        return SCNVector3(vector.x, vector.y + CGFloat(dy), vector.z + CGFloat(dz))
-        #else
-        return vector
-        #endif
+        SCNVector3.appMake(vector.appFloatX, vector.appFloatY + dy, vector.appFloatZ + dz)
     }
 
     /// 读取 x 分量为 Float
     public static func x(_ vector: SCNVector3) -> Float {
-        #if os(iOS)
-        return vector.x
-        #elseif os(macOS)
-        return Float(vector.x)
-        #else
-        return 0
-        #endif
+        vector.appFloatX
     }
 
     /// 读取 y 分量为 Float
     public static func y(_ vector: SCNVector3) -> Float {
-        #if os(iOS)
-        return vector.y
-        #elseif os(macOS)
-        return Float(vector.y)
-        #else
-        return 0
-        #endif
+        vector.appFloatY
     }
 
     /// 读取 z 分量为 Float
     public static func z(_ vector: SCNVector3) -> Float {
-        #if os(iOS)
-        return vector.z
-        #elseif os(macOS)
-        return Float(vector.z)
-        #else
-        return 0
-        #endif
+        vector.appFloatZ
     }
 }
 #endif

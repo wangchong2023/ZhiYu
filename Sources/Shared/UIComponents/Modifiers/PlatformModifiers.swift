@@ -292,17 +292,8 @@ public extension View {
 
     /// 在 macOS 上移除 Menu 默认按钮外框与系统下拉箭头，避免与自定义胶囊/图标标签叠加双层外框；
     /// iOS/iPadOS/watchOS 保持原样，不影响现有布局与视觉快照。
-    @ViewBuilder
     func plainMenuStyleIfMac() -> some View {
-        #if os(macOS)
-        self
-            .menuStyle(.button)
-            .buttonStyle(.plain)
-            .menuIndicator(.hidden)
-            .fixedSize()
-        #else
-        self
-        #endif
+        modifier(PlainMenuStyleIfMacModifier())
     }
 
     // MARK: - 工具栏尺寸适配
@@ -310,51 +301,27 @@ public extension View {
     /// 工具栏纯图标按钮尺寸自适应：
     /// 在 macOS 下为工具栏图标按钮提供舒展的最小尺寸（28x28），防止因固定 20pt 宽度在工具栏中被左右挤压变形；
     /// 在 iOS/iPadOS/watchOS 下保持内容自适应大小。
-    @ViewBuilder
     func appToolbarItemStandardFrame() -> some View {
-        #if os(macOS)
-        self
-            .frame(minWidth: DesignTokens.Spacing.largeIconSize, minHeight: DesignTokens.Spacing.largeIconSize)
-            .contentShape(Rectangle())
-        #else
-        self
-        #endif
+        modifier(ToolbarItemStandardFrameModifier())
     }
 
     /// 用户头像及工具栏触控目标适配：
     /// iOS/iPadOS/watchOS: 保持 HIG 44x44 触控热区
     /// macOS: 遵循 macOS 工具栏 28x28 标准最小尺寸，保证舒展比例且不失衡
-    @ViewBuilder
     func appToolbarAdaptiveTouchTarget() -> some View {
-        #if os(macOS)
-        self
-            .frame(minWidth: DesignTokens.Spacing.largeIconSize, minHeight: DesignTokens.Spacing.largeIconSize)
-            .contentShape(Rectangle())
-        #else
-        self.higTouchTarget()
-        #endif
+        modifier(ToolbarAdaptiveTouchTargetModifier())
     }
 
     /// 工具栏按钮样式跨平台适配：
     /// macOS 工具栏保留原生按钮样式，避免 `.buttonStyle(.plain)` 剥离系统水平内边距导致图标按钮被左右挤压；
     /// iOS/iPadOS/watchOS 保持 `.plain` 样式。
-    @ViewBuilder
     func appToolbarButtonStyle() -> some View {
-        #if os(macOS)
-        self
-        #else
-        self.buttonStyle(.plain)
-        #endif
+        modifier(ToolbarButtonStyleModifier())
     }
 
-    /// 跨平台分组表单样式：macOS 使用 `.grouped` 对齐系统设置卡片风格，与列表页面主题统一
-    @ViewBuilder
+    /// 跨平台分组表单样式：全平台统一使用 `.grouped` 对齐系统设置卡片风格
     func appGroupedFormStyle() -> some View {
-        #if os(macOS)
         self.formStyle(.grouped)
-        #else
-        self
-        #endif
     }
 
     /// 桌面宽屏/全屏居中限宽容器：仅在 `.mac` 桌面形态下限制内容最大宽度并居中，
@@ -513,6 +480,62 @@ private struct MacSidebarColumnWidthModifier: ViewModifier {
             content.navigationSplitViewColumnWidth(width)
         } else {
             content
+        }
+    }
+}
+
+private struct PlainMenuStyleIfMacModifier: ViewModifier {
+    @Environment(\.interfaceIdiom) private var idiom
+
+    func body(content: Content) -> some View {
+        if idiom == .mac {
+            content
+                .menuStyle(.button)
+                .buttonStyle(.plain)
+                .menuIndicator(.hidden)
+                .fixedSize()
+        } else {
+            content
+        }
+    }
+}
+
+private struct ToolbarItemStandardFrameModifier: ViewModifier {
+    @Environment(\.interfaceIdiom) private var idiom
+
+    func body(content: Content) -> some View {
+        if idiom == .mac {
+            content
+                .frame(minWidth: DesignTokens.Spacing.largeIconSize, minHeight: DesignTokens.Spacing.largeIconSize)
+                .contentShape(Rectangle())
+        } else {
+            content
+        }
+    }
+}
+
+private struct ToolbarAdaptiveTouchTargetModifier: ViewModifier {
+    @Environment(\.interfaceIdiom) private var idiom
+
+    func body(content: Content) -> some View {
+        if idiom == .mac {
+            content
+                .frame(minWidth: DesignTokens.Spacing.largeIconSize, minHeight: DesignTokens.Spacing.largeIconSize)
+                .contentShape(Rectangle())
+        } else {
+            content.higTouchTarget()
+        }
+    }
+}
+
+private struct ToolbarButtonStyleModifier: ViewModifier {
+    @Environment(\.interfaceIdiom) private var idiom
+
+    func body(content: Content) -> some View {
+        if idiom == .mac {
+            content
+        } else {
+            content.buttonStyle(.plain)
         }
     }
 }
