@@ -35,14 +35,14 @@ CHECK_DIRS = [
 ]
 
 # 宏总数棘轮上限（只减不增；收敛清理后请同步调低此阈值）
-MAX_TOTAL_MACROS = 89
+MAX_TOTAL_MACROS = 78
 
 # 统一平台宏正则（去注释后匹配，拦截正向/反向/括号/复合条件中的 os() 与 macCatalyst）
 OS_MACRO_PATTERN = re.compile(
     r"^\s*#(if|elseif)\b.*(\bos\s*\(|\btargetEnvironment\s*\(\s*macCatalyst\s*\))"
 )
 
-# 1) 核心跨平台桥接/修饰器文件白名单（合法平台抽象归属地）
+# 1) 核心跨平台桥接/修饰器文件白名单（合法平台抽象归属地；AppToolbarModifier 宏已收敛至 1 处）
 BRIDGE_FILES = {
     "Sources/Shared/Platforms/Adaptor/CrossPlatform.swift",
     "Sources/Shared/Platforms/Adaptor/PlatformTraits.swift",

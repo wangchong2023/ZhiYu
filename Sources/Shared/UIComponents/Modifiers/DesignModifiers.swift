@@ -132,11 +132,7 @@ public extension View {
     /// 注入支持高级阻尼弹性悬停物理微动效
     /// - Parameter scale: 悬停时的缩放比例（默认 1.025）
     func scaleOnHover(scale: CGFloat = 1.025) -> some View {
-        #if os(watchOS)
-        self
-        #else
         self.modifier(ScaleOnHoverModifier(scale: scale))
-        #endif
     }
     
     /// 注入多层低透明度环境光晕漫反射阴影，营造绝佳的拟物毛玻璃立体悬浮度

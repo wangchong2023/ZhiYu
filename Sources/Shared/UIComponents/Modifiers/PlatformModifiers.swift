@@ -17,15 +17,8 @@ import UIKit
 public extension View {
     
     /// 仅在支持的平台应用 Segmented Picker Style
-    @ViewBuilder
-
-    /// segmentedPickerStyleIfAvailable
     func segmentedPickerStyleIfAvailable() -> some View {
-        #if os(iOS) || os(macOS)
-        self.pickerStyle(.segmented)
-        #else
-        self
-        #endif
+        modifier(SegmentedPickerStyleModifier())
     }
     
     /// 仅在 iOS 应用 navigationBarTitleDisplayMode
@@ -79,16 +72,9 @@ public extension View {
     }
     
     /// 仅在非 watchOS 上填满最大宽度
-    @ViewBuilder
-
-    /// maxWidthIfNot监听OS
-    /// /// - Parameter alignment: alignment
+    /// - Parameter alignment: alignment
     func maxWidthIfNotWatchOS(_ alignment: Alignment = .center) -> some View {
-        #if !os(watchOS)
-        self.frame(maxWidth: .infinity, alignment: alignment)
-        #else
-        self
-        #endif
+        modifier(MaxWidthIfNotWatchModifier(alignment: alignment))
     }
     
     /// 仅在 iOS 设置 listStyle 为 insetGrouped
@@ -116,15 +102,8 @@ public extension View {
     }
     
     /// 仅在 iOS 或 macOS 设置 textFieldStyle 为 roundedBorder
-    @ViewBuilder
-
-    /// roundedBorderTextFieldStyle
     func roundedBorderTextFieldStyle() -> some View {
-        #if os(iOS) || os(macOS)
-        self.textFieldStyle(.roundedBorder)
-        #else
-        self
-        #endif
+        modifier(RoundedBorderTextFieldStyleModifier())
     }
     
     /// 仅在 iOS 或 macOS 应用 keyboardType
@@ -139,33 +118,14 @@ public extension View {
         #endif
     }
 
-    @ViewBuilder
     /// 在 watchOS 上隐藏视图（手表端不支持的操作/控件）
     func hiddenOnWatch() -> some View {
-        #if os(watchOS)
-        self.hidden()
-        #else
-        self
-        #endif
+        modifier(HiddenOnWatchModifier())
     }
 
-    @ViewBuilder
     /// 仅在 iOS/macOS 显示视图（手表端不渲染）
     func visibleOniOSOrMac() -> some View {
-        #if os(watchOS)
-        self.hidden()
-        #else
-        self
-        #endif
-    }
-
-    /// 跨平台工具栏：watchOS 上跳过渲染，其他平台正常显示
-    @ViewBuilder
-    /// toolbarIfNotWatchOS
-    func toolbarIfNotWatchOS() -> some View {
-        #if !os(watchOS)
-        self
-        #endif
+        modifier(HiddenOnWatchModifier())
     }
 
     /// 标准侧边栏列表样式（macOS 用 .sidebar，其他平台用默认）
@@ -242,18 +202,6 @@ public extension View {
         self.matchedGeometryEffect(id: id, in: namespace, isSource: isSource)
         #else
         self
-        #endif
-    }
-
-    // MARK: - macOS 专属内容
-
-    /// 仅在 macOS 渲染内容（用于 contextMenu 等 ViewBuilder 场景）
-    @ViewBuilder
-    static func macOnly<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
-        #if os(macOS)
-        content()
-        #else
-        EmptyView()
         #endif
     }
 
@@ -536,6 +484,55 @@ private struct ToolbarButtonStyleModifier: ViewModifier {
             content
         } else {
             content.buttonStyle(.plain)
+        }
+    }
+}
+
+private struct HiddenOnWatchModifier: ViewModifier {
+    @Environment(\.interfaceIdiom) private var idiom
+
+    func body(content: Content) -> some View {
+        if idiom == .watch {
+            content.hidden()
+        } else {
+            content
+        }
+    }
+}
+
+private struct MaxWidthIfNotWatchModifier: ViewModifier {
+    @Environment(\.interfaceIdiom) private var idiom
+    let alignment: Alignment
+
+    func body(content: Content) -> some View {
+        if idiom == .watch {
+            content
+        } else {
+            content.frame(maxWidth: .infinity, alignment: alignment)
+        }
+    }
+}
+
+private struct SegmentedPickerStyleModifier: ViewModifier {
+    @Environment(\.interfaceIdiom) private var idiom
+
+    func body(content: Content) -> some View {
+        if idiom == .watch {
+            content
+        } else {
+            content.pickerStyle(.segmented)
+        }
+    }
+}
+
+private struct RoundedBorderTextFieldStyleModifier: ViewModifier {
+    @Environment(\.interfaceIdiom) private var idiom
+
+    func body(content: Content) -> some View {
+        if idiom == .watch {
+            content
+        } else {
+            content.textFieldStyle(.roundedBorder)
         }
     }
 }
