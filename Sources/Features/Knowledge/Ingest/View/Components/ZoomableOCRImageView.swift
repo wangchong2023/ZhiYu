@@ -9,9 +9,7 @@
 //  核心职责：为 OCR 扫描原图提供带有手势捏合 (Pinch-to-Zoom)、平移拖拽、双击放大与浮动控件控制的无缝缩放查看器。
 //
 
-#if canImport(UIKit)
 import SwiftUI
-import UIKit
 import UFPDesignSystem
 
 // MARK: - OCR 缩放查看器私有常量
@@ -28,7 +26,7 @@ private enum OCRZoomConstants {
 }
 
 struct ZoomableOCRImageView: View {
-    let image: UIImage
+    let image: AppImage
     
     @State private var currentScale: CGFloat = OCRZoomConstants.resetScale
     @State private var gestureScale: CGFloat = OCRZoomConstants.resetScale
@@ -44,7 +42,7 @@ struct ZoomableOCRImageView: View {
             ZStack(alignment: .bottomTrailing) {
                 // 1. 动态可缩放平移的图像展示框
                 GeometryReader { _ in
-                    Image(uiImage: image)
+                    Image(appImage: image)
                         .resizable()
                         .scaledToFit()
                         .scaleEffect(totalScale)
@@ -151,4 +149,3 @@ struct ZoomableOCRImageView: View {
         }
     }
 }
-#endif

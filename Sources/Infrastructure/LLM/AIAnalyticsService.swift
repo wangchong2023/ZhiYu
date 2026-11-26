@@ -30,7 +30,7 @@ public protocol AIAnalyticsServiceProtocol: Sendable {
 }
 
 /// AI 指标分析服务 (L1-Infra)
-public final class AIAnalyticsService: AIAnalyticsServiceProtocol, @unchecked Sendable {
+public struct AIAnalyticsService: AIAnalyticsServiceProtocol, Sendable {
     @Dependency(\.ragGovernanceRepository) private var governance: any RAGGovernanceRepository
     @Dependency(\.ragEvaluationService) private var evalService: RAGEvaluationService
 

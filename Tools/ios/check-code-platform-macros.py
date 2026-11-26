@@ -43,11 +43,9 @@ FEATURES_CANIMPORT_DIRS = [
 
 # Features 层存量允许使用 #if canImport(UIKit/AppKit/WatchKit) 的冻结基线（只减不增）
 FEATURES_CANIMPORT_BASELINE = {
-    "Sources/Features/Insight/Dashboard/View/TagCloudSupport.swift",
     "Sources/Features/Knowledge/Graph/View/Components/Graph3DComponents.swift",
     "Sources/Features/Knowledge/Ingest/Coordinator/IngestFileHandler.swift",
     "Sources/Features/Knowledge/Ingest/View/Components/ImportRecordSection.swift",
-    "Sources/Features/Knowledge/Ingest/View/Components/ZoomableOCRImageView.swift",
     "Sources/Features/System/Auth/Strategy/AppAuthGoogleProvider.swift",
     "Sources/Features/System/Auth/Strategy/AppleAuthStrategy.swift",
     "Sources/Features/System/Auth/Strategy/CarrierAuthStrategy.swift",
