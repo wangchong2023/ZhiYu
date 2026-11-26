@@ -235,7 +235,7 @@ targets:
       # L0 基础设施：DI 容器、协议、常量、Stubs、工具
       # ServiceContainer 由 UFPCore SPM 包提供（方案 A：消除重复源码）
       - path: Sources/Core/Base/Utils/Localized.swift
-      - path: Sources/Core/Base/Utils/PageContentUtility.swift
+      - path: Sources/Core/Utils/UFPCoreReexports.swift
       - path: Sources/Core/Base/Utils/DIResolver.swift
       - path: Sources/Core/Base/Utils/AppError.swift
       - path: Sources/Core/Base/Constants
@@ -248,7 +248,6 @@ targets:
       - path: Sources/Core/System/Routing/AppLinkProcessor.swift
       - path: Sources/Core/System/Workflow/AudioSplitter.swift
       - path: Sources/Core/System/Security/SecurityReinforcement.swift
-      - path: Sources/Core/System/Security/RegexReplacementHelper.swift
       - path: Sources/Core/System/Notifications/AppNotifications.swift
       # L1.5 领域层：模型、协议、RAG（核心纯模型/常量已下沉至 ZhiYuDomain SPM 包，经 Reexports 透传）
       - path: Sources/Domain/Models/ZhiYuDomainReexports.swift

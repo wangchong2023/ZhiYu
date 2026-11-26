@@ -11,6 +11,7 @@ import UFPCore
 import UFPStorage
 
 public typealias StorageConstants = UFPStorage.StorageConstants
+public typealias TransactionGatekeeper = UFPStorage.TransactionGatekeeper
 
 /// Storage 模块业务常量集（扩展自 UFPStorage.StorageConstants）
 extension UFPStorage.StorageConstants {

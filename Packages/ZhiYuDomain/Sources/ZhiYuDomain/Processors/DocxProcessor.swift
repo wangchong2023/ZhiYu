@@ -10,14 +10,14 @@
 //
 import Foundation
 
-final class DocxProcessor: OOXMLParserBase {
-    private(set) var extractedText: String = ""
+public final class DocxProcessor: OOXMLParserBase {
+    public private(set) var extractedText: String = ""
     private var lastWasText = false
 
-    override var textElementName: String { ProcessorConstants.OOXML.wordText }
-    override var paragraphElementName: String { ProcessorConstants.OOXML.wordParagraph }
+    public override var textElementName: String { ProcessorConstants.OOXML.wordText }
+    public override var paragraphElementName: String { ProcessorConstants.OOXML.wordParagraph }
 
-    override func onTextElementClose(elementName _: String, currentText: String) {
+    public override func onTextElementClose(elementName _: String, currentText: String) {
         if !currentText.isEmpty {
             if lastWasText {
                 extractedText += ProcessorConstants.Whitespace.space
@@ -27,7 +27,7 @@ final class DocxProcessor: OOXMLParserBase {
         }
     }
 
-    override func onParagraphClose(elementName _: String) {
+    public override func onParagraphClose(elementName _: String) {
         if lastWasText {
             extractedText += ProcessorConstants.Whitespace.newline
             lastWasText = false

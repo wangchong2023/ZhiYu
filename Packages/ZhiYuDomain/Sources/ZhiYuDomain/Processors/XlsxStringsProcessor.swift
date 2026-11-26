@@ -10,12 +10,12 @@
 //
 import Foundation
 
-final class XlsxSharedStringsParser: OOXMLParserBase {
-    private(set) var strings: [String] = []
+public final class XlsxSharedStringsParser: OOXMLParserBase {
+    public private(set) var strings: [String] = []
 
-    override var textElementName: String { "t" }
+    public override var textElementName: String { "t" }
 
-    override func onTextElementClose(elementName _: String, currentText: String) {
+    public override func onTextElementClose(elementName _: String, currentText: String) {
         strings.append(currentText)
     }
 }

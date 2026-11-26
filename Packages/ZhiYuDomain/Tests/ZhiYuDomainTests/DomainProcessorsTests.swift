@@ -51,4 +51,30 @@ final class DomainProcessorsTests: XCTestCase {
         let decoded = try JSONDecoder().decode([MatrixValue].self, from: data)
         XCTAssertEqual(decoded, cells)
     }
+
+    func testDocxProcessorExtractsParagraphs() {
+        let xml = "<w:document><w:p><w:t>Hello</w:t><w:t>World</w:t></w:p><w:p><w:t>Line2</w:t></w:p></w:document>"
+        let processor = DocxProcessor(xmlData: Data(xml.utf8))
+        XCTAssertTrue(processor.parse())
+        XCTAssertEqual(processor.extractedText, "Hello World\nLine2\n")
+    }
+
+    func testExcelAndSharedStringsProcessorsExtractValues() {
+        let sst = "<sst><si><t>CellA</t></si><si><t>CellB</t></si></sst>"
+        let sstParser = XlsxSharedStringsParser(xmlData: Data(sst.utf8))
+        XCTAssertTrue(sstParser.parse())
+        XCTAssertEqual(sstParser.strings, ["CellA", "CellB"])
+
+        let sheet = #"<worksheet><c t="s"><v>0</v></c><c t="s"><v>1</v></c></worksheet>"#
+        let sheetParser = ExcelProcessor(xmlData: Data(sheet.utf8))
+        XCTAssertTrue(sheetParser.parse())
+        XCTAssertEqual(sheetParser.values.count, 2)
+    }
+
+    func testSwiftMarkdownASTCleanerClosesUnclosedFenceAndBold() {
+        let broken = "```swift\nlet x = 1\n\n\n\n**unclosed"
+        let cleaned = SwiftMarkdownASTCleaner.cleanAST(broken)
+        XCTAssertFalse(cleaned.contains("\n\n\n"))
+        XCTAssertTrue(cleaned.hasSuffix("**"))
+    }
 }

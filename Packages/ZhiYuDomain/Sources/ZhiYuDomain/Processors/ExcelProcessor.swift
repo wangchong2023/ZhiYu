@@ -10,25 +10,26 @@
 //
 import Foundation
 
-final class ExcelProcessor: NSObject, XMLParserDelegate {
+public final class ExcelProcessor: NSObject, XMLParserDelegate {
     private let xmlData: Data
-    private(set) var values: [String] = []
+    public private(set) var values: [String] = []
     private var inValueElement = false
     private var currentText = ""
     private var currentCellType: String?
 
-    init(xmlData: Data) {
+    public init(xmlData: Data) {
         self.xmlData = xmlData
     }
 
     /// 启动 XML 解析：解析 XLSX 工作表 sheetN.xml，提取单元格数据。
     /// - Returns: true 表示解析成功
-    func parse() -> Bool {
+    @discardableResult
+    public func parse() -> Bool {
         XMLParserLauncher.parse(xmlData: xmlData, delegate: self)
     }
 
     /// XMLParserDelegate: 元素开始 — 检测单元格 <c> 和值节点 <v>，记录单元格类型 t 属性。
-    func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String: String] = [:]) {
+    public func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String: String] = [:]) {
         if elementName == ProcessorConstants.OOXML.cellElement {
             currentCellType = attributeDict[ProcessorConstants.OOXML.cellTypeAttribute]
             currentText = ""
@@ -39,14 +40,14 @@ final class ExcelProcessor: NSObject, XMLParserDelegate {
     }
 
     /// XMLParserDelegate: 字符捕获 — 在 <v> 值节点内累积文本。
-    func parser(_ parser: XMLParser, foundCharacters string: String) {
+    public func parser(_ parser: XMLParser, foundCharacters string: String) {
         if inValueElement {
             currentText += string
         }
     }
 
     /// XMLParserDelegate: 元素结束 — <v> 关闭时停止累积；<c> 关闭时将共享字符串索引 (t="s") 记录为待映射值。
-    func parser(_ parser: XMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?) {
+    public func parser(_ parser: XMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?) {
         if elementName == ProcessorConstants.OOXML.valueElement {
             inValueElement = false
         } else if elementName == ProcessorConstants.OOXML.cellElement {

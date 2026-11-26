@@ -76,27 +76,6 @@ def _extract_public_top_types(file_path: Path) -> list[tuple[str, str]]:
     return results
 
 
-def _is_shim_file(file_path: Path) -> bool:
-    """判断文件是否为仅包含 import 与 typealias 的薄壳兼容垫片。"""
-    content = file_path.read_text(encoding="utf-8", errors="ignore")
-    code_lines = [
-        line.strip()
-        for line in content.splitlines()
-        if line.strip() and not line.strip().startswith("//")
-    ]
-    non_imports = [
-        line
-        for line in code_lines
-        if not line.startswith("import ") and not line.startswith("@_exported")
-    ]
-    if not non_imports:
-        return True
-    return all(
-        line.startswith("public typealias ") or line.startswith("typealias ")
-        for line in non_imports
-    )
-
-
 def check_symbol_collisions(
     src_files: list[tuple[str, Path]], pkg_files: list[tuple[str, Path]]
 ) -> list[str]:
@@ -123,7 +102,7 @@ def check_symbol_collisions(
 def check_duplicate_filenames(
     src_files: list[tuple[str, Path]], pkg_files: list[tuple[str, Path]]
 ) -> list[str]:
-    """检测 Sources 与 Packages 之间非 Shim 的同名 Swift 文件。"""
+    """检测 Sources 与 Packages 之间的同名 Swift 文件（0 容忍，所有重导出须统一收口至 *Reexports.swift）。"""
     pkg_by_name: dict[str, list[str]] = defaultdict(list)
     for rel, _ in pkg_files:
         if rel.endswith("/Package.swift") or rel == "Package.swift":
@@ -131,14 +110,13 @@ def check_duplicate_filenames(
         pkg_by_name[Path(rel).name].append(rel)
 
     violations: list[str] = []
-    for rel, path in src_files:
+    for rel, _ in src_files:
         fname = Path(rel).name
         if fname in ALLOWED_DUPLICATE_FILENAMES or fname not in pkg_by_name:
             continue
-        if not _is_shim_file(path):
-            violations.append(
-                f"跨包非 Shim 同名文件 `{fname}`: {rel} <-> {pkg_by_name[fname]}"
-            )
+        violations.append(
+            f"跨包同名文件 `{fname}`（请将重导出统一放入 *Reexports.swift）: {rel} <-> {pkg_by_name[fname]}"
+        )
     return violations
 
 
