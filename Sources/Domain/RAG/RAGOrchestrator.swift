@@ -50,12 +50,17 @@ public final class RAGOrchestrator {
             let rankedPages = (try? await llmService.rerank(query: query, candidates: pages)) ?? pages
             let systemPrompt = contextBuilder.buildSystemPrompt(pages: rankedPages) + "\n\n" + context
  
-            // 4. 调用生成 (Synthesis)
+            // 4. 调用生成 (Synthesis) — 失败时必须将任务标记为 failTask，避免永久卡在 running
             taskCenter.updateTask(taskID, status: .running(progress: 0.8, stage: .synthesis))
             let startTime = Date()
             
-            // 注意：此处直接调用底层 LLMService 的 generate 接口或 chat 接口（剥离了 RAG 逻辑后的版本）
-            let response = try await llmService.generate(prompt: query, systemPrompt: systemPrompt)
+            let response: String
+            do {
+                response = try await llmService.generate(prompt: query, systemPrompt: systemPrompt)
+            } catch {
+                taskCenter.failTask(id: taskID, error: error.localizedDescription)
+                throw error
+            }
             let latency = Int(Date().timeIntervalSince(startTime) * UFPCore.SystemConstants.millisecondsPerSecond)
  
             // 5. 异步指标记录（传入检索源以触发检索质量标注）
@@ -71,33 +76,44 @@ public final class RAGOrchestrator {
     /// 流程：任务注册 → 上下文构建 → 语义重排 → 流式生成 → 指标记录 → 任务完成。
     public func chatStream(query: String, history: [ChatMessageDTO], pages: [any KnowledgePageRepresentable]) -> AsyncThrowingStream<String, Error> {
         AsyncThrowingStream { continuation in
-            Task { @MainActor in
+            let streamTask = Task { @MainActor in
                 // Step 1: 任务注册
                 let taskID = taskCenter.addTask(type: .ai, name: RAGTaskName.chatStream, target: query)
+                let startTime = Date()
                 
                 do {
-                    // Step 2: 构建 RAG 上下文（上下文检索 + 语义重排）
-                    let (context, _) = await contextBuilder.buildRelevantContext(query: query)
+                    // Step 2: 构建 RAG 上下文并同步最新检索源（避免读取上一次对话的陈旧 sources）
+                    let (context, sources) = await contextBuilder.buildRelevantContext(query: query)
+                    SourceStore.shared.updateSources(sources)
                     let rankedPages = (try? await llmService.rerank(query: query, candidates: pages)) ?? pages
                     let systemPrompt = contextBuilder.buildSystemPrompt(pages: rankedPages) + "\n\n" + context
  
-                    // Step 3: 流式生成，逐 chunk 产出; 下层已解耦出 LLM 流式输出
+                    // Step 3: 流式生成，逐 chunk 产出; 响应消费者取消
                     var fullResponse = ""
                     for try await chunk in llmService.chatStream(query: query, history: history, pages: rankedPages) {
+                        if Task.isCancelled { break }
                         fullResponse += chunk
                         continuation.yield(chunk)
                     }
+                    try Task.checkCancellation()
  
-                    // Step 4: 异步指标记录（含检索源，触发检索质量标注）
+                    // Step 4: 异步指标记录（含当前检索源与真实延迟）
+                    let latency = Int(Date().timeIntervalSince(startTime) * UFPCore.SystemConstants.millisecondsPerSecond)
                     let capturedSources = SourceStore.shared.activeSources
-                    analytics.recordRAGMetrics(query: query, response: fullResponse, context: context, sources: capturedSources, systemPrompt: systemPrompt, modelName: AppConfig.AI.defaultModel, latency: 0)
+                    analytics.recordRAGMetrics(query: query, response: fullResponse, context: context, sources: capturedSources, systemPrompt: systemPrompt, modelName: AppConfig.AI.defaultModel, latency: latency)
                     taskCenter.completeTask(id: taskID)
+                    continuation.finish()
+                } catch is CancellationError {
+                    taskCenter.failTask(id: taskID, error: CancellationError().localizedDescription)
                     continuation.finish()
                 } catch {
                     // Step 5: 异常路径 — 标记任务失败并向上游抛出错误
                     taskCenter.failTask(id: taskID, error: error.localizedDescription)
                     continuation.finish(throwing: error)
                 }
+            }
+            continuation.onTermination = { _ in
+                streamTask.cancel()
             }
         }
     }

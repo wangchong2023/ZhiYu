@@ -221,4 +221,28 @@ final class AppSyncOrchestratorTests: XCTestCase {
         XCTAssertEqual(orchestrator.syncStatus, .synced, "同步状态应为 synced")
         XCTAssertNotNil(orchestrator.lastSyncDate)
     }
+
+    /// 缺陷 #122 回归：推送云端抛错时 syncStatus 必须回落至 .error，不得永久卡死在 .syncing
+    func testPerformSyncWhenPushFailsTransitionsToErrorStatus() async {
+        struct PushError: Error, LocalizedError {
+            var errorDescription: String? { "iCloud quota exceeded" }
+        }
+        provider.pullHandler = {
+            CloudSnapshot(pages: self.localPages, logs: self.localLogs, lastModified: Date())
+        }
+        provider.pushHandler = { _, _ in
+            throw PushError()
+        }
+
+        do {
+            _ = try await orchestrator.performSync(localPages: localPages, localLogs: localLogs)
+            XCTFail("push 抛错应继续向上抛出")
+        } catch {
+            if case .error(let msg) = orchestrator.syncStatus {
+                XCTAssertEqual(msg, "iCloud quota exceeded")
+            } else {
+                XCTFail("push 失败后 syncStatus 必须为 .error，实际为 \(orchestrator.syncStatus)")
+            }
+        }
+    }
 }

@@ -164,4 +164,38 @@ final class RAGOrchestratorTests: XCTestCase {
             XCTFail("未能在 TaskCenter 找到对应的流式失败任务")
         }
     }
+
+    /// 缺陷 #123 回归：非流式 chat 遇到 LLM 生成异常时，TaskCenter 任务必须标记为 .failed，不得永久卡死在 .running
+    func testRAGOrchestratorChatFailureMarksTaskFailed() async {
+        let orchestrator = RAGOrchestrator()
+        guard let mockLLM = ServiceContainer.shared.resolve((any LLMServiceProtocol).self) as? MockLLMService else {
+            XCTFail("MockLLMService 未注册")
+            return
+        }
+        struct ChatGenError: Error, LocalizedError {
+            var errorDescription: String? { "Upstream 503 Unavailable" }
+        }
+        mockLLM.generateHandler = { _, _ in
+            throw ChatGenError()
+        }
+
+        let query = "触发非流式失败任务状态测试"
+        do {
+            _ = try await orchestrator.chat(query: query, history: [], pages: [])
+            XCTFail("chat 生成失败应向上抛出异常")
+        } catch {
+            XCTAssertEqual(error.localizedDescription, "Upstream 503 Unavailable")
+        }
+
+        if let failedTask = taskCenter.tasks.first(where: { $0.name == "AI Chat" && $0.target == query }) {
+            switch failedTask.status {
+            case .failed(let reason):
+                XCTAssertEqual(reason, "Upstream 503 Unavailable")
+            default:
+                XCTFail("非流式 chat 失败后任务必须转为 .failed，实际为 \(failedTask.status)")
+            }
+        } else {
+            XCTFail("未能在 TaskCenter 找到对应失败任务")
+        }
+    }
 }

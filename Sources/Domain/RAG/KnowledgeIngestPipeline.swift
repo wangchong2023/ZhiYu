@@ -114,12 +114,14 @@ actor KnowledgeIngestPipeline {
             let summaryPrompt = PromptRegistry.Ingest.summary(content: String(content.prefix(PromptConstants.IngestPipeline.summaryChunkCharLimit)))
             if let summary = try? await llm.generate(prompt: summaryPrompt, systemPrompt: L10n.AI.Prompt.ingestManagementAssistant) {
                 try Task.checkCancellation()
+                let trimmedSummary = summary.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !trimmedSummary.isEmpty else { return [] }
                 return [PageChunk(
                     id: "sum_\(pageID.uuidString)",
                     pageID: pageID,
                     parentID: nil,
                     chunkType: .summary,
-                    content: summary,
+                    content: trimmedSummary,
                     index: 0,
                     startIndex: 0,
                     embedding: nil,

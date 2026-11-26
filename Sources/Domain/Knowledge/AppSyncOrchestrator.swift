@@ -44,7 +44,12 @@ public final class AppSyncOrchestrator: CloudSyncOrchestrator {
         do {
             remote = try await provider.pull()
         } catch {
-            try await provider.push(pages: localPages, logs: localLogs)
+            do {
+                try await provider.push(pages: localPages, logs: localLogs)
+            } catch let pushError {
+                self.syncStatus = .error(pushError.localizedDescription)
+                throw pushError
+            }
             self.syncStatus = .synced
             self.lastSyncDate = Date()
             return (localPages, localLogs)
@@ -64,8 +69,13 @@ public final class AppSyncOrchestrator: CloudSyncOrchestrator {
             finalLogs = localLogs
         }
         
-        // 4. 推送黄金数据集
-        try await provider.push(pages: finalPages, logs: finalLogs)
+        // 4. 推送黄金数据集（失败时必须更新 syncStatus 为 .error，避免永久卡死在 .syncing）
+        do {
+            try await provider.push(pages: finalPages, logs: finalLogs)
+        } catch let pushError {
+            self.syncStatus = .error(pushError.localizedDescription)
+            throw pushError
+        }
         
         self.syncStatus = .synced
         self.lastSyncDate = Date()
