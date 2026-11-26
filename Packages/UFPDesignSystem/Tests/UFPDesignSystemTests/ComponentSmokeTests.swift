@@ -11,6 +11,7 @@ import XCTest
 import SwiftUI
 @testable import UFPDesignSystem
 
+@MainActor
 final class ComponentSmokeTests: XCTestCase {
 
     // MARK: - Buttons

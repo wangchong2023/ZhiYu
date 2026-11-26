@@ -10,6 +10,7 @@ import XCTest
 import SwiftUI
 @testable import UFPDesignSystem
 
+@MainActor
 final class CommonModifiersTests: XCTestCase {
 
     func testAccentCapsuleModifierDefaultsUseDesignTokens() {

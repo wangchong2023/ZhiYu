@@ -10,6 +10,7 @@ import XCTest
 import SwiftUI
 @testable import UFPDesignSystem
 
+@MainActor
 final class UFPMarkdownViewTests: XCTestCase {
 
     /// UFPMarkdownView 必须能初始化
@@ -46,8 +47,8 @@ final class UFPMarkdownViewTests: XCTestCase {
 
     /// UFPMarkdownView 必须遵循 View 协议（编译期保证）
     func testUFPMarkdownViewConformsToView() {
-        let view = UFPMarkdownView("test")
-        XCTAssertTrue(type(of: view) is any View.Type)
+        let view: any View = UFPMarkdownView("test")
+        XCTAssertTrue(type(of: view) == UFPMarkdownView.self)
     }
 
     /// 复杂 Markdown 语法必须能渲染

@@ -11,6 +11,7 @@ import XCTest
 import SwiftUI
 @testable import UFPDesignSystem
 
+@MainActor
 final class AppLottieViewTests: XCTestCase {
 
     /// AppLottieView 必须能初始化（不崩溃）
@@ -39,15 +40,14 @@ final class AppLottieViewTests: XCTestCase {
 
     /// AppLottieView 必须是 View 协议实现（编译期保证，运行期验证类型元数据）
     func testAppLottieViewConformsToView() {
-        let view = AppLottieView(name: "test")
-        // 编译期已保证 AppLottieView: View，运行期验证实例类型
-        XCTAssertTrue(type(of: view) is any View.Type,
+        let view: any View = AppLottieView(name: "test")
+        XCTAssertTrue(type(of: view) == AppLottieView.self,
                       "AppLottieView 必须遵循 View 协议")
     }
 
     /// 注入含 Lottie JSON 资源的 bundle 时，必须走 LottieView 分支（非降级）
     /// 覆盖 :38-40 LottieView(animation: .named(...)).looping() 分支
-    func testLottieViewBranchWhenResourceExists() {
+    func testLottieViewBranchWhenResourceExists() throws {
         // 使用 Bundle.module（UFPDesignSystem 资源包），寻找任意存在的 .json 资源
         // 若 Bundle.module 无 json 资源，则用测试运行时 bundle 的任意 json
         let testBundle = Bundle.module
@@ -64,12 +64,10 @@ final class AppLottieViewTests: XCTestCase {
             // Bundle(path:) 加载临时目录作为 bundle
             if let tempBundle = Bundle(path: tempDir) {
                 let view = AppLottieView(name: "test_animation", bundle: tempBundle)
-                _ = view.body  // 走 LottieView 分支
-                XCTAssertTrue(true, "临时 bundle 含 JSON 资源时必须走 LottieView 分支")
+                XCTAssertNotNil(view.body, "临时 bundle 含 JSON 资源时必须走 LottieView 分支")
                 return
             }
-            XCTSkip("无法构造含 JSON 资源的测试 bundle")
-            return
+            throw XCTSkip("无法构造含 JSON 资源的测试 bundle")
         }
 
         // 用找到的 json 资源名 + 对应 bundle 构造 AppLottieView
