@@ -47,13 +47,19 @@ enum LLMUtils {
               let message = firstChoice["message"] as? [String: Any] else {
             return nil
         }
-        // 优先 content；推理模型（DeepSeek v4 Pro 等）输出走 reasoning_content
+        // 优先非空 content；当推理模型返回空 content("") 时回退至 reasoning_content
+        if let content = message["content"] as? String, !content.isEmpty {
+            return content
+        }
+        if let reasoning = message["reasoning_content"] as? String, !reasoning.isEmpty {
+            return reasoning
+        }
         return (message["content"] as? String) ?? (message["reasoning_content"] as? String)
     }
 
-    /// 剥离 Markdown 语法标记（如 ```json 等）并修剪空白。
+    /// 剥离 Markdown 语法标记（如 ```json / ```JSON 等）并修剪空白。
     static func stripMarkdown(_ text: String) -> String {
-        text.replacingOccurrences(of: SystemConstants.MarkdownSyntax.jsonCodeFence, with: "")
+        text.replacingOccurrences(of: SystemConstants.MarkdownSyntax.jsonCodeFence, with: "", options: .caseInsensitive)
             .replacingOccurrences(of: SystemConstants.MarkdownSyntax.codeFence, with: "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
     }

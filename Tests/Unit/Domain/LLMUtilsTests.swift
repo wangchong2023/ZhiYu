@@ -246,4 +246,25 @@ final class LLMUtilsTests: XCTestCase {
         let result = LLMUtils.extractContent(from: response)
         XCTAssertNil(result)
     }
+
+    // MARK: - 缺陷 #121 回归：空 content 回退 reasoning_content 与大写 JSON 围栏剥离
+
+    func testExtractContent_emptyContentFallsBackToReasoningContent() {
+        let response: [String: Any] = [
+            "choices": [
+                [
+                    "message": [
+                        "content": "",
+                        "reasoning_content": "Recovered reasoning chain"
+                    ]
+                ]
+            ]
+        ]
+        XCTAssertEqual(LLMUtils.extractContent(from: response), "Recovered reasoning chain")
+    }
+
+    func testStripMarkdown_uppercaseJSONFenceDecodedCleanly() {
+        let fenced = "```JSON\n[\"alpha\", \"beta\"]\n```"
+        XCTAssertEqual(LLMUtils.parseJSONArray(fenced), ["alpha", "beta"])
+    }
 }

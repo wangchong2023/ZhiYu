@@ -50,7 +50,7 @@ public final class PromptSecurityGuard: Sendable {
         // 中性化策略：破坏 token 的 ASCII 特殊字符（< > |），使其不再被 LLM 识别为定界符
         // 同时用 [ESCAPED_...] 包裹保留可读标记
         for token in delimiterTokens {
-            clean = clean.replacingOccurrences(of: token, with: neutralizeToken(token))
+            clean = clean.replacingOccurrences(of: token, with: neutralizeToken(token), options: .caseInsensitive)
         }
 
         // 3. 基础 PromptSanitizer OWASP 拦截

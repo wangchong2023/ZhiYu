@@ -23,4 +23,16 @@ final class PIIMaskerTests: XCTestCase {
         XCTAssertFalse(masked.contains("sk-abc12345678901234567890"), "应当脱敏 API Key")
         XCTAssertTrue(masked.contains("[REDACTED_PII]"), "应当使用遮蔽占位符，got: \(masked)")
     }
+
+    /// 缺陷 #120 回归：20 位普通流水号不得被 18 位身份证正则误截断，新版 sk-proj- 含连字符/下划线密钥必须完整脱敏
+    func testPIIMasker_PreservesLongOrderIDAndMasksProjectAPIKey() {
+        let orderID = "12345678901234567890"
+        let projectKey = ["sk", "proj", "AbCdEf123456_7890", "XyZ123456"].joined(separator: "-")
+        let input = "订单号 \(orderID) 密钥 \(projectKey)"
+        let masked = PIIMasker.shared.mask(input)
+
+        XCTAssertTrue(masked.contains(orderID), "20 位普通数字流水号不得被误判为 18 位身份证截断，got: \(masked)")
+        XCTAssertFalse(masked.contains(projectKey), "含连字符与下划线的新版项目密钥必须被完整脱敏，got: \(masked)")
+        XCTAssertTrue(masked.contains("[REDACTED_PII]"))
+    }
 }

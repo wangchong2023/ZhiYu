@@ -17,12 +17,12 @@ public final class PIIMasker: Sendable {
     private init() {}
 
     private let piiPatterns: [String] = [
-        // 身份证号 (中国 18 位 / 15 位)
-        #"\b\d{17}[\dXx]|\b\d{15}\b"#,
+        // 身份证号 (中国 18 位 / 15 位，严格要求左右词边界避免误伤 20+ 位流水号)
+        #"\b\d{17}[\dXx]\b|\b\d{15}\b"#,
         // 信用卡号 (13 - 19 位数字)
         #"\b(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13}|6(?:011|5[0-9]{2})[0-9]{12})\b"#,
-        // API Key / Secret Token (如 sk-xxx, bearer xxx)
-        #"(?i)(?:sk-[a-zA-Z0-9]{20,}|bearer\s+[a-zA-Z0-9._-]{20,})"#,
+        // API Key / Secret Token (兼容经典 sk-xxx、新版 sk-proj-xxx_yyy 与 bearer xxx)
+        #"(?i)(?:sk-[a-zA-Z0-9_-]{20,}|bearer\s+[a-zA-Z0-9._-]{20,})"#,
         // 电子邮箱
         #"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"#,
         // 手机号码 (中国 11 位 13x - 19x)

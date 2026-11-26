@@ -127,21 +127,24 @@
 | **116** | `QuizProcessor.convertJSONToMarkdown` 访问 `question.options[question.answer]` 时未检查 `question.answer >= 0`；且 `parseMarkdownQuiz` 未将解析到的答案索引钳位在 `finalOptions.count` 合法范围内 | 仅校验上界漏校验下界与动态选项数上界 | 异常答案索引触发数组越界闪退 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 补齐 `question.answer >= 0` 守卫并在 `parseMarkdownQuiz` 对答案索引执行合法区间钳位 | **✅ 已解决** | 是 (测验选项下标双向边界防护) | 是 (`QuizProcessorEdgeTests`) | ✅ 已闭环 |
 | **117** | `RAGEvaluationService.processEvaluationResponse` 未对 LLM 返回评分做 `[0.0, 1.0]` 钳位与 `isFinite` 校验，且不兼容 Markdown 代码块包裹的 JSON 响应 | 直接信任 LLM 原始浮点输出与裸 JSON 格式 | 百分制/负数/NaN 评分污染 RAG 治理报表，带围栏 JSON 评估误报 Error | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | 新增 `sanitizeScore` 强类型边界钳位，解析前经 `LLMUtils.stripMarkdown` 清洗 | **✅ 已解决** | 是 (LLM 评估输出范围钳位与围栏兼容) | 是 (`RAGEvaluationServiceTests`) | ✅ 已闭环 |
 | **118** | `WebScraperProcessor.fetchMarkdown` 对空白输入与 `file://`/`javascript:`/`ftp://`/`data:` 非 HTTP 协议强行拼接 `https://` 前缀，绕过协议校验并构造出畸形 URL | 未先判空与检测显式非 HTTP 协议 | 空输入构造空 host URL，非 HTTP 协议未被第一时间拦截 | **High** | 架构设计与安全/网络健壮性 | 先拦截空字符串与非 `http`/`https` 显式协议，并强制校验 `host` 非空 | **✅ 已解决** | 是 (URL 抓取白名单协议校验) | 是 (`WebScraperProcessorEdgeTests`) | ✅ 已闭环 |
+| **119** | `PromptSecurityGuard.sanitize` 中和系统定界符（`<|im_start|>`、`### System:`、`[SYSTEM_INSTRUCTION]`）时大小写敏感，攻击者通过 `<|IM_START|>` 或 `### SYSTEM:` 可直接绕过防线 | 字符串替换漏设 `.caseInsensitive` | 恶意输入可通过大写定界符绕过 Prompt 注入拦截 | **High** | 架构设计与安全/网络健壮性 | 定界符中和统一启用 `.caseInsensitive` 全大小写拦截 | **✅ 已解决** | 是 (Prompt 防线大小写绕过审计) | 是 (`PromptSecurityGuardTests`) | ✅ 已闭环 |
+| **120** | `PIIMasker` 的 18 位身份证正则缺少右词边界 `\b` 导致误截断 20+ 位普通数字流水号；且 API Key 正则仅匹配字母数字，漏脱敏含连字符/下划线的新版 `sk-proj-` 密钥 | 正则词边界与字符类覆盖不完整 | 长数字订单号被误破坏，新版 OpenAI API Key 泄露至日志/上游 | **High** | 架构设计与安全/网络健壮性 | 18 位身份证正则补齐右边界 `\b`，API Key 字符类扩展为 `[a-zA-Z0-9_-]{20,}` | **✅ 已解决** | 是 (PII 脱敏正则精确边界审计) | 是 (`PIIMaskerTests`) | ✅ 已闭环 |
+| **121** | `LLMUtils.extractContent` 在推理模型返回 `"content": ""` 时未回退至 `reasoning_content`；且 `stripMarkdown` 剥离 ```` ```json ```` 大小写敏感，遇到大写 ```` ```JSON ```` 导致 JSON 解析失败 | 空字符串未触发 `??` 回退；代码块前缀匹配未启用 `.caseInsensitive` | 推理模型输出丢失、大写围栏 JSON 响应解析为空 | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | 优先非空 `content` 否则回退非空 `reasoning_content`；`stripMarkdown` 补齐 `.caseInsensitive` | **✅ 已解决** | 是 (推理模型兼容与 Markdown 围栏规范) | 是 (`LLMUtilsTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**118 项**
+- **收录问题总数**：**121 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：27 项 (22.9%)
-  - 状态机并发与数据生命周期：22 项 (18.6%)
-  - 架构设计与安全/网络健壮性：32 项 (27.1%)
-  - UI/交互与防御性缺陷：14 项 (11.9%)
-  - 代码坏味道与去魔鬼化/DRY 治理：23 项 (19.5%)
+  - 功能缺陷与核心算法/解析器/数据完整性：28 项 (23.1%)
+  - 状态机并发与数据生命周期：22 项 (18.2%)
+  - 架构设计与安全/网络健壮性：34 项 (28.1%)
+  - UI/交互与防御性缺陷：14 项 (11.6%)
+  - 代码坏味道与去魔鬼化/DRY 治理：23 项 (19.0%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：51 项 (43.2%)
-  - **Medium（功能异常/算法边界/性能损耗）**：42 项 (35.6%)
-  - **Low（样式异味/边界校验/门禁规范）**：25 项 (21.2%)
-- **修复闭环率**：**100% (118/118 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：53 项 (43.8%)
+  - **Medium（功能异常/算法边界/性能损耗）**：43 项 (35.5%)
+  - **Low（样式异味/边界校验/门禁规范）**：25 项 (20.7%)
+- **修复闭环率**：**100% (121/121 项已修复闭环)**
 
