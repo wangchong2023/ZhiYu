@@ -103,7 +103,7 @@ public final class LintService: Sendable {
         var reportedPairs: Set<String> = []
         for pageA in pages {
             for linkTitle in pageA.outgoingLinks {
-                if let pageB = titleMap[linkTitle.lowercased()] {
+                if let pageB = titleMap[linkTitle.lowercased()], pageB.id != pageA.id {
                     if pageB.outgoingLinks.contains(where: { $0.lowercased() == pageA.title.lowercased() }) {
                         // 按 id 排序生成唯一 key，避免 A→B 和 B→A 重复
                         let pairKey = [pageA.id.uuidString, pageB.id.uuidString].sorted().joined()

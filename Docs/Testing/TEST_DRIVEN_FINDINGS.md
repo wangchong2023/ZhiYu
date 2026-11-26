@@ -133,21 +133,23 @@
 | **122** | `AppSyncOrchestrator.performSync` 在 `provider.push(...)` 抛错时未更新 `syncStatus`，导致同步状态永久卡死在 `.syncing` 无法恢复 | 推送阶段缺少异常状态机回落处理 | 网络中断或配额满导致推送失败后 UI 同步转圈永久卡死 | **High** | 状态机并发与数据生命周期 | 两处 `provider.push` 均包裹 `do/catch`，失败时立即将 `syncStatus` 置为 `.error` 后重新抛出 | **✅ 已解决** | 是 (同步状态机异常终态收敛) | 是 (`AppSyncOrchestratorTests`) | ✅ 已闭环 |
 | **123** | `RAGOrchestrator` 存在 3 处编排缺陷：`chat` 生成抛错时未调用 `failTask` 导致任务中心永久卡在 `.running`；`chatStream` 未绑定 `onTermination` 取消后台生成任务导致 Token 泄露；`chatStream` 丢弃检索 `sources` 导致读取陈旧引用且 `latency` 硬编码 `0` | 缺少异常收口、流式取消传播与检索源更新 | AI 失败后任务进度条永久挂起；取消对话后后台仍消耗 Token；流式评估引用错位 | **High** | 状态机并发与数据生命周期 | `chat` 补充 `failTask` 异常收口；`chatStream` 绑定 `onTermination { streamTask.cancel() }`、更新 `SourceStore` 并记录真实 `latency` | **✅ 已解决** | 是 (流式取消传播与任务状态收口) | 是 (`RAGOrchestratorTests`) | ✅ 已闭环 |
 | **124** | `KnowledgeIngestPipeline.generateSummaryChunk` 未过滤纯空白 LLM 摘要响应，直接写入空字符串 `.summary` 分块污染向量库 | 缺少 `trimmingCharacters` 非空守卫 | LLM 返回空白摘要时向量库写入脏空分块影响召回质量 | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | 对摘要文本执行 `trimmingCharacters(in: .whitespacesAndNewlines)` 判空拦截 | **✅ 已解决** | 是 (入库分块非空守卫) | 是 (`KnowledgeIngestPipelineTests`) | ✅ 已闭环 |
+| **125** | `GraphClusteringService.cluster` 未校验 `k > 0`，传入 `k <= 0` 时触发负数组长度或空 `centroids` 越界致命崩溃 | 仅校验 `pages.count > k` 与 `embeddings.count >= k`，漏检下界 `k > 0` | 异常聚类数参数直接引发图谱页闪退 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 入口守卫补齐 `k > 0` 下界拦截 | **✅ 已解决** | 是 (K-Means 聚类参数正数守卫) | 是 (`GraphClusteringServiceTests`) | ✅ 已闭环 |
+| **126** | `LintService.checkCircularReferences` 未排除自链（`pageA.id == pageB.id`），导致页面引用自身时被误报为 `A <-> A` 双向循环引用 | 循环引用巡检缺少 `pageB.id != pageA.id` 判定 | 知识库健康巡检误报双向环并错误扣减健康分 | **Low** | 功能缺陷与核心算法/解析器/数据完整性 | 补齐 `pageB.id != pageA.id` 排除自环误报 | **✅ 已解决** | 是 (图巡检自环排除规范) | 是 (`LintServiceTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**124 项**
+- **收录问题总数**：**126 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：29 项 (23.4%)
-  - 状态机并发与数据生命周期：24 项 (19.4%)
-  - 架构设计与安全/网络健壮性：34 项 (27.4%)
-  - UI/交互与防御性缺陷：14 项 (11.3%)
-  - 代码坏味道与去魔鬼化/DRY 治理：23 项 (18.5%)
+  - 功能缺陷与核心算法/解析器/数据完整性：31 项 (24.6%)
+  - 状态机并发与数据生命周期：24 项 (19.0%)
+  - 架构设计与安全/网络健壮性：34 项 (27.0%)
+  - UI/交互与防御性缺陷：14 项 (11.1%)
+  - 代码坏味道与去魔鬼化/DRY 治理：23 项 (18.3%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：55 项 (44.4%)
-  - **Medium（功能异常/算法边界/性能损耗）**：44 项 (35.5%)
-  - **Low（样式异味/边界校验/门禁规范）**：25 项 (20.2%)
-- **修复闭环率**：**100% (124/124 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：56 项 (44.4%)
+  - **Medium（功能异常/算法边界/性能损耗）**：44 项 (34.9%)
+  - **Low（样式异味/边界校验/门禁规范）**：26 项 (20.6%)
+- **修复闭环率**：**100% (126/126 项已修复闭环)**
 

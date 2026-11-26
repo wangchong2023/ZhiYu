@@ -25,8 +25,8 @@ public final class GraphClusteringService {
 
     /// 执行 K-Means 聚类
     func cluster(pages: [KnowledgePage], embeddings: [UUID: [Float]], k: Int = FeatureConstants.GraphClustering.defaultK) -> [Cluster] {
-        // Bug #123 修复：guard embeddings.count >= k，避免 centroids.count < k 导致越界
-        guard pages.count > k, embeddings.count >= k else { return [] }
+        // 缺陷 #125 修复：guard k > 0，防止 k <= 0 触发负数组长度或空 centroids 越界崩溃
+        guard k > 0, pages.count > k, embeddings.count >= k else { return [] }
 
         // 1. 初始化质心 (随机选 K 个)
         var centroids: [[Float]] = Array(embeddings.values.prefix(k))

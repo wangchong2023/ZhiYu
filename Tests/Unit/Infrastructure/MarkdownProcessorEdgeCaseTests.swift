@@ -108,10 +108,14 @@ final class MarkdownProcessorEdgeCaseTests: XCTestCase {
         let content = "- Item 1\n  - Nested\n  - Also nested\n- Item 2"
         let blocks = parser.parse(content)
 
-        guard case .bulletList(let items, _, _) = blocks.first else {
-            XCTFail("Expected bullet list"); return
+        // 缺陷 #93 修复后：嵌套子列表不再被父列表吞噬，而是保留为独立缩进块
+        let allItems = blocks.flatMap { block -> [String] in
+            if case .bulletList(let items, _, _) = block {
+                return items
+            }
+            return []
         }
-        XCTAssertEqual(items.count, 2)
+        XCTAssertEqual(allItems, ["Item 1", "Nested", "Also nested", "Item 2"])
     }
 
     func testParseMathBlock() {

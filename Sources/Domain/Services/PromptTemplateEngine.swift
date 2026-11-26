@@ -74,9 +74,9 @@ public actor PromptTemplateEngine: PromptTemplateEngineCapabilities {
         
         // 1. 检查是否存在外部托管的 Markdown Prompt
         if let remoteURLString = skill.remotePromptURLString, let url = URL(string: remoteURLString) {
-            // 安全修复：对 skillId 与 version 同步执行路径分隔符过滤，防止路径遍历攻击
+            // 安全修复：对 skillId 与 version 同步执行路径分隔符/穿越过滤，防止路径遍历攻击（保留版本号合法单点号如 1.0.0）
             let safeSkillId = sanitizeFilename(skill.skillId)
-            let safeVersion = sanitizeFilename(skill.version)
+            let safeVersion = sanitizeVersion(skill.version)
             let cachedFileURL = cacheDirectoryURL.appendingPathComponent("\(safeSkillId)_\(safeVersion).md")
             
             // 2. 尝试从本地缓存读取，命中则使用缓存内容
@@ -178,6 +178,18 @@ public actor PromptTemplateEngine: PromptTemplateEngineCapabilities {
         return filename
             .components(separatedBy: invalidCharacters)
             .joined(separator: SystemConstants.Character.underscore)
+    }
+
+    /// 对版本号执行路径穿越清理：移除 `/`、`\` 与 `..`，同时保留合法单点号（如 `1.0.0`）
+    private nonisolated func sanitizeVersion(_ version: String) -> String {
+        let doubleDot = SystemConstants.Character.dot + SystemConstants.Character.dot
+        var cleaned = version
+            .replacingOccurrences(of: SystemConstants.Character.slash, with: SystemConstants.Character.underscore)
+            .replacingOccurrences(of: SystemConstants.Character.backslash, with: SystemConstants.Character.underscore)
+        while cleaned.contains(doubleDot) {
+            cleaned = cleaned.replacingOccurrences(of: doubleDot, with: SystemConstants.Character.underscore)
+        }
+        return cleaned
     }
 
     /// 计算字符串的 SHA256 十六进制哈希值，用于远程 Prompt 完整性校验
