@@ -22,19 +22,30 @@ final class iOSSpotlightIndexer: SearchIndexerProtocol, Sendable {
         indexPages([page])
     }
     
-    /// 索引Pages
-    /// - Parameter pages: pages
-    func indexPages(_ pages: [KnowledgePage]) {
+    /// Spotlight 索引分区结果：公开页待索引项 + 私密页待撤销 ID
+    internal struct IndexingPartition {
+        let items: [CSSearchableItem]
+        let privateIDs: [String]
+    }
+
+    /// 将页面按隐私级别拆分为可索引的 Spotlight 项与需撤销的私密页面 ID（防御私密笔记明文泄露）
+    internal static func partitionPagesForIndexing(_ pages: [KnowledgePage]) -> IndexingPartition {
         var searchableItems: [CSSearchableItem] = []
-        
+        var privateIDs: [String] = []
+
         for page in pages {
+            if page.isPrivate {
+                privateIDs.append(page.id.uuidString)
+                continue
+            }
+
             let attributeSet = CSSearchableItemAttributeSet(contentType: .plainText)
             attributeSet.title = page.title
             // Bug #51 修复：魔鬼数字 200 抽取为常量
             attributeSet.contentDescription = String(page.content.prefix(PlatformConstants.Spotlight.contentDescriptionMaxLength))
             attributeSet.keywords = page.tags + page.aliases
             attributeSet.relatedUniqueIdentifier = page.id.uuidString
-            
+
             let item = CSSearchableItem(
                 uniqueIdentifier: page.id.uuidString,
                 // Bug #52 修复：魔鬼字符串抽取为常量
@@ -44,8 +55,22 @@ final class iOSSpotlightIndexer: SearchIndexerProtocol, Sendable {
             item.expirationDate = nil
             searchableItems.append(item)
         }
-        
-        CSSearchableIndex.default().indexSearchableItems(searchableItems) { error in
+
+        return IndexingPartition(items: searchableItems, privateIDs: privateIDs)
+    }
+
+    /// 索引Pages
+    /// - Parameter pages: pages
+    func indexPages(_ pages: [KnowledgePage]) {
+        guard !pages.isEmpty else { return }
+        let partition = Self.partitionPagesForIndexing(pages)
+
+        if !partition.privateIDs.isEmpty {
+            CSSearchableIndex.default().deleteSearchableItems(withIdentifiers: partition.privateIDs) { _ in }
+        }
+
+        guard !partition.items.isEmpty else { return }
+        CSSearchableIndex.default().indexSearchableItems(partition.items) { error in
             if error != nil {
                 Logger.shared.error("Spotlight_Error")
             }

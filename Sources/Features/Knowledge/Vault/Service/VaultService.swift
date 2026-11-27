@@ -57,6 +57,14 @@ public final class VaultService: VaultServiceProtocol {
     /// 当前选中的活跃笔记本唯一标识符 UUID。
     public var selectedVaultID: UUID?
 
+    /// 当前正在执行的异步切库任务（用于快速连切/退出/删除时立即取消过时切库，防止 ABA 竞态）
+    @ObservationIgnored
+    var activeSwitchTask: Task<Void, Never>?
+
+    /// 切库代次递增计数器（配合 activeSwitchTask 彻底阻断乱序切库回写）
+    @ObservationIgnored
+    var switchGeneration: UInt64 = 0
+
     /// 当前选中的活跃笔记本实体对象。
     public var currentVault: Vault? {
         vaults.first { $0.id == selectedVaultID }

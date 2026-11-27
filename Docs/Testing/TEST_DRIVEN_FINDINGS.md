@@ -221,21 +221,24 @@
 | **210** | `KnowledgePageRepository.search` 未拦截空/纯空白查询且 LIKE 后备分支直接拼接 `"%\(query)%"` 未转义 `%`/`_`/`\`；同时 `fetchRecentlyUpdated(limit:)` 未拦截 `limit <= 0`（SQLite `LIMIT -1` 扫全表） | 用户搜索空白词、`%`/`_` 字符或传入非正数 limit | 空白或通配符查询触发全表泄露返回整个知识库，或负数 limit 返回全表 | **High** | 架构设计与安全/网络健壮性 | 接入 `SQLQuerySanitizer.isValidQuery` 与 `makeLikePattern` + `escape: SystemConstants.Character.backslash`；`fetchRecentlyUpdated` 补齐 `guard limit > 0` | **✅ 已解决** | 是 (SQL LIKE 通配符安全转义与查询边界守卫) | 是 (`KnowledgePageRepositoryUpsertTests`) | ✅ 已闭环 |
 | **211** | `User.init(from:)` 与 `TokenManager.normalizedUUID(from:)` 重复使用 `%012x`（32 位格式符）转换后端 64 位 `Int64` `userId`，导致 64 位雪花 ID 截断高 32 位产生不同用户 UUID 碰撞，超 48 位或负数 ID 回退随机 UUID | 后端返回 64 位雪花算法 `userId` 或大整型用户 ID | 不同用户碰撞成同一本地身份 UUID，或每次登录用户 ID 随机变化 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 抽成唯一 SSOT `User.deterministicUUID(from:)`，使用 `UInt64(bitPattern:)` 无损编码高 16 位与低 48 位进 UUID 后两段，消除重复并向后兼容小 ID | **✅ 已解决** | 是 (64 位用户 ID 无损 UUID 规范化 SSOT) | 是 (`TokenManagerDeepTests`) | ✅ 已闭环 |
 | **212** | `ZIPFoundationArchiver.extractContents` 缺少 Zip Bomb 解压容量预算上限与单归档最大条目数限制，恶意高压缩比 ZIP 可写满磁盘或耗尽 I/O | 导入恶意构造的 Zip Bomb 或超多条目 ZIP 归档 | 磁盘空间瞬间耗尽或应用 I/O 卡死 | **High** | 架构设计与安全/网络健壮性 | 新增 `ArchiverLimits` 与 `validateExtractionBudget`（256MB 总容量上限、5000 条目上限与防溢出加法）并清除裸路径分隔符/正则字面量 | **✅ 已解决** | 是 (ZIPFoundation 解压容量预算与 Zip Bomb 防护) | 是 (`ZIPFoundationArchiverTests`) | ✅ 已闭环 |
+| **213** | `iOSSpotlightIndexer.indexPages` 未校验 `page.isPrivate`，将加密私密页面的标题、明文正文前 200 字与标签直接写入系统 Spotlight 全局搜索索引 | 创建或更新 `isPrivate == true` 的加密私密页面，或将公开页面切换为私密 | 私密笔记正文在系统锁屏/桌面 Spotlight 搜索中明文泄露 | **High** | 架构设计与安全/网络健壮性 | 抽取 `partitionPagesForIndexing`：私密页面严禁生成 `CSSearchableItem` 并加入 `privateIDs` 主动调用 `deleteSearchableItems` 撤销历史索引，空批次短路返回 | **✅ 已解决** | 是 (Spotlight 隐私隔离与私密页索引撤销) | 是 (`IOSSpotlightIndexerTests`) | ✅ 已闭环 |
+| **214** | `iOSPDFService` 存在四重隐患：`isFileNameSafe(".")` 放行导致 `deletePDF(".")` 删空整个 `AppPDFs` 目录；`extractImages` 未校验 `mediaBox` 有限数与最大像素上限导致超大工程图/NaN 引发崩溃或 OOM；`buildOutlineMap` 递归无深度上限与环检测；`allPDFFilenames` 区分 `.pdf`/`.PDF` 大小写 | 删除名为 `"."` 的文件、导入超大尺寸/畸形大纲/大写 `.PDF` 文件 | 整个 PDF 目录被误删、渲染时进程 OOM 闪退或栈溢出、大写 `.PDF` 文件丢失 | **High** | 架构设计与安全/网络健壮性 | 新增 `sanitizedSafeFileName` 拦截 `.`/空字节并归一化空白；新增 `safeRenderLayout` 拦截 `NaN`/`Infinity`/负值并等比钳位至 4096px；`buildOutlineMap` 增加 64 层深度上限与环检测；全部常量收敛至 `PlatformConstants.PDFSecurity` | **✅ 已解决** | 是 (PDF 文件名安全归一化、渲染像素钳位与大纲环检测) | 是 (`IOSPDFServiceSecurityTests`) | ✅ 已闭环 |
+| **215** | `VaultLifecycleManager.selectVault` 派发两个不可取消的匿名 `Task`，快速连切笔记本（A → B）或切换后立即 `exitVault()`/`deleteVault()` 时，旧切库任务后完成会覆盖底层 SQLite 连接 | 快速连续点击不同笔记本或切换后立即退出/删除原笔记本 | UI 显示已进入笔记本 B 或已退出，但底层数据库被旧任务悄悄切回笔记本 A，导致跨笔记本数据错写 | **High** | 状态机并发与数据生命周期 | 在 `VaultService` 维护 `activeSwitchTask` 与递增 `switchGeneration`，在 `selectVault`/`selectVaultAndWait`/`clearVaultSelectionState` 统一取消旧任务并在每次 `await` 前后校验代次与 `selectedVaultID` | **✅ 已解决** | 是 (多 Vault 切库代次防竞态状态机) | 是 (`VaultLifecycleAndCoordinatorDeepTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**212 项**
+- **收录问题总数**：**215 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：60 项 (28.3%)
-  - 状态机并发与数据生命周期：50 项 (23.6%)
-  - 架构设计与安全/网络健壮性：61 项 (28.8%)
-  - UI/交互与防御性缺陷：17 项 (8.0%)
-  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (11.3%)
+  - 功能缺陷与核心算法/解析器/数据完整性：60 项 (27.9%)
+  - 状态机并发与数据生命周期：51 项 (23.7%)
+  - 架构设计与安全/网络健壮性：63 项 (29.3%)
+  - UI/交互与防御性缺陷：17 项 (7.9%)
+  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (11.2%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：121 项 (57.1%)
-  - **Medium（功能异常/算法边界/性能损耗）**：64 项 (30.2%)
-  - **Low（样式异味/边界校验/门禁规范）**：27 项 (12.7%)
-- **修复闭环率**：**100% (212/212 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：124 项 (57.7%)
+  - **Medium（功能异常/算法边界/性能损耗）**：64 项 (29.8%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (12.6%)
+- **修复闭环率**：**100% (215/215 项已修复闭环)**
 

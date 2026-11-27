@@ -19,12 +19,28 @@ public enum PlatformConstants {
 
     /// PDF/归档文件管理安全约束
     public enum PDFSecurity {
+        /// 当前目录标记（防止 deletePDF(".") 删除整个目录）
+        public static let currentDirectoryMarker: String = "."
         /// 路径穿越检测的非法字符
         public static let pathTraversalMarker: String = ".."
         /// 正斜杠路径分隔符
         public static let pathSeparator: String = "/"
         /// 反斜杠路径分隔符
         public static let backslashSeparator: String = "\\"
+        /// PDF 文件扩展名（小写）
+        public static let pdfExtension: String = "pdf"
+        /// PDF 存储子目录名
+        public static let pdfDirectoryName: String = "AppPDFs"
+        /// PDF 元数据文件名
+        public static let metadataFileName: String = "pdf_metadata.json"
+        /// PDF 页面渲染单边最大像素上限（防止超大工程图/恶意 PDF 导致 OOM）
+        public static let maxRenderPixelDimension: CGFloat = 4096
+        /// PDF 页面渲染单边最小像素
+        public static let minRenderPixelDimension: Int = 1
+        /// PDF 位图每通道位深
+        public static let bitmapBitsPerComponent: Int = 8
+        /// PDF 大纲递归最大深度（防止循环引用或畸形 PDF 导致栈溢出）
+        public static let maxOutlineDepth: Int = 64
     }
 
     // MARK: - Spotlight 索引

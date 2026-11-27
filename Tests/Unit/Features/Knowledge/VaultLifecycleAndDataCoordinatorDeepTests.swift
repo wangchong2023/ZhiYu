@@ -105,4 +105,52 @@ final class VaultLifecycleAndCoordinatorDeepTests: XCTestCase {
         service.updateVault(id: created.id, name: "   ", icon: "book", description: "desc")
         XCTAssertEqual(service.vaults.first(where: { $0.id == created.id })?.name, L10n.Vault.defaultName)
     }
+
+    // MARK: - 5. 缺陷 #215 回归：快速连续切库与切库后立即退出不得发生 ABA 竞态回写
+
+    @MainActor
+    private final class RecordingVaultDatabaseSwitcher: VaultDatabaseSwitcher {
+        var switchedVaultIDs: [UUID] = []
+        var releaseCount: Int = 0
+
+        func switchDatabase(to vaultID: UUID, at _: URL) async throws {
+            switchedVaultIDs.append(vaultID)
+        }
+
+        func releaseDatabaseConnection() {
+            releaseCount += 1
+        }
+
+        func countPagesInCurrentVault() async throws -> Int { 0 }
+
+        func countPages(at _: URL) async throws -> Int { 0 }
+    }
+
+    func testSelectVault_rapidSwitchAndImmediateExitCancelsStaleSwitch() async {
+        let switcher = RecordingVaultDatabaseSwitcher()
+        ServiceContainer.shared.register(switcher, for: (any VaultDatabaseSwitcher).self)
+
+        let service = VaultService.shared
+        let vaultA = Vault(id: UUID(), name: "VaultA", createdAt: Date(), updatedAt: Date(), pageCount: 0, themePayload: nil)
+        let vaultB = Vault(id: UUID(), name: "VaultB", createdAt: Date(), updatedAt: Date(), pageCount: 0, themePayload: nil)
+        service.vaults = [vaultA, vaultB]
+
+        // 1. 快速连切 A -> B：A 的异步切库任务应被立即取消，最终仅切换到 B
+        service.selectVault(vaultA)
+        service.selectVault(vaultB)
+        await service.activeSwitchTask?.value
+
+        XCTAssertEqual(service.selectedVaultID, vaultB.id)
+        XCTAssertEqual(switcher.switchedVaultIDs, [vaultB.id], "过时的 VaultA 切库任务必须被取消，不得发生乱序切换")
+
+        // 2. 切库后立即退出：挂起切库任务应被取消，不得在退出后重新切回
+        switcher.switchedVaultIDs.removeAll()
+        service.selectVault(vaultA)
+        service.exitVault()
+        try? await Task.sleep(for: .milliseconds(50))
+
+        XCTAssertNil(service.selectedVaultID)
+        XCTAssertTrue(switcher.switchedVaultIDs.isEmpty, "exitVault 之后不得触发已取消的切库回调")
+        XCTAssertGreaterThanOrEqual(switcher.releaseCount, 1)
+    }
 }

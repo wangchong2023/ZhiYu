@@ -22,6 +22,7 @@ final class IOSSpotlightIndexerTests: XCTestCase {
         static let pageTitle: String = "Spotlight 测试页面"
         static let pageContent: String = "这是用于 Spotlight 索引测试的页面内容"
         static let pageTag: String = "测试"
+        static let privateTag: String = "private"
         static let pageAlias: String = "别名1"
         static let batchCount: Int = 3
         static let reindexWaitMs: UInt64 = 200
@@ -145,6 +146,29 @@ final class IOSSpotlightIndexerTests: XCTestCase {
         XCTAssertEqual(page.title, TestConstants.pageTitle)
         indexer.indexPage(page)
         indexer.removeIndex(for: page.id)
+    }
+
+    // MARK: - 缺陷 #213 回归：私密页面严禁进入 Spotlight 索引且须进入撤销队列
+
+    func testPartitionPagesForIndexing_excludesPrivatePagesAndQueuesDeindex() {
+        let publicPage = KnowledgePage(
+            title: "公开笔记",
+            content: "可被 Spotlight 检索的公开内容",
+            aliases: ["公开别名"],
+            tags: ["公开"]
+        )
+        let privatePage = KnowledgePage(
+            title: "私密日记",
+            content: "高度敏感的私密正文不应泄露到系统搜索",
+            aliases: ["秘密"],
+            tags: [TestConstants.privateTag]
+        )
+        XCTAssertTrue(privatePage.isPrivate)
+
+        let partition = iOSSpotlightIndexer.partitionPagesForIndexing([publicPage, privatePage])
+        XCTAssertEqual(partition.items.count, 1, "仅公开页面应生成 Spotlight 索引项")
+        XCTAssertEqual(partition.items.first?.uniqueIdentifier, publicPage.id.uuidString)
+        XCTAssertEqual(partition.privateIDs, [privatePage.id.uuidString], "私密页面必须进入撤销队列以清理历史索引")
     }
 }
 #endif

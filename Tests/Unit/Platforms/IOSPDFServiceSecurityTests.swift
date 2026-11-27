@@ -30,13 +30,33 @@ final class IOSPDFServiceSecurityTests: XCTestCase {
         XCTAssertEqual(AppConstants.Keys.ImportLimits.maxPagesForImageExtraction, 20)
     }
 
-    /// 验证 isFileNameSafe 拒绝空串、纯空白及反斜杠路径分隔符
-    func testIsFileNameSafe_rejectsEmptyAndBackslash() {
+    /// 验证 isFileNameSafe 拒绝空串、纯空白、当前目录 "."、空字节及反斜杠路径分隔符（#214 回归）
+    func testIsFileNameSafe_rejectsEmptyCurrentDirNullByteAndBackslash() {
         let pdfService = iOSPDFService()
         XCTAssertFalse(pdfService.isFileNameSafe(""), "空文件名应被拒绝")
         XCTAssertFalse(pdfService.isFileNameSafe("   "), "纯空白文件名应被拒绝")
+        XCTAssertFalse(pdfService.isFileNameSafe("."), "当前目录标记 '.' 必须被拒绝以防误删整个目录")
+        XCTAssertFalse(pdfService.isFileNameSafe("report.pdf\0.txt"), "含空字节的文件名应被拒绝")
         XCTAssertFalse(pdfService.isFileNameSafe("..\\secret.pdf"), "含反斜杠的文件名应被拒绝")
+        XCTAssertEqual(pdfService.sanitizedSafeFileName("  report.pdf  "), "report.pdf", "合法文件名应归一化前后空白")
         XCTAssertTrue(pdfService.isFileNameSafe("report.pdf"))
+    }
+
+    /// 验证 safeRenderLayout 拦截非有限/非正尺寸并对超大 PDF 页面等比钳位至 4096px（#214 回归）
+    func testSafeRenderLayout_rejectsInvalidBoundsAndClampsOversizedPage() {
+        XCTAssertNil(iOSPDFService.safeRenderLayout(for: .zero, scale: 2.0))
+        XCTAssertNil(iOSPDFService.safeRenderLayout(for: CGRect(x: 0, y: 0, width: -100, height: 200), scale: 2.0))
+        XCTAssertNil(iOSPDFService.safeRenderLayout(for: CGRect(x: 0, y: 0, width: CGFloat.nan, height: 200), scale: 2.0))
+        XCTAssertNil(iOSPDFService.safeRenderLayout(for: CGRect(x: 0, y: 0, width: 100, height: 200), scale: CGFloat.infinity))
+
+        let hugeRect = CGRect(x: 0, y: 0, width: 50_000, height: 25_000)
+        guard let clamped = iOSPDFService.safeRenderLayout(for: hugeRect, scale: 2.0) else {
+            XCTFail("合法超大页面应返回等比钳位后的渲染尺寸")
+            return
+        }
+        XCTAssertEqual(clamped.width, Int(PlatformConstants.PDFSecurity.maxRenderPixelDimension))
+        XCTAssertEqual(clamped.height, Int(PlatformConstants.PDFSecurity.maxRenderPixelDimension / 2))
+        XCTAssertLessThan(clamped.effectiveScale, 2.0)
     }
 
     /// 验证 iOSExportService.sanitizedExportFileName 清洗路径穿越、引号与换行，空串回退默认值

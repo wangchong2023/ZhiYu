@@ -13,8 +13,22 @@ import Foundation
 
 extension VaultService {
 
+    /// 取消挂起的异步切库任务并推进切库代次，防止过时切库任务回写覆盖新状态
+    private func advanceSwitchGeneration() -> UInt64 {
+        activeSwitchTask?.cancel()
+        activeSwitchTask = nil
+        switchGeneration &+= 1
+        return switchGeneration
+    }
+
+    /// 校验当前切库上下文是否仍为最新活跃选择
+    private func isActiveSwitch(vaultID: UUID, generation: UInt64) -> Bool {
+        !Task.isCancelled && selectedVaultID == vaultID && switchGeneration == generation
+    }
+
     /// 异步选择并等待数据库切换完成（用于批量数据操作等需要确保切换完成的场景）
     public func selectVaultAndWait(_ vault: Vault) async throws {
+        let generation = advanceSwitchGeneration()
         persistVaultSelection(vault)
 
         guard let vaultRepository = vaultRepository,
@@ -24,29 +38,33 @@ extension VaultService {
         }
 
         try? await vaultRepository.saveSetting(key: AppConstants.Keys.Storage.vaultsSelectedID, value: vault.id.uuidString)
+        guard isActiveSwitch(vaultID: vault.id, generation: generation) else { return }
         NotificationCenter.default.post(name: .vaultWillSwitch, object: vault.id)
 
-        try await performVaultDatabaseSwitch(for: vault.id)
+        try await performVaultDatabaseSwitch(for: vault.id, generation: generation)
     }
 
     /// 选择并激活目标笔记本，同时触发底层的专属物理数据库 WAL 切换。
     public func selectVault(_ vault: Vault) {
+        let generation = advanceSwitchGeneration()
         persistVaultSelection(vault)
-        Task {
-            guard let vaultRepository = vaultRepository else { return }
-            try? await vaultRepository.saveSetting(key: AppConstants.Keys.Storage.vaultsSelectedID, value: vault.id.uuidString)
-        }
-
         NotificationCenter.default.post(name: .vaultWillSwitch, object: vault.id)
 
-        Task {
-            guard databaseSwitcher != nil,
-                  vaultRepository != nil else {
+        activeSwitchTask = Task { [weak self] in
+            guard let self else { return }
+            guard let vaultRepository = self.vaultRepository else {
+                Logger.shared.warning(" [VaultService] selectVault 物理切换被跳过，因为底层依赖未在 DI 注册")
+                return
+            }
+            try? await vaultRepository.saveSetting(key: AppConstants.Keys.Storage.vaultsSelectedID, value: vault.id.uuidString)
+            guard self.isActiveSwitch(vaultID: vault.id, generation: generation) else { return }
+
+            guard self.databaseSwitcher != nil else {
                 Logger.shared.warning(" [VaultService] selectVault 物理切换被跳过，因为底层依赖未在 DI 注册")
                 return
             }
             do {
-                try await performVaultDatabaseSwitch(for: vault.id)
+                try await self.performVaultDatabaseSwitch(for: vault.id, generation: generation)
             } catch {
                 Logger.shared.error("[VaultService] selectVault switch failed: \(error.localizedDescription)", error: error)
             }
@@ -62,6 +80,7 @@ extension VaultService {
 
     /// 清空笔记本选择状态，消除 exitVault 与 deleteVault 的重复清理逻辑
     private func clearVaultSelectionState() {
+        _ = advanceSwitchGeneration()
         self.selectedVaultID = nil
         keyStore?.removeObject(forKey: AppConstants.Keys.Storage.vaultsSelectedID)
         keyStore?.removeObject(forKey: AppConstants.Keys.Storage.vaultSelectedEnglishName)
@@ -78,11 +97,14 @@ extension VaultService {
     }
 
     /// 统一执行保险库专属物理数据库切换与元数据更新
-    private func performVaultDatabaseSwitch(for vaultID: UUID) async throws {
-        guard let databaseSwitcher = databaseSwitcher else { return }
+    private func performVaultDatabaseSwitch(for vaultID: UUID, generation: UInt64) async throws {
+        guard isActiveSwitch(vaultID: vaultID, generation: generation),
+              let databaseSwitcher = databaseSwitcher else { return }
         let dbURL = getVaultDatabaseURL(for: vaultID)
         try await databaseSwitcher.switchDatabase(to: vaultID, at: dbURL)
+        guard isActiveSwitch(vaultID: vaultID, generation: generation) else { return }
         try? await vaultRepository?.updateLastAccessed(id: vaultID)
+        guard isActiveSwitch(vaultID: vaultID, generation: generation) else { return }
         await refreshPageCount(for: vaultID)
     }
 
