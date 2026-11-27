@@ -30,6 +30,8 @@ private enum InsightConfig {
     static let topKeywordsCount = 5
     /// 日期格式（缓存 key）
     static let cacheDateFormat = "yyyyMMdd"
+    /// 默认 Vault 隔离域标识（无活跃 Vault 时的回退键）
+    static let defaultVaultScope = "default"
     /// 错误码
     static let errorCode = -2
 }
@@ -143,35 +145,56 @@ actor KnowledgeInsightService {
         }
     }
 
-    /// 从字符串中提取第一个完整 JSON 对象（花括号配对）
-    private func cacheKey() -> String {
+    /// 获取当前活跃 Vault 隔离标识（确保不同知识库的每日/每周洞察缓存互不串库）
+    private func activeVaultScope() async -> String {
+        let vaultID = await MainActor.run {
+            @Dependency(\.vaultService) var vaultService: any VaultServiceProtocol
+            return vaultService.currentVault?.id.uuidString
+        }
+        return vaultID ?? InsightConfig.defaultVaultScope
+    }
+
+    /// 构造按 Vault 隔离的每日见解缓存键
+    internal static func buildDailyCacheKey(dateString: String, language: String, vaultScope: String) -> String {
+        "\(AppConstants.Keys.Storage.dailyRecapPrefix)\(vaultScope)_\(dateString)_\(language)"
+    }
+
+    /// 构造按 Vault 隔离的每周洞察缓存键
+    internal static func buildWeeklyCacheKey(year: Int, week: Int, language: String, vaultScope: String) -> String {
+        "\(AppConstants.Keys.Storage.weeklyInsightPrefix)\(vaultScope)_\(year)_\(week)_\(language)"
+    }
+
+    private func cacheKey() async -> String {
         let lang = Localized.currentLanguage
-        return "\(AppConstants.Keys.Storage.dailyRecapPrefix)\(DateFormatterFactory.shared.string(from: Date(), format: InsightConfig.cacheDateFormat))_\(lang)"
+        let dateStr = DateFormatterFactory.shared.string(from: Date(), format: InsightConfig.cacheDateFormat)
+        let scope = await activeVaultScope()
+        return Self.buildDailyCacheKey(dateString: dateStr, language: lang, vaultScope: scope)
     }
 
     private func loadCachedDailyRecap() async -> DailyRecap? {
-        await loadCached(DailyRecap.self, forKey: cacheKey())
+        await loadCached(DailyRecap.self, forKey: await cacheKey())
     }
 
     private func saveCachedDailyRecap(_ recap: DailyRecap) async {
-        await saveCached(recap, forKey: cacheKey())
+        await saveCached(recap, forKey: await cacheKey())
     }
 
-    private func weeklyCacheKey() -> String {
+    private func weeklyCacheKey() async -> String {
         let calendar = Calendar.current
         let comps = calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: Date())
         let year = comps.yearForWeekOfYear ?? 1970
         let week = comps.weekOfYear ?? 1
         let lang = Localized.currentLanguage
-        return "\(AppConstants.Keys.Storage.weeklyInsightPrefix)\(year)_\(week)_\(lang)"
+        let scope = await activeVaultScope()
+        return Self.buildWeeklyCacheKey(year: year, week: week, language: lang, vaultScope: scope)
     }
 
     private func loadCachedWeeklyInsight() async -> WeeklyInsight? {
-        await loadCached(WeeklyInsight.self, forKey: weeklyCacheKey())
+        await loadCached(WeeklyInsight.self, forKey: await weeklyCacheKey())
     }
 
     private func saveCachedWeeklyInsight(_ insight: WeeklyInsight) async {
-        await saveCached(insight, forKey: weeklyCacheKey())
+        await saveCached(insight, forKey: await weeklyCacheKey())
     }
 
     /// 泛型缓存读取辅助方法
@@ -196,7 +219,9 @@ actor KnowledgeInsightService {
 
     /// 生成最近一周的知识洞察 (仅在 forceRefresh 为 true 或无本地缓存时才向 AI 请求新周报)
     func generateWeeklyInsight(pages: [KnowledgePage], llmService: any LLMServiceProtocol, forceRefresh: Bool = false) async throws -> WeeklyInsight {
-        if !forceRefresh, let cached = await loadCachedWeeklyInsight() {
+        if !forceRefresh,
+           let cached = await loadCachedWeeklyInsight(),
+           !(pages.isEmpty && cached.totalNewPages > 0) {
             return cached
         }
 

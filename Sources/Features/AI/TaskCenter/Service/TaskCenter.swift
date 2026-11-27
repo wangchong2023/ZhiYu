@@ -39,6 +39,13 @@ public final class TaskCenter {
         AppEventBus.shared.subscribeClearAllData { [weak self] in
             self?.reset()
         }.store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: .vaultWillSwitch)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                self?.reset()
+            }
+            .store(in: &cancellables)
     }
 
     /// 更新LatestStatus
@@ -179,11 +186,10 @@ public final class TaskCenter {
     /// 若剩余任务全部处于运行中状态则停止裁剪，避免误删活跃任务。
     private func trimExcessTasks() {
         while self.tasks.count > FeatureConstants.TaskCenter.maxRetainedTasks {
-            guard let lastIndex = self.tasks.indices.last,
-                  !isRunningStatus(self.tasks[lastIndex].status) else {
+            guard let removableIndex = self.tasks.lastIndex(where: { !isRunningStatus($0.status) }) else {
                 break
             }
-            self.tasks.removeLast()
+            self.tasks.remove(at: removableIndex)
         }
     }
 

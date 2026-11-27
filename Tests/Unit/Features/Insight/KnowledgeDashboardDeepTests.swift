@@ -301,6 +301,13 @@ final class KnowledgeDashboardDeepTests: XCTestCase {
             XCTAssertGreaterThanOrEqual(result, 0.0, "比例下界必须 >= 0.0")
             XCTAssertLessThanOrEqual(result, 1.0, "比例上界必须 <= 1.0")
         }
+
+        // 缺陷 #202 回归：Int.min/Int.max 极值跨度不得整数溢出，非法 defaultRatio 强制钳位
+        let extremeRatio = TagBubbleRatioCalculator.calculate(for: 0, from: [Int.min, Int.max])
+        XCTAssertTrue(extremeRatio.isFinite && extremeRatio >= 0.0 && extremeRatio <= 1.0)
+        XCTAssertEqual(TagBubbleRatioCalculator.calculate(for: 5, from: [5, 5], defaultRatio: -3.0), 0.0)
+        XCTAssertEqual(TagBubbleRatioCalculator.calculate(for: 5, from: [5, 5], defaultRatio: 9.0), 1.0)
+        XCTAssertEqual(TagBubbleRatioCalculator.calculate(for: 5, from: [5, 5], defaultRatio: .nan), TagBubbleRatioCalculator.defaultRatioValue)
     }
 
     func testDashboardCoordinatorCalculateStatsWithPagesAndLinks() async {

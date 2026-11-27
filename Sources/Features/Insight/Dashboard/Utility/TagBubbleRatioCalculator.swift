@@ -22,16 +22,20 @@ public enum TagBubbleRatioCalculator {
     ///   - defaultRatio: 当最大最小值相等或无足够跨度时的默认比例 (默认为 0.5)
     /// - Returns: 经过严格边界保护的比例值 (保证在 0.0...1.0 区间内，杜绝负数与 NaN)
     public static func calculate(for count: Int, from counts: [Int], defaultRatio: Double = defaultRatioValue) -> Double {
+        let safeDefaultRatio = defaultRatio.isFinite
+            ? max(0.0, min(1.0, defaultRatio))
+            : defaultRatioValue
         guard let maxVal = counts.max(), let minVal = counts.min() else {
             return 0.0
         }
-        let diff = maxVal - minVal
-        guard diff > 0 else {
-            return defaultRatio
+        // 使用 Double 差值避免 Int.max - Int.min 整数溢出崩溃
+        let diff = Double(maxVal) - Double(minVal)
+        guard diff > 0, diff.isFinite else {
+            return safeDefaultRatio
         }
-        let rawRatio = Double(count - minVal) / Double(diff)
-        guard !rawRatio.isNaN && !rawRatio.isInfinite else {
-            return defaultRatio
+        let rawRatio = (Double(count) - Double(minVal)) / diff
+        guard rawRatio.isFinite else {
+            return safeDefaultRatio
         }
         return max(0.0, min(1.0, rawRatio))
     }

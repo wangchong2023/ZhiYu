@@ -209,21 +209,24 @@
 | **198** | `RAGEvaluationService.sanitizeScore` 仅用 `raw as? Double` 解析评分，导致 LLM 返回字符串数字（如 `"0.92"`）被清零误判为 `Fail`，且 JSON 布尔值 `true` 被 Objective-C `NSNumber` 误桥接为 `1.0` | 小模型/端侧模型以字符串形式返回评估分数或异常返回布尔值 | 合格回答被误判为 0 分 `Fail`，或布尔脏值污染 RAG 治理报表 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 先显式拦截 `Bool`，再兼容 `Double`/`Int`/`String` 数值并校验 `isFinite` 后钳位至 `[0.0, 1.0]` | **✅ 已解决** | 是 (LLM 评估 JSON 数值安全解析范式) | 是 (`RAGEvaluationServiceTests`) | ✅ 已闭环 |
 | **199** | `LLMUtils.stripMarkdown` 仅简单删除 ```` ```json ```` 与 ```` ``` ```` 标记，未剥离围栏代码块前后的自然语言说明文字 | LLM 在 JSON 代码块前后附带解释语句（如「以下是评估结果：」） | 下游 `JSONDecoder` / `JSONSerialization` 100% 解析失败触发降级 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 检测到闭合围栏代码块时精准截取首个围栏内部正文并跳过语言标识行，兼容纯文本输入 | **✅ 已解决** | 是 (LLM 结构化响应围栏提取范式) | 是 (`LLMUtilsTests`) | ✅ 已闭环 |
 | **200** | `iCloudSyncCoordinator` 的 `runSyncOperation`/`pushToCloud`/`bidirectionalSync`/`clearCloudData` 均缺少 `!isSyncing` 防并发重入守卫，且 `bidirectionalSync` 新冲突回调会覆盖旧 `activeConflict` 引发 `CheckedContinuation` 永久泄露 | 用户连续快速点击同步/推送按钮，或同步冲突弹窗未关闭时再次触发冲突 | 并发同步互相覆写数据，甚至触发 Swift 运行时 continuation 泄露挂死 | **High** | 状态机并发与数据生命周期 | 四大同步入口统一加 `guard !isSyncing else { return }`；挂载新 `activeConflict` 前先调用 `resolvePendingConflictIfNeeded()` 释放旧句柄 | **✅ 已解决** | 是 (同步状态机并发互斥与 Continuation 安全释放) | 是 (静态审计与生命周期守卫闭环) | ✅ 已闭环 |
+| **201** | `TaskCenter` 未订阅 `.vaultWillSwitch` 广播导致切换知识库后旧 Vault 任务列表与页面 ID 残留；同时 `trimExcessTasks()` 仅检查 `tasks.last` 是否运行中，若最旧任务卡在 `.running` 会直接 `break` 导致中间大量已完成历史任务永远无法裁剪 | 切换知识库，或最旧任务处于运行态时持续新增/完成后续任务 | 任务中心泄露旧库任务与无效页面链接，或历史任务列表无限膨胀 | **High** | 状态机并发与数据生命周期 | 订阅 `.vaultWillSwitch` 立即 `reset()`；`trimExcessTasks()` 改为 `lastIndex(where: { !isRunningStatus($0.status) })` 跳过运行中任务继续裁剪历史项 | **✅ 已解决** | 是 (任务中心跨库隔离与非阻塞容量裁剪) | 是 (`TaskCenterCapacityTests`) | ✅ 已闭环 |
+| **202** | `TagBubbleRatioCalculator.calculate` 使用 `Int` 减法 `maxVal - minVal` 在极值跨度（`Int.min` ~ `Int.max`）下触发整数溢出崩溃，且未对非法 `defaultRatio`（负数/`>1`/`NaN`）执行 `[0.0, 1.0]` 钳位 | 传入极值计数数组或越界/非有限 `defaultRatio` | 整数溢出崩溃或产出负数/`NaN` 气泡缩放比例导致视图布局异常 | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | 改用 `Double` 差值消除整数溢出，并对 `defaultRatio` 执行有限性校验与 `[0.0, 1.0]` 钳位 | **✅ 已解决** | 是 (数值归一化防溢出与参数钳位) | 是 (`KnowledgeDashboardDeepTests`) | ✅ 已闭环 |
+| **203** | `KnowledgeInsightService` 的每日/每周洞察缓存键仅含日期与语言而未按 Vault 隔离，且 `generateWeeklyInsight` 未校验空库状态，导致切换知识库后直接复用并展示旧库的 AI 周报缓存 | 在多知识库间切换并进入洞察仪表盘（尤其切至新/空知识库） | 跨库串显其他知识库的周报摘要与统计数据，造成隐私串库与数据失真 | **High** | 状态机并发与数据生命周期 | 缓存键拼入当前活跃 Vault 标识（`buildDailyCacheKey` / `buildWeeklyCacheKey`）；空库不再复用 `totalNewPages > 0` 的旧周报缓存 | **✅ 已解决** | 是 (多 Vault 洞察缓存域隔离规范) | 是 (`KnowledgeInsightServiceTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**200 项**
+- **收录问题总数**：**203 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：55 项 (27.5%)
-  - 状态机并发与数据生命周期：48 项 (24.0%)
-  - 架构设计与安全/网络健壮性：56 项 (28.0%)
-  - UI/交互与防御性缺陷：17 项 (8.5%)
-  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (12.0%)
+  - 功能缺陷与核心算法/解析器/数据完整性：56 项 (27.6%)
+  - 状态机并发与数据生命周期：50 项 (24.6%)
+  - 架构设计与安全/网络健壮性：56 项 (27.6%)
+  - UI/交互与防御性缺陷：17 项 (8.4%)
+  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (11.8%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：110 项 (55.0%)
-  - **Medium（功能异常/算法边界/性能损耗）**：63 项 (31.5%)
-  - **Low（样式异味/边界校验/门禁规范）**：27 项 (13.5%)
-- **修复闭环率**：**100% (200/200 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：112 项 (55.2%)
+  - **Medium（功能异常/算法边界/性能损耗）**：64 项 (31.5%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (13.3%)
+- **修复闭环率**：**100% (203/203 项已修复闭环)**
 
