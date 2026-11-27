@@ -133,6 +133,22 @@ public final class SynthesisStore {
         AppEventBus.shared.subscribeClearAllData { [weak self] in
             self?.clearAll()
         }.store(in: &cancellables)
+
+        // 多 Vault 切换时重置进行中或报错的合成状态，避免旧笔记本状态串扰新笔记本
+        NotificationCenter.default.publisher(for: .vaultWillSwitch)
+            .sink { [weak self] _ in
+                self?.resetTransientStatesForVaultSwitch()
+            }
+            .store(in: &cancellables)
+    }
+
+    /// 切换 Vault 时复位所有瞬态合成状态（不抹除持久化文档）
+    private func resetTransientStatesForVaultSwitch() {
+        withMutation(keyPath: \.synthesisStates) {
+            for type in SynthesisType.allCases {
+                _synthesisStates[type] = .idle
+            }
+        }
     }
 
     /// 加载SynthesisResults

@@ -36,6 +36,13 @@ public final class SearchStore {
             self?.clearAll()
         }
         .store(in: &cancellables)
+
+        // 多 Vault 切换时立即取消防抖搜索并清空旧笔记本搜索结果与诊断信息，防止跨 Vault 泄露
+        NotificationCenter.default.publisher(for: .vaultWillSwitch)
+            .sink { [weak self] _ in
+                self?.clearAll()
+            }
+            .store(in: &cancellables)
     }
 
     /// 执行高级（混合）搜索

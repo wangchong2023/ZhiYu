@@ -127,4 +127,25 @@ final class SearchStoreTests: XCTestCase {
 
         XCTAssertNotNil(store.lastSearchDiagnostic)
     }
+
+    // MARK: - 多 Vault 切换隔离（缺陷 #176）
+
+    func testVaultWillSwitchClearsSearchTextResultsAndDiagnostics() async {
+        store.searchText = "Vault A 私密搜索词"
+        store.searchResults = [KnowledgePage(title: "Vault A 私密页面")]
+        store.lastSearchDiagnostic = SearchDiagnosticInfo(
+            query: "Vault A 私密搜索词",
+            rewrittenQuery: "Vault A 私密搜索词",
+            ftsCount: 1,
+            vectorCount: 0,
+            rrfTopResults: []
+        )
+
+        NotificationCenter.default.post(name: .vaultWillSwitch, object: nil)
+
+        XCTAssertEqual(store.searchText, "", "切换 Vault 后必须清空搜索关键词")
+        XCTAssertTrue(store.searchResults.isEmpty, "切换 Vault 后必须清空旧笔记本搜索结果")
+        XCTAssertNil(store.lastSearchDiagnostic, "切换 Vault 后必须清空旧搜索诊断信息")
+        XCTAssertFalse(store.isSearching)
+    }
 }

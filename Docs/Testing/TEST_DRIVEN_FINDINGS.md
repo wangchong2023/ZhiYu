@@ -184,21 +184,23 @@
 | **173** | `UndoService` 作为全局单例持有整库页面快照栈（`undoStack`/`redoStack`），但从未在多 Vault 切换或数据库热切换时清空，导致用户在 Vault B 执行撤销时把 Vault A 的整库页面快照覆盖写入 Vault B | 在 Vault A 编辑/删除页面后切换至 Vault B 并触发撤销 | 灾难性跨 Vault 数据污染与 Vault B 原有笔记丢失 | **High** | 状态机并发与数据生命周期 | `UndoService.init()` 订阅 `.vaultWillSwitch` 与 `.databaseDidSwitch` 通知并自动 `clear()` 清空撤销/重做栈 | **✅ 已解决** | 是 (全局状态服务多 Vault 切换自动清理规范) | 是 (`UndoServiceEdgeCaseTests`) | ✅ 已闭环 |
 | **174** | `SourceStore.shared` 全局单例缓存当前 RAG 命中的私密信源片段（标题、`snippet`、`pageID`），在多 Vault 切换时从未清空导致侧边栏 Sources 面板持续泄露旧 Vault 的私密笔记片段 | 在 Vault A 触发 AI 对话后切换至 Vault B | 跨 Vault 私密笔记片段泄露与失效页面跳转 | **High** | 状态机并发与数据生命周期 | `SourceStore.init()` 订阅 `.vaultWillSwitch` 通知立即清空 `activeSources` | **✅ 已解决** | 是 (多 Vault 全局 Store 通知隔离) | 是 (`SourceStoreTests`) | ✅ 已闭环 |
 | **175** | `LLMContextBuilder.buildRelevantContext` 未对纯空白 `query` 做前置拦截（导致对空白生成随机向量误召回无关笔记），且当 `reranker.rerank` 将所有低相关候选剪枝为空后仍继续拼接空标题上下文 | 传入纯空白查询或重排阶段全部候选未达阈值被剪枝 | 浪费上下文 Token 并向 LLM 注入无关随机片段或空模板 | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | 抽取 `emptyContextResult` 复用，对空白 `query` 与重排空结果立即早退返回无数据上下文 | **✅ 已解决** | 是 (RAG 检索前后置空值早退守卫) | 是 (`LLMContextBuilderEdgeCaseTests`) | ✅ 已闭环 |
+| **176** | `SearchStore` 未订阅 `.vaultWillSwitch` 通知，从 Vault A 切换到 Vault B 后搜索框残留旧关键词、旧 `searchResults`（含私密笔记标题与内容）与 `lastSearchDiagnostic`，且防抖中的 `searchTask` 未取消 | 在 Vault A 执行搜索后切换至 Vault B | 跨 Vault 搜索结果与私密笔记标题泄露 | **High** | 状态机并发与数据生命周期 | `SearchStore.init()` 订阅 `.vaultWillSwitch` 通知并立即调用 `clearAll()` 取消防抖任务与清空结果 | **✅ 已解决** | 是 (多 Vault 全局 Store 切换清理) | 是 (`SearchStoreTests`) | ✅ 已闭环 |
+| **177** | `SynthesisStore` 未订阅 `.vaultWillSwitch` 通知，在 Vault A 中合成失败或生成中的 `synthesisStates` 状态在切换到 Vault B 后持续残留 | 在 Vault A 触发合成错误或生成态后切换至 Vault B | 新笔记本实验室界面错误展示旧笔记本的报错/加载状态 | **Medium** | 状态机并发与数据生命周期 | `SynthesisStore.init()` 订阅 `.vaultWillSwitch` 调用 `resetTransientStatesForVaultSwitch()` 将所有类型状态复位为 `.idle` | **✅ 已解决** | 是 (多 Vault 切换瞬态状态复位) | 是 (`SynthesisStoreTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**175 项**
+- **收录问题总数**：**177 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：42 项 (24.0%)
-  - 状态机并发与数据生命周期：40 项 (22.9%)
-  - 架构设计与安全/网络健壮性：52 项 (29.7%)
-  - UI/交互与防御性缺陷：17 项 (9.7%)
-  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (13.7%)
+  - 功能缺陷与核心算法/解析器/数据完整性：42 项 (23.7%)
+  - 状态机并发与数据生命周期：42 项 (23.7%)
+  - 架构设计与安全/网络健壮性：52 项 (29.4%)
+  - UI/交互与防御性缺陷：17 项 (9.6%)
+  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (13.6%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：90 项 (51.4%)
-  - **Medium（功能异常/算法边界/性能损耗）**：58 项 (33.1%)
-  - **Low（样式异味/边界校验/门禁规范）**：27 项 (15.4%)
-- **修复闭环率**：**100% (175/175 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：91 项 (51.4%)
+  - **Medium（功能异常/算法边界/性能损耗）**：59 项 (33.3%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (15.3%)
+- **修复闭环率**：**100% (177/177 项已修复闭环)**
 

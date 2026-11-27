@@ -160,4 +160,16 @@ final class SynthesisStoreTests: XCTestCase {
         XCTAssertNotNil(doc, "包含控制选项的合成必须成功返回 SynthesisDocument")
         XCTAssertGreaterThanOrEqual(doc.size, AppConstants.ExportLimits.minValidSynthesisTextBytes)
     }
+
+    // MARK: - 多 Vault 切换瞬态复位（缺陷 #177）
+
+    func testVaultWillSwitchResetsTransientSynthesisStatesToIdle() {
+        store.synthesisStates[.mindmap] = .error("旧 Vault 合成失败")
+        store.synthesisStates[.report] = .generating
+
+        NotificationCenter.default.post(name: .vaultWillSwitch, object: nil)
+
+        XCTAssertEqual(store.synthesisStates[.mindmap], .idle, "切换 Vault 后旧错误态必须复位为 .idle")
+        XCTAssertEqual(store.synthesisStates[.report], .idle, "切换 Vault 后旧生成态必须复位为 .idle")
+    }
 }
