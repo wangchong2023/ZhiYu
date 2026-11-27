@@ -36,9 +36,9 @@ extension RAGGovernanceSQLiteStore {
         try await computeMetricAverage(days: days) { eval, db in
             guard let evalID = eval.id else { return nil }
             let snapshots = try self.fetchTopKSnapshots(db: db, evaluationID: evalID, k: nil)
-            // Bug #36 修复：MRR 应使用实际 rank 字段，而非数组位置 idx+1
+            // Bug #36 / #208 修复：MRR 使用实际 rank 字段并做 >= 1 守卫，防止 rank <= 0 除零产生 Infinity
             for snap in snapshots where try self.fetchRelevantJudgment(db: db, sourceID: snap.sourceID) != nil {
-                return 1.0 / Double(snap.rank)
+                return 1.0 / Double(max(1, snap.rank))
             }
             return 0.0
         }
@@ -68,15 +68,16 @@ extension RAGGovernanceSQLiteStore {
             // DCG@K = Σ (2^rel_i - 1) / log2(rank_i + 1)
             var dcg: Double = 0
             for (idx, snap) in snapshots.enumerated() {
-                let rel = relevanceLevels[idx]
+                let rel = max(0, relevanceLevels[idx])
                 let gain = pow(2.0, Double(rel)) - 1.0
-                // Bug #37 修复：DCG discount 应使用实际 rank 字段，而非数组位置 idx+1
-                let discount = log2(Double(snap.rank) + 1.0)
+                // Bug #37 / #208 修复：使用实际 rank 且钳位 >= 1，防止 rank <= 0 时 log2(<=1) 除零或产出 NaN
+                let safeRank = max(1, snap.rank)
+                let discount = log2(Double(safeRank) + 1.0)
                 dcg += gain / discount
             }
 
             // IDCG@K：理想排序（降序）
-            let idealLevels = relevanceLevels.sorted(by: >)
+            let idealLevels = relevanceLevels.map { max(0, $0) }.sorted(by: >)
             var idcg: Double = 0
             for (idx, rel) in idealLevels.enumerated() {
                 let gain = pow(2.0, Double(rel)) - 1.0
@@ -110,7 +111,7 @@ extension RAGGovernanceSQLiteStore {
             let precision = Double(retrievedRelevant) / Double(topK.count)
             let recall = Double(retrievedRelevant) / Double(relevant.judgments.count)
             let denominator = precision + recall
-            guard denominator > 0 else { return nil }
+            guard denominator > 0 else { return 0.0 }
             return RAGGovernanceFormula.f1HarmonicCoefficient * precision * recall / denominator
         }
     }

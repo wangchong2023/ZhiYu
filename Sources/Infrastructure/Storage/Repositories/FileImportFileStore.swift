@@ -33,13 +33,14 @@ struct FileImportFileStore: ImportFileStore, Sendable {
         let englishName = runOnMainSync({ keyStore?.string(forKey: AppConstants.Keys.Storage.vaultSelectedEnglishName) })
         
         if let vaultIDString, let englishName, !vaultIDString.isEmpty, !englishName.isEmpty {
-            
+            let safeVaultID = Self.sanitizeComponent(vaultIDString)
+            let safeEnglishName = Self.sanitizeComponent(englishName)
             // 物理落盘到 Vaults/{Vault_UUID}/raw/{笔记本英文名}/{Category}/
             let vaultsDir = appSupport
                 .appendingPathComponent(AppConstants.Storage.vaultsDirectoryName)
-                .appendingPathComponent(vaultIDString)
+                .appendingPathComponent(safeVaultID)
                 .appendingPathComponent("raw")
-                .appendingPathComponent(englishName)
+                .appendingPathComponent(safeEnglishName)
                 .appendingPathComponent(categoryDirName)
             
             try? fm.createDirectory(at: vaultsDir, withIntermediateDirectories: true)
@@ -59,8 +60,13 @@ struct FileImportFileStore: ImportFileStore, Sendable {
     }
 
     func saveData(_ data: Data, category: ImportCategory, ext: String) -> String? {
-        let ts = DateFormatterFactory.shared.string(from: Date(), format: "yyyyMMdd_HHmmss")
-        let fileName = "\(category.rawValue)_\(ts).\(ext)"
+        let ts = DateFormatterFactory.shared.string(from: Date(), format: CopyFileConstants.timestampFormat)
+        let uniqueSuffix = String(UUID().uuidString.prefix(CopyFileConstants.uniqueSuffixLength))
+        let safeExt = Self.sanitizeComponent(ext.trimmingCharacters(in: .whitespacesAndNewlines))
+        let baseName = [category.rawValue, ts, uniqueSuffix].joined(separator: CopyFileConstants.replacementToken)
+        let fileName = safeExt.isEmpty
+            ? baseName
+            : baseName + CopyFileConstants.dotSeparator + safeExt
         let recordsDir = getRecordsDir(for: category)
         let fileURL = recordsDir.appendingPathComponent(fileName)
         do {
@@ -74,8 +80,10 @@ struct FileImportFileStore: ImportFileStore, Sendable {
 
     private enum CopyFileConstants {
         static let unsafeTokens: [String] = ["..", "/", "\\", ":"]
-        static let replacementToken: String = "_"
-        static let dotSeparator: String = "."
+        static let replacementToken: String = SystemConstants.Character.underscore
+        static let dotSeparator: String = SystemConstants.Character.dot
+        static let timestampFormat: String = "yyyyMMdd_HHmmss"
+        static let uniqueSuffixLength: Int = 8
     }
 
     /// 清洗文件名片段中的路径穿越与非法分隔符
@@ -104,12 +112,14 @@ struct FileImportFileStore: ImportFileStore, Sendable {
         let ext = Self.sanitizeComponent(url.pathExtension)
         let nameWithoutExt = Self.sanitizeComponent(url.deletingPathExtension().lastPathComponent)
         
-        let ts = DateFormatterFactory.shared.string(from: Date(), format: "yyyyMMdd_HHmmss")
+        let ts = DateFormatterFactory.shared.string(from: Date(), format: CopyFileConstants.timestampFormat)
+        let uniqueSuffix = String(UUID().uuidString.prefix(CopyFileConstants.uniqueSuffixLength))
         
-        // 构造带时间戳的新物理文件名以防重名冲突（无扩展名时不拼尾随点）
+        // 构造带时间戳与短随机后缀的新物理文件名，杜绝同秒重名覆盖（无扩展名时不拼尾随点）
+        let baseName = [nameWithoutExt, ts, uniqueSuffix].joined(separator: CopyFileConstants.replacementToken)
         let newFileName = ext.isEmpty
-            ? "\(nameWithoutExt)_\(ts)"
-            : "\(nameWithoutExt)_\(ts)\(CopyFileConstants.dotSeparator)\(ext)"
+            ? baseName
+            : baseName + CopyFileConstants.dotSeparator + ext
         let recordsDir = getRecordsDir(for: category)
         let destinationURL = recordsDir.appendingPathComponent(newFileName)
         

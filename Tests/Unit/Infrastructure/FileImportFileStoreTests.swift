@@ -146,7 +146,7 @@ final class FileImportFileStoreTests: XCTestCase {
 
     // MARK: - 重复保存不冲突
 
-    func testSaveContent_multipleSaves_allSucceed() {
+    func testSaveContent_multipleSaves_allSucceed() throws {
         var paths: [String] = []
         for i in 0..<3 {
             if let path = store.saveContent("content_\(i)", category: .manual) {
@@ -154,8 +154,26 @@ final class FileImportFileStoreTests: XCTestCase {
             }
         }
         XCTAssertEqual(paths.count, 3)
-        for path in paths {
+        // 缺陷 #207 回归：同一秒内连续保存必须分配唯一路径，绝不互相覆写
+        XCTAssertEqual(Set(paths).count, 3, "同秒多次保存必须生成 3 个独立文件，不得互相覆写")
+        for (i, path) in paths.enumerated() {
+            let content = try String(contentsOfFile: path, encoding: .utf8)
+            XCTAssertEqual(content, "content_\(i)")
             try? FileManager.default.removeItem(atPath: path)
         }
+    }
+
+    // MARK: - 缺陷 #207 回归：扩展名路径穿越清洗与空扩展名不拼尾随点
+
+    func testSaveData_sanitizesTraversalExtensionAndEmptyExtension() throws {
+        let traversalPath = try XCTUnwrap(store.saveData(Data("safe".utf8), category: .file, ext: "../../evil.sh"))
+        let traversalFileName = URL(fileURLWithPath: traversalPath).lastPathComponent
+        XCTAssertFalse(traversalPath.contains(".."), "扩展名中的路径穿越符必须被清洗")
+        XCTAssertTrue(traversalFileName.hasPrefix("file_"))
+        try? FileManager.default.removeItem(atPath: traversalPath)
+
+        let emptyExtPath = try XCTUnwrap(store.saveData(Data("noext".utf8), category: .file, ext: "   "))
+        XCTAssertFalse(emptyExtPath.hasSuffix("."), "空扩展名不得拼接尾随点号")
+        try? FileManager.default.removeItem(atPath: emptyExtPath)
     }
 }

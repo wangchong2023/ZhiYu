@@ -776,4 +776,44 @@ final class RAGEvaluationServiceTests: XCTestCase {
         XCTAssertEqual(report.citationAccuracy, 0.90, accuracy: 0.001)
         XCTAssertEqual(report.status, L10n.AI.Eval.Status.pass)
     }
+
+    // MARK: - 缺陷 #208 回归：rank<=0 不产生 Inf/NaN，且 0 命中查询计入 F1 均值避免虚高
+
+    func testGovernanceMetrics_zeroRankSafeAndZeroHitCountsInF1Average() async throws {
+        // 1. 写入两条评估记录：第一条命中 100%（含异常 rank = 0），第二条 0 命中
+        let eval1 = RAGEvaluation(query: "q1", answer: "a1", faithfulness: 0.9, relevance: 0.9, precision: 0.9, evaluatorModel: "test")
+        let eval2 = RAGEvaluation(query: "q2", answer: "a2", faithfulness: 0.2, relevance: 0.2, precision: 0.2, evaluatorModel: "test")
+        try await governanceStore.saveRAGEvaluation(eval1)
+        try await governanceStore.saveRAGEvaluation(eval2)
+
+        let saved = try await governanceStore.fetchRAGEvaluations(limit: 10)
+        guard let id1 = saved.first(where: { $0.query == "q1" })?.id,
+              let id2 = saved.first(where: { $0.query == "q2" })?.id else {
+            return XCTFail("应能取回刚保存的两条评估记录 ID")
+        }
+
+        // 查询 1：异常 rank == 0 且命中相关文档（F1 = 1.0）
+        try await governanceStore.saveRetrievalSnapshots([
+            RetrievalSnapshot(evaluationID: id1, rank: 0, sourceID: "src-hit", pageTitle: "Hit", snippet: "s", score: 0.9)
+        ])
+        try await governanceStore.saveRelevanceJudgments([
+            RelevanceJudgment(queryHash: "h1", query: "q1", sourceID: "src-hit", relevanceLevel: 2, judgeSource: "llm-auto", evaluationID: id1)
+        ])
+
+        // 查询 2：存在相关文档但 Top-K 完全未命中（F1 应为 0.0 并计入均值）
+        try await governanceStore.saveRetrievalSnapshots([
+            RetrievalSnapshot(evaluationID: id2, rank: 1, sourceID: "src-miss", pageTitle: "Miss", snippet: "s", score: 0.1)
+        ])
+        try await governanceStore.saveRelevanceJudgments([
+            RelevanceJudgment(queryHash: "h2", query: "q2", sourceID: "src-expected", relevanceLevel: 2, judgeSource: "llm-auto", evaluationID: id2)
+        ])
+
+        let mrr = try await governanceStore.calculateMRR(days: 30)
+        let ndcg = try await governanceStore.calculateNDCG(days: 30, k: 5)
+        let f1 = try await governanceStore.calculateF1Score(days: 30, k: 5)
+
+        XCTAssertTrue(mrr.isFinite && mrr <= 1.0, "rank=0 时 MRR 必须有限且 <= 1.0，实际: \(mrr)")
+        XCTAssertTrue(ndcg.isFinite && ndcg <= 1.0, "rank=0 时 NDCG 必须有限且 <= 1.0，实际: \(ndcg)")
+        XCTAssertEqual(f1, 0.5, accuracy: 0.001, "1 条满分(1.0) + 1 条零命中(0.0) 的 F1 均值必须为 0.5，不得跳过零命中查询导致虚高为 1.0")
+    }
 }

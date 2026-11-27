@@ -143,4 +143,17 @@ final class JSONRepairProcessorBasicTests: XCTestCase {
         let result = JSONRepairProcessor.repair(garbage)
         XCTAssertFalse(result.isEmpty, "无法修复的文本应返回兜底内容供上层 Markdown 降级处理")
     }
+
+    // MARK: - 缺陷 #209 回归：合法 JSON 字符串值内的 `,}` 不得被误删篡改
+
+    func testValidJson_stringValueContainingTrailingCommaBrace_preservedVerbatim() throws {
+        let input = #"{"code": "let obj = {a: 1,}", "expr": "f(x,)}"}"#
+        let result = JSONRepairProcessor.repair(input)
+        let parsed = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: Data(result.utf8)) as? [String: String],
+            "合法 JSON 经 repair 后应保持合法"
+        )
+        XCTAssertEqual(parsed["code"], "let obj = {a: 1,}", "字符串值内的 `,}` 不得被全局替换篡改")
+        XCTAssertEqual(parsed["expr"], "f(x,)}", "字符串值内的 `,)`/`}` 组合不得被篡改")
+    }
 }
