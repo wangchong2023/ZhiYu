@@ -114,4 +114,19 @@ final class WikiLinkExtractorEdgeTests: XCTestCase {
         let matches = WikiLinkExtractor.extractLinks(from: "[[A]][[B]]")
         XCTAssertEqual(matches.count, 2)
     }
+
+    // MARK: - 缺陷 #188 回归：空白别名归一化
+
+    func testExtractLinks_whitespaceOnlyAlias_normalizedToNilAndFallsBackToTargetTitle() {
+        let matches = WikiLinkExtractor.extractLinks(from: "[[知识图谱|   ]]")
+        XCTAssertEqual(matches.count, 1)
+        XCTAssertEqual(matches[0].targetTitle, "知识图谱")
+        XCTAssertNil(matches[0].alias, "仅包含空白的别名应归一化为 nil")
+        XCTAssertEqual(matches[0].displayTitle, "知识图谱", "空白别名时 displayTitle 必须回退为 targetTitle")
+    }
+
+    func testDisplayTitle_emptyStringAlias_fallsBackToTargetTitle() {
+        let match = WikiLinkMatch(rawMatch: "[[架构|]]", targetTitle: "架构", alias: "")
+        XCTAssertEqual(match.displayTitle, "架构", "空字符串别名时 displayTitle 不得返回空串")
+    }
 }

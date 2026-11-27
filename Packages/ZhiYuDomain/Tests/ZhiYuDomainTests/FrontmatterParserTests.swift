@@ -199,6 +199,37 @@ final class FrontmatterParserTests: XCTestCase {
         XCTAssertEqual(result?.other, 42, "后续顶层键应正常解析")
     }
 
+    // MARK: - 缺陷 #187 回归：空数组、引号数组项与 NaN/Inf 字面量防护
+
+    /// 验证 YAML 空行内数组 `tags: []` 与仅空白数组 `tags: [   ]` 均解析为空数组，而非 `[""]`
+    func testParse_YamlEmptyInlineArray_ReturnsEmptyArray() {
+        let emptyResult = FrontmatterParser.parse(ArrayModel.self, from: "tags: []")
+        XCTAssertEqual(emptyResult?.tags, [], "空行内数组不得产出包含空字符串的元素")
+
+        let whitespaceResult = FrontmatterParser.parse(ArrayModel.self, from: "tags: [   ]")
+        XCTAssertEqual(whitespaceResult?.tags, [], "仅空白的行内数组应解析为空数组")
+    }
+
+    /// 验证 YAML 行内数组项的成对单/双引号被正确剥离，并过滤尾随逗号产生的空项
+    func testParse_YamlQuotedInlineArray_StripsQuotes() {
+        let yaml = #"tags: ["swift", 'ios',  ]"#
+        let result = FrontmatterParser.parse(ArrayModel.self, from: yaml)
+        XCTAssertEqual(result?.tags, ["swift", "ios"], "行内数组项应剥离引号并过滤空项")
+    }
+
+    /// 验证 YAML 字段值为 NaN / Infinity 时不被转换为非有限 Double，防止 JSONSerialization 失败丢弃整段 Frontmatter
+    func testParse_YamlNonFiniteNumericLiteral_PreservedAsStringWithoutDroppingFrontmatter() {
+        let nanYaml = "title: NaN\ncount: 8"
+        let nanResult = FrontmatterParser.parse(TestFrontmatter.self, from: nanYaml)
+        XCTAssertEqual(nanResult?.title, "NaN", "NaN 应按字符串保留而不触发 JSONSerialization 失败")
+        XCTAssertEqual(nanResult?.count, 8, "同段 Frontmatter 的其余字段不得丢失")
+
+        let infYaml = "title: Infinity\ncount: 9"
+        let infResult = FrontmatterParser.parse(TestFrontmatter.self, from: infYaml)
+        XCTAssertEqual(infResult?.title, "Infinity", "Infinity 应按字符串保留而不触发 JSONSerialization 失败")
+        XCTAssertEqual(infResult?.count, 9)
+    }
+
     // MARK: - 测试辅助
 
     private struct TestFrontmatter: Decodable {

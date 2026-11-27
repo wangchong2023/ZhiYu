@@ -195,21 +195,25 @@
 | **184** | `LintService.runLint` 构建查找索引时仅收录 `page.title` 而完全忽略 `page.aliases`，且统计入度未排除 `target.id != page.id` 自引用，导致所有合法 `[[别名]]` 双向链接被误报为高危断裂链接，目标页误报孤岛，且自引用页面入度误判 | 笔记使用 `[[别名]]` 引用目标页，或页面正文自引用自身标题 | 健康巡检大量误报断裂链接与孤岛页面，或漏报自引用孤立页 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 索引合并 `page.aliases`（不覆盖已有主标题），统计入度时排除 `target.id != page.id` | **✅ 已解决** | 是 (知识图谱巡检别名索引与自环排除) | 是 (`LintServiceTests`) | ✅ 已闭环 |
 | **185** | `PPTXProcessor.escapeXML` 未剥离 XML 1.0 禁止的控制字符（如 `\u{0000}`/`\u{000C}`），且 `[Content_Types].xml` 漏声明 `/ppt/slides/slideN.xml` 的 `<Override>` 映射 | 导出含 PDF/OCR 残留控制字符的幻灯片或在严格 OpenXML 客户端打开 | PowerPoint / Keynote 报文件损坏无法打开 | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | `escapeXML` 过滤 XML 1.0 非法控制字符（保留 `\t`/`\n`/`\r`），`generateContentTypes` 动态输出全部幻灯片 `<Override>` 声明 | **✅ 已解决** | 是 (OpenXML 合法字符集与 ContentTypes 规范) | 是 (`PPTXProcessorTests`) | ✅ 已闭环 |
 | **186** | `QuizProcessor.FlexibleAnswer.asIndex` 硬编码仅识别 A/B/C/D 四个字母，面对 5 选 1（E）或 6 选 1（F）测验题目时静默回退到索引 0 | LLM 生成包含 5 个以上选项且正确答案为 E/F 的测验题 | 正确答案被错误判为选项 A，测验评分失真 | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | 基于 ASCII `'A'...'Z'` 标量偏移泛化字母索引计算并安全钳位至 `optionCount - 1` | **✅ 已解决** | 是 (测验选项字母解析泛化) | 是 (`QuizProcessorTests`) | ✅ 已闭环 |
+| **187** | `FrontmatterParser.parseAndInsertValue` 解析空行内数组 `tags: []` 产出 `[""]` 且未剥离数组项引号；同时 `Double(valueStr)` 未校验 `isFinite`，遇到 `"NaN"`/`"Infinity"` 时写入非有限浮点导致 `JSONSerialization` 失败并丢弃整段 Frontmatter | Markdown 头部包含 `tags: []`、引号数组项或字面量 `NaN`/`Infinity` | 页面被挂载空标签 `""`，或整段 Frontmatter 元数据静默丢失 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 空数组直接返回 `[]`、复用 `stripSurroundingQuotes` 清洗数组项并过滤空项；数值解析增加 `num.isFinite` 守卫 | **✅ 已解决** | 是 (YAML/JSON 有限浮点与空数组规范) | 是 (`FrontmatterParserTests`) | ✅ 已闭环 |
+| **188** | `WikiLinkExtractor.extractLinks` 对空白别名（如 `[[页面|   ]]`）将 `alias` 赋为 `""` 而非 `nil`，导致 `WikiLinkMatch.displayTitle` 返回空字符串 | 用户在 Markdown 中误写竖线后仅空白的双链别名 | 双链渲染文字为空白“隐身”且不可点击 | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | 将去空白后的空别名归一化为 `nil`，并在 `WikiLinkMatch.displayTitle` 中兜底非空校验 | **✅ 已解决** | 是 (双向链接别名归一化守卫) | 是 (`WikiLinkExtractorEdgeTests`) | ✅ 已闭环 |
+| **189** | `GraphLayoutProcessor.layout` 与 `applyForcesAndConstraints` 未校验 `canvasSize` 的正性与有限性及 `padding` 边界倒置，传入 `.zero`/负值/`NaN` 或窄画布时产出 `NaN` 坐标或全部节点坍缩到越界点 | SwiftUI 初次布局尚未测得尺寸传入 `.zero`，或窄画布 `width < 2 * padding` 执行力导向仿真 | 知识图谱节点消失或重叠为单点导致渲染异常 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 新增 `GraphConstants.Layout.fallbackCanvasDimension` 与 `sanitizedCanvasSize`；`applyForcesAndConstraints` 校验有限性并钳位 `safePadding <= size / 2` | **✅ 已解决** | 是 (图谱布局几何有限性与边界守卫) | 是 (`GraphLayoutProcessorEdgeTests`) | ✅ 已闭环 |
+| **190** | `ModelBenchmarkRunner` 在模拟与硬件压测循环中未检查 `Task.isCancelled`，且使用 `try? await Task.sleep` 吞掉 `CancellationError`，导致任务取消后不仅继续空跑，还因睡眠被打断归零而算出上万 Tok/s 的虚假爆表跑分 | 用户在基准跑分中途取消或关闭页面 | 后台持续空跑消耗资源，并回调/返回严重失真的 `.excellent` 虚假高分 | **High** | 状态机并发与数据生命周期 | 循环与挂起点补齐 `Task.isCancelled` 检查并将 `Task.sleep` 取消转为立即中止；新增 `finalizeBenchmarkResult` 在 `completedRounds == 0` 时安全返回零值与 `.warning` | **✅ 已解决** | 是 (异步循环协同取消与睡眠中断防护) | 是 (`ModelBenchmarkTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**186 项**
+- **收录问题总数**：**190 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：46 项 (24.7%)
-  - 状态机并发与数据生命周期：46 项 (24.7%)
-  - 架构设计与安全/网络健壮性：53 项 (28.5%)
-  - UI/交互与防御性缺陷：17 项 (9.1%)
-  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (12.9%)
+  - 功能缺陷与核心算法/解析器/数据完整性：49 项 (25.8%)
+  - 状态机并发与数据生命周期：47 项 (24.7%)
+  - 架构设计与安全/网络健壮性：53 项 (27.9%)
+  - UI/交互与防御性缺陷：17 项 (8.9%)
+  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (12.6%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：97 项 (52.2%)
-  - **Medium（功能异常/算法边界/性能损耗）**：62 项 (33.3%)
-  - **Low（样式异味/边界校验/门禁规范）**：27 项 (14.5%)
-- **修复闭环率**：**100% (186/186 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：100 项 (52.6%)
+  - **Medium（功能异常/算法边界/性能损耗）**：63 项 (33.2%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (14.2%)
+- **修复闭环率**：**100% (190/190 项已修复闭环)**
 

@@ -17,7 +17,8 @@ public struct WikiLinkMatch: Identifiable, Equatable, Sendable {
     public let targetTitle: String
     public let alias: String?
     public var displayTitle: String {
-        alias ?? targetTitle
+        guard let alias, !alias.isEmpty else { return targetTitle }
+        return alias
     }
 
     public init(rawMatch: String, targetTitle: String, alias: String? = nil) {
@@ -52,7 +53,8 @@ public enum WikiLinkExtractor {
 
             var alias: String?
             if match.numberOfRanges > 2, let aliasRange = Range(match.range(at: 2), in: text) {
-                alias = String(text[aliasRange]).trimmingCharacters(in: .whitespaces)
+                let trimmedAlias = String(text[aliasRange]).trimmingCharacters(in: .whitespaces)
+                alias = trimmedAlias.isEmpty ? nil : trimmedAlias
             }
 
             if !targetTitle.isEmpty {

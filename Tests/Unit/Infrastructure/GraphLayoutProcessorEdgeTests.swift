@@ -190,4 +190,52 @@ final class GraphLayoutProcessorEdgeTests: XCTestCase {
         )
         XCTAssertEqual(result.nodes.count, 1)
     }
+
+    // MARK: - 缺陷 #189 回归：零/负/NaN 画布尺寸与窄画布边界防护
+
+    func testLayout_invalidCanvasSizes_alwaysProduceFinitePositions() {
+        let pages = [KnowledgePage(title: "甲"), KnowledgePage(title: "乙"), KnowledgePage(title: "丙")]
+        let invalidSizes: [CGSize] = [
+            .zero,
+            CGSize(width: -200, height: -100),
+            CGSize(width: CGFloat.nan, height: 600),
+            CGSize(width: CGFloat.infinity, height: CGFloat.nan)
+        ]
+
+        for size in invalidSizes {
+            let result = GraphLayoutProcessor.layout(
+                pages: pages,
+                linkResolver: { _ in nil },
+                canvasSize: size
+            )
+            XCTAssertEqual(result.nodes.count, pages.count)
+            for node in result.nodes {
+                XCTAssertTrue(node.position.x.isFinite, "非法画布 \(size) 下 x 坐标必须为有限值")
+                XCTAssertTrue(node.position.y.isFinite, "非法画布 \(size) 下 y 坐标必须为有限值")
+            }
+        }
+    }
+
+    func testApplyForces_narrowCanvasSmallerThanDoublePadding_staysWithinCanvasBounds() {
+        var nodes = [
+            GraphNode(id: UUID(), title: "N1", pageType: .concept, position: CGPoint(x: 10, y: 10)),
+            GraphNode(id: UUID(), title: "N2", pageType: .concept, position: CGPoint(x: CGFloat.nan, y: 20))
+        ]
+        var config = GraphLayoutProcessor.Config.default
+        config.padding = 40
+        GraphLayoutProcessor.applyForces(
+            nodes: &nodes,
+            edges: [],
+            canvasWidth: 30,
+            canvasHeight: 20,
+            config: config
+        )
+        for node in nodes {
+            XCTAssertTrue(node.position.x.isFinite && node.position.y.isFinite)
+            XCTAssertGreaterThanOrEqual(node.position.x, 0)
+            XCTAssertLessThanOrEqual(node.position.x, 30)
+            XCTAssertGreaterThanOrEqual(node.position.y, 0)
+            XCTAssertLessThanOrEqual(node.position.y, 20)
+        }
+    }
 }

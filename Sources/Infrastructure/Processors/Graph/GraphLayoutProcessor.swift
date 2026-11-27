@@ -36,7 +36,8 @@ struct GraphLayoutProcessor {
     ) -> (nodes: [GraphNode], edges: [GraphEdge]) {
         guard !pages.isEmpty else { return ([], []) }
 
-        let canvas = computeCanvasDimensions(canvasSize: canvasSize, nodeCount: pages.count)
+        let safeCanvasSize = sanitizedCanvasSize(canvasSize)
+        let canvas = computeCanvasDimensions(canvasSize: safeCanvasSize, nodeCount: pages.count)
         var nodes = createInitialCircularLayout(pages: pages, canvas: canvas)
         let edges = createEdges(pages: pages, linkResolver: linkResolver)
 
@@ -49,8 +50,19 @@ struct GraphLayoutProcessor {
 
         applyLinkCounts(nodes: &nodes, edges: edges)
         resolveLabelOverlaps(nodes: &nodes)
-        centerGraph(nodes: &nodes, canvasSize: canvasSize)
+        centerGraph(nodes: &nodes, canvasSize: safeCanvasSize)
         return (nodes, edges)
+    }
+
+    /// 清洗非法画布尺寸（零、负值或非有限浮点回退至安全正边长，防止全图坐标坍缩或 NaN 污染）
+    private static func sanitizedCanvasSize(_ canvasSize: CGSize) -> CGSize {
+        let safeWidth = (canvasSize.width.isFinite && canvasSize.width > 0)
+            ? canvasSize.width
+            : GraphConstants.Layout.fallbackCanvasDimension
+        let safeHeight = (canvasSize.height.isFinite && canvasSize.height > 0)
+            ? canvasSize.height
+            : GraphConstants.Layout.fallbackCanvasDimension
+        return CGSize(width: safeWidth, height: safeHeight)
     }
 
     private struct CanvasDimensions {
@@ -362,13 +374,25 @@ struct GraphLayoutProcessor {
         temperature: CGFloat,
         config: Config
     ) {
-        let effectiveDamping = config.damping * temperature
-        for i in nodes.indices {
-            nodes[i].position.x += forces[i].x * effectiveDamping
-            nodes[i].position.y += forces[i].y * effectiveDamping
+        let safeWidth = (canvasWidth.isFinite && canvasWidth > 0)
+            ? canvasWidth
+            : GraphConstants.Layout.fallbackCanvasDimension
+        let safeHeight = (canvasHeight.isFinite && canvasHeight > 0)
+            ? canvasHeight
+            : GraphConstants.Layout.fallbackCanvasDimension
+        let safePaddingX = min(max(0, config.padding), safeWidth / 2)
+        let safePaddingY = min(max(0, config.padding), safeHeight / 2)
+        let rawDamping = config.damping * temperature
+        let effectiveDamping = rawDamping.isFinite ? rawDamping : 0
 
-            nodes[i].position.x = max(config.padding, min(canvasWidth - config.padding, nodes[i].position.x))
-            nodes[i].position.y = max(config.padding, min(canvasHeight - config.padding, nodes[i].position.y))
+        for i in nodes.indices {
+            let baseX = nodes[i].position.x.isFinite ? nodes[i].position.x : safeWidth / 2
+            let baseY = nodes[i].position.y.isFinite ? nodes[i].position.y : safeHeight / 2
+            let deltaX = forces[i].x.isFinite ? forces[i].x * effectiveDamping : 0
+            let deltaY = forces[i].y.isFinite ? forces[i].y * effectiveDamping : 0
+
+            nodes[i].position.x = max(safePaddingX, min(safeWidth - safePaddingX, baseX + deltaX))
+            nodes[i].position.y = max(safePaddingY, min(safeHeight - safePaddingY, baseY + deltaY))
         }
     }
 }

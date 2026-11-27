@@ -173,22 +173,24 @@ public enum FrontmatterParser {
     private static func parseAndInsertValue(key: String, valueStr: String, dict: inout [String: Any]) {
         if valueStr.hasPrefix("[") && valueStr.hasSuffix("]") {
             let arrayContent = String(valueStr.dropFirst().dropLast())
-            let items = arrayContent.components(separatedBy: ",").map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-            dict[key] = items
-        } else if let num = Double(valueStr) {
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            if arrayContent.isEmpty {
+                dict[key] = [String]()
+            } else {
+                let items = arrayContent
+                    .components(separatedBy: ",")
+                    .map { stripSurroundingQuotes($0.trimmingCharacters(in: .whitespacesAndNewlines)) }
+                    .filter { !$0.isEmpty }
+                dict[key] = items
+            }
+        } else if let num = Double(valueStr), num.isFinite {
             dict[key] = num
         } else if valueStr == SystemConstants.BooleanLiteral.true {
             dict[key] = true
         } else if valueStr == SystemConstants.BooleanLiteral.false {
             dict[key] = false
         } else {
-            var cleanVal = valueStr
-            if cleanVal.hasPrefix(SystemConstants.Character.doubleQuote) && cleanVal.hasSuffix(SystemConstants.Character.doubleQuote) {
-                cleanVal = String(cleanVal.dropFirst().dropLast())
-            } else if cleanVal.hasPrefix(SystemConstants.Character.singleQuote) && cleanVal.hasSuffix(SystemConstants.Character.singleQuote) {
-                cleanVal = String(cleanVal.dropFirst().dropLast())
-            }
-            dict[key] = cleanVal
+            dict[key] = stripSurroundingQuotes(valueStr)
         }
     }
 
@@ -226,20 +228,30 @@ public enum FrontmatterParser {
         let parts = content.split(separator: ":", maxSplits: 1, omittingEmptySubsequences: true)
         guard parts.count == 2 else { return }
         let key = parts[0].trimmingCharacters(in: .whitespacesAndNewlines)
-        var valueStr = parts[1].trimmingCharacters(in: .whitespacesAndNewlines)
-        if valueStr.hasPrefix(SystemConstants.Character.doubleQuote) && valueStr.hasSuffix(SystemConstants.Character.doubleQuote) {
-            valueStr = String(valueStr.dropFirst().dropLast())
-        } else if valueStr.hasPrefix(SystemConstants.Character.singleQuote) && valueStr.hasSuffix(SystemConstants.Character.singleQuote) {
-            valueStr = String(valueStr.dropFirst().dropLast())
-        }
+        let valueStr = stripSurroundingQuotes(parts[1].trimmingCharacters(in: .whitespacesAndNewlines))
 
-        if let num = Double(valueStr) {
+        if let num = Double(valueStr), num.isFinite {
             dict[key] = num
         } else {
             dict[key] = valueStr
         }
     }
 
+    /// 剥离首尾成对单引号或双引号（要求长度不少于 2，避免单字符引号被清空）
+    private static func stripSurroundingQuotes(_ raw: String) -> String {
+        guard raw.count >= minimumQuotedLength else { return raw }
+        let isDoubleQuoted = raw.hasPrefix(SystemConstants.Character.doubleQuote)
+            && raw.hasSuffix(SystemConstants.Character.doubleQuote)
+        let isSingleQuoted = raw.hasPrefix(SystemConstants.Character.singleQuote)
+            && raw.hasSuffix(SystemConstants.Character.singleQuote)
+        if isDoubleQuoted || isSingleQuoted {
+            return String(raw.dropFirst().dropLast())
+        }
+        return raw
+    }
+
+    /// 成对引号包裹字符串的最小字符数
+    private static let minimumQuotedLength: Int = 2
     /// YAML 嵌套缩进两个空格
     private static let doubleSpace: String = "  "
     /// YAML 嵌套缩进四个空格

@@ -36,6 +36,8 @@ public enum GraphConstants {
         public static let temperatureGravityCompensation: CGFloat = 0.01
         /// 图谱画布边缘留白 padding
         public static let layoutPadding: CGFloat = 40.0
+        /// 非正或非有限画布尺寸时的兜底边长
+        public static let fallbackCanvasDimension: CGFloat = 100.0
         /// 社区聚类引力系数
         public static let clusterAttraction: CGFloat = 0.05
         /// 空间网格哈希位移位数（将 gx 编码到高位）

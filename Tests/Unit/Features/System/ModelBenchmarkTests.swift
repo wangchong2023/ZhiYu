@@ -148,4 +148,45 @@ final class ModelBenchmarkTests: XCTestCase {
         XCTAssertFalse(ModelManagerTab.store.icon.isEmpty)
         XCTAssertFalse(ModelManagerTab.lab.icon.isEmpty)
     }
+
+    // MARK: - 测试 5: 缺陷 #190 回归 — 任务取消时立即中止，绝不产出虚假爆表跑分
+
+    func testSimulatedBenchmark_cancelledTaskStopsImmediatelyWithoutFakeScore() async {
+        let runner = ModelBenchmarkRunner()
+        let progressCountBox = MutexBox(0)
+
+        let task = Task<BenchmarkResult, Never> {
+            await runner.runBenchmark(modelId: "test-model-2b", rounds: 5) { _, _ in
+                progressCountBox.mutate { $0 += 1 }
+            }
+        }
+        task.cancel()
+        let result = await task.value
+
+        XCTAssertEqual(result.completedRounds, 0, "已取消任务不应记录已完成轮次")
+        XCTAssertEqual(result.totalRounds, 5)
+        XCTAssertEqual(result.decodeTPS, 0.0, "已取消任务不得因 sleep 被打断而算出虚假爆表 TPS")
+        XCTAssertEqual(result.ttftMilliseconds, 0.0)
+        XCTAssertEqual(result.grade, .warning)
+        XCTAssertEqual(progressCountBox.get(), 0, "已取消任务不应回调进度")
+    }
+
+    func testHardwareBenchmark_cancelledTaskStopsBeforeRemainingRounds() async {
+        let runner = ModelBenchmarkRunner()
+        let executionCountBox = MutexBox(0)
+
+        let task = Task<BenchmarkResult, Never> {
+            await runner.runBenchmark(modelId: "test-hw", rounds: 5, inferenceExecutor: { _ in
+                executionCountBox.mutate { $0 += 1 }
+                return "hello world"
+            })
+        }
+        task.cancel()
+        let result = await task.value
+
+        XCTAssertEqual(result.completedRounds, 0, "已取消硬件压测不应计入完成轮次")
+        XCTAssertEqual(executionCountBox.get(), 0, "已取消硬件压测不应继续调用推理执行器")
+        XCTAssertEqual(result.decodeTPS, 0.0)
+        XCTAssertEqual(result.grade, .warning)
+    }
 }
