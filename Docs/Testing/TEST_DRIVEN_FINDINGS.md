@@ -251,21 +251,24 @@
 | **240** | `KnowledgePageManager` 存在三重严重缺陷：`wrapPlainOccurrences` 将 `NSRegularExpression` 返回的 UTF-16 `NSRange` 偏移直接传给 Swift `String.index(_:offsetBy:)` 导致含 Emoji/复合字符正文索引错位甚至运行时越界闪退，且负向断言无法排除 `[[Target\|别名]]`/`[[Other\|Target]]` 造成嵌套破坏；`renamePage` 缺失撤销栈与空白改动早退；`updatePage` 连续保存并发 RAG 同步无取消互斥易乱序覆写 | 对含 Emoji 或已有带别名/锚点双链的正文应用潜在链接建议、传入空白重命名、或快速连续保存页面 | 应用潜在链接直接闪退或破坏双链语法、重命名无法撤销、快速编辑后旧版内容晚到覆写向量索引 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | `wrapPlainOccurrences` 改用 `Range(match.range, in:)` 并先扫描已有 `[[...]]` 区间跳过重叠；`renamePage` 增加 `modifiedPages.isEmpty` 早退与 `undoService?.pushSnapshot`；`updatePage` 按 `pageID` 追踪并取消旧 `activeRAGSyncTasks`；常量收敛至 `KnowledgeLogSpec` | **✅ 已解决** | 是 (UTF-16 安全索引转换、双链区间排重与页面级异步任务取消) | 是 (`KnowledgePageManagerTests`) | ✅ 已闭环 |
 | **241** | `PromptSecurityGuard.sanitize` 存在双重越狱绕过隐患：未剥离零宽不可见字符（`\u{200B}`/`\u{FEFF}` 等），攻击者插入零宽字符可同时绕过定界符中和与 OWASP 注入检测；漏拦 XML 金沙箱闭合标签（`</context_sandbox>`）与 Llama-3/Mistral 定界符（`<\|begin_of_text\|>`、`[INST]`、`<<SYS>>` 等） | 攻击者在 Prompt 中注入 `<\u{200B}\|im_start\|>`、`ig\u{200B}nore previous instructions` 或 `</context_sandbox>` | 绕过 Prompt 防护直接逃逸 XML 金沙箱或劫持系统角色指令 | **High** | 架构设计与安全/网络健壮性 | 在 `sanitize` 首步剥离零宽/不可见控制字符；收敛 `GuardConstants` 补齐 XML 沙箱标签与 Llama-3/Mistral 定界符，扩展 `neutralizeToken` 同步中和 ASCII `[`、`]`、`/` | **✅ 已解决** | 是 (零宽混淆清洗与 XML 金沙箱标签中和) | 是 (`PromptSecurityGuardTests`) | ✅ 已闭环 |
 | **242** | `TextChunkerProcessor.split`（`ZhiYuDomain`）存在三重分块缺陷：`components(separatedBy: .newlines)` 将 Windows `\r\n` 拆成双换行导致行距翻倍与 `startIndex` 持续漂移；`line.hasPrefix("#")` 将正文行首 `#Swift`/`#待办` 标签误判为 Markdown 标题强行拆块并污染 `breadcrumbPath`；无换行超长单行直接跳过 `chunkSize` 限制撑爆向量上下文窗口 | 导入 Windows CRLF Markdown、包含行首 `#标签` 的笔记、或超长无换行单段文本 | 分块偏移漂移、面包屑路径被标签污染、超长单行触发向量模型截断或报错 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 入口归一化 `\r\n`/`\r` 为 `\n`；新增 `isMarkdownHeading` 严格遵循 CommonMark ATX 规范（1~6 个 `#` 后接空白符）；新增 `appendOversizedLineSlices` 对超长无换行单行按 `safeChunkSize` 与重叠窗口滑窗切分 | **✅ 已解决** | 是 (CommonMark 标题识别、CRLF 归一化与超长单行滑窗切分) | 是 (`TextChunkerDeepEdgeTests`) | ✅ 已闭环 |
+| **243** | `AIContentEnricher` 存在四重内容破坏与误触发缺陷：`parseBlocks` 对同行图文仅提取首张图片并直接丢弃同行前后文字与第二张图片；`needsEnrichment` 将空括号 `"[]"` 当作图片标记导致普通代码数组误触发重排；`flushText` 追加纯空白块；普通带 `|` 文本未校验分隔线 `---` 即误送 LLM 表格增强 | 正文同行混排文字与图片、同行多图、或包含 `let a = []` 代码片段 | 同行说明文字与多张图片被永久吞掉丢失，或代码数组误触发 LLM 增强与段落重写 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 抽取 `extractInlineImageBlocks` 按顺序完整保留同行前后文字与全部图片；移除 `"[]"` 误触发标记；新增 `flushTable` 校验 `---` 分隔线；`flushText` 过滤纯空白块；收敛 `ContentEnrichmentMarker` | **✅ 已解决** | 是 (Markdown 图文混排保真解析与表格严格识别) | 是 (`AIContentEnricherTests`) | ✅ 已闭环 |
+| **244** | `FileSystemSyncService` 导出存在三重隐患：`pathInvalidCharacters` 漏过滤空字节 `\0`/控制字符及 Windows/exFAT 保留字符（`*?\"<>\|`）；YAML `title:` 直接裸写未转义，含 `:`/`#` 的标题会破坏 YAML Frontmatter 语法；`updated:` 使用受地区影响的 `Date.formatted()` 导致跨设备 diff 抖动 | 导出标题含 `:`/`#`/`\0` 或跨平台非法字符的笔记至本地/iCloud/exFAT 目录 | 目标磁盘写入失败、YAML 元数据解析损坏或标题被 `#` 截断、跨地区导出时间戳格式不一致 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 扩展 `pathInvalidCharacters` 覆盖 `.controlCharacters` 与跨平台保留字符；新增 `formatYAMLScalar` 对含 YAML 特殊字符的标题自动双引号转义；`updated:` 改用标准确定性 `ISO8601DateFormatter` | **✅ 已解决** | 是 (跨平台安全文件名清洗、YAML 标量安全转义与 ISO-8601 时间戳) | 是 (`FileSystemSyncServiceTests`) | ✅ 已闭环 |
+| **245** | `QuizProcessor` 存在三重解析与洗牌缺陷：`FlexibleAnswer.asIndex` 对 `"Answer: C"` 直接取首字母 `'A'` 错判为选项 A（索引 0）；`randomizeQuizAnswers` 通过 `firstIndex(of:)` 文本反查正确答案在重复选项下易定位偏差；`parseMarkdownQuiz` 未归一化 `\r\n` | LLM 输出 `"Answer: C"` / `"答案：D"`、含重复选项文本或 Windows CRLF 格式测验 | 正确答案被系统性误判为选项 A 导致用户答题判分错误 | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | `FlexibleAnswer.asIndex` 优先按 `AnswerParsing.pattern` 提取带前缀答案再匹配独立选项字母；`randomizeQuizAnswers` 携带原始索引元组洗牌追踪 `origAnswerIndex`；`parseMarkdownQuiz` 归一化 CRLF | **✅ 已解决** | 是 (测验答案前缀解析纠偏与索引追踪洗牌) | 是 (`QuizProcessorTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**242 项**
+- **收录问题总数**：**245 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：67 项 (27.7%)
-  - 状态机并发与数据生命周期：56 项 (23.1%)
-  - 架构设计与安全/网络健壮性：78 项 (32.2%)
-  - UI/交互与防御性缺陷：17 项 (7.0%)
-  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (9.9%)
+  - 功能缺陷与核心算法/解析器/数据完整性：70 项 (28.6%)
+  - 状态机并发与数据生命周期：56 项 (22.9%)
+  - 架构设计与安全/网络健壮性：78 项 (31.8%)
+  - UI/交互与防御性缺陷：17 项 (6.9%)
+  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (9.8%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：148 项 (61.2%)
-  - **Medium（功能异常/算法边界/性能损耗）**：67 项 (27.7%)
-  - **Low（样式异味/边界校验/门禁规范）**：27 项 (11.2%)
-- **修复闭环率**：**100% (242/242 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：150 项 (61.2%)
+  - **Medium（功能异常/算法边界/性能损耗）**：68 项 (27.8%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (11.0%)
+- **修复闭环率**：**100% (245/245 项已修复闭环)**
 

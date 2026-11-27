@@ -203,4 +203,30 @@ final class QuizProcessorTests: XCTestCase {
         let question = try XCTUnwrap(model.questions.first)
         XCTAssertEqual(question.options[question.answer], "E5", "5 选题中字母 E 洗牌后必须指向选项 E5 而非回退至 A1")
     }
+
+    // MARK: - 缺陷 #245 回归：带前缀答案解析不误判 A、重复选项安全洗牌与 CRLF 兼容
+
+    func testFlexibleAnswer_labeledStringsResolveTrueOptionInsteadOfPrefixA() {
+        XCTAssertEqual(
+            QuizProcessor.FlexibleQuizShell.FlexibleAnswer.string("Answer: C").asIndex(optionCount: 4),
+            2,
+            "Answer: C 不应误取首字母 A 返回 0"
+        )
+        XCTAssertEqual(
+            QuizProcessor.FlexibleQuizShell.FlexibleAnswer.string("答案：D").asIndex(optionCount: 4),
+            3
+        )
+        XCTAssertEqual(
+            QuizProcessor.FlexibleQuizShell.FlexibleAnswer.string("B. 正确选项").asIndex(optionCount: 4),
+            1
+        )
+    }
+
+    func testParseToQuizModel_crlfMarkdownAndDuplicateOptionsRemainValid() throws {
+        let crlfMD = "# CRLF 测验\r\n\r\n## 1. 哪项正确？\r\n* 相同选项\r\n* 相同选项\r\n* 唯一正确\r\n\r\nAnswer: C\r\n"
+        let model = try XCTUnwrap(QuizProcessor.parseToQuizModel(crlfMD))
+        let question = try XCTUnwrap(model.questions.first)
+        XCTAssertEqual(question.options.count, 3)
+        XCTAssertEqual(question.options[question.answer], "唯一正确")
+    }
 }

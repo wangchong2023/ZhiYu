@@ -19,12 +19,22 @@ import UFPCore
 private enum ContentEnrichmentMarker {
     /// Markdown 表格分隔行（含空格变体 `| --- |`）
     static let tableSeparator = "| \(SystemConstants.MarkdownSyntax.tableRowSeparator) |"
-    /// 空图片占位符 `![]`
-    static let emptyImage = "[]"
+    /// Markdown 表格紧凑分隔行（无空格变体 `|---|`）
+    static let compactTableSeparator = "\(SystemConstants.Character.pipe)\(SystemConstants.MarkdownSyntax.tableRowSeparator)\(SystemConstants.Character.pipe)"
     /// 图片起始标记 `![`
     static let imageStart = "!["
     /// 图片 URL 起始标记 `](`
     static let imageURLStart = "]("
+    /// 表格行起始符 `|`
+    static let tablePipe = SystemConstants.Character.pipe
+    /// 表格分隔线特征 `---`
+    static let tableDividerDashes = SystemConstants.MarkdownSyntax.tableRowSeparator
+    /// Markdown 图片匹配正则 `![alt](url)`
+    static let imageRegexPattern = "!\\[(.*?)\\]\\((.*?)\\)"
+    static let altCaptureGroup: Int = 1
+    static let urlCaptureGroup: Int = 2
+    static let paragraphSeparator = SystemConstants.Character.newline + SystemConstants.Character.newline
+    static let emptyString = ""
 }
 actor AIContentEnricher {
 
@@ -45,9 +55,12 @@ actor AIContentEnricher {
     ///   - llm: 调用的 LLM 服务
     /// - Returns: 增强后的文本
     func enrich(_ content: String, llm: any LLMServiceProtocol) async -> String {
-        // 1. 快速判断是否需要增强
-        let needsEnrichment = content.contains(ContentEnrichmentMarker.tableSeparator) || content.contains(ContentEnrichmentMarker.emptyImage) || content.contains(ContentEnrichmentMarker.imageStart)
-        guard needsEnrichment else { return content }
+        // 1. 快速判断是否需要增强（仅真实表格分隔行或完整图片语法才触发，避免 `[]` 代码数组误触发）
+        let hasTable = content.contains(ContentEnrichmentMarker.tableSeparator)
+            || content.contains(ContentEnrichmentMarker.compactTableSeparator)
+        let hasImage = content.contains(ContentEnrichmentMarker.imageStart)
+            && content.contains(ContentEnrichmentMarker.imageURLStart)
+        guard hasTable || hasImage else { return content }
 
         // 2. 将内容拆分为逻辑块
         let blocks = parseBlocks(from: content)
@@ -77,7 +90,7 @@ actor AIContentEnricher {
             // 按原始索引排序并合并
             return results.sorted { $0.0 < $1.0 }
                 .map { $0.1 }
-                .joined(separator: "\n\n")
+                .joined(separator: ContentEnrichmentMarker.paragraphSeparator)
         }
     }
 
@@ -87,42 +100,40 @@ actor AIContentEnricher {
     private func parseBlocks(from content: String) -> [ContentBlock] {
         var blocks: [ContentBlock] = []
         let lines = content.components(separatedBy: .newlines)
-        var currentText = ""
+        var currentText = ContentEnrichmentMarker.emptyString
         var isInsideTable = false
-        var currentTable = ""
+        var currentTable = ContentEnrichmentMarker.emptyString
 
         for line in lines {
-            // 简单的表格识别：以 | 开头且包含分割线
-            if line.trimmingCharacters(in: .whitespaces).hasPrefix("|") {
+            // 表格识别：以 | 开头，结束时校验是否含真实分隔行 `---`，避免普通管道符文本误送 LLM
+            if line.trimmingCharacters(in: .whitespaces).hasPrefix(ContentEnrichmentMarker.tablePipe) {
                 if !isInsideTable {
                     flushText(&currentText, into: &blocks)
                     isInsideTable = true
                 }
-                currentTable += line + "\n"
-            } else if isInsideTable {
-                // 表格结束
-                blocks.append(.table(currentTable.trimmingCharacters(in: .whitespacesAndNewlines)))
-                currentTable = ""
-                isInsideTable = false
-                currentText += line + "\n"
-            } else if line.contains(ContentEnrichmentMarker.imageStart) && line.contains(ContentEnrichmentMarker.imageURLStart) {
-                // 图片识别 (Markdown 格式: ![alt](url))
-                flushText(&currentText, into: &blocks)
-
-                // 提取图片信息
-                if let block = parseImageBlock(from: line) {
-                    blocks.append(block)
-                } else {
-                    currentText += line + "\n"
-                }
+                currentTable += line + SystemConstants.Character.newline
             } else {
-                currentText += line + "\n"
+                if isInsideTable {
+                    flushTable(&currentTable, into: &blocks)
+                    isInsideTable = false
+                }
+                if line.contains(ContentEnrichmentMarker.imageStart) && line.contains(ContentEnrichmentMarker.imageURLStart) {
+                    let inlineBlocks = extractInlineImageBlocks(from: line)
+                    if !inlineBlocks.isEmpty {
+                        flushText(&currentText, into: &blocks)
+                        blocks.append(contentsOf: inlineBlocks)
+                    } else {
+                        currentText += line + SystemConstants.Character.newline
+                    }
+                } else {
+                    currentText += line + SystemConstants.Character.newline
+                }
             }
         }
 
         // 处理最后一段
         if isInsideTable {
-            blocks.append(.table(currentTable.trimmingCharacters(in: .whitespacesAndNewlines)))
+            flushTable(&currentTable, into: &blocks)
         } else {
             flushText(&currentText, into: &blocks)
         }
@@ -130,26 +141,60 @@ actor AIContentEnricher {
         return blocks
     }
 
-    /// 将累积的文本块刷新到 blocks 数组中，非空时才追加，并清空缓冲区。
-    /// 消除 parseBlocks 中多处 `if !currentText.isEmpty { blocks.append(.text(...)); currentText = "" }` 重复。
-    private func flushText(_ currentText: inout String, into blocks: inout [ContentBlock]) {
-        guard !currentText.isEmpty else { return }
-        blocks.append(.text(currentText.trimmingCharacters(in: .whitespacesAndNewlines)))
-        currentText = ""
+    /// 刷新累积的表格块：仅当包含标准分隔线 `---` 时作为表格增强，否则回退为普通文本块
+    private func flushTable(_ currentTable: inout String, into blocks: inout [ContentBlock]) {
+        let trimmed = currentTable.trimmingCharacters(in: .whitespacesAndNewlines)
+        currentTable = ContentEnrichmentMarker.emptyString
+        guard !trimmed.isEmpty else { return }
+        if trimmed.contains(ContentEnrichmentMarker.tableDividerDashes) {
+            blocks.append(.table(trimmed))
+        } else {
+            blocks.append(.text(trimmed))
+        }
     }
 
-    private func parseImageBlock(from line: String) -> ContentBlock? {
-        // 使用正则提取 ![alt](url)
-        let pattern = "!\\[(.*?)\\]\\((.*?)\\)"
-        guard let regex = try? NSRegularExpression(pattern: pattern),
-              let match = regex.firstMatch(in: line, range: NSRange(line.startIndex..., in: line)) else {
-            return nil
+    /// 将累积的文本块刷新到 blocks 数组中，过滤纯空白块并清空缓冲区。
+    private func flushText(_ currentText: inout String, into blocks: inout [ContentBlock]) {
+        let trimmed = currentText.trimmingCharacters(in: .whitespacesAndNewlines)
+        currentText = ContentEnrichmentMarker.emptyString
+        guard !trimmed.isEmpty else { return }
+        blocks.append(.text(trimmed))
+    }
+
+    /// 从包含图片的文本行中按顺序拆分出所有前后文字与图片块，杜绝行内文字或多图静默丢失
+    private func extractInlineImageBlocks(from line: String) -> [ContentBlock] {
+        guard let regex = try? NSRegularExpression(pattern: ContentEnrichmentMarker.imageRegexPattern) else {
+            return []
+        }
+        let matches = regex.matches(in: line, range: NSRange(line.startIndex..., in: line))
+        guard !matches.isEmpty else { return [] }
+
+        var result: [ContentBlock] = []
+        var cursor = line.startIndex
+
+        for match in matches {
+            guard let fullRange = Range(match.range, in: line),
+                  let altRange = Range(match.range(at: ContentEnrichmentMarker.altCaptureGroup), in: line),
+                  let urlRange = Range(match.range(at: ContentEnrichmentMarker.urlCaptureGroup), in: line) else {
+                continue
+            }
+            if cursor < fullRange.lowerBound {
+                let prefixText = String(line[cursor..<fullRange.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+                if !prefixText.isEmpty {
+                    result.append(.text(prefixText))
+                }
+            }
+            result.append(.image(url: String(line[urlRange]), alt: String(line[altRange])))
+            cursor = fullRange.upperBound
         }
 
-        guard let altRange = Range(match.range(at: 1), in: line) else { return nil }
-        guard let urlRange = Range(match.range(at: 2), in: line) else { return nil }
-
-        return .image(url: String(line[urlRange]), alt: String(line[altRange]))
+        if cursor < line.endIndex {
+            let suffixText = String(line[cursor..<line.endIndex]).trimmingCharacters(in: .whitespacesAndNewlines)
+            if !suffixText.isEmpty {
+                result.append(.text(suffixText))
+            }
+        }
+        return result
     }
 
     /// 增强表格语义
@@ -159,7 +204,9 @@ actor AIContentEnricher {
 
         do {
             let insight = try await llm.generate(prompt: prompt, systemPrompt: systemPrompt)
-            return table + "\n\n" + insight
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !insight.isEmpty else { return table }
+            return table + ContentEnrichmentMarker.paragraphSeparator + insight
         } catch {
             return table
         }
@@ -167,15 +214,17 @@ actor AIContentEnricher {
 
     /// 增强图片语义 (基于上下文或元数据)
     private func enrichImage(url: String, alt: String?, llm: any LLMServiceProtocol) async -> String {
-        let imageMarkdown = "![\(alt ?? "")](\(url))"
-        guard let alt = alt, !alt.isEmpty else { return imageMarkdown }
+        let imageMarkdown = "![\(alt ?? ContentEnrichmentMarker.emptyString)](\(url))"
+        guard let alt = alt, !alt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return imageMarkdown }
 
         let systemPrompt = L10n.AI.Prompt.enrichImageSystem
         let prompt = L10n.AI.Prompt.enrichImageUser(alt: alt, url: url)
 
         do {
             let description = try await llm.generate(prompt: prompt, systemPrompt: systemPrompt)
-            return imageMarkdown + "\n\n" + description
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !description.isEmpty else { return imageMarkdown }
+            return imageMarkdown + ContentEnrichmentMarker.paragraphSeparator + description
         } catch {
             return imageMarkdown
         }

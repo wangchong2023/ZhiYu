@@ -28,6 +28,15 @@ enum QuizProcessor {
         static let asciiUppercaseA: UInt32 = 65
         /// 大写字母 Z 的 ASCII 标量值
         static let asciiUppercaseZ: UInt32 = 90
+        /// 带冒号前缀的答案提取正则（兼容中英文冒号，如 "Answer: C" / "答案：D"，避免误取首字母）
+        static let labeledOptionPattern = #"[:：]\s*([A-Z0-9])"#
+        /// 单选项字母答案正则（匹配 "B"、"B."、"B)"、"B、"、"B 选项" 等，避免把 "Answer: C" 的首字母 A 误判为选项 A）
+        static let standaloneOptionLetterPattern = #"^([A-Z])(?:\s*$|[.\)、:：\s])"#
+        static let captureGroupIndex: Int = 1
+        static let indexOffset: Int = 1
+        static let crlf = "\r\n"
+        static let carriageReturn = "\r"
+        static let newline = "\n"
     }
 
     struct FlexibleQuizShell: Codable {
@@ -98,23 +107,46 @@ enum QuizProcessor {
             }
 
             func asIndex(optionCount: Int) -> Int {
-                guard optionCount > 0 else { return 0 }
+                guard optionCount > AnswerParsing.optionAIndex else { return AnswerParsing.optionAIndex }
                 switch self {
                 case .int(let i):
-                    return (i >= 0 && i < optionCount) ? i : 0
+                    return (i >= AnswerParsing.optionAIndex && i < optionCount) ? i : AnswerParsing.optionAIndex
                 case .string(let s):
                     let trimmed = s.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
                     if let i = Int(trimmed) {
-                        return (i >= 0 && i < optionCount) ? i : 0
+                        return (i >= AnswerParsing.optionAIndex && i < optionCount) ? i : AnswerParsing.optionAIndex
                     }
-                    if let firstScalar = trimmed.unicodeScalars.first,
-                       firstScalar.value >= AnswerParsing.asciiUppercaseA,
-                       firstScalar.value <= AnswerParsing.asciiUppercaseZ {
-                        let offset = Int(firstScalar.value - AnswerParsing.asciiUppercaseA)
-                        return min(offset, optionCount - 1)
+                    // 优先识别带标签前缀的答案（如 "Answer: C" / "答案：B"），避免取首字母 "A" 误判为选项 A
+                    if let labeledRegex = try? NSRegularExpression(pattern: AnswerParsing.labeledOptionPattern, options: .caseInsensitive),
+                       let match = labeledRegex.firstMatch(in: trimmed, range: NSRange(trimmed.startIndex..., in: trimmed)),
+                       let range = Range(match.range(at: AnswerParsing.captureGroupIndex), in: trimmed) {
+                        let token = String(trimmed[range])
+                        if let i = Int(token), i >= AnswerParsing.optionAIndex, i < optionCount {
+                            return i
+                        }
+                        if let letterIndex = Self.letterOffset(for: token, optionCount: optionCount) {
+                            return letterIndex
+                        }
                     }
-                    return 0
+                    // 其次识别独立选项字母（如 "B"、"B."、"B)"）
+                    if let standaloneRegex = try? NSRegularExpression(pattern: AnswerParsing.standaloneOptionLetterPattern),
+                       let match = standaloneRegex.firstMatch(in: trimmed, range: NSRange(trimmed.startIndex..., in: trimmed)),
+                       let range = Range(match.range(at: AnswerParsing.captureGroupIndex), in: trimmed),
+                       let letterIndex = Self.letterOffset(for: String(trimmed[range]), optionCount: optionCount) {
+                        return letterIndex
+                    }
+                    return AnswerParsing.optionAIndex
                 }
+            }
+
+            private static func letterOffset(for token: String, optionCount: Int) -> Int? {
+                guard let firstScalar = token.unicodeScalars.first,
+                      firstScalar.value >= AnswerParsing.asciiUppercaseA,
+                      firstScalar.value <= AnswerParsing.asciiUppercaseZ else {
+                    return nil
+                }
+                let offset = Int(firstScalar.value - AnswerParsing.asciiUppercaseA)
+                return min(offset, optionCount - AnswerParsing.indexOffset)
             }
 
             /// 共享的 Int/String 自愈解码逻辑，消除 FlexibleID 与 FlexibleAnswer 间的重复 init(from:)。
@@ -227,16 +259,16 @@ enum QuizProcessor {
                    .trimmingCharacters(in: .whitespacesAndNewlines)
             }
 
-            let isValidAnswer = (question.answer >= 0 && question.answer < cleanOptions.count)
+            let isValidAnswer = (question.answer >= AnswerParsing.optionAIndex && question.answer < cleanOptions.count)
             let origAnswerIndex = isValidAnswer ? question.answer : ProcessorConstants.Synthesis.quizDefaultIndex
-            let correctAnswerText = cleanOptions[origAnswerIndex]
 
-            // 2. 将选项洗牌打乱
-            var shuffledOptions = cleanOptions
-            shuffledOptions.shuffle()
+            // 2. 携带原始索引洗牌打乱，即使存在重复选项也能 100% 精准追踪原正确答案槽位
+            let indexedOptions = cleanOptions.enumerated().map { (originalIndex: $0.offset, text: $0.element) }.shuffled()
+            let shuffledOptions = indexedOptions.map(\.text)
 
             // 3. 计算洗牌后正确答案的新 index
-            let newAnswerIndex = shuffledOptions.firstIndex(of: correctAnswerText) ?? ProcessorConstants.Synthesis.quizDefaultIndex
+            let newAnswerIndex = indexedOptions.firstIndex(where: { $0.originalIndex == origAnswerIndex })
+                ?? ProcessorConstants.Synthesis.quizDefaultIndex
 
             return QuizQuestion(
                 id: question.id,
@@ -251,7 +283,10 @@ enum QuizProcessor {
     }
 
     private static func parseMarkdownQuiz(_ text: String) -> QuizModel? {
-        let lines = text.components(separatedBy: .newlines)
+        let normalized = text
+            .replacingOccurrences(of: AnswerParsing.crlf, with: AnswerParsing.newline)
+            .replacingOccurrences(of: AnswerParsing.carriageReturn, with: AnswerParsing.newline)
+        let lines = normalized.components(separatedBy: AnswerParsing.newline)
         var title = L10n.Quiz.title
         var questions: [QuizQuestion] = []
         var currentQuestionText = ""
@@ -269,19 +304,16 @@ enum QuizProcessor {
 
             if trimmed.hasPrefix(ProcessorConstants.MarkdownSyntax.h2Prefix) || (trimmed.first?.isNumber == true && (trimmed.contains(ProcessorConstants.Whitespace.dotSpace) || trimmed.contains(ProcessorConstants.Whitespace.ideographicComma))) {
                 if inQuestion && !currentQuestionText.isEmpty {
-                    let finalOptions = currentOptions.isEmpty ? ProcessorConstants.Synthesis.quizLetterOptions : currentOptions
-                    let safeAnswer = (currentAnswer >= 0 && currentAnswer < finalOptions.count)
-                        ? currentAnswer
-                        : ProcessorConstants.Synthesis.quizDefaultIndex
-                    questions.append(QuizQuestion(
-                        id: questions.count + 1,
+                    questions.append(makeMarkdownQuestion(
+                        id: questions.count + AnswerParsing.indexOffset,
                         text: currentQuestionText,
-                        options: finalOptions,
-                        answer: safeAnswer,
+                        options: currentOptions,
+                        fallbackOptions: ProcessorConstants.Synthesis.quizLetterOptions,
+                        answer: currentAnswer,
                         explanation: currentExplanation
                     ))
                     currentOptions.removeAll()
-                    currentAnswer = 0
+                    currentAnswer = AnswerParsing.optionAIndex
                     currentExplanation = ""
                 }
                 inQuestion = true
@@ -299,22 +331,42 @@ enum QuizProcessor {
         }
 
         if inQuestion && !currentQuestionText.isEmpty {
-            let defaultOpts = (0..<ProcessorConstants.Synthesis.quizOptionCount).map { "\(L10n.AI.Prompt.Quiz.option) \($0 + 1)" }
-            let finalOptions = currentOptions.isEmpty ? defaultOpts : currentOptions
-            let safeAnswer = (currentAnswer >= 0 && currentAnswer < finalOptions.count)
-                ? currentAnswer
-                : ProcessorConstants.Synthesis.quizDefaultIndex
-            questions.append(QuizQuestion(
-                id: questions.count + 1,
+            let defaultOpts = (AnswerParsing.optionAIndex..<ProcessorConstants.Synthesis.quizOptionCount).map {
+                "\(L10n.AI.Prompt.Quiz.option) \($0 + AnswerParsing.indexOffset)"
+            }
+            questions.append(makeMarkdownQuestion(
+                id: questions.count + AnswerParsing.indexOffset,
                 text: currentQuestionText,
-                options: finalOptions,
-                answer: safeAnswer,
+                options: currentOptions,
+                fallbackOptions: defaultOpts,
+                answer: currentAnswer,
                 explanation: currentExplanation
             ))
         }
 
         guard !questions.isEmpty else { return nil }
         return QuizModel(title: title, questions: questions)
+    }
+
+    private static func makeMarkdownQuestion(
+        id: Int,
+        text: String,
+        options: [String],
+        fallbackOptions: [String],
+        answer: Int,
+        explanation: String
+    ) -> QuizQuestion {
+        let finalOptions = options.isEmpty ? fallbackOptions : options
+        let safeAnswer = (answer >= AnswerParsing.optionAIndex && answer < finalOptions.count)
+            ? answer
+            : ProcessorConstants.Synthesis.quizDefaultIndex
+        return QuizQuestion(
+            id: id,
+            text: text,
+            options: finalOptions,
+            answer: safeAnswer,
+            explanation: explanation
+        )
     }
 
     private static func parseAnswerIndex(from line: String) -> Int {

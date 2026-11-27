@@ -200,4 +200,37 @@ final class FileSystemSyncServiceTests: XCTestCase {
         XCTAssertTrue(allContents.contains { $0.contains("第三篇大小写冲突内容") })
         XCTAssertTrue(allContents.contains { $0.contains("tags: 正常, 折行 注入") }, "标签中的换行符应被清洗为空格")
     }
+
+    // MARK: - 缺陷 #244 回归：空字节/跨平台保留字符清洗、YAML 特殊标题引号转义与 ISO-8601 时间戳
+
+    func testSanitizeFilename_stripsNullByteControlAndReservedChars() {
+        let cleaned = FileSystemSyncService.sanitizeFilename("doc\0name*?\"<>|end")
+        XCTAssertFalse(cleaned.contains("\0"))
+        XCTAssertFalse(cleaned.contains("*"))
+        XCTAssertFalse(cleaned.contains("?"))
+        XCTAssertFalse(cleaned.contains("<"))
+        XCTAssertFalse(cleaned.contains(">"))
+        XCTAssertFalse(cleaned.contains("|"))
+        XCTAssertFalse(cleaned.contains("\""))
+    }
+
+    func testExportToMarkdown_yamlSpecialTitleQuotedAndISO8601UpdatedDate() throws {
+        let page = KnowledgePage(
+            title: "Swift 6: 并发 #1",
+            pageType: .concept,
+            content: "正文"
+        )
+        let service = FileSystemSyncService()
+        try service.exportToMarkdown(pages: [page], destinationURL: tempRoot)
+
+        let conceptsDir = tempRoot.appendingPathComponent("concepts")
+        let files = try FileManager.default.contentsOfDirectory(atPath: conceptsDir.path)
+        let file = conceptsDir.appendingPathComponent(try XCTUnwrap(files.first))
+        let content = try String(contentsOf: file, encoding: .utf8)
+
+        XCTAssertTrue(content.contains("title: \"Swift 6: 并发 #1\""), "含冒号或井号的标题应自动双引号转义包裹，got: \(content)")
+        let updatedLine = try XCTUnwrap(content.components(separatedBy: .newlines).first { $0.hasPrefix("updated: ") })
+        let isoString = String(updatedLine.dropFirst("updated: ".count))
+        XCTAssertNotNil(ISO8601DateFormatter().date(from: isoString), "updated 字段应输出标准确定性 ISO-8601 格式，got: \(isoString)")
+    }
 }

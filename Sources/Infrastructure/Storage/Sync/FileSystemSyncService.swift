@@ -17,20 +17,52 @@ final class FileSystemSyncService {
     private enum ExportConstants {
         static let fallbackFileName = "untitled"
         static let markdownExtension = ".md"
-        static let replacementDash = "-"
-        static let colonSeparator = ":"
-        static let space = " "
+        static let replacementDash = SystemConstants.Character.dash
+        static let colonSeparator = SystemConstants.Character.colon
+        static let space = SystemConstants.Character.space
         static let tagJoinSeparator = ", "
-        static let duplicateSuffixStart = 2
+        static let duplicateSuffixStart: Int = 2
+        static let suffixIncrement: Int = 1
+        static let escapedBackslash = SystemConstants.Character.backslash + SystemConstants.Character.backslash
+        static let escapedDoubleQuote = SystemConstants.Character.backslash + SystemConstants.Character.doubleQuote
+        /// 跨平台文件系统非法字符（含路径分隔符、控制字符/空字节与 Windows/exFAT 保留字符）
         static let pathInvalidCharacters = CharacterSet(
             charactersIn: SystemConstants.Character.slash
                 + SystemConstants.Character.backslash
                 + colonSeparator
                 + SystemConstants.Character.dot
-        ).union(.newlines)
+                + SystemConstants.Character.asterisk
+                + SystemConstants.Character.questionMark
+                + SystemConstants.Character.doubleQuote
+                + SystemConstants.Character.lessThan
+                + SystemConstants.Character.greaterThan
+                + SystemConstants.Character.pipe
+        ).union(.newlines).union(.controlCharacters)
+        /// 需使用双引号转义包裹的 YAML 特殊语法字符
+        static let yamlUnsafeCharacters = CharacterSet(
+            charactersIn: SystemConstants.Character.colon
+                + SystemConstants.Character.hash
+                + SystemConstants.Character.doubleQuote
+                + SystemConstants.Character.singleQuote
+                + SystemConstants.Character.openBracket
+                + SystemConstants.Character.closeBracket
+                + SystemConstants.Character.openBrace
+                + SystemConstants.Character.closeBrace
+                + SystemConstants.Character.ampersand
+                + SystemConstants.Character.asterisk
+                + SystemConstants.Character.exclamation
+                + SystemConstants.Character.pipe
+                + SystemConstants.Character.greaterThan
+                + SystemConstants.Character.at
+                + SystemConstants.Character.backtick
+        )
+        static let yamlLeadingUnsafePrefixes: [String] = [
+            SystemConstants.Character.dash,
+            SystemConstants.Character.questionMark
+        ]
     }
 
-    /// 清理导出文件名，防止标题含 `/`、`\`、`:`、`..`、换行符引发路径穿越或生成隐藏文件
+    /// 清理导出文件名，防止标题含 `/`、`\`、`:`、`..`、空字节/控制字符或跨平台保留字符引发路径穿越或写入失败
     internal static func sanitizeFilename(_ rawTitle: String) -> String {
         let cleaned = rawTitle
             .trimmingCharacters(in: .whitespacesAndNewlines)
@@ -40,12 +72,26 @@ final class FileSystemSyncService {
         return cleaned.isEmpty ? ExportConstants.fallbackFileName : cleaned
     }
 
-    /// 清理 YAML Frontmatter 单行标题，防止换行符破坏元数据块结构
+    /// 清理 YAML Frontmatter 单行标题，防止换行符与控制字符破坏元数据块结构
     internal static func sanitizeYAMLTitle(_ rawTitle: String) -> String {
         rawTitle
-            .components(separatedBy: .newlines)
+            .components(separatedBy: CharacterSet.newlines.union(.controlCharacters))
             .joined(separator: ExportConstants.space)
             .trimmingCharacters(in: .whitespaces)
+    }
+
+    /// 格式化 YAML 标量值：仅当包含 YAML 语法保留字符（如 `:`、`#`、引号）或危险前缀时自动双引号转义包裹
+    internal static func formatYAMLScalar(_ rawValue: String) -> String {
+        let cleaned = sanitizeYAMLTitle(rawValue)
+        let containsUnsafe = cleaned.rangeOfCharacter(from: ExportConstants.yamlUnsafeCharacters) != nil
+        let hasUnsafePrefix = ExportConstants.yamlLeadingUnsafePrefixes.contains { cleaned.hasPrefix($0) }
+        guard containsUnsafe || hasUnsafePrefix else {
+            return cleaned
+        }
+        let escaped = cleaned
+            .replacingOccurrences(of: SystemConstants.Character.backslash, with: ExportConstants.escapedBackslash)
+            .replacingOccurrences(of: SystemConstants.Character.doubleQuote, with: ExportConstants.escapedDoubleQuote)
+        return SystemConstants.Character.doubleQuote + escaped + SystemConstants.Character.doubleQuote
     }
 
     /// 导出整个知识库到指定目录，按 PageType 分类存放
@@ -76,15 +122,16 @@ final class FileSystemSyncService {
                 usedNormalizedPaths: &usedNormalizedPaths
             )
             
-            // 构建 Markdown 内容 (包含元数据 YAML)
-            let safeYAMLTitle = Self.sanitizeYAMLTitle(page.title)
+            // 构建 Markdown 内容 (包含元数据 YAML，使用确定性 ISO-8601 时间戳)
+            let safeYAMLTitle = Self.formatYAMLScalar(page.title)
             let safeTags = page.tags.map(Self.sanitizeYAMLTitle).joined(separator: ExportConstants.tagJoinSeparator)
+            let isoUpdatedAt = ISO8601DateFormatter().string(from: page.updatedAt)
             let yaml = """
             ---
             title: \(safeYAMLTitle)
             type: \(page.pageType.rawValue)
             tags: \(safeTags)
-            updated: \(page.updatedAt.formatted())
+            updated: \(isoUpdatedAt)
             ---
             
             """
@@ -117,7 +164,7 @@ final class FileSystemSyncService {
             if usedNormalizedPaths.insert(normalizedKey).inserted {
                 return candidateURL
             }
-            suffixIndex += 1
+            suffixIndex += ExportConstants.suffixIncrement
         }
     }
 }

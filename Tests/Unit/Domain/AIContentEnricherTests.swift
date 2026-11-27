@@ -104,4 +104,36 @@ final class AIContentEnricherTests: XCTestCase {
         XCTAssertTrue(enriched.contains("![量子纠缠状态演变图](https://zhiyu.app/assets/entanglement.png)"))
         XCTAssertTrue(enriched.contains("> [图片语义]: 模拟量子纠缠系统随时间的退相干效应"))
     }
+
+    // MARK: - 缺陷 #243 回归：行内图文保真、多图保留与 `[]` 防误触发
+
+    func testInlineImagePreservesSurroundingTextAndMultipleImages() async {
+        let content = "前置说明 ![图一](https://zhiyu.app/1.png) 中间正文 ![图二](https://zhiyu.app/2.png) 尾随结论"
+        let mockLLM = MockLLMService()
+        mockLLM.generateHandler = { prompt, _ in
+            return "洞察:\(prompt.prefix(8))"
+        }
+
+        let enriched = await enricher.enrich(content, llm: mockLLM)
+
+        XCTAssertTrue(enriched.contains("前置说明"), "图片前文字不得被吞掉")
+        XCTAssertTrue(enriched.contains("中间正文"), "两张图片之间的文字不得被吞掉")
+        XCTAssertTrue(enriched.contains("尾随结论"), "图片后文字不得被吞掉")
+        XCTAssertTrue(enriched.contains("![图一](https://zhiyu.app/1.png)"))
+        XCTAssertTrue(enriched.contains("![图二](https://zhiyu.app/2.png)"), "同行第二张图片不得丢失")
+    }
+
+    func testCodeBracketsDoNotTriggerFalseEnrichment() async {
+        let content = "示例代码：let items: [Int] = []\n\n第二段正文"
+        let mockLLM = MockLLMService()
+        let triggerBox = TriggerBox()
+        mockLLM.generateHandler = { _, _ in
+            triggerBox.isTriggered = true
+            return "不应调用"
+        }
+
+        let enriched = await enricher.enrich(content, llm: mockLLM)
+        XCTAssertEqual(enriched, content)
+        XCTAssertFalse(triggerBox.isTriggered, "普通代码数组 `[]` 不应误触发内容增强")
+    }
 }
