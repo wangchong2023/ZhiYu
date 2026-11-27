@@ -29,5 +29,41 @@ final class IOSPDFServiceSecurityTests: XCTestCase {
     func testMaxPagesForImageExtraction_matchesConstantValue() {
         XCTAssertEqual(AppConstants.Keys.ImportLimits.maxPagesForImageExtraction, 20)
     }
+
+    /// 验证 isFileNameSafe 拒绝空串、纯空白及反斜杠路径分隔符
+    func testIsFileNameSafe_rejectsEmptyAndBackslash() {
+        let pdfService = iOSPDFService()
+        XCTAssertFalse(pdfService.isFileNameSafe(""), "空文件名应被拒绝")
+        XCTAssertFalse(pdfService.isFileNameSafe("   "), "纯空白文件名应被拒绝")
+        XCTAssertFalse(pdfService.isFileNameSafe("..\\secret.pdf"), "含反斜杠的文件名应被拒绝")
+        XCTAssertTrue(pdfService.isFileNameSafe("report.pdf"))
+    }
+
+    /// 验证 iOSExportService.sanitizedExportFileName 清洗路径穿越、引号与换行，空串回退默认值
+    func testSanitizedExportFileName_stripsTraversalAndJSQuotes() {
+        #if canImport(WebKit)
+        let cleaned = iOSExportService.sanitizedExportFileName("../2026/11/\"evil\"\nreport")
+        XCTAssertFalse(cleaned.contains(".."))
+        XCTAssertFalse(cleaned.contains("/"))
+        XCTAssertFalse(cleaned.contains("\""))
+        XCTAssertFalse(cleaned.contains("\n"))
+        XCTAssertEqual(iOSExportService.sanitizedExportFileName("   "), "export")
+        #endif
+    }
+
+    /// 验证 FileImportFileStore.copyFile 对无扩展名文件不产生尾随点且保留内容
+    func testFileImportFileStore_copyFileWithoutExtension_hasNoTrailingDot() throws {
+        let fm = FileManager.default
+        let srcURL = fm.temporaryDirectory.appendingPathComponent("README_\(UUID().uuidString)")
+        try Data("hello".utf8).write(to: srcURL)
+        defer { try? fm.removeItem(at: srcURL) }
+
+        let store = FileImportFileStore()
+        let copiedPath = try XCTUnwrap(store.copyFile(at: srcURL, category: .file))
+        defer { try? fm.removeItem(atPath: copiedPath) }
+
+        XCTAssertFalse(copiedPath.hasSuffix("."), "无扩展名文件复制后不得产生尾随点")
+        XCTAssertTrue(fm.fileExists(atPath: copiedPath))
+    }
 }
 #endif

@@ -21,6 +21,17 @@ private enum JSTemplateEscape {
     static let escapedBacktick: String = "\\`"
     static let dollar: String = "$"
     static let escapedDollar: String = "\\$"
+    static let defaultExportFileName: String = "export"
+    static let unsafeFileNameTokens: [String] = ["..", "/", "\\", ":", "\"", "'", "\n", "\r"]
+    static let replacementUnderscore: String = "_"
+    static let resetContainersScript: String = """
+    (() => {
+        const contentNode = document.getElementById('content');
+        if (contentNode) contentNode.innerHTML = '';
+        const mermaidNode = document.getElementById('mermaid-root');
+        if (mermaidNode) mermaidNode.innerHTML = '';
+    })();
+    """
 }
 
 /// iOS 导出服务实现
@@ -99,9 +110,15 @@ final class iOSExportService: NSObject, ExportServiceProtocol {
             .replacingOccurrences(of: JSTemplateEscape.dollar, with: JSTemplateEscape.escapedDollar)
     }
 
-    /// 占用导出槽位并执行闭包，结束后清理 WebView 内容。
-    /// 统一 `exportToPDF` / `exportMindmapToPDF` 中重复的
-    /// `waitForExportSlot + isExporting = true + defer + guard webView` 模式。
+    /// 清洗导出文件名：移除路径穿越字符、斜杠、引号与换行，空串回退至默认名
+    internal static func sanitizedExportFileName(_ raw: String) -> String {
+        let cleaned = JSTemplateEscape.unsafeFileNameTokens.reduce(raw.trimmingCharacters(in: .whitespacesAndNewlines)) { partial, token in
+            partial.replacingOccurrences(of: token, with: JSTemplateEscape.replacementUnderscore)
+        }
+        return cleaned.isEmpty ? JSTemplateEscape.defaultExportFileName : cleaned
+    }
+
+    /// 占用导出槽位并执行闭包，结束后仅清空容器内容而保留 #content / #mermaid-root DOM 节点。
     private func withExportSlot<T: Sendable>(
         _ body: @MainActor @Sendable (WKWebView) async throws -> T
     ) async throws -> T {
@@ -110,7 +127,7 @@ final class iOSExportService: NSObject, ExportServiceProtocol {
         defer {
             isExporting = false
             Task { @MainActor in
-                _ = try? await webView?.evaluateJavaScript("document.body.innerHTML = '';")
+                _ = try? await webView?.evaluateJavaScript(JSTemplateEscape.resetContainersScript)
             }
         }
         guard let webView = webView else { throw ExportError.engineNotReady }
@@ -190,7 +207,8 @@ final class iOSExportService: NSObject, ExportServiceProtocol {
                             continuation.resume(throwing: ExportError.internalError("PDF_Content_Empty"))
                             return
                         }
-                        let url = FileManager.default.temporaryDirectory.appendingPathComponent("\(fileName).pdf")
+                        let safeName = Self.sanitizedExportFileName(fileName)
+                        let url = FileManager.default.temporaryDirectory.appendingPathComponent("\(safeName).pdf")
                         do {
                             try data.write(to: url)
                             continuation.resume(returning: url)
@@ -216,6 +234,7 @@ final class iOSExportService: NSObject, ExportServiceProtocol {
 
         guard let webView = webView else { throw ExportError.engineNotReady }
         
+        let safeName = Self.sanitizedExportFileName(fileName)
         let slides = parseMarkdownForSlides(markdown)
         let slidesJSON = try JSONEncoder().encode(slides)
         let slidesJSString = String(data: slidesJSON, encoding: .utf8) ?? "[]"
@@ -223,7 +242,7 @@ final class iOSExportService: NSObject, ExportServiceProtocol {
         let js = """
         (async () => {
             const pptx = new PptxGenJS();
-            pptx.title = "\(fileName)";
+            pptx.title = "\(safeName)";
             pptx.layout = 'LAYOUT_16x9';
             
             const slidesData = \(slidesJSString);
@@ -259,7 +278,7 @@ final class iOSExportService: NSObject, ExportServiceProtocol {
             throw ExportError.internalError("PPTX_Failed")
         }
         
-        let url = FileManager.default.temporaryDirectory.appendingPathComponent("\(fileName).pptx")
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("\(safeName).pptx")
         try data.write(to: url)
         return url
     }

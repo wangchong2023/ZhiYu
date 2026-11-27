@@ -21,8 +21,9 @@ final class iOSPDFService: PDFServiceProtocol {
     @ObservationIgnored @Dependency(\.taskCenter) private var taskCenter
 
     init() {
-        documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("AppPDFs", isDirectory: true)
+        let baseDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+            ?? FileManager.default.temporaryDirectory
+        documentsDirectory = baseDir.appendingPathComponent("AppPDFs", isDirectory: true)
 
         // Create directory if needed
         try? FileManager.default.createDirectory(at: documentsDirectory, withIntermediateDirectories: true)
@@ -30,13 +31,15 @@ final class iOSPDFService: PDFServiceProtocol {
 
     // MARK: - File Management
 
-    /// 校验 fileName 不含路径穿越字符
+    /// 校验 fileName 非空且不含路径穿越字符（..、/、\）
     /// - Parameter fileName: 待校验的文件名
-    /// - Returns: 校验通过返回 true，含路径穿越返回 false
-    private func isFileNameSafe(_ fileName: String) -> Bool {
-        // 拒绝含 ".." 或 "/" 的文件名，防止路径穿越
-        !fileName.contains(PlatformConstants.PDFSecurity.pathTraversalMarker)
-            && !fileName.contains(PlatformConstants.PDFSecurity.pathSeparator)
+    /// - Returns: 校验通过返回 true，为空或含路径穿越返回 false
+    internal func isFileNameSafe(_ fileName: String) -> Bool {
+        let trimmed = fileName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return false }
+        return !trimmed.contains(PlatformConstants.PDFSecurity.pathTraversalMarker)
+            && !trimmed.contains(PlatformConstants.PDFSecurity.pathSeparator)
+            && !trimmed.contains(PlatformConstants.PDFSecurity.backslashSeparator)
     }
 
     /// 保存PDF
@@ -117,6 +120,7 @@ final class iOSPDFService: PDFServiceProtocol {
         var text = ""
         let start = max(0, pageRange.lowerBound)
         let end = min(document.pageCount, pageRange.upperBound)
+        guard start < end else { return text }
         
         for i in start..<end {
             if let page = document.page(at: i) {

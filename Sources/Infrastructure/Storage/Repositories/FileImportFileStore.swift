@@ -72,6 +72,19 @@ struct FileImportFileStore: ImportFileStore, Sendable {
         }
     }
 
+    private enum CopyFileConstants {
+        static let unsafeTokens: [String] = ["..", "/", "\\", ":"]
+        static let replacementToken: String = "_"
+        static let dotSeparator: String = "."
+    }
+
+    /// 清洗文件名片段中的路径穿越与非法分隔符
+    private static func sanitizeComponent(_ raw: String) -> String {
+        CopyFileConstants.unsafeTokens.reduce(raw) { partial, token in
+            partial.replacingOccurrences(of: token, with: CopyFileConstants.replacementToken)
+        }
+    }
+
     /// 将指定路径的外部物理文件复制到沙盒内部
     /// - Parameters:
     ///   - url: 外部文件 URL
@@ -88,16 +101,23 @@ struct FileImportFileStore: ImportFileStore, Sendable {
             }
         }
         
-        let ext = url.pathExtension
-        let nameWithoutExt = url.deletingPathExtension().lastPathComponent
+        let ext = Self.sanitizeComponent(url.pathExtension)
+        let nameWithoutExt = Self.sanitizeComponent(url.deletingPathExtension().lastPathComponent)
         
         let ts = DateFormatterFactory.shared.string(from: Date(), format: "yyyyMMdd_HHmmss")
         
-        // 构造带时间戳的新物理文件名以防重名冲突
-        let newFileName = "\(nameWithoutExt)_\(ts).\(ext)"
+        // 构造带时间戳的新物理文件名以防重名冲突（无扩展名时不拼尾随点）
+        let newFileName = ext.isEmpty
+            ? "\(nameWithoutExt)_\(ts)"
+            : "\(nameWithoutExt)_\(ts)\(CopyFileConstants.dotSeparator)\(ext)"
         let recordsDir = getRecordsDir(for: category)
         let destinationURL = recordsDir.appendingPathComponent(newFileName)
         
+        // 同路径原地文件直接返回，防止先删后拷自毁源文件
+        if url.standardizedFileURL == destinationURL.standardizedFileURL {
+            return destinationURL.path
+        }
+
         do {
             // 如若目标物理文件此前已存在，先执行删除
             if fileManager.fileExists(atPath: destinationURL.path) {

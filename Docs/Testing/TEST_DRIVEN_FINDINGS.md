@@ -154,21 +154,25 @@
 | **143** | `NetworkClient.uploadFile` 存在 Multipart Header 注入缺口：仅检查 `fileName` 的 CR/LF，漏检 `fileName` 双引号 `"` 属性逃逸及 `mimeType` 的 CR/LF 注入；同时 `NetworkClient` 残留 5 处强制解包（`.data(using: .utf8)!` 与 `refreshTask!.value`） | 上传接口传入含双引号文件名或含 CRLF 的 MIME 类型 | 可在 multipart 请求体中注入伪造 Header 或表单字段 | **High** | 架构设计与安全/网络健壮性 | 抽取 `isSafeMultipartHeaderValue` 同时拦截 `fileName`/`mimeType` 的 CR/LF/双引号，并全部消除 5 处强制解包 | **✅ 已解决** | 是 (Multipart 上传字段全量安全校验) | 是 (`NetworkClientSecurityTests`) | ✅ 已闭环 |
 | **144** | `ModelDownloadManager` 初始化中存在 4 处 `FileManager.default.urls(...)[0]` 硬索引越界风险，且 `destinationURL` 直接拼接 `"\(modelId).bin"` 未清洗路径穿越字符（`../`/`/`/`\`） | 异常沙盒目录为空或远端清单包含恶意 `modelId` | 硬索引崩溃或模型权重落盘写穿 `Documents` 目录 | **High** | 架构设计与安全/网络健壮性 | 抽取 `sanitizedDestinationFileName(for:)` 清洗非法路径字符，合并双初始化器并改用 `.first ?? temporaryDirectory` 安全解包 | **✅ 已解决** | 是 (下载落盘路径清洗规范) | 是 (`NetworkClientSecurityTests`) | ✅ 已闭环 |
 | **145** | `SearchStore.performDebouncedSearch` 仅校验 `!query.isEmpty` 漏检纯空白输入，键入空格仍触发 300ms 防抖与全库混合搜索，且清空搜索词时未重置 `lastSearchDiagnostic` | 搜索框输入纯空格或清空搜索框 | 触发无意义向量检索且残留上次搜索诊断信息 | **Medium** | UI/交互与防御性缺陷 | 改为 `!query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty`，空白时同步清空 `lastSearchDiagnostic` | **✅ 已解决** | 是 (防抖输入空白与状态同步清空) | 是 (`SearchStoreCancellationTests`) | ✅ 已闭环 |
+| **146** | `iOSExportService` 存在两处高危缺陷：`withExportSlot` 的 `defer` 执行 `document.body.innerHTML = ''` 永久销毁了 `#content`/`#mermaid-root` DOM 容器导致同一实例二次导出永远白屏或失败；且 `fileName` 直接拼入文件路径与 `pptx.title = "\(fileName)"` 存在路径穿越与 JS 字符串注入风险 | 连续两次导出 PDF/思维导图，或导出含斜杠/引号的文档标题 | 第二次导出永远白屏/报错，特殊标题写入失败或触发 JS 注入 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 改为仅清空 `#content`/`#mermaid-root` 内部内容保留容器节点，并新增 `sanitizedExportFileName` 清洗路径穿越与 JS 特殊字符 | **✅ 已解决** | 是 (WebView 容器重置与导出文件名清洗) | 是 (`IOSPDFServiceSecurityTests`) | ✅ 已闭环 |
+| **147** | `iOSPDFService.extractText(from:pageRange:)` 未校验 `start < end`，当 `pageRange.lowerBound > document.pageCount` 时 `start..<end` 直接触发 Swift 范围越界致命崩溃；`isFileNameSafe` 漏拦截空串与反斜杠 `\`；初始化含 `urls(...)[0]` 硬索引 | 传入越界页码范围或空/反斜杠文件名 | 提取 PDF 文本时 App 直接闪退，或绕过文件名校验 | **High** | 架构设计与安全/网络健壮性 | 补齐 `guard start < end else { return text }`、`isFileNameSafe` 拦截空串/空白/`\`，并改为 `.first ?? temporaryDirectory` 安全解包 | **✅ 已解决** | 是 (范围区间前置守卫与文件名校验) | 是 (`IOSPDFServiceSecurityTests`) | ✅ 已闭环 |
+| **148** | `FileImportFileStore.copyFile` 对无扩展名文件拼接 `"\(name)_\(ts).\(ext)"` 产生非法尾随点，且未对源/目标同路径做守卫（原地复制时先删后拷自毁源文件），也未清洗文件名中的路径穿越字符 | 导入无扩展名文件或同路径文件 | 生成非法尾随点文件名或误删原地源文件 | **Medium** | 状态机并发与数据生命周期 | 无扩展名时不拼尾随点、清洗路径穿越字符，并增加 `standardizedFileURL` 同路径守卫 | **✅ 已解决** | 是 (文件导入落盘路径规范) | 是 (`IOSPDFServiceSecurityTests`) | ✅ 已闭环 |
+| **149** | `MacFileArchiver.extractContents` 直接调用 `/usr/bin/unzip -o archiveURL.path -d destinationURL.path`，缺少 `--` 参数边界分隔且未对归档条目执行 Zip Slip 预检，与 iOS 端安全防线不一致 | macOS 端解压含 `..`/绝对路径的恶意归档或 `-` 开头文件名 | macOS 端归档解压存在选项注入与路径穿越风险 | **High** | 架构设计与安全/网络健壮性 | 补齐 `--` 参数边界分隔，并在解压前通过 `/usr/bin/unzip -Z1` 预检条目拒绝 `..` 与绝对路径 | **✅ 已解决** | 是 (全平台归档安全防线对齐) | 是 (三端编译与静态审计闭环) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**145 项**
+- **收录问题总数**：**149 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：36 项 (24.8%)
-  - 状态机并发与数据生命周期：27 项 (18.6%)
-  - 架构设计与安全/网络健壮性：43 项 (29.7%)
-  - UI/交互与防御性缺陷：16 项 (11.0%)
-  - 代码坏味道与去魔鬼化/DRY 治理：23 项 (15.9%)
+  - 功能缺陷与核心算法/解析器/数据完整性：37 项 (24.8%)
+  - 状态机并发与数据生命周期：28 项 (18.8%)
+  - 架构设计与安全/网络健壮性：45 项 (30.2%)
+  - UI/交互与防御性缺陷：16 项 (10.7%)
+  - 代码坏味道与去魔鬼化/DRY 治理：23 项 (15.4%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：70 项 (48.3%)
-  - **Medium（功能异常/算法边界/性能损耗）**：49 项 (33.8%)
-  - **Low（样式异味/边界校验/门禁规范）**：26 项 (17.9%)
-- **修复闭环率**：**100% (145/145 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：73 项 (49.0%)
+  - **Medium（功能异常/算法边界/性能损耗）**：50 项 (33.6%)
+  - **Low（样式异味/边界校验/门禁规范）**：26 项 (17.4%)
+- **修复闭环率**：**100% (149/149 项已修复闭环)**
 
