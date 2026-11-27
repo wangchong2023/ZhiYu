@@ -267,4 +267,18 @@ final class LLMUtilsTests: XCTestCase {
         let fenced = "```JSON\n[\"alpha\", \"beta\"]\n```"
         XCTAssertEqual(LLMUtils.parseJSONArray(fenced), ["alpha", "beta"])
     }
+
+    // MARK: - 缺陷 #199 回归：围栏代码块前后附带自然语言说明文字时精准提取内部正文
+
+    func testStripMarkdown_extractsFencedPayloadWithSurroundingProse() {
+        let noisyResponse = """
+        好的，以下是提取出的关键标签列表：
+        ```json
+        ["Swift", "RAG", "Graph"]
+        ```
+        如需进一步分析请告诉我。
+        """
+        XCTAssertEqual(LLMUtils.stripMarkdown(noisyResponse), "[\"Swift\", \"RAG\", \"Graph\"]")
+        XCTAssertEqual(LLMUtils.parseJSONArray(noisyResponse), ["Swift", "RAG", "Graph"])
+    }
 }

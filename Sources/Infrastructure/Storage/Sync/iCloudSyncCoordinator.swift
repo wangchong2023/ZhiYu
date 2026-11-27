@@ -137,7 +137,7 @@ final class iCloudSyncCoordinator {
 
     /// 执行同步操作并在主线程更新 isSyncing/error 状态（消除 push/pull/bidirectional 样板重复）。
     private func runSyncOperation(_ operation: () async throws -> [KnowledgePage]) {
-        guard store != nil else { return }
+        guard store != nil, !isSyncing else { return }
         isSyncing = true
         Task { [weak self] in
             guard let self else { return }
@@ -156,7 +156,7 @@ final class iCloudSyncCoordinator {
 
     /// 推送ToCloud
     func pushToCloud() {
-        guard let store else { return }
+        guard let store, !isSyncing else { return }
         isSyncing = true
         Task { [weak self] in
             guard let self else { return }
@@ -181,12 +181,14 @@ final class iCloudSyncCoordinator {
 
     /// bidirectional同步
     func bidirectionalSync() {
-        guard let store else { return }
+        guard let store, !isSyncing else { return }
         isSyncing = true
 
         // 挂载异步冲突判定回调，用于唤醒手动合并 Sheet
         syncService.onConflictDetected = { [weak self] localPages, localLogs, remotePages, remoteLogs in
             guard let self else { return .merge }
+            // 先释放任何可能残留的旧 continuation，彻底杜绝 CheckedContinuation 泄露
+            self.resolvePendingConflictIfNeeded()
             // 利用 withCheckedContinuation 将当前 iCloud 同步工作线程挂起，等待 UI 主线程决议
             return await withCheckedContinuation { continuation in
                 self.activeConflict = ConflictInfo(
@@ -217,6 +219,7 @@ final class iCloudSyncCoordinator {
 
     /// 清除CloudData
     func clearCloudData() {
+        guard !isSyncing else { return }
         isSyncing = true
         Task { [weak self] in
             guard let self else { return }

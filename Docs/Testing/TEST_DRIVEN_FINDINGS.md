@@ -205,21 +205,25 @@
 | **194** | `ZipUtility.readZipArchive` 未校验条目路径（允许 `../` 绝对路径与反斜杠 Zip Slip 穿越），未对全归档累计解压字节设上限（存在多条目 Zip Bomb OOM 风险），且 `decompressDeflate` 未拦截空数据与乘法溢出 | 导入恶意构造的 ZIP/Office 文档（含路径穿越条目、空 Deflate 条目或高压缩比多条目炸弹） | 可能触发下游路径穿越或进程 OOM 崩溃 | **High** | 架构设计与安全/网络健壮性 | 新增 `isSafeArchiveEntryPath` 拦截空路径/绝对路径/反斜杠/`..`；累计 `totalExtractedBytes` 不超过 256MB；`decompressDeflate` 校验非空与 `multipliedReportingOverflow` | **✅ 已解决** | 是 (ZIP 归档 Zip Slip 与 Zip Bomb 防护) | 是 (`ZipUtilityArchiveParsingTests`) | ✅ 已闭环 |
 | **195** | `ProcessorConstants.SanitizationRegex.scriptBlock` 与 `styleBlockCaseInsensitive` 缺少 `(?s)` 跨行标志，导致 `DumbExtractorHandler.extractFromHTML` 无法剥离任何多行 `<script>` 与 `<style>` 标签 | 网页抓取降级至 HTML 提取器解析包含多行 JS/CSS 的现代网页 | 整段 JavaScript 脚本与 CSS 样式被混入知识库 Markdown 正文 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 正则升级为 `(?is)<script[^>]*>.*?</script>` 与 `(?is)<style[^>]*>.*?</style>`，实现大小写不敏感的跨行彻底剥离 | **✅ 已解决** | 是 (HTML 清洗正则跨行匹配规范) | 是 (`WebScraperProcessorEdgeTests`) | ✅ 已闭环 |
 | **196** | `SwiftMarkdownASTCleaner.cleanAST` 全局统计 `**` 次数以补全未闭合粗体，未排除围栏代码块（```` ``` ````）内部文本 | 技术笔记包含含奇数个 `**` 的代码块（如 Python `2 ** 8` 或 C `char **argv`） | 清洗后在文档末尾被硬追加孤立 `**`，破坏合法 Markdown 文档 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 抽取 `countUnfencedBoldMarkers`，仅统计代码块围栏之外正文的 `**` 出现次数 | **✅ 已解决** | 是 (Markdown AST 清洗围栏隔离范式) | 是 (`DomainProcessorsTests`) | ✅ 已闭环 |
+| **197** | `PluginSandboxGateway.auditFetch` 仅校验 `allowedDomains` 白名单而缺失 `SSRFGuard.isSafeURL` 硬防线，且 Header 黑名单校验未修剪键名前后空白 | 恶意插件 manifest 声明 `127.0.0.1`/`localhost`/`169.254.169.254`，或传入 `" Authorization "` 空白包裹 Header | 插件可绕过沙箱访问本机/内网元数据服务，或绕过危险 Header 拦截 | **High** | 架构设计与安全/网络健壮性 | 在 `auditFetch` 强制接入 `SSRFGuard.isSafeURL(requestURL)`；Header 黑名单与写入前统一修剪空白并拒绝空键名 | **✅ 已解决** | 是 (插件沙箱 SSRF 硬防线与 Header 规范化) | 是 (`PluginSandboxGatewaySecurityTests`) | ✅ 已闭环 |
+| **198** | `RAGEvaluationService.sanitizeScore` 仅用 `raw as? Double` 解析评分，导致 LLM 返回字符串数字（如 `"0.92"`）被清零误判为 `Fail`，且 JSON 布尔值 `true` 被 Objective-C `NSNumber` 误桥接为 `1.0` | 小模型/端侧模型以字符串形式返回评估分数或异常返回布尔值 | 合格回答被误判为 0 分 `Fail`，或布尔脏值污染 RAG 治理报表 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 先显式拦截 `Bool`，再兼容 `Double`/`Int`/`String` 数值并校验 `isFinite` 后钳位至 `[0.0, 1.0]` | **✅ 已解决** | 是 (LLM 评估 JSON 数值安全解析范式) | 是 (`RAGEvaluationServiceTests`) | ✅ 已闭环 |
+| **199** | `LLMUtils.stripMarkdown` 仅简单删除 ```` ```json ```` 与 ```` ``` ```` 标记，未剥离围栏代码块前后的自然语言说明文字 | LLM 在 JSON 代码块前后附带解释语句（如「以下是评估结果：」） | 下游 `JSONDecoder` / `JSONSerialization` 100% 解析失败触发降级 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 检测到闭合围栏代码块时精准截取首个围栏内部正文并跳过语言标识行，兼容纯文本输入 | **✅ 已解决** | 是 (LLM 结构化响应围栏提取范式) | 是 (`LLMUtilsTests`) | ✅ 已闭环 |
+| **200** | `iCloudSyncCoordinator` 的 `runSyncOperation`/`pushToCloud`/`bidirectionalSync`/`clearCloudData` 均缺少 `!isSyncing` 防并发重入守卫，且 `bidirectionalSync` 新冲突回调会覆盖旧 `activeConflict` 引发 `CheckedContinuation` 永久泄露 | 用户连续快速点击同步/推送按钮，或同步冲突弹窗未关闭时再次触发冲突 | 并发同步互相覆写数据，甚至触发 Swift 运行时 continuation 泄露挂死 | **High** | 状态机并发与数据生命周期 | 四大同步入口统一加 `guard !isSyncing else { return }`；挂载新 `activeConflict` 前先调用 `resolvePendingConflictIfNeeded()` 释放旧句柄 | **✅ 已解决** | 是 (同步状态机并发互斥与 Continuation 安全释放) | 是 (静态审计与生命周期守卫闭环) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**196 项**
+- **收录问题总数**：**200 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：53 项 (27.0%)
-  - 状态机并发与数据生命周期：47 项 (24.0%)
-  - 架构设计与安全/网络健壮性：55 项 (28.1%)
-  - UI/交互与防御性缺陷：17 项 (8.7%)
-  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (12.2%)
+  - 功能缺陷与核心算法/解析器/数据完整性：55 项 (27.5%)
+  - 状态机并发与数据生命周期：48 项 (24.0%)
+  - 架构设计与安全/网络健壮性：56 项 (28.0%)
+  - UI/交互与防御性缺陷：17 项 (8.5%)
+  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (12.0%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：106 项 (54.1%)
-  - **Medium（功能异常/算法边界/性能损耗）**：63 项 (32.1%)
-  - **Low（样式异味/边界校验/门禁规范）**：27 项 (13.8%)
-- **修复闭环率**：**100% (196/196 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：110 项 (55.0%)
+  - **Medium（功能异常/算法边界/性能损耗）**：63 项 (31.5%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (13.5%)
+- **修复闭环率**：**100% (200/200 项已修复闭环)**
 

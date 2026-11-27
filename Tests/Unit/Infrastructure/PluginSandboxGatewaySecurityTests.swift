@@ -126,4 +126,49 @@ final class PluginSandboxGatewaySecurityTests: XCTestCase {
             }
         }
     }
+
+    // MARK: - 缺陷 #197 回归：SSRF 强制拦截与空白包裹危险 Header 拦截
+
+    /// 验证即使插件 manifest 将 127.0.0.1 / localhost / 内网元数据地址加入 allowedDomains，仍被 SSRF 硬防线阻断
+    func testAuditFetch_ssrfHostsBlockedEvenWhenAllowlisted() {
+        let ssrfCases: [(url: String, domain: String)] = [
+            ("http://127.0.0.1:8080/admin", "127.0.0.1"),
+            ("http://localhost/secret", "localhost"),
+            ("http://169.254.169.254/latest/meta-data/", "169.254.169.254"),
+            ("http://192.168.1.1/router", "192.168.1.1")
+        ]
+        for item in ssrfCases {
+            XCTAssertThrowsError(
+                try PluginSandboxGateway.auditFetch(
+                    url: item.url,
+                    options: nil,
+                    allowedDomains: [item.domain],
+                    permissions: [PluginConstants.Permission.network]
+                ),
+                "SSRF 目标 \(item.url) 即使在白名单中也必须被阻断"
+            ) { error in
+                if case PluginSandboxError.dlpFetchBlocked = error { return }
+                XCTFail("\(item.url) 应抛出 dlpFetchBlocked，实际为: \(error)")
+            }
+        }
+    }
+
+    /// 验证带前后空白的危险 Header（如 " Authorization "）或空 Header 名称无法绕过黑名单
+    func testAuditFetch_whitespacePaddedBlockedHeader_isRejected() {
+        let paddedHeaders = [" Authorization ", "\tCookie\n", "  "]
+        for key in paddedHeaders {
+            XCTAssertThrowsError(
+                try PluginSandboxGateway.auditFetch(
+                    url: "https://api.example.com/data",
+                    options: ["method": "GET", "headers": [key: "stolen"]],
+                    allowedDomains: ["api.example.com"],
+                    permissions: [PluginConstants.Permission.network]
+                ),
+                "空白包裹或空 Header 键 \(key.debugDescription) 必须被拒绝"
+            ) { error in
+                if case PluginSandboxError.permissionDenied = error { return }
+                XCTFail("应抛出 permissionDenied，实际为: \(error)")
+            }
+        }
+    }
 }

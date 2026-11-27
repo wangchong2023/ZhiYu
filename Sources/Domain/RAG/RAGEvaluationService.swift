@@ -158,9 +158,22 @@ final class RAGEvaluationService: Sendable {
         static let maxScore: Double = 1.0
     }
 
-    /// 将 LLM 返回的评分钳位至合法 [0.0, 1.0] 区间并过滤 NaN/Infinity，防止脏数据污染治理报表
+    /// 将 LLM 返回的评分钳位至合法 [0.0, 1.0] 区间并过滤 Bool/NaN/Infinity，同时兼容字符串数值，防止脏数据污染治理报表
     internal static func sanitizeScore(_ raw: Any?) -> Double {
-        guard let value = raw as? Double, value.isFinite else {
+        guard let raw else { return ScoreBounds.minScore }
+        let parsed: Double?
+        if let number = raw as? NSNumber {
+            // 使用 CFBooleanGetTypeID 精准区分 JSON 布尔值与整数 0/1（避免 NSNumber(1) is Bool 误判）
+            if CFGetTypeID(number) == CFBooleanGetTypeID() {
+                return ScoreBounds.minScore
+            }
+            parsed = number.doubleValue
+        } else if let strVal = raw as? String {
+            parsed = Double(strVal.trimmingCharacters(in: .whitespacesAndNewlines))
+        } else {
+            parsed = nil
+        }
+        guard let value = parsed, value.isFinite else {
             return ScoreBounds.minScore
         }
         return min(max(value, ScoreBounds.minScore), ScoreBounds.maxScore)

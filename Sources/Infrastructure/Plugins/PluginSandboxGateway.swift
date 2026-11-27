@@ -64,10 +64,15 @@ struct PluginSandboxGateway {
             throw PluginSandboxError.invalidURL(urlString)
         }
 
+        // SSRF 硬防线：无论插件 manifest 是否在 allowedDomains 中声明内网/环回地址，一律拦截
+        guard SSRFGuard.isSafeURL(requestURL) else {
+            throw PluginSandboxError.dlpFetchBlocked(host)
+        }
+
         // 域名白名单审计（VULN-002 修复：使用精确后缀匹配，杜绝子串绕过）
         let normalizedHost = host.lowercased()
         let isAllowed = allowedDomains.contains { domain in
-            let normalizedDomain = domain.lowercased()
+            let normalizedDomain = domain.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
             // 拒绝空字符串白名单（空字符串会匹配任意 host）
             guard !normalizedDomain.isEmpty else { return false }
             // 精确匹配或合法子域后缀匹配（".domain" 确保是子域，而非前缀欺骗）
@@ -87,12 +92,14 @@ struct PluginSandboxGateway {
                 }
             request.httpMethod = method
             if let headers = opts["headers"] as? [String: String] {
-                // Bug #32 / #132 修复：大小写不敏感过滤危险 header，防止插件通过 authorization/cOoKiE 等变体绕过拦截
+                // Bug #32 / #132 / #197 修复：修剪空白并大小写不敏感过滤危险 header，防止 " Authorization " 等变体绕过拦截
                 for (key, val) in headers {
-                    guard !PluginConstants.NetworkSecurity.blockedHeadersLowercased.contains(key.lowercased()) else {
+                    let normalizedHeaderKey = key.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+                    guard !normalizedHeaderKey.isEmpty,
+                          !PluginConstants.NetworkSecurity.blockedHeadersLowercased.contains(normalizedHeaderKey) else {
                         throw PluginSandboxError.permissionDenied(PluginConstants.Permission.httpHeader)
                     }
-                    request.setValue(val, forHTTPHeaderField: key)
+                    request.setValue(val, forHTTPHeaderField: key.trimmingCharacters(in: .whitespacesAndNewlines))
                 }
             }
             if let body = opts["body"] as? String {

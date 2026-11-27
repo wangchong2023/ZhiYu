@@ -742,4 +742,38 @@ final class RAGEvaluationServiceTests: XCTestCase {
         XCTAssertEqual(report.citationAccuracy, 0.0, accuracy: 0.001)
         XCTAssertEqual(report.status, L10n.AI.Eval.Status.pass)
     }
+
+    // MARK: - 缺陷 #198 回归：字符串数值评分兼容与 Bool 误桥接拦截
+
+    func testSanitizeScore_parsesNumericStringsAndRejectsBooleans() async {
+        XCTAssertEqual(RAGEvaluationService.sanitizeScore("0.88"), 0.88, accuracy: 0.001)
+        XCTAssertEqual(RAGEvaluationService.sanitizeScore(" 1.4 "), 1.0, accuracy: 0.001)
+        XCTAssertEqual(RAGEvaluationService.sanitizeScore(1), 1.0, accuracy: 0.001)
+        XCTAssertEqual(RAGEvaluationService.sanitizeScore(true), 0.0, accuracy: 0.001, "JSON Bool true 不得被 NSNumber 误桥接为 1.0")
+        XCTAssertEqual(RAGEvaluationService.sanitizeScore("NaN"), 0.0, accuracy: 0.001)
+
+        mockLLM.generateHandler = { _, _ in
+            return """
+            好的，以下是本次问答的评估结果：
+            ```json
+            {
+                "faithfulness": "0.92",
+                "relevance": "0.85",
+                "context_precision": 1,
+                "hallucination_rate": false,
+                "citation_accuracy": "0.90"
+            }
+            ```
+            希望以上评估对您有帮助！
+            """
+        }
+
+        let report = await evaluationService.evaluate(query: "字符串评分测试", answer: "回答", context: "上下文")
+        XCTAssertEqual(report.faithfulness, 0.92, accuracy: 0.001)
+        XCTAssertEqual(report.relevance, 0.85, accuracy: 0.001)
+        XCTAssertEqual(report.precision, 1.0, accuracy: 0.001)
+        XCTAssertEqual(report.hallucinationRate, 0.0, accuracy: 0.001)
+        XCTAssertEqual(report.citationAccuracy, 0.90, accuracy: 0.001)
+        XCTAssertEqual(report.status, L10n.AI.Eval.Status.pass)
+    }
 }

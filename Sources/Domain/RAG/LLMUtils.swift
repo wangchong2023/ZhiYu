@@ -57,10 +57,26 @@ enum LLMUtils {
         return (message["content"] as? String) ?? (message["reasoning_content"] as? String)
     }
 
-    /// 剥离 Markdown 语法标记（如 ```json / ```JSON 等）并修剪空白。
+    /// 剥离 Markdown 代码块标记（如 ```json / ```JSON 等）并修剪空白。
+    /// 若响应在围栏代码块前后附带自然语言说明文字，优先提取首个闭合围栏内部正文。
     static func stripMarkdown(_ text: String) -> String {
-        text.replacingOccurrences(of: SystemConstants.MarkdownSyntax.jsonCodeFence, with: "", options: .caseInsensitive)
-            .replacingOccurrences(of: SystemConstants.MarkdownSyntax.codeFence, with: "")
+        let fence = SystemConstants.MarkdownSyntax.codeFence
+        if let openRange = text.range(of: fence) {
+            let afterOpen = text[openRange.upperBound...]
+            // 跳过开围栏同行的语言标识（如 json / JSON / swift）
+            let contentStart: String.Index
+            if let newlineIdx = afterOpen.firstIndex(of: "\n") {
+                contentStart = afterOpen.index(after: newlineIdx)
+            } else {
+                contentStart = afterOpen.startIndex
+            }
+            if let closeRange = text[contentStart...].range(of: fence) {
+                return String(text[contentStart..<closeRange.lowerBound])
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+            }
+        }
+        return text.replacingOccurrences(of: SystemConstants.MarkdownSyntax.jsonCodeFence, with: "", options: .caseInsensitive)
+            .replacingOccurrences(of: fence, with: "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
