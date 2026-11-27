@@ -55,7 +55,8 @@ public final class ModelReceiptStore: Sendable {
 
     /// 沙盒 Documents/ModelReceipts 专有目录
     private var receiptsDirectory: URL {
-        let doc = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let doc = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+            ?? FileManager.default.temporaryDirectory
         return doc.appendingPathComponent("ModelReceipts", isDirectory: true)
     }
 

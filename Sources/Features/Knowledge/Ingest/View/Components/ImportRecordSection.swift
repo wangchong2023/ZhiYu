@@ -160,7 +160,7 @@ struct ImportRecordSection: View {
         }
 
         if isPDF {
-            let docURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            let docURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first ?? FileManager.default.temporaryDirectory
             let pdfFileName = (record.filePath as NSString?)?.lastPathComponent ?? "\(record.id).pdf"
             let targetPath = docURL.appendingPathComponent(pdfFileName).path
             
@@ -217,7 +217,7 @@ struct ImportRecordSection: View {
                 }
                 
                 #if canImport(UIKit)
-                let docURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+                let docURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first ?? FileManager.default.temporaryDirectory
                 let imgPath = (record.filePath as NSString?)?.lastPathComponent ?? "\(record.id).png"
                 let targetPath = docURL.appendingPathComponent(imgPath).path
                 
@@ -420,7 +420,7 @@ struct ImportPreviewHandler {
         }
         
         // B. 路径自愈：尝试结合当前 App 沙盒 Documents 目录寻找文件
-        let docURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let docURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first ?? FileManager.default.temporaryDirectory
         let fileName = (path as NSString).lastPathComponent
         let resolvedURL = docURL.appendingPathComponent(fileName)
         

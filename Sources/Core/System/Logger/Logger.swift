@@ -155,7 +155,9 @@ public actor Logger: LoggerProtocol {
     private let customDirectory: URL?
     
     private var documentsDirectory: URL {
-        customDirectory ?? FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        customDirectory
+            ?? FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+            ?? FileManager.default.temporaryDirectory
     }
     
     internal var logsFileURL: URL {

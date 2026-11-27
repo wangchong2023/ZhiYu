@@ -176,23 +176,37 @@ extension OnDeviceLLMService {
 
     /// 将用户在外部文件沙盒选中的 `.mlmodel` 或 `.mlmodelc` 模型无缝拷贝并挂接至内部存储器中
     public func importModel(from url: URL) async throws {
+        let fm = FileManager.default
         let modelsDir = mlModelsDirectory
-        try FileManager.default.createDirectory(at: modelsDir, withIntermediateDirectories: true)
+        try fm.createDirectory(at: modelsDir, withIntermediateDirectories: true)
 
         let destURL = modelsDir.appendingPathComponent(url.lastPathComponent)
+        let isSameFile = url.standardizedFileURL == destURL.standardizedFileURL
 
-        if url.startAccessingSecurityScopedResource() {
-            defer { url.stopAccessingSecurityScopedResource() }
-            try FileManager.default.copyItem(at: url, to: destURL)
-        } else {
-            try FileManager.default.copyItem(at: url, to: destURL)
+        if !isSameFile {
+            let didAccess = url.startAccessingSecurityScopedResource()
+            defer {
+                if didAccess {
+                    url.stopAccessingSecurityScopedResource()
+                }
+            }
+            if fm.fileExists(atPath: destURL.path) {
+                try fm.removeItem(at: destURL)
+            }
+            try fm.copyItem(at: url, to: destURL)
         }
 
         // 如果传入的是未编译的 mlmodel 源文件，自动启动端侧编译器
         if destURL.pathExtension == SystemConstants.FileExtension.mlmodel {
             let compiledURL = try await compiler.compileModel(at: destURL)
-            try FileManager.default.removeItem(at: destURL)
-            try FileManager.default.moveItem(at: compiledURL, to: destURL.deletingPathExtension().appendingPathExtension(SystemConstants.FileExtension.mlmodelC))
+            let compiledDestURL = destURL.deletingPathExtension().appendingPathExtension(SystemConstants.FileExtension.mlmodelC)
+            try? fm.removeItem(at: destURL)
+            if compiledURL.standardizedFileURL != compiledDestURL.standardizedFileURL {
+                if fm.fileExists(atPath: compiledDestURL.path) {
+                    try fm.removeItem(at: compiledDestURL)
+                }
+                try fm.moveItem(at: compiledURL, to: compiledDestURL)
+            }
         }
 
         discoverModels()

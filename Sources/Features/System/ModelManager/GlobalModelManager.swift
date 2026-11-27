@@ -224,7 +224,8 @@ public final class GlobalModelManager: TestStateResettable {
     
     /// 物理扫描本地沙盒中大模型的权重文件，结合 UserDefaults 持久化 Flag 执双重对齐
     public func refreshLocalModelFiles() {
-        let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+            ?? FileManager.default.temporaryDirectory
         let currentFlags = downloadedModelIds
         
         for manifest in remoteManifests {
@@ -355,7 +356,8 @@ public final class GlobalModelManager: TestStateResettable {
         if case .completed = downloadStates[modelId] {
             return true
         }
-        let docDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let docDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+            ?? FileManager.default.temporaryDirectory
         guard let fileURL = Self.resolveLocalModelURL(for: modelId, in: docDir) else { return false }
 
         // 1. 使用魔数格式探针核验证明，杜绝半截残卷或伪造空壳误判为就绪
@@ -379,13 +381,15 @@ public final class GlobalModelManager: TestStateResettable {
         if case let .completed(url) = downloadStates[modelId] {
             return url
         }
-        let docDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let docDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+            ?? FileManager.default.temporaryDirectory
         return Self.resolveLocalModelURL(for: modelId, in: docDir)
     }
 
     /// 清理指定模型的本地沙盒权重与缓存（用户显式请求时执行物理清理与凭据移除）
     public func clearModelCache(for modelId: String) {
-        let docDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let docDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+            ?? FileManager.default.temporaryDirectory
         for ext in BYOMConstants.supportedExtensions {
             let fileURL = docDir.appendingPathComponent(modelId + ext)
             if FileManager.default.fileExists(atPath: fileURL.path) {

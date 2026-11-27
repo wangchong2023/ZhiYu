@@ -19,7 +19,8 @@ final class SnapshotService: Sendable {
     private let snapshotsURL: URL
 
     init() {
-        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+            ?? FileManager.default.temporaryDirectory
         self.snapshotsURL = docs.appendingPathComponent(".snapshots", isDirectory: true)
         createDirectoryIfNeeded()
     }

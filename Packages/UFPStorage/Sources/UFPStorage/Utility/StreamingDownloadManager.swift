@@ -82,7 +82,8 @@ public actor StreamingDownloadManager {
     /// 生产环境默认断点续传目录（Caches 下通用子目录）
     @Sendable
     private static func defaultResumeDirectory() -> URL {
-        let cachesDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
+        let cachesDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
+            ?? FileManager.default.temporaryDirectory
         let resumeFolder = cachesDirectory.appendingPathComponent(StreamingDownloadConstants.resumeDirectoryName, isDirectory: true)
         try? FileManager.default.createDirectory(at: resumeFolder, withIntermediateDirectories: true)
         return resumeFolder
@@ -94,7 +95,8 @@ public actor StreamingDownloadManager {
             sessionFactory: Self.defaultSessionFactory,
             resumeDataDirectory: Self.defaultResumeDirectory,
             destinationURL: { taskID in
-                let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+                let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+                    ?? FileManager.default.temporaryDirectory
                 return documentDirectory.appendingPathComponent("\(taskID).bin")
             }
         )
