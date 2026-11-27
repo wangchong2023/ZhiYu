@@ -14,7 +14,7 @@
 | :--- | :--- | :--- | :--- |
 | **语句/行覆盖率 (Line Coverage)** | ≥ 95.0%（SPM 包门禁 ≥ 90.0%） | SPM 6 包全量达标，加权 **93.37%**（8221/8805 行） | ✅ SPM 6/6 达标 |
 | **分支覆盖率 (Branch Coverage)** | ≥ 90.0% | **SPM 不可测**（swiftc 不生成 branch mapping，见下注） | ⚠️ 需主 App xccov |
-| **代码重复率 (Duplicated Lines %)** | < 3.0% | Swift 重复率 **0.8%**（jscpd 实测 1036/133835 行） | ✅ 达标 |
+| **代码重复率 (Duplicated Lines %)** | < 3.0% | Swift 重复率 **0.8%**（jscpd 实测 1025/134326 行） | ✅ 达标 |
 
 > **⚠️ 工具链约束（重要）**：SwiftPM 的 `swiftc` coverage mapping **不包含 branch 信息**（`coverage-spm.py` 注释明确「Swift 不生成 branch mapping，Branches 列恒为 0/0/-」）。因此 **SPM 6 包只能用 llvm-cov 测语句/行覆盖，无法测分支覆盖**。分支覆盖只能通过主 App（xcodebuild 测试）的 xccov 获得，用 `analyze_coverage_gaps.py` 分析（需先跑 `make test-unit` 生成 xcresult 到 `build/DerivedData-ios`）。
 
@@ -34,7 +34,7 @@
 | **ZhiYuFeatures** | **100.00%** (12/12) | 6/6 | ✅ | — |
 | **总体（加权）** | **93.37%** (8221/8805) | **1086/1208** | ✅ | **6/6 全部达标** |
 
-> **说明**：全量测试坚持「以发现问题为目的、不为凑覆盖率写无断言空测试」原则，累计发现并闭环 129 项真实生产缺陷（见 `Docs/Testing/TEST_DRIVEN_FINDINGS.md`）。
+> **说明**：全量测试坚持「以发现问题为目的、不为凑覆盖率写无断言空测试」原则，累计发现并闭环 167 项真实生产缺陷（见 `Docs/Testing/TEST_DRIVEN_FINDINGS.md`）。
 
 ---
 
@@ -42,7 +42,7 @@
 
 | 维度 | 数值 | 备注 |
 | :--- | :--- | :--- |
-| **测试文件总数** | ~768 | `Tests/` 目录下 Swift 测试文件 |
+| **测试文件总数** | 807 | `Tests/` 目录下 Swift 测试文件（`make audit` 实测） |
 | **SPM 包单测** | 6 个包 | `make test-spm-all`（UFPCore/Storage/DesignSystem/Domain/AICore/Features） |
 | **主 App 单测** | 全量 | `make test-unit`（约 3 分钟） |
 | **UI 测试** | 全量 | `make test-ui` |
