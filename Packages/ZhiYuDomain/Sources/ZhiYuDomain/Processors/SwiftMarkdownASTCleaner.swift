@@ -26,8 +26,8 @@ public enum SwiftMarkdownASTCleaner {
             result.append(ProcessorConstants.Whitespace.newline + ProcessorConstants.MarkdownSyntax.codeFence + ProcessorConstants.Whitespace.newline)
         }
 
-        // 2. 补全未闭合的粗体/斜体语法标记
-        let asteriskCount = result.components(separatedBy: ProcessorConstants.MarkdownSyntax.bold).count - 1
+        // 2. 补全未闭合的粗体语法标记（忽略围栏代码块内的 **，如 Python 幂运算或 C 二级指针）
+        let asteriskCount = countUnfencedBoldMarkers(in: result)
         if asteriskCount % 2 != 0 {
             result.append(ProcessorConstants.MarkdownSyntax.bold)
         }
@@ -38,5 +38,15 @@ public enum SwiftMarkdownASTCleaner {
         }
 
         return result
+    }
+
+    /// 统计围栏代码块（```）之外正文中 `**` 标记的出现次数，避免误伤代码中的幂运算或指针符号
+    private static func countUnfencedBoldMarkers(in markdown: String) -> Int {
+        let segments = markdown.components(separatedBy: ProcessorConstants.MarkdownSyntax.codeFence)
+        var count = 0
+        for (index, segment) in segments.enumerated() where index % 2 == 0 {
+            count += segment.components(separatedBy: ProcessorConstants.MarkdownSyntax.bold).count - 1
+        }
+        return count
     }
 }

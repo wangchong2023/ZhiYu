@@ -47,6 +47,9 @@ public enum ZipUtility {
 
         /// 签名扫描步长（逐字节搜索下一个文件头）
         static let signatureScanStep = 1
+
+        /// 路径穿越段标识
+        static let parentDirectorySegment = ".."
     }
 
     /// Local File Header 字段偏移量（依据 ZIP 规范）
@@ -65,73 +68,74 @@ public enum ZipUtility {
         }
 
         var archive: [String: Data] = [:]
-
         data.withUnsafeBytes { (buffer: UnsafeRawBufferPointer) in
-            guard let baseAddress = buffer.baseAddress else { return }
-
-            var offset = 0
-            let count = buffer.count
-
-            while offset + ZipFormat.localFileHeaderSize < count {
-                let bytes = baseAddress.advanced(by: offset)
-
-                // Local file header signature（使用 loadUnaligned 避免对齐违规崩溃）
-                guard bytes.loadUnaligned(as: UInt32.self) == ZipFormat.localFileHeaderSignature else {
-                    // Try to find next file header
-                    if let nextOffset = findNextLocalFileHeader(in: buffer, start: offset) {
-                        offset = nextOffset
-                        continue
-                    }
-                    break
-                }
-
-                let fileNameLength = Int(bytes.loadUnaligned(
-                    fromByteOffset: LocalFileHeaderOffset.fileNameLength,
-                    as: UInt16.self
-                ))
-                let extraFieldLength = Int(bytes.loadUnaligned(
-                    fromByteOffset: LocalFileHeaderOffset.extraFieldLength,
-                    as: UInt16.self
-                ))
-                let compressedSize = Int(bytes.loadUnaligned(
-                    fromByteOffset: LocalFileHeaderOffset.compressedSize,
-                    as: UInt32.self
-                ))
-
-                let headerSize = ZipFormat.localFileHeaderSize + fileNameLength + extraFieldLength
-                let dataOffset = offset + headerSize
-
-                guard dataOffset + compressedSize <= count else { break }
-
-                let nameBytes = UnsafeRawPointer(baseAddress).advanced(
-                    by: offset + ZipFormat.localFileHeaderSize
-                )
-                let fileNameData = Data(bytes: nameBytes, count: fileNameLength)
-                guard let fileName = String(data: fileNameData, encoding: .utf8) else {
-                    offset += MemoryLayout<UInt32>.size
-                    continue
-                }
-
-                // Decompress if needed (method 0 = stored, 8 = deflate)
-                let compressionMethod = UInt16(bytes.loadUnaligned(
-                    fromByteOffset: LocalFileHeaderOffset.compressionMethod,
-                    as: UInt16.self
-                ))
-                let compressedData = Data(bytes: baseAddress.advanced(by: dataOffset), count: compressedSize)
-
-                if compressionMethod == ZipFormat.compressionMethodStored {
-                    archive[fileName] = compressedData
-                } else if compressionMethod == ZipFormat.compressionMethodDeflate {
-                    if let decompressed = decompressDeflate(data: compressedData) {
-                        archive[fileName] = decompressed
-                    }
-                }
-
-                offset = dataOffset + compressedSize
-            }
+            parseEntries(in: buffer, into: &archive)
         }
 
         return archive.isEmpty ? nil : archive
+    }
+
+    /// 顺序解析 ZIP 缓冲区中的所有本地文件头条目（含 Zip Slip 路径校验与总容量防线）
+    private static func parseEntries(in buffer: UnsafeRawBufferPointer, into archive: inout [String: Data]) {
+        guard let baseAddress = buffer.baseAddress else { return }
+        var offset = 0
+        var totalExtractedBytes = 0
+        let count = buffer.count
+
+        while offset + ZipFormat.localFileHeaderSize < count {
+            let bytes = baseAddress.advanced(by: offset)
+            guard bytes.loadUnaligned(as: UInt32.self) == ZipFormat.localFileHeaderSignature else {
+                guard let nextOffset = findNextLocalFileHeader(in: buffer, start: offset) else { break }
+                offset = nextOffset
+                continue
+            }
+
+            let fileNameLength = Int(bytes.loadUnaligned(fromByteOffset: LocalFileHeaderOffset.fileNameLength, as: UInt16.self))
+            let extraFieldLength = Int(bytes.loadUnaligned(fromByteOffset: LocalFileHeaderOffset.extraFieldLength, as: UInt16.self))
+            let compressedSize = Int(bytes.loadUnaligned(fromByteOffset: LocalFileHeaderOffset.compressedSize, as: UInt32.self))
+            let dataOffset = offset + ZipFormat.localFileHeaderSize + fileNameLength + extraFieldLength
+            guard dataOffset + compressedSize <= count else { break }
+
+            let nameBytes = UnsafeRawPointer(baseAddress).advanced(by: offset + ZipFormat.localFileHeaderSize)
+            guard let fileName = String(data: Data(bytes: nameBytes, count: fileNameLength), encoding: .utf8) else {
+                offset += MemoryLayout<UInt32>.size
+                continue
+            }
+            guard isSafeArchiveEntryPath(fileName) else {
+                offset = dataOffset + compressedSize
+                continue
+            }
+
+            let compressionMethod = UInt16(bytes.loadUnaligned(fromByteOffset: LocalFileHeaderOffset.compressionMethod, as: UInt16.self))
+            let compressedData = Data(bytes: baseAddress.advanced(by: dataOffset), count: compressedSize)
+            if let extractedData = decodeEntryData(compressedData, method: compressionMethod) {
+                guard extractedData.count <= ZipFormat.deflateBufferMaxSize - totalExtractedBytes else { break }
+                totalExtractedBytes += extractedData.count
+                archive[fileName] = extractedData
+            }
+            offset = dataOffset + compressedSize
+        }
+    }
+
+    /// 按压缩方式解码单个 ZIP 条目二进制内容
+    private static func decodeEntryData(_ compressedData: Data, method: UInt16) -> Data? {
+        if method == ZipFormat.compressionMethodStored {
+            return compressedData
+        } else if method == ZipFormat.compressionMethodDeflate {
+            return decompressDeflate(data: compressedData)
+        }
+        return nil
+    }
+
+    /// 校验 ZIP 条目路径安全性，拦截空路径、绝对路径、反斜杠及 `..` 目录穿越（Zip Slip）
+    internal static func isSafeArchiveEntryPath(_ fileName: String) -> Bool {
+        guard !fileName.isEmpty,
+              !fileName.hasPrefix(SystemConstants.Character.slash),
+              !fileName.contains(SystemConstants.Character.backslash) else {
+            return false
+        }
+        let segments = fileName.split(separator: Character(SystemConstants.Character.slash), omittingEmptySubsequences: false)
+        return !segments.contains { String($0) == ZipFormat.parentDirectorySegment }
     }
 
     /// 查找NextLocalFileHeader
@@ -159,9 +163,13 @@ public enum ZipUtility {
     /// - Parameter data: 压缩数据
     /// - Returns: 解压后的数据，解压失败返回 nil
     private static func decompressDeflate(data: Data) -> Data? {
-        var destinationBufferSize = data.count * ZipFormat.deflateBufferInitialMultiplier
+        guard !data.isEmpty else { return nil }
+        let (initialSize, overflow) = data.count.multipliedReportingOverflow(by: ZipFormat.deflateBufferInitialMultiplier)
+        var destinationBufferSize = overflow
+            ? ZipFormat.deflateBufferMaxSize
+            : min(initialSize, ZipFormat.deflateBufferMaxSize)
 
-        while destinationBufferSize <= ZipFormat.deflateBufferMaxSize {
+        while destinationBufferSize > 0 && destinationBufferSize <= ZipFormat.deflateBufferMaxSize {
             var destinationData = Data(count: destinationBufferSize)
 
             let result = destinationData.withUnsafeMutableBytes { destBuffer in

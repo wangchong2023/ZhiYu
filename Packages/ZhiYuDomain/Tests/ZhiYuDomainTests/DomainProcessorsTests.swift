@@ -89,10 +89,28 @@ final class DomainProcessorsTests: XCTestCase {
     }
 
     func testSwiftMarkdownASTCleanerClosesUnclosedFenceAndBold() {
-        let broken = "```swift\nlet x = 1\n\n\n\n**unclosed"
-        let cleaned = SwiftMarkdownASTCleaner.cleanAST(broken)
-        XCTAssertFalse(cleaned.contains("\n\n\n"))
-        XCTAssertTrue(cleaned.hasSuffix("**"))
+        let brokenFence = "```swift\nlet x = 1\n\n\n\nlet y = 2"
+        let cleanedFence = SwiftMarkdownASTCleaner.cleanAST(brokenFence)
+        XCTAssertFalse(cleanedFence.contains("\n\n\n"))
+        XCTAssertEqual(cleanedFence.components(separatedBy: "```").count - 1, 2, "未闭合代码块应自动补齐闭合围栏")
+
+        let brokenBold = "正文包含 **未闭合粗体"
+        let cleanedBold = SwiftMarkdownASTCleaner.cleanAST(brokenBold)
+        XCTAssertTrue(cleanedBold.hasSuffix("**"), "围栏外未闭合粗体应自动补齐 **")
+    }
+
+    /// 缺陷 #196 回归：围栏代码块内的 `**`（如 Python 幂运算或 C 二级指针）不得触发末尾误追加孤立 `**`
+    func testSwiftMarkdownASTCleanerIgnoresBoldMarkersInsideCodeFences() {
+        let pythonDoc = """
+        正文说明
+
+        ```python
+        power = 2 ** 8
+        ```
+        """
+        let cleaned = SwiftMarkdownASTCleaner.cleanAST(pythonDoc)
+        XCTAssertFalse(cleaned.hasSuffix("**"), "代码块内的幂运算符 ** 不得被误判为未闭合粗体")
+        XCTAssertTrue(cleaned.contains("power = 2 ** 8"))
     }
 
     func testMarkdownProcessorParsesBlocksAndInlineAppLinks() {

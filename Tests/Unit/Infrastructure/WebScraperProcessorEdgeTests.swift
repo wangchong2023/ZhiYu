@@ -245,4 +245,36 @@ final class WebScraperProcessorEdgeTests: XCTestCase {
             }
         }
     }
+
+    // MARK: - 缺陷 #195 回归：多行 <script> 与 <style> 标签彻底剥离
+
+    func testDumbExtractor_stripsMultilineScriptAndStyleBlocks() {
+        let html = """
+        <html>
+        <head>
+            <title>技术文章</title>
+            <STYLE type="text/css">
+                body { color: red; }
+                .secret-css { display: none; }
+            </STYLE>
+        </head>
+        <body>
+            <article>
+                <script type="text/javascript">
+                    window.__STATE__ = { token: "leak" };
+                    console.log("analytics");
+                </script>
+                <p>第一段真实正文内容。</p>
+                <p>第二段真实正文内容。</p>
+            </article>
+        </body>
+        </html>
+        """
+        let extracted = DumbExtractorHandler.extractFromHTML(html)
+        XCTAssertEqual(extracted.title, "技术文章")
+        XCTAssertTrue(extracted.markdown.contains("第一段真实正文内容"))
+        XCTAssertTrue(extracted.markdown.contains("第二段真实正文内容"))
+        XCTAssertFalse(extracted.markdown.contains("window.__STATE__"), "多行 <script> 代码必须被彻底剥离")
+        XCTAssertFalse(extracted.markdown.contains("secret-css"), "多行 <style> 样式必须被彻底剥离")
+    }
 }

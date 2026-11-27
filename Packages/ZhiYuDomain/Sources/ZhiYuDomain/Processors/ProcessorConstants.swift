@@ -116,10 +116,10 @@ public enum ProcessorConstants {
         public static let allTags: String = "<[^>]+>"
         /// 匹配 <style> 标签及其内容（含跨行）
         public static let styleBlock: String = "<style[^>]*>[\\s\\S]*?</style>"
-        /// 匹配 <script> 标签及其内容（大小写不敏感）
-        public static let scriptBlock: String = "(?i)<script.*?>.*?</script>"
-        /// 匹配 <style> 标签及其内容（大小写不敏感）
-        public static let styleBlockCaseInsensitive: String = "(?i)<style.*?>.*?</style>"
+        /// 匹配 <script> 标签及其内容（大小写不敏感且跨行匹配）
+        public static let scriptBlock: String = "(?is)<script[^>]*>.*?</script>"
+        /// 匹配 <style> 标签及其内容（大小写不敏感且跨行匹配）
+        public static let styleBlockCaseInsensitive: String = "(?is)<style[^>]*>.*?</style>"
     }
 
     // MARK: - Mermaid 图表语法 (Mermaid Syntax)

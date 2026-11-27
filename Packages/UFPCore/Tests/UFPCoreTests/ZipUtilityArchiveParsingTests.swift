@@ -116,6 +116,26 @@ final class ZipUtilityArchiveParsingTests: XCTestCase {
         XCTAssertEqual(result?[fileName], validContent)
     }
 
+    // MARK: - 缺陷 #194 回归：Zip Slip 路径穿越拦截与空 Deflate 条目防护
+
+    func testReadZipArchive_rejectsZipSlipPathsAndEmptyDeflateEntrySafely() throws {
+        let evilEntry = buildStoredZip(fileName: "../../etc/passwd", contentData: Data("evil".utf8))
+        let absEntry = buildStoredZip(fileName: "/tmp/abs.txt", contentData: Data("abs".utf8))
+        let emptyDeflateEntry = buildDeflateZip(fileName: "empty.bin", compressedData: Data(), originalSize: 0)
+        let safeEntry = buildStoredZip(fileName: "docs/safe.txt", contentData: Data("safe".utf8))
+
+        let combinedURL = temporaryDirectoryURL.appendingPathComponent("mixed_security.zip")
+        try (evilEntry + absEntry + emptyDeflateEntry + safeEntry).write(to: combinedURL)
+
+        let result = ZipUtility.readZipArchive(at: combinedURL)
+        XCTAssertEqual(result?.count, 1, "仅应保留合法安全条目，穿越路径与空 deflate 条目应被拦截")
+        XCTAssertEqual(result?["docs/safe.txt"], Data("safe".utf8))
+        XCTAssertNil(result?["../../etc/passwd"])
+        XCTAssertNil(result?["/tmp/abs.txt"])
+        XCTAssertFalse(ZipUtility.isSafeArchiveEntryPath("a\\b.txt"))
+        XCTAssertFalse(ZipUtility.isSafeArchiveEntryPath(""))
+    }
+
     // MARK: - 二进制构造辅助函数
 
     private func buildStoredZip(fileName: String, contentData: Data) -> Data {

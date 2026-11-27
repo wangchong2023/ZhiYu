@@ -202,21 +202,24 @@
 | **191** | `PromptSanitizer.sanitize` 虽使用 NFKC 归一化文本检测注入，但替换阶段仅作用于原始未归一化文本，导致全角/Unicode 兼容字符混淆注入（如 `ｉｇｎｏｒｅ...`）触发日志却零替换原样透传；且 `sanitizeContext` 图片外链正则区分大小写且未容忍前导空白，`HTTPS://` 可绕过 DLP 拦截 | 攻击者使用全角字母构造 Prompt 注入或使用大写 `HTTPS://` 构造 Markdown 外链图片 | 恶意 Prompt 注入与 DLP 外泄链接绕过安全防线直达 LLM | **High** | 架构设计与安全/网络健壮性 | 原文本替换未命中时切至 NFKC 归一化文本执行抹除替换；`sanitizeContext` 正则加固为 `(?i)` 且容忍前导空白 | **✅ 已解决** | 是 (Unicode 归一化防绕过与 DLP 正则加固) | 是 (`PromptDefenseTests`) | ✅ 已闭环 |
 | **192** | `FileSystemSyncService.exportToMarkdown` 直接以清洗后的标题作为文件名落盘，未处理同目录同名、清洗后重名（如 `A/B` 与 `A:B`）或大小写冲突，且未清洗 `page.tags` 换行符 | 知识库同类型下存在同名或清洗后重名页面并执行 Markdown 导出 | 后导出页面静默覆盖先导出文件导致导出备份永久丢页，或畸形标签破坏 YAML 结构 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 新增 `uniqueFileURL` 按小写路径集合判重并自动追加递增去重后缀；对 `page.tags` 执行 `sanitizeYAMLTitle` 换行清洗 | **✅ 已解决** | 是 (导出文件去重防覆盖与 YAML 清洗) | 是 (`FileSystemSyncServiceTests`) | ✅ 已闭环 |
 | **193** | `ExcelProcessor` 对共享字符串索引 `t="s"` 未校验非负下界（允许 `-1` 产出 `[-1]`），同时丢弃普通数值单元格（`<c><v>`/`t="n"`）、公式字符串（`t="str"`）及 `<is><t>` 内联字符串 | 导入包含数字、公式或内联字符串的 `.xlsx` 表格，或含负数索引的畸形工作表 | 财务/数据表格中的所有数字和内联文本在导入后全部丢失 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | `t="s"` 增加 `value >= 0` 下界校验；监听 `<t>` 与 `<v>` 元素并按单元格类型提取 `inlineStr`/`str`/`n`/默认数值文本 | **✅ 已解决** | 是 (OOXML Excel 单元格类型全量解析与索引守卫) | 是 (`DomainProcessorsTests`) | ✅ 已闭环 |
+| **194** | `ZipUtility.readZipArchive` 未校验条目路径（允许 `../` 绝对路径与反斜杠 Zip Slip 穿越），未对全归档累计解压字节设上限（存在多条目 Zip Bomb OOM 风险），且 `decompressDeflate` 未拦截空数据与乘法溢出 | 导入恶意构造的 ZIP/Office 文档（含路径穿越条目、空 Deflate 条目或高压缩比多条目炸弹） | 可能触发下游路径穿越或进程 OOM 崩溃 | **High** | 架构设计与安全/网络健壮性 | 新增 `isSafeArchiveEntryPath` 拦截空路径/绝对路径/反斜杠/`..`；累计 `totalExtractedBytes` 不超过 256MB；`decompressDeflate` 校验非空与 `multipliedReportingOverflow` | **✅ 已解决** | 是 (ZIP 归档 Zip Slip 与 Zip Bomb 防护) | 是 (`ZipUtilityArchiveParsingTests`) | ✅ 已闭环 |
+| **195** | `ProcessorConstants.SanitizationRegex.scriptBlock` 与 `styleBlockCaseInsensitive` 缺少 `(?s)` 跨行标志，导致 `DumbExtractorHandler.extractFromHTML` 无法剥离任何多行 `<script>` 与 `<style>` 标签 | 网页抓取降级至 HTML 提取器解析包含多行 JS/CSS 的现代网页 | 整段 JavaScript 脚本与 CSS 样式被混入知识库 Markdown 正文 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 正则升级为 `(?is)<script[^>]*>.*?</script>` 与 `(?is)<style[^>]*>.*?</style>`，实现大小写不敏感的跨行彻底剥离 | **✅ 已解决** | 是 (HTML 清洗正则跨行匹配规范) | 是 (`WebScraperProcessorEdgeTests`) | ✅ 已闭环 |
+| **196** | `SwiftMarkdownASTCleaner.cleanAST` 全局统计 `**` 次数以补全未闭合粗体，未排除围栏代码块（```` ``` ````）内部文本 | 技术笔记包含含奇数个 `**` 的代码块（如 Python `2 ** 8` 或 C `char **argv`） | 清洗后在文档末尾被硬追加孤立 `**`，破坏合法 Markdown 文档 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 抽取 `countUnfencedBoldMarkers`，仅统计代码块围栏之外正文的 `**` 出现次数 | **✅ 已解决** | 是 (Markdown AST 清洗围栏隔离范式) | 是 (`DomainProcessorsTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**193 项**
+- **收录问题总数**：**196 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：51 项 (26.4%)
-  - 状态机并发与数据生命周期：47 项 (24.4%)
-  - 架构设计与安全/网络健壮性：54 项 (28.0%)
-  - UI/交互与防御性缺陷：17 项 (8.8%)
-  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (12.4%)
+  - 功能缺陷与核心算法/解析器/数据完整性：53 项 (27.0%)
+  - 状态机并发与数据生命周期：47 项 (24.0%)
+  - 架构设计与安全/网络健壮性：55 项 (28.1%)
+  - UI/交互与防御性缺陷：17 项 (8.7%)
+  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (12.2%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：103 项 (53.4%)
-  - **Medium（功能异常/算法边界/性能损耗）**：63 项 (32.6%)
-  - **Low（样式异味/边界校验/门禁规范）**：27 项 (14.0%)
-- **修复闭环率**：**100% (193/193 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：106 项 (54.1%)
+  - **Medium（功能异常/算法边界/性能损耗）**：63 项 (32.1%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (13.8%)
+- **修复闭环率**：**100% (196/196 项已修复闭环)**
 
