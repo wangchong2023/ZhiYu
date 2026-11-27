@@ -99,4 +99,76 @@ final class SecurityManagerTests: XCTestCase {
         XCTAssertFalse(passphrase1.isEmpty)
         XCTAssertEqual(passphrase1, passphrase2, "密钥一旦生成并存储于 Keychain，后续获取应保持一致")
     }
+
+    // MARK: - 缺陷 #237 回归：Keychain 锁屏异常禁止覆写主密钥 & 恒定时间比对
+
+    func testResolveKeyMaterial_keychainError_neverOverwritesAndDoesNotCache() {
+        var storeCallCount = 0
+        var isLocked = true
+        let persistedKey = "real-db-passphrase-from-keychain"
+
+        let lockedResult = SecurityManager.resolveKeyMaterial(
+            forKey: "db_passphrase",
+            errorMessage: "test_error",
+            retrieve: { _ in
+                if isLocked {
+                    throw KeychainError.retrieveFailed(errSecInteractionNotAllowed)
+                }
+                return persistedKey
+            },
+            store: { _, _ in
+                storeCallCount += 1
+            },
+            generator: { "ephemeral-temp-key" }
+        )
+
+        XCTAssertEqual(storeCallCount, 0, "Keychain 读取抛错（如锁屏）时严禁调用 store 覆写历史密钥")
+        XCTAssertFalse(lockedResult.shouldCache, "锁屏回退密钥严禁写入内存缓存")
+
+        // 模拟设备解锁后再次读取，应直接恢复真实密钥并允许缓存
+        isLocked = false
+        let unlockedResult = SecurityManager.resolveKeyMaterial(
+            forKey: "db_passphrase",
+            errorMessage: "test_error",
+            retrieve: { _ in persistedKey },
+            store: { _, _ in storeCallCount += 1 },
+            generator: { "should-not-generate" }
+        )
+
+        XCTAssertEqual(unlockedResult.value, persistedKey)
+        XCTAssertTrue(unlockedResult.shouldCache)
+        XCTAssertEqual(storeCallCount, 0)
+    }
+
+    func testResolveKeyMaterial_missingKey_generatesPersistsAndHandlesStoreFailure() {
+        var storedPairs: [String: String] = [:]
+
+        let created = SecurityManager.resolveKeyMaterial(
+            forKey: "new_key",
+            errorMessage: "test_error",
+            retrieve: { _ in nil },
+            store: { key, value in storedPairs[key] = value },
+            generator: { "generated-secret" }
+        )
+        XCTAssertEqual(created.value, "generated-secret")
+        XCTAssertTrue(created.shouldCache)
+        XCTAssertEqual(storedPairs["new_key"], "generated-secret")
+
+        let failedStore = SecurityManager.resolveKeyMaterial(
+            forKey: "new_key",
+            errorMessage: "test_error",
+            retrieve: { _ in nil },
+            store: { _, _ in throw KeychainError.storeFailed(errSecIO) },
+            generator: { "unpersisted-secret" }
+        )
+        XCTAssertEqual(failedStore.value, "unpersisted-secret")
+        XCTAssertFalse(failedStore.shouldCache, "Keychain 持久化失败时不应标记为可缓存")
+    }
+
+    func testConstantTimeEquals_distinguishesEqualSingleBitDiffAndLengthMismatch() {
+        XCTAssertTrue(SecurityManager.constantTimeEquals("abc123==", "abc123=="))
+        XCTAssertFalse(SecurityManager.constantTimeEquals("abc123==", "abc124=="))
+        XCTAssertFalse(SecurityManager.constantTimeEquals("abc123==", "abc123="))
+        XCTAssertTrue(SecurityManager.constantTimeEquals("", ""))
+    }
 }

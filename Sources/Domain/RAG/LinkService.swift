@@ -22,6 +22,22 @@ public struct SearchResult: Sendable {
 
 actor LinkService {
 
+    private enum Constants {
+        static let semanticTopK: Int = 50
+        static let shortQueryKeywordBoost: Double = 1.5
+        static let defaultWeight: Double = 1.0
+        static let rrfNumerator: Double = 1.0
+        static let rankOffset: Int = 1
+        static let missingRank: Int = -1
+        static let zeroScore: Double = 0.0
+        static let zeroCount: Int = 0
+        static let countIncrement: Int = 1
+        static let emptyString = ""
+        /// 单行双链正则，避免跨行误匹配
+        static let wikiLinkPattern = #"\[\[([^\]\r\n]+)\]\]"#
+        static let wikiLinkCaptureGroup: Int = 1
+    }
+
     // MARK: - Link Resolution
     
     /// 根据标题或别名查找页面 (不区分大小写)
@@ -73,8 +89,9 @@ actor LinkService {
     /// - Parameter pages: 搜索范围（知识页面全集）
     /// - Returns: 按相关性降序排列的匹配页面列表
     func search(query: String, in pages: [KnowledgePage]) -> [KnowledgePage] {
-        guard !query.isEmpty else { return pages }
-        let lowercasedQuery = query.lowercased()
+        let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedQuery.isEmpty else { return pages }
+        let lowercasedQuery = trimmedQuery.lowercased()
 
         // Step 1: 多字段模糊匹配过滤（标题 / 正文 / 标签 / 别名）
         let filtered = pages.filter { page in
@@ -116,28 +133,30 @@ actor LinkService {
     /// - Parameter embeddingProvider: 向量嵌入服务
     /// - Returns: 包含排序结果和诊断信息的 SearchResult
     func hybridSearchWithDiagnostics(query: String, in pages: [KnowledgePage], embeddingProvider: any EmbeddingProvider) async -> SearchResult {
+        let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
         // Step 1: 关键词检索
-        let keywordResults = search(query: query, in: pages)
-        // Step 2: 语义向量检索
-        let semanticTopK = 50
-        let semanticScored = await embeddingProvider.search(query: query, topK: semanticTopK)
-        let semanticResults = filterSemanticResults(semanticScored, query: query, pages: pages)
+        let keywordResults = search(query: trimmedQuery, in: pages)
+        // Step 2: 语义向量检索（纯空白查询跳过向量检索，避免无意义计算）
+        let semanticScored: [(id: UUID, score: Float)] = trimmedQuery.isEmpty
+            ? []
+            : await embeddingProvider.search(query: trimmedQuery, topK: Constants.semanticTopK)
+        let semanticResults = filterSemanticResults(semanticScored, query: trimmedQuery, pages: pages)
 
         let k = SearchConstants.rrfK
         var scores: [UUID: Double] = [:]
         var diagMap: [UUID: (fts: Int, vec: Int)] = [:]
 
         // Step 3: 动态权重 — 短查询（如"3D"）关键词匹配更可靠
-        let shortQueryKeywordBoost: Double = 1.5
-        let defaultKeywordWeight: Double = 1.0
-        let keywordWeight = query.count < SearchConstants.shortQueryThreshold ? shortQueryKeywordBoost : defaultKeywordWeight
-        let semanticWeight = 1.0
+        let keywordWeight = trimmedQuery.count < SearchConstants.shortQueryThreshold
+            ? Constants.shortQueryKeywordBoost
+            : Constants.defaultWeight
+        let semanticWeight = Constants.defaultWeight
 
         // Step 4: RRF 分数累加 — 关键词结果
-        accumulateRRF(keywordResults, into: &scores, diagMap: &diagMap, k: k, weight: keywordWeight, ftsRank: { $0 + 1 })
+        accumulateRRF(keywordResults, into: &scores, diagMap: &diagMap, k: k, weight: keywordWeight, ftsRank: { $0 + Constants.rankOffset })
 
         // Step 5: RRF 分数累加 — 语义结果
-        accumulateRRF(semanticResults, into: &scores, diagMap: &diagMap, k: k, weight: semanticWeight, ftsRank: { _ in -1 }, vecRank: { $0 + 1 })
+        accumulateRRF(semanticResults, into: &scores, diagMap: &diagMap, k: k, weight: semanticWeight, ftsRank: { _ in Constants.missingRank }, vecRank: { $0 + Constants.rankOffset })
 
         // Step 6: 按融合分数降序排列并去重
         let sortedIDs = sortedIDsByScore(scores)
@@ -151,13 +170,13 @@ actor LinkService {
                 title: page.title,
                 ftsRank: ranks.fts,
                 vectorRank: ranks.vec,
-                finalScore: scores[page.id] ?? 0
+                finalScore: scores[page.id] ?? Constants.zeroScore
             )
         }
 
         let diagnosticInfo = SearchDiagnosticInfo(
             query: query,
-            rewrittenQuery: query,
+            rewrittenQuery: trimmedQuery,
             ftsCount: keywordResults.count,
             vectorCount: semanticResults.count,
             rrfTopResults: topDiagnostics
@@ -200,10 +219,10 @@ actor LinkService {
         var diagMap: [UUID: (fts: Int, vec: Int)] = [:]
 
         // Step 1: 关键词结果 RRF 打分
-        accumulateRRF(keywordResults, into: &scores, diagMap: &diagMap, k: k, weight: 1.0, ftsRank: { $0 + 1 })
+        accumulateRRF(keywordResults, into: &scores, diagMap: &diagMap, k: k, weight: Constants.defaultWeight, ftsRank: { $0 + Constants.rankOffset })
 
         // Step 2: 语义结果 RRF 打分（与关键词结果累加）
-        accumulateRRF(semanticResults, into: &scores, diagMap: &diagMap, k: k, weight: 1.0, ftsRank: { _ in -1 }, vecRank: { $0 + 1 })
+        accumulateRRF(semanticResults, into: &scores, diagMap: &diagMap, k: k, weight: Constants.defaultWeight, ftsRank: { _ in Constants.missingRank }, vecRank: { $0 + Constants.rankOffset })
 
         // Step 3: 按 RRF 总分降序排列，从并集中去重映射回 KnowledgePage
         let sortedIDs = sortedIDsByScore(scores)
@@ -231,11 +250,11 @@ actor LinkService {
         vecRank: ((Int) -> Int)? = nil
     ) {
         for (index, page) in results.enumerated() {
-            scores[page.id, default: 0.0] += (1.0 / Double(k + index + 1)) * weight
-            let existing = diagMap[page.id] ?? (-1, -1)
+            scores[page.id, default: Constants.zeroScore] += (Constants.rrfNumerator / Double(k + index + Constants.rankOffset)) * weight
+            let existing = diagMap[page.id] ?? (Constants.missingRank, Constants.missingRank)
             let newFts = ftsRank(index)
             let newVec = vecRank?(index) ?? existing.vec
-            diagMap[page.id] = (newFts == -1 ? existing.fts : newFts, newVec)
+            diagMap[page.id] = (newFts == Constants.missingRank ? existing.fts : newFts, newVec)
         }
     }
 
@@ -245,10 +264,16 @@ actor LinkService {
      * @return {[(tag: String, count: Int)]} 标签元组数组
      */
 
-    /// 按 RRF 总分降序排列 UUID，消除 `hybridSearchWithDiagnostics` 与 `rrf` 中重复的
-    /// `scores.keys.sorted { (scores[$0] ?? 0) > (scores[$1] ?? 0) }` 模式。
+    /// 按 RRF 总分降序排列 UUID，同分时以 uuidString 升序保底确保排序确定性。
     private func sortedIDsByScore(_ scores: [UUID: Double]) -> [UUID] {
-        scores.keys.sorted { (scores[$0] ?? 0) > (scores[$1] ?? 0) }
+        scores.keys.sorted { lhs, rhs in
+            let leftScore = scores[lhs] ?? Constants.zeroScore
+            let rightScore = scores[rhs] ?? Constants.zeroScore
+            if leftScore != rightScore {
+                return leftScore > rightScore
+            }
+            return lhs.uuidString < rhs.uuidString
+        }
     }
 
     /// allTags
@@ -256,9 +281,13 @@ actor LinkService {
     func allTags(in pages: [KnowledgePage]) -> [(tag: String, count: Int)] {
         var tagCount: [String: Int] = [:]
         for page in pages {
+            var seenInPage: Set<String> = []
             for tag in page.tags {
-                let cleanedTag = tag.replacingOccurrences(of: "#", with: "")
-                tagCount[cleanedTag, default: 0] += 1
+                let cleanedTag = tag
+                    .replacingOccurrences(of: SystemConstants.Character.hash, with: Constants.emptyString)
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !cleanedTag.isEmpty, seenInPage.insert(cleanedTag).inserted else { continue }
+                tagCount[cleanedTag, default: Constants.zeroCount] += Constants.countIncrement
             }
         }
         return tagCount.map { ($0.key, $0.value) }.sorted {
@@ -277,32 +306,80 @@ actor LinkService {
      * @return {[KnowledgePage]} 返回所有受影响且已更新内容的页面列表
      */
 
-    /// 准备重命名
+    /// 准备重命名（支持保留 `|别名` 与 `#锚点`，拦截空/空白或无变化的新标题）
     /// - Parameter page: page
     /// - Returns: 列表
     func prepareRename(page: KnowledgePage, to newTitle: String, in allPages: [KnowledgePage]) -> [KnowledgePage] {
+        let trimmedNewTitle = newTitle.trimmingCharacters(in: .whitespacesAndNewlines)
         let oldTitle = page.title
-        var modifiedPages: [KnowledgePage] = []
+        guard !trimmedNewTitle.isEmpty, trimmedNewTitle != oldTitle else { return [] }
 
-        // 1. 处理主页面
+        var modifiedPages: [KnowledgePage] = []
+        let now = Date()
+
+        // 1. 处理主页面（同步更新可能存在的自引用双链）
         var updatedMainPage = page
-        updatedMainPage.title = newTitle
-        updatedMainPage.updatedAt = Date()
+        updatedMainPage.title = trimmedNewTitle
+        if !oldTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            updatedMainPage.content = Self.replacingWikiLinks(in: updatedMainPage.content, from: oldTitle, to: trimmedNewTitle)
+        }
+        updatedMainPage.updatedAt = now
         modifiedPages.append(updatedMainPage)
 
-        // 2. 扫描并替换其他页面中的反向链接
-        let oldLink = SystemConstants.MarkdownSyntax.wikiLinkOpen + oldTitle + SystemConstants.MarkdownSyntax.wikiLinkClose
-        let newLink = SystemConstants.MarkdownSyntax.wikiLinkOpen + newTitle + SystemConstants.MarkdownSyntax.wikiLinkClose
+        // 2. 扫描并替换其他页面中的反向链接（空旧标题不做全局双链替换，防止误伤 `[[]]`）
+        guard !oldTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return modifiedPages
+        }
         for p in allPages where p.id != page.id {
-            if p.content.contains(oldLink) {
+            let updatedContent = Self.replacingWikiLinks(in: p.content, from: oldTitle, to: trimmedNewTitle)
+            if updatedContent != p.content {
                 var refPage = p
-                refPage.content = refPage.content.replacingOccurrences(of: oldLink, with: newLink)
-                refPage.updatedAt = Date()
+                refPage.content = updatedContent
+                refPage.updatedAt = now
                 modifiedPages.append(refPage)
             }
         }
 
         return modifiedPages
+    }
+
+    /// 精准替换 Markdown 双链中的目标页标题，保留 `#锚点` 与 `|显示别名`
+    internal static func replacingWikiLinks(in content: String, from oldTitle: String, to newTitle: String) -> String {
+        let normalizedOld = oldTitle.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        guard !normalizedOld.isEmpty,
+              let regex = try? NSRegularExpression(pattern: Constants.wikiLinkPattern) else {
+            return content
+        }
+        let nsContent = content as NSString
+        let matches = regex.matches(in: content, range: NSRange(location: Constants.zeroCount, length: nsContent.length))
+        guard !matches.isEmpty else { return content }
+
+        let result = NSMutableString(string: content)
+        for match in matches.reversed() {
+            let innerRange = match.range(at: Constants.wikiLinkCaptureGroup)
+            guard innerRange.location != NSNotFound else { continue }
+            let rawInner = nsContent.substring(with: innerRange)
+
+            // 拆分显示别名 `|` 与章节锚点 `#`，仅比对并替换页面标题主体
+            let aliasSplitIndex = rawInner.firstIndex(of: Character(SystemConstants.Character.pipe))
+            let targetAndAnchor = aliasSplitIndex.map { String(rawInner[..<$0]) } ?? rawInner
+            let aliasSuffix = aliasSplitIndex.map { String(rawInner[$0...]) } ?? Constants.emptyString
+
+            let anchorSplitIndex = targetAndAnchor.firstIndex(of: Character(SystemConstants.Character.hash))
+            let targetPart = anchorSplitIndex.map { String(targetAndAnchor[..<$0]) } ?? targetAndAnchor
+            let anchorSuffix = anchorSplitIndex.map { String(targetAndAnchor[$0...]) } ?? Constants.emptyString
+
+            guard targetPart.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() == normalizedOld else {
+                continue
+            }
+            let replacement = SystemConstants.MarkdownSyntax.wikiLinkOpen
+                + newTitle
+                + anchorSuffix
+                + aliasSuffix
+                + SystemConstants.MarkdownSyntax.wikiLinkClose
+            result.replaceCharacters(in: match.range, with: replacement)
+        }
+        return result as String
     }
 }
 

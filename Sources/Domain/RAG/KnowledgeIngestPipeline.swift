@@ -19,6 +19,23 @@ actor KnowledgeIngestPipeline {
     /// 共享实例
     static let shared = KnowledgeIngestPipeline()
 
+    private enum PipelineConstants {
+        static let extractionProgress: Double = 0.05
+        static let enrichmentProgress: Double = 0.15
+        static let chunkingProgress: Double = 0.40
+        static let embeddingProgress: Double = 0.75
+        static let completedProgress: Double = 1.0
+        static let parentChunkSize: Int = 1000
+        static let parentChunkOverlap: Int = 200
+        static let childChunkSize: Int = 300
+        static let childChunkOverlap: Int = 50
+        static let initialIndex: Int = 0
+        static let summaryIDPrefix = "sum_"
+        static let parentIDPrefix = "p_"
+        static let childIDInfix = "_c"
+        static let qaIDPrefix = "qa_"
+    }
+
     private let enricher = AIContentEnricher.shared
     private let chunker = TextChunkerProcessor()
     @ObservationIgnored private let taskCenter: TaskCenter
@@ -35,9 +52,14 @@ actor KnowledgeIngestPipeline {
         llm: (any LLMServiceProtocol)?,
         embeddingProvider: any EmbeddingProvider
     ) async throws -> String {
-        
+        // 空白或纯换行内容直接跳过，避免无意义的 LLM 调用与向量索引覆写
+        guard !content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return content
+        }
+        try Task.checkCancellation()
+
         // 0. 提取阶段
-        await updateProgress(stage: .extraction, progress: 0.05, log: L10n.Ingest.Status.starting)
+        await updateProgress(stage: .extraction, progress: PipelineConstants.extractionProgress, log: L10n.Ingest.Status.starting)
 
         // 1. 语义增强阶段
         let enrichedContent = try await performEnrichment(content: content, llm: llm)
@@ -59,16 +81,16 @@ actor KnowledgeIngestPipeline {
         guard let llm = llm else { return content }
         
         try Task.checkCancellation()
-        await updateProgress(stage: .enrichment, progress: 0.15, log: L10n.Ingest.Status.aiEnriching)
+        await updateProgress(stage: .enrichment, progress: PipelineConstants.enrichmentProgress, log: L10n.Ingest.Status.aiEnriching)
         return await enricher.enrich(content, llm: llm)
     }
 
     /// Step 2: 并发处理 — 同时执行摘要生成、父子块切分、反向 Q&A 生成。
-    /// 使用 withTaskGroup 实现结构化并发，各父块独立并行处理。
+    /// 使用 withThrowingTaskGroup 实现结构化并发，显式传播取消异常，严禁取消后以残缺分块覆写索引。
     private func performConcurrentProcessing(content: String, pageID: UUID, llm: (any LLMServiceProtocol)?) async throws -> [PageChunk] {
         try Task.checkCancellation()
         
-        return await withTaskGroup(of: [PageChunk].self) { group in
+        let finalChunks = try await withThrowingTaskGroup(of: [PageChunk].self) { group in
             
             // 摘要任务
             if let llm = llm {
@@ -78,31 +100,31 @@ actor KnowledgeIngestPipeline {
             }
             
             // 分块与 Q&A
-            await self.updateProgress(stage: .chunking, progress: 0.40, log: L10n.Ingest.Status.chunking)
+            await self.updateProgress(stage: .chunking, progress: PipelineConstants.chunkingProgress, log: L10n.Ingest.Status.chunking)
             
-            let parentChunkSize = 1000
-            let parentChunkOverlap = 200
-            let parentConfig = TextChunkerProcessor.Config(chunkSize: parentChunkSize, chunkOverlap: parentChunkOverlap, separators: TextChunkerProcessor.default.separators)
+            let parentConfig = TextChunkerProcessor.Config(
+                chunkSize: PipelineConstants.parentChunkSize,
+                chunkOverlap: PipelineConstants.parentChunkOverlap,
+                separators: TextChunkerProcessor.default.separators
+            )
             let parentChunks = self.chunker.split(text: content, config: parentConfig)
             
             for (pIndex, pChunk) in parentChunks.enumerated() {
                 group.addTask {
-                    do {
                     try Task.checkCancellation()
                     await self.taskCenter.addIngestSubLog(L10n.Ingest.Status.processingChunk)
-                        return try await self.processParentChunk(pChunk, pIndex: pIndex, pageID: pageID, llm: llm)
-                    } catch {
-                        return []
-                    }
+                    return try await self.processParentChunk(pChunk, pIndex: pIndex, pageID: pageID, llm: llm)
                 }
             }
             
-            var finalChunks: [PageChunk] = []
-            for await batch in group {
-                finalChunks.append(contentsOf: batch)
+            var collected: [PageChunk] = []
+            for try await batch in group {
+                collected.append(contentsOf: batch)
             }
-            return finalChunks
+            return collected
         }
+        try Task.checkCancellation()
+        return finalChunks
     }
 
     /// 生成全局摘要块：取正文前 2000 字符发送给 LLM 生成概括性摘要。
@@ -117,13 +139,13 @@ actor KnowledgeIngestPipeline {
                 let trimmedSummary = summary.trimmingCharacters(in: .whitespacesAndNewlines)
                 guard !trimmedSummary.isEmpty else { return [] }
                 return [PageChunk(
-                    id: "sum_\(pageID.uuidString)",
+                    id: "\(PipelineConstants.summaryIDPrefix)\(pageID.uuidString)",
                     pageID: pageID,
                     parentID: nil,
                     chunkType: .summary,
                     content: trimmedSummary,
-                    index: 0,
-                    startIndex: 0,
+                    index: PipelineConstants.initialIndex,
+                    startIndex: PipelineConstants.initialIndex,
                     embedding: nil,
                     createdAt: Date(),
                     updatedAt: Date()
@@ -136,12 +158,12 @@ actor KnowledgeIngestPipeline {
     /// Step 3: 向量索引 — 将已产生的所有 PageChunk 批量送入 VectorIndexer 嵌入并持久化。
     private func performEmbedding(chunks: [PageChunk], pageID: UUID, embeddingProvider: any EmbeddingProvider) async throws {
         try Task.checkCancellation()
-        await updateProgress(stage: .embedding, progress: 0.75, log: L10n.Ingest.Status.vectorizing)
+        await updateProgress(stage: .embedding, progress: PipelineConstants.embeddingProgress, log: L10n.Ingest.Status.vectorizing)
         
         let indexer = VectorIndexer(embeddingProvider: embeddingProvider)
         await indexer.index(pageID: pageID, chunks: chunks)
         
-        await updateProgress(stage: .embedding, progress: 1.0, log: L10n.Ingest.Status.completed)
+        await updateProgress(stage: .embedding, progress: PipelineConstants.completedProgress, log: L10n.Ingest.Status.completed)
     }
 
     // MARK: - Private Helpers
@@ -162,10 +184,12 @@ actor KnowledgeIngestPipeline {
         llm: (any LLMServiceProtocol)?
     ) async throws -> [PageChunk] {
         var chunkBatch: [PageChunk] = []
-        let parentChunkID = "p_\(pageID.uuidString)_\(pIndex)"
-        let childChunkSize = 300
-        let childChunkOverlap = 50
-        let childConfig = TextChunkerProcessor.Config(chunkSize: childChunkSize, chunkOverlap: childChunkOverlap, separators: TextChunkerProcessor.default.separators)
+        let parentChunkID = "\(PipelineConstants.parentIDPrefix)\(pageID.uuidString)\(SystemConstants.Character.underscore)\(pIndex)"
+        let childConfig = TextChunkerProcessor.Config(
+            chunkSize: PipelineConstants.childChunkSize,
+            chunkOverlap: PipelineConstants.childChunkOverlap,
+            separators: TextChunkerProcessor.default.separators
+        )
 
         // 1. 保存父块
         let parentRecord = PageChunk(
@@ -183,18 +207,18 @@ actor KnowledgeIngestPipeline {
         )
         chunkBatch.append(parentRecord)
 
-        // 2. 生成子块
+        // 2. 生成子块（将子块相对父块的局部偏移换算为文档全局偏移）
         let children = self.chunker.split(text: pChunk.text, config: childConfig)
         for (cIndex, cChunk) in children.enumerated() {
             let childRecord = PageChunk(
-                id: "\(parentChunkID)_c\(cIndex)",
+                id: "\(parentChunkID)\(PipelineConstants.childIDInfix)\(cIndex)",
                 pageID: pageID,
                 parentID: parentChunkID,
                 chunkType: .child,
                 content: cChunk.text,
                 anchorPath: pChunk.anchorPath,
                 index: cIndex,
-                startIndex: cChunk.startIndex,
+                startIndex: pChunk.startIndex + cChunk.startIndex,
                 embedding: nil,
                 createdAt: Date(),
                 updatedAt: Date()
@@ -222,14 +246,16 @@ actor KnowledgeIngestPipeline {
             prompt: qaPrompt, systemPrompt: L10n.AI.Prompt.ingestDiscoveryAssistant
         ), !Task.isCancelled else { return }
         let questions = qaResponse.components(separatedBy: .newlines)
-            .filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
         for (qIndex, question) in questions.prefix(PromptConstants.IngestPipeline.maxQAPairsPerChunk).enumerated() {
             chunkBatch.append(PageChunk(
-                id: "qa_\(parentChunkID)_\(qIndex)",
+                id: "\(PipelineConstants.qaIDPrefix)\(parentChunkID)\(SystemConstants.Character.underscore)\(qIndex)",
                 pageID: pageID,
                 parentID: parentChunkID,
                 chunkType: .qaPair,
                 content: question,
+                anchorPath: pChunk.anchorPath,
                 index: qIndex,
                 startIndex: pChunk.startIndex,
                 embedding: nil,

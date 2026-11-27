@@ -206,4 +206,52 @@ final class LinkServiceTests: XCTestCase {
         XCTAssertTrue(updatedPages[1].content.contains("[[New Title]]"))
         XCTAssertFalse(updatedPages[1].content.contains("[[Old Title]]"))
     }
+
+    // MARK: - 缺陷 #239 回归：重命名保留别名/锚点、空白搜索与标签清洗
+
+    func testPrepareRename_preservesAliasAndAnchorAndAvoidsPrefixCollision() async {
+        let mainPage = KnowledgePage(title: "Old Title", content: "Self ref [[Old Title#Intro]]")
+        let refPage = KnowledgePage(
+            title: "Ref Page",
+            content: "Link [[Old Title|显示名]], anchor [[Old Title#Sec1]], both [[old title#Sec2|别名]], unrelated [[Old Title 2]]."
+        )
+
+        let updated = await sut.prepareRename(page: mainPage, to: "New Title", in: [mainPage, refPage])
+        XCTAssertEqual(updated.count, 2)
+        XCTAssertEqual(updated[0].title, "New Title")
+        XCTAssertEqual(updated[0].content, "Self ref [[New Title#Intro]]")
+        XCTAssertEqual(
+            updated[1].content,
+            "Link [[New Title|显示名]], anchor [[New Title#Sec1]], both [[New Title#Sec2|别名]], unrelated [[Old Title 2]]."
+        )
+    }
+
+    func testPrepareRename_blankOrUnchangedTitle_returnsEmpty() async {
+        let mainPage = KnowledgePage(title: "Old Title", content: "Content")
+        let refPage = KnowledgePage(title: "Ref", content: "[[Old Title]]")
+
+        let blankResult = await sut.prepareRename(page: mainPage, to: "   \n ", in: [mainPage, refPage])
+        XCTAssertTrue(blankResult.isEmpty, "空白新标题应直接拦截并返回空数组")
+
+        let unchangedResult = await sut.prepareRename(page: mainPage, to: "Old Title", in: [mainPage, refPage])
+        XCTAssertTrue(unchangedResult.isEmpty, "未变更的标题无需触发全库重写")
+    }
+
+    func testSearch_trimsWhitespaceAndTreatsBlankAsAllPages() async {
+        let blankResults = await sut.search(query: "   \t  ", in: mockPages)
+        XCTAssertEqual(blankResults.count, mockPages.count, "纯空白查询应返回全集")
+
+        let trimmedResults = await sut.search(query: "  Swift  ", in: mockPages)
+        XCTAssertEqual(trimmedResults.first?.title, "Swift", "带首尾空格的查询应精确命中目标标题")
+    }
+
+    func testAllTags_filtersBlankTagsAndDeduplicatesWithinSinglePage() async {
+        var page1 = KnowledgePage(title: "Page 1")
+        page1.tags = ["#Swift", "Swift", "  ", "#", "# iOS "]
+
+        let tags = await sut.allTags(in: [page1])
+        XCTAssertEqual(tags.count, 2)
+        XCTAssertEqual(tags.first(where: { $0.tag == "Swift" })?.count, 1, "单页内重复标签不应重复计数")
+        XCTAssertEqual(tags.first(where: { $0.tag == "iOS" })?.count, 1)
+    }
 }

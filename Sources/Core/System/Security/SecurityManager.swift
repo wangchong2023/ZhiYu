@@ -55,33 +55,79 @@ class SecurityManager: @unchecked Sendable {
     }
 
     // MARK: - 辅助方法
-    
+
+    /// 密钥解析结果
+    internal struct ResolvedKeyMaterial: Sendable, Equatable {
+        let value: String
+        /// 是否允许缓存到内存（仅在确认 Keychain 成功读取或成功持久化时才允许缓存）
+        let shouldCache: Bool
+    }
+
+    /// 统一获取或生成安全密钥的核心纯逻辑 (@SR-02)
+    /// 严禁在 Keychain 读取抛出异常（如锁屏 `errSecInteractionNotAllowed`）时吞错并生成/覆写新密钥，
+    /// 否则会导致用户已加密数据库或历史签名永久不可解密；此时返回不可缓存的临时值并保留 Keychain 原状。
+    internal static func resolveKeyMaterial(
+        forKey key: String,
+        errorMessage: String,
+        retrieve: (String) throws -> String?,
+        store: (String, String) throws -> Void,
+        generator: () -> String
+    ) -> ResolvedKeyMaterial {
+        // 1. 优先从 Keychain 读取；区分「不存在 (nil)」与「访问异常 (throw)」
+        do {
+            if let existing = try retrieve(key) {
+                return ResolvedKeyMaterial(value: existing, shouldCache: true)
+            }
+        } catch {
+            // 锁屏/临时权限异常：严禁覆写 Keychain 且严禁写入内存缓存，等待设备解锁后重试恢复真实密钥
+            SecurityLogHelper.logError(
+                target: CoreConstants.SecurityLogTarget.securityManager,
+                details: errorMessage
+            )
+            return ResolvedKeyMaterial(value: generator(), shouldCache: false)
+        }
+
+        // 2. 确认 Keychain 中确实不存在该密钥后，再生成新密钥并持久化
+        let newValue = generator()
+        do {
+            try store(key, newValue)
+            return ResolvedKeyMaterial(value: newValue, shouldCache: true)
+        } catch {
+            // 持久化失败：仅记录安全日志，不写入内存缓存，避免后续误认为已持久化
+            SecurityLogHelper.logError(
+                target: CoreConstants.SecurityLogTarget.securityManager,
+                details: errorMessage
+            )
+            return ResolvedKeyMaterial(value: newValue, shouldCache: false)
+        }
+    }
+
+    /// 恒定时间字符串字节比对，防御 HMAC 签名校验时序侧信道攻击
+    internal static func constantTimeEquals(_ lhs: String, _ rhs: String) -> Bool {
+        let lhsBytes = Array(lhs.utf8)
+        let rhsBytes = Array(rhs.utf8)
+        guard lhsBytes.count == rhsBytes.count else { return false }
+        var diff: UInt8 = 0
+        for (a, b) in zip(lhsBytes, rhsBytes) {
+            diff |= a ^ b
+        }
+        return diff == 0
+    }
+
     /// 统一获取或生成安全密钥的核心逻辑 (@SR-02)
-    /// 支持：Keychain 优先 -> 自动生成 -> 安全持久化
+    /// 支持：Keychain 优先 -> 仅在确实不存在时生成 -> 安全持久化
     private func getOrGenerateKey(
         forKey key: String,
         errorMessage: String,
         generator: () -> String
-    ) -> String {
-        // 1. 优先从 Keychain 读取
-        if let existing = try? KeychainService.shared.retrieve(key: key) {
-            return existing
-        }
-
-        // 3. 生成新密钥
-        let newValue = generator()
-        
-        // 4. 持久化
-        do {
-            try KeychainService.shared.store(key: key, value: newValue)
-            return newValue
-        } catch {
-            // 生产环境下安全存储故障：记录严重错误并返回内存中的临时密钥，
-            // 避免 fatalError 导致白屏崩溃，但此密钥不会持久化（重启后丢失）。
-            assertionFailure(" [SecurityManager] \(errorMessage)")
-            return newValue
-
-        }
+    ) -> ResolvedKeyMaterial {
+        Self.resolveKeyMaterial(
+            forKey: key,
+            errorMessage: errorMessage,
+            retrieve: { try KeychainService.shared.retrieve(key: $0) },
+            store: { try KeychainService.shared.store(key: $0, value: $1) },
+            generator: generator
+        )
     }
 
     // MARK: - 物理加密 (SQLCipher)
@@ -92,14 +138,16 @@ class SecurityManager: @unchecked Sendable {
             return cached
         }
         
-        let passphrase = getOrGenerateKey(
+        let resolved = getOrGenerateKey(
             forKey: dbPassphraseKey,
             errorMessage: L10n.Security.keychainDatabasePassphraseError,
-            generator: { UUID().uuidString + "-" + Data(UUID().uuidString.utf8).base64EncodedString() }
+            generator: { UUID().uuidString + SystemConstants.Character.dash + Data(UUID().uuidString.utf8).base64EncodedString() }
         )
         
-        cachedPassphrase = passphrase
-        return passphrase
+        if resolved.shouldCache {
+            cachedPassphrase = resolved.value
+        }
+        return resolved.value
     }
 
     // MARK: - 内容级加密 (AES-GCM)
@@ -132,7 +180,7 @@ class SecurityManager: @unchecked Sendable {
             errorMessage: L10n.Security.keychainHMACSaltError,
             generator: {
                 let legacySalt = AppConstants.Keys.Storage.defaultLegacySalt
-                let newSalt = UUID().uuidString + "-" + UUID().uuidString
+                let newSalt = UUID().uuidString + SystemConstants.Character.dash + UUID().uuidString
                 
                 var hasSignatures = keyStore?.dictionaryRepresentation().keys.contains { $0.hasPrefix(signatureKeyPrefix) } ?? false
                 
@@ -145,7 +193,7 @@ class SecurityManager: @unchecked Sendable {
                 
                 return hasSignatures ? legacySalt : newSalt
             }
-        )
+        ).value
     }
 
     /// 计算HMAC
@@ -168,7 +216,7 @@ class SecurityManager: @unchecked Sendable {
         let currentSalt = await getSalt()
         do {
             guard let repo = signatureRepository else {
-                throw AppError.security(L10n.Security.signatureRepositoryNotRegistered, code: 404)
+                throw AppError.security(L10n.Security.signatureRepositoryNotRegistered, code: SystemConstants.HTTPStatusCode.notFound)
             }
             try await repo.saveSignature(signature, forFilePath: filePath, salt: currentSalt)
         } catch {
@@ -212,7 +260,7 @@ class SecurityManager: @unchecked Sendable {
         
         do {
             let currentSig = try await calculateHMAC(for: fileURL)
-            return currentSig == expectedSig
+            return Self.constantTimeEquals(currentSig, expectedSig)
         } catch {
             return false
         }

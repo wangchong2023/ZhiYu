@@ -245,21 +245,24 @@
 | **234** | `DynamicComplianceManager+Patch.swift` 生产代码中残留 `VALID_TEST_PUBLIC_KEY` 验签绕过后门：任何含该字符串的 PEM 公钥搭配任意非空 Base64 即可跳过真实 RSA 签名校验，且违反测试专用代码禁止进入生产 target 红线 | 攻击者下发含 `VALID_TEST_PUBLIC_KEY` 的公钥与伪造签名覆盖云端合规策略 | 合规敏感词库与拒答文案可被中间人任意篡改甚至清空 | **High** | 架构设计与安全/网络健壮性 | 彻底删除 `ComplianceTestKey` 生产后门分支，100% 走真实 `SecKeyVerifySignature` RSA-SHA256 验签并收敛 `PatchCryptoConstants`；全部合规测试升级为 `SecKeyCreateRandomKey` 真实 RSA-2048 签发验签 | **✅ 已解决** | 是 (铲除生产代码测试验签后门并强制真实 RSA 验签) | 是 (`DynamicComplianceSignatureTests` / `DynamicCompliancePatchTests`) | ✅ 已闭环 |
 | **235** | `PluginLoader.getSignatureKey` 使用 `try? KeychainService.shared.retrieve` 吞掉锁屏/临时异常并静默生成全新 32 字节密钥覆写旧密钥；`isFileNameSafe` 漏拦截单点 `.` 与空字节 `\0` | 设备锁屏后台触发插件签名校验，或插件清单传入 `.` / 空字节文件名 | 所有已安装插件 HMAC-SHA256 签名永久失效，或出现单点/空字节路径绕过 | **High** | 架构设计与安全/网络健壮性 | `getSignatureKey` 改用 `do/catch` 严禁吞错覆写（仅明确返回 `nil` 时新建并持久化）；`isFileNameSafe` 补齐 `.` 与 `\0` 拦截；收敛 `SignatureConstants` | **✅ 已解决** | 是 (插件签名密钥异常保护与文件名安全校验) | 是 (`PluginLoaderSecurityTests`) | ✅ 已闭环 |
 | **236** | `AppLinkProcessor.extractOutgoingLinks` 未剥离双链 `|` 别名与 `#` 章节锚点、未过滤空白双链且允许 `[^]]+` 跨行误吞多段正文 | 笔记中包含 `[[目标\|别名]]`、`[[目标#章节]]`、`[[   ]]` 或未闭合跨行 `[[...` | 知识图谱生成大量幽灵孤立节点、空白出链或跨行误连边 | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | 收敛 `LinkSyntax` 常量，改用单行正则 `\[\[([^\]\r\n]+)\]\]`，剥离 `|` 别名与 `#` 锚点并过滤空白结果 | **✅ 已解决** | 是 (Markdown 双链规范化解析) | 是 (`ZhiYuModelTests`) | ✅ 已闭环 |
+| **237** | `SecurityManager.getOrGenerateKey` 使用 `try? KeychainService.shared.retrieve` 吞掉锁屏/权限异常（如 `errSecInteractionNotAllowed`），误将异常视作密钥缺失并生成新密钥覆写 Keychain 且污染 `cachedPassphrase`；`verifyIntegrity` 使用普通 `==` 比对 HMAC 摘要且含硬编码状态码 `404` | 设备锁屏后台触发 SQLCipher 口令或 HMAC 盐读取，或针对 HMAC 校验发起时序侧信道探测 | 已加密本地数据库或历史文件完整性签名永久失效，且锁屏临时假密码常驻内存导致解锁后仍持续解密失败 | **High** | 架构设计与安全/网络健壮性 | 抽取 `resolveKeyMaterial` 显式区分 `nil` 与异常：读取抛错时严禁 `store` 覆写且返回 `shouldCache = false` 不污染内存缓存；新增 `constantTimeEquals` 恒定时间比对 HMAC；`404`/`-` 收敛至 `SystemConstants` | **✅ 已解决** | 是 (主密钥 Keychain 锁屏异常保护与恒定时间签名比对) | 是 (`SecurityManagerTests`) | ✅ 已闭环 |
+| **238** | `KnowledgeIngestPipeline` 存在三重缺陷：子块 `startIndex` 直接使用相对父块的局部偏移未叠加 `pChunk.startIndex`，导致第 2+ 个父块下所有子块引用高亮跳回文首；`performConcurrentProcessing` 在 `withTaskGroup` 中吞掉 `CancellationError` 返回空数组；未拦截纯空白内容白白触发 LLM 与索引 | 摄入超 1000 字符多段长文进行子块引用溯源、中途取消摄入任务、或提交纯空格/换行内容 | RAG 引用定位全部错位、取消摄入时可能以残缺分块覆写有效索引、纯空白笔记浪费 LLM 算力 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 子块偏移修正为 `pChunk.startIndex + cChunk.startIndex`；改用 `withThrowingTaskGroup` 显式传播 `CancellationError`；入口拦截纯空白内容；反向 Q&A 清洗首尾空白并继承 `anchorPath`；收敛 `PipelineConstants` | **✅ 已解决** | 是 (RAG 父子分块全局偏移对齐与取消异常传播) | 是 (`KnowledgeIngestPipelineEdgeTests`) | ✅ 已闭环 |
+| **239** | `LinkService` 存在四重边界缺陷：`prepareRename` 仅做 `[[OldTitle]]` 死板字面替换，漏改 `[[OldTitle\|别名]]` / `[[OldTitle#章节]]` 与自引用且未拦截空白新标题；`search` 未 trim 首尾空白；`allTags` 允许纯 `#`/空白污染标签榜且单页重复标签重复计数；`sortedIDsByScore` 同分排序非确定 | 重命名包含别名/锚点引用的页面、传入空白标题/搜索词、或页面含 `#`/重复标签 | 页面重命名后全库带别名/锚点双链断链、空标题损坏数据、标签榜出现空项、RRF 同分结果随机抖动 | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | 抽取 `replacingWikiLinks` 精准保留 `#锚点` 与 `\|别名` 并拦截空白/无变更重命名；`search`/`hybridSearchWithDiagnostics` 统一 trim 并跳过纯空白向量检索；`allTags` 清洗空项并按页去重；`sortedIDsByScore` 增加 `uuidString` 保底排序；收敛 `Constants` | **✅ 已解决** | 是 (Wiki 双链重命名语义保真与检索/标签规范化) | 是 (`LinkServiceTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**236 项**
+- **收录问题总数**：**239 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：63 项 (26.7%)
-  - 状态机并发与数据生命周期：56 项 (23.7%)
-  - 架构设计与安全/网络健壮性：76 项 (32.2%)
-  - UI/交互与防御性缺陷：17 项 (7.2%)
-  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (10.2%)
+  - 功能缺陷与核心算法/解析器/数据完整性：65 项 (27.2%)
+  - 状态机并发与数据生命周期：56 项 (23.4%)
+  - 架构设计与安全/网络健壮性：77 项 (32.2%)
+  - UI/交互与防御性缺陷：17 项 (7.1%)
+  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (10.0%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：143 项 (60.6%)
-  - **Medium（功能异常/算法边界/性能损耗）**：66 项 (28.0%)
-  - **Low（样式异味/边界校验/门禁规范）**：27 项 (11.4%)
-- **修复闭环率**：**100% (236/236 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：145 项 (60.7%)
+  - **Medium（功能异常/算法边界/性能损耗）**：67 项 (28.0%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (11.3%)
+- **修复闭环率**：**100% (239/239 项已修复闭环)**
 
