@@ -58,6 +58,9 @@ extension GlobalModelManager {
         static let supportedExtensions = [".litertlm", ".task", ".gguf", ".bin"]
         static let customModelPrefix = "custom-"
         static let customVendor = "Local"
+        static let unsafeIdCharacters = [" ", "/", "\\", "..", ":"]
+        static let idReplacementHyphen = "-"
+        static let dotPrefix = "."
         static let defaultMinMemoryGB: Double = 4.0
         static let defaultTemperature: Double = 0.7
         static let defaultTopP: Double = 0.9
@@ -136,6 +139,69 @@ extension GlobalModelManager {
         hasHuggingFaceToken = false
     }
 
+    /// 临时承载已暂存并完成格式校验的 BYOM 文件元数据
+    private struct StagedBYOMFile {
+        let sanitizedId: String
+        let baseName: String
+        let destURL: URL
+        let fileSize: Int64
+        let detectedFormat: String
+    }
+
+    /// 规范化自定义模型标识并暂存/校验物理权重文件（同路径原地导入时跳过删拷以保护源文件）
+    private func stageAndValidateBYOMFile(from sourceURL: URL) throws -> StagedBYOMFile {
+        let fm = FileManager.default
+        let docDir = fm.urls(for: .documentDirectory, in: .userDomainMask).first ?? fm.temporaryDirectory
+        let baseName = sourceURL.deletingPathExtension().lastPathComponent
+        let normalizedBaseName = BYOMConstants.unsafeIdCharacters.reduce(baseName.lowercased()) { partial, token in
+            partial.replacingOccurrences(of: token, with: BYOMConstants.idReplacementHyphen)
+        }
+        let sanitizedId = normalizedBaseName.hasPrefix(BYOMConstants.customModelPrefix)
+            ? normalizedBaseName
+            : BYOMConstants.customModelPrefix + normalizedBaseName
+        let rawExt = BYOMConstants.dotPrefix + sourceURL.pathExtension.lowercased()
+        let preservedExt = BYOMConstants.supportedExtensions.contains(rawExt)
+            ? rawExt
+            : FeatureConstants.ModelSpecConstants.modelBinExtension
+        let destURL = docDir.appendingPathComponent(sanitizedId + preservedExt)
+        let isSameFile = sourceURL.standardizedFileURL == destURL.standardizedFileURL
+
+        if !isSameFile {
+            if fm.fileExists(atPath: destURL.path) {
+                try fm.removeItem(at: destURL)
+            }
+            try fm.copyItem(at: sourceURL, to: destURL)
+        }
+
+        let cleanupIfCopied = {
+            if !isSameFile { try? fm.removeItem(at: destURL) }
+        }
+        let attrs = try fm.attributesOfItem(atPath: destURL.path)
+        let fileSize = (attrs[.size] as? Int64) ?? 0
+        guard fileSize > 0 else {
+            cleanupIfCopied()
+            throw BYOMImportError.emptyFile
+        }
+
+        switch ModelFormatProbe.shared.inspect(fileURL: destURL) {
+        case .valid(let format):
+            return StagedBYOMFile(
+                sanitizedId: sanitizedId,
+                baseName: baseName,
+                destURL: destURL,
+                fileSize: fileSize,
+                detectedFormat: format
+            )
+        case .corrupted(let reason):
+            // 强拦截坏文件并立即清理沙盒脏副本，避免孤儿文件与错误完成状态
+            cleanupIfCopied()
+            throw BYOMImportError.corruptedFormat(reason)
+        case .notFound:
+            cleanupIfCopied()
+            throw BYOMImportError.emptyFile
+        }
+    }
+
     /// 导入本地自定义模型权重（BYOM：支持 .litertlm / .task / .gguf / .bin）
     @discardableResult
     public func importCustomModel(from sourceURL: URL) throws -> LLMManifest {
@@ -146,64 +212,28 @@ extension GlobalModelManager {
             }
         }
 
-        let fm = FileManager.default
-        let docDir = fm.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        let baseName = sourceURL.deletingPathExtension().lastPathComponent
-        let sanitizedId = BYOMConstants.customModelPrefix + baseName.lowercased()
-            .replacingOccurrences(of: " ", with: "-")
-        let rawExt = "." + sourceURL.pathExtension.lowercased()
-        let preservedExt = BYOMConstants.supportedExtensions.contains(rawExt)
-            ? rawExt
-            : FeatureConstants.ModelSpecConstants.modelBinExtension
-        let destURL = docDir.appendingPathComponent(sanitizedId + preservedExt)
-
-        if fm.fileExists(atPath: destURL.path) {
-            try fm.removeItem(at: destURL)
-        }
-        try fm.copyItem(at: sourceURL, to: destURL)
-
-        let attrs = try fm.attributesOfItem(atPath: destURL.path)
-        let fileSize = (attrs[.size] as? Int64) ?? 0
-        guard fileSize > 0 else {
-            try? fm.removeItem(at: destURL)
-            throw BYOMImportError.emptyFile
-        }
-
-        let probe = ModelFormatProbe.shared.inspect(fileURL: destURL)
-        let detectedFormat: String
-        switch probe {
-        case .valid(let format):
-            detectedFormat = format
-        case .corrupted(let reason):
-            // 强拦截坏文件并立即清理沙盒脏副本，避免孤儿文件与错误完成状态
-            try? fm.removeItem(at: destURL)
-            throw BYOMImportError.corruptedFormat(reason)
-        case .notFound:
-            try? fm.removeItem(at: destURL)
-            throw BYOMImportError.emptyFile
-        }
-
+        let staged = try stageAndValidateBYOMFile(from: sourceURL)
         let receipt = ModelDownloadReceipt(
-            modelId: sanitizedId,
-            exactFileSize: fileSize,
+            modelId: staged.sanitizedId,
+            exactFileSize: staged.fileSize,
             completedAt: Date(),
             sha256Checksum: nil,
-            format: detectedFormat
+            format: staged.detectedFormat
         )
         ModelReceiptStore.shared.saveReceipt(receipt)
-        modelStorageUsage[sanitizedId] = fileSize
-        markModelAsDownloaded(sanitizedId)
-        downloadStates[sanitizedId] = .completed(localURL: destURL)
+        modelStorageUsage[staged.sanitizedId] = staged.fileSize
+        markModelAsDownloaded(staged.sanitizedId)
+        downloadStates[staged.sanitizedId] = .completed(localURL: staged.destURL)
 
         let manifest = buildCustomManifest(
-            sanitizedId: sanitizedId,
-            baseName: baseName,
+            sanitizedId: staged.sanitizedId,
+            baseName: staged.baseName,
             sourceURL: sourceURL,
-            destURL: destURL,
-            fileSize: fileSize
+            destURL: staged.destURL,
+            fileSize: staged.fileSize
         )
         persistCustomManifest(manifest)
-        remoteManifests.removeAll { $0.modelId == sanitizedId }
+        remoteManifests.removeAll { $0.modelId == staged.sanitizedId }
         remoteManifests.insert(manifest, at: 0)
         return manifest
     }

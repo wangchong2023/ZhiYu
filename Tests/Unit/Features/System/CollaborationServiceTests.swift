@@ -188,4 +188,54 @@ final class CollaborationServiceTests: XCTestCase {
         
         XCTAssertNotNil(service, "接收协作数据后服务应保持正常运行")
     }
+
+    /// 验证远端 pageSync 推送纯空白标题时被拦截，不会覆盖本地正常页面标题
+    func testApplyRemotePage_blankTitle_isIgnored() async throws {
+        let existing = KnowledgePage(title: "Original Valid Title", content: "Original Body")
+        mockDelegate.pages = [existing]
+
+        let payload: [String: Any] = [
+            "type": "pageSync",
+            "page": [
+                "id": existing.id.uuidString,
+                "title": "   \n\t  ",
+                "content": "Corrupted Body",
+                "type": existing.pageType.rawValue,
+                "tags": existing.tags,
+                "status": existing.status.rawValue,
+                "updated": Date().addingTimeInterval(60).timeIntervalSince1970
+            ]
+        ]
+        let data = try JSONSerialization.data(withJSONObject: payload)
+        mockProvider.simulateDataReceived(data, from: "peer-1")
+        try await Task.sleep(nanoseconds: 50_000_000)
+
+        XCTAssertTrue(mockDelegate.appliedUpdates.isEmpty, "纯空白标题的远端页面更新必须被拦截")
+        XCTAssertTrue(mockDelegate.insertedPages.isEmpty, "纯空白标题的远端页面不得被插入")
+    }
+
+    /// 验证合法远端 pageSync 仍能正常触发更新
+    func testApplyRemotePage_validPayload_appliesUpdate() async throws {
+        let existing = KnowledgePage(title: "Old Title", content: "Old Body")
+        mockDelegate.pages = [existing]
+
+        let payload: [String: Any] = [
+            "type": "pageSync",
+            "page": [
+                "id": existing.id.uuidString,
+                "title": "Updated Title",
+                "content": "Updated Body",
+                "type": existing.pageType.rawValue,
+                "tags": ["sync"],
+                "status": existing.status.rawValue,
+                "updated": Date().addingTimeInterval(60).timeIntervalSince1970
+            ]
+        ]
+        let data = try JSONSerialization.data(withJSONObject: payload)
+        mockProvider.simulateDataReceived(data, from: "peer-2")
+        try await Task.sleep(nanoseconds: 50_000_000)
+
+        XCTAssertEqual(mockDelegate.appliedUpdates.count, 1, "合法远端页面更新应被正常应用")
+        XCTAssertEqual(mockDelegate.appliedUpdates.first?.title, "Updated Title")
+    }
 }

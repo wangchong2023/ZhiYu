@@ -293,4 +293,24 @@ final class ModelManagerBYOMAndSourceTests: XCTestCase {
         XCTAssertGreaterThan(result.decodeTPS, 0.0)
         XCTAssertGreaterThanOrEqual(result.ttftMilliseconds, 0.0)
     }
+
+    // MARK: - 8. BYOM 同路径原地重复导入保护（防先删后拷自毁源文件）
+
+    func testImportCustomModelSamePathInDocumentsDoesNotDestroySourceFile() throws {
+        let fm = FileManager.default
+        let docDir = fm.urls(for: .documentDirectory, in: .userDomainMask).first ?? fm.temporaryDirectory
+        let modelId = "custom-samepath-\(UUID().uuidString.lowercased())"
+        let inPlaceURL = docDir.appendingPathComponent("\(modelId).gguf")
+
+        var payload = Data("GGUF".utf8)
+        payload.append(Data(repeating: 0xCD, count: 40_960))
+        try payload.write(to: inPlaceURL)
+        createdTempURLs.append(inPlaceURL)
+        importedModelIds.append(modelId)
+
+        let manifest = try manager.importCustomModel(from: inPlaceURL)
+        XCTAssertEqual(manifest.modelId, modelId)
+        XCTAssertTrue(fm.fileExists(atPath: inPlaceURL.path), "原地重复导入不得删除源文件本身")
+        XCTAssertEqual(try Data(contentsOf: inPlaceURL).count, payload.count, "原地重复导入后源文件内容必须完整保留")
+    }
 }

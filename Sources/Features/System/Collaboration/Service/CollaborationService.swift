@@ -227,13 +227,15 @@ extension CollaborationService {
         guard let idString = pageData["id"] as? String,
               let pageID = UUID(uuidString: idString),
               let title = pageData["title"] as? String,
+              !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
               let content = pageData["content"] as? String,
               let typeRaw = pageData["type"] as? String,
               let pageType = PageType(rawValue: typeRaw),
               let tags = pageData["tags"] as? [String],
               let statusRaw = pageData["status"] as? String,
               let status = PageStatus(rawValue: statusRaw),
-              let updatedTs = pageData["updated"] as? TimeInterval
+              let updatedTs = pageData["updated"] as? TimeInterval,
+              updatedTs.isFinite
         else { return }
 
         let remoteUpdated = Date(timeIntervalSince1970: updatedTs)

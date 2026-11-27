@@ -78,6 +78,8 @@ enum PluginConstants {
     // MARK: - 网络安全 (Network Security)
     /// 插件网络请求安全策略常量
     enum NetworkSecurity {
+        /// 允许的 URL 协议白名单（仅限 HTTP/HTTPS，拒绝 file:// / ftp:// / data: 等危险协议）
+        static let allowedSchemes: Set<String> = ["http", "https"]
         /// 允许的 HTTP 方法白名单（拒绝 DELETE/TRACE/CONNECT 等危险方法）
         static let allowedHTTPMethods: Set<String> = ["GET", "POST", "PUT", "PATCH", "HEAD", "OPTIONS"]
         /// 危险 header 黑名单（插件不可注入宿主凭证相关 header）
@@ -85,6 +87,8 @@ enum PluginConstants {
             "Authorization", "Cookie", "Set-Cookie",
             "Proxy-Authorization", "X-API-Key"
         ]
+        /// 危险 header 黑名单（小写归一化，防御大小写变体绕过）
+        static let blockedHeadersLowercased: Set<String> = Set(blockedHeaders.map { $0.lowercased() })
     }
 
     // MARK: - 插件市场 JSON 文件名 (Market JSON Filenames)
@@ -224,8 +228,10 @@ enum PluginConstants {
     enum FileNameSecurity {
         /// 路径穿越标记（..）
         static let pathTraversalMarker: String = ".."
-        /// 路径分隔符（/）
+        /// 正斜杠路径分隔符（/）
         static let pathSeparator: String = "/"
+        /// 反斜杠路径分隔符（\）
+        static let backslashSeparator: String = "\\"
     }
 
     // MARK: - 插件加载失败上下文 (Plugin Load Failure Context)

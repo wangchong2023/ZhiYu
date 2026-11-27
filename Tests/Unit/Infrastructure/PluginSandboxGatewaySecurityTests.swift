@@ -80,4 +80,50 @@ final class PluginSandboxGatewaySecurityTests: XCTestCase {
             XCTFail("DELETE 方法应被拒绝并抛出 permissionDenied，但抛出了: \(error)")
         }
     }
+
+    /// 验证小写/混合大小写危险 Header（如 authorization / cOoKiE / x-api-key）无法绕过黑名单
+    func testAuditFetch_caseInsensitiveBlockedHeaders_areRejected() {
+        let variants = [
+            ("authorization", "Bearer stolen"),
+            ("cOoKiE", "sid=123"),
+            ("x-api-key", "sk-secret"),
+            ("PROXY-AUTHORIZATION", "Basic abc")
+        ]
+        for (headerKey, headerValue) in variants {
+            XCTAssertThrowsError(
+                try PluginSandboxGateway.auditFetch(
+                    url: "https://api.example.com/data",
+                    options: ["method": "GET", "headers": [headerKey: headerValue]],
+                    allowedDomains: ["api.example.com"],
+                    permissions: [PluginConstants.Permission.network]
+                ),
+                "危险 header 变体 \(headerKey) 必须被拦截"
+            ) { error in
+                if case PluginSandboxError.permissionDenied = error { return }
+                XCTFail("\(headerKey) 应抛出 permissionDenied，实际为: \(error)")
+            }
+        }
+    }
+
+    /// 验证即使 host 命中白名单，非 HTTP(S) 协议（file://、ftp://）仍被严格拒绝
+    func testAuditFetch_nonHTTPSchemeWithAllowedHost_isRejected() {
+        let dangerousURLs = [
+            "file://api.example.com/etc/passwd",
+            "ftp://api.example.com/secret.txt"
+        ]
+        for url in dangerousURLs {
+            XCTAssertThrowsError(
+                try PluginSandboxGateway.auditFetch(
+                    url: url,
+                    options: nil,
+                    allowedDomains: ["api.example.com"],
+                    permissions: [PluginConstants.Permission.network]
+                ),
+                "非 HTTP(S) URL \(url) 必须被拒绝"
+            ) { error in
+                if case PluginSandboxError.invalidURL = error { return }
+                XCTFail("\(url) 应抛出 invalidURL，实际为: \(error)")
+            }
+        }
+    }
 }

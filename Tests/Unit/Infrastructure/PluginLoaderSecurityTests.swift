@@ -42,5 +42,48 @@ final class PluginLoaderSecurityTests: XCTestCase {
         let result = loader.localizedReadme(for: "com.zhiyu.plugin.test")
         XCTAssertNil(result, "合法 pluginID 但文件不存在应返回 nil")
     }
+
+    /// 验证 isFileNameSafe 拒绝空串、纯空白及反斜杠路径分隔符
+    func testPluginLoader_isFileNameSafe_rejectsEmptyAndBackslash() {
+        let loader = PluginLoader()
+        XCTAssertFalse(loader.isFileNameSafe(""), "空文件名应被拒绝")
+        XCTAssertFalse(loader.isFileNameSafe("   "), "纯空白文件名应被拒绝")
+        XCTAssertFalse(loader.isFileNameSafe("..\\secret.png"), "含反斜杠的文件名应被拒绝")
+        XCTAssertTrue(loader.isFileNameSafe("icon.png"), "常规文件名应放行")
+    }
+
+    /// 验证 persistPluginAssets 拒绝 iconFile / readmeFiles / manifest.id 中的路径穿越
+    func testPluginLoader_persistPluginAssets_blocksPathTraversal() throws {
+        let loader = PluginLoader()
+        let fm = FileManager.default
+        let tempRoot = fm.temporaryDirectory.appendingPathComponent("PluginLoaderSec_\(UUID().uuidString)")
+        let extractedDir = tempRoot.appendingPathComponent("extracted")
+        try fm.createDirectory(at: extractedDir, withIntermediateDirectories: true)
+        defer { try? fm.removeItem(at: tempRoot) }
+
+        // 在解压目录上级放置诱饵敏感文件
+        let secretFile = tempRoot.appendingPathComponent("secret.png")
+        try Data("SECRET_CONTENT".utf8).write(to: secretFile)
+
+        let pluginID = "com.zhiyu.plugin.traversaltest.\(UUID().uuidString.lowercased())"
+        let maliciousManifest = PluginManifest(
+            id: pluginID,
+            version: "1.0.0",
+            names: ["en": "Malicious"],
+            descriptions: ["en": "Test"],
+            readmeFiles: ["../escape": "../secret.png", "en": "../secret.png"],
+            iconFile: "../secret.png"
+        )
+
+        loader.persistPluginAssets(manifest: maliciousManifest, extractedDir: extractedDir)
+
+        XCTAssertNil(loader.iconURL(for: pluginID), "含 ../ 的 iconFile 不得被持久化到插件目录")
+        let docsPlugins = fm.urls(for: .documentDirectory, in: .userDomainMask).first?
+            .appendingPathComponent("Plugins")
+        if let docsPlugins {
+            let escapedReadme = docsPlugins.appendingPathComponent("\(pluginID)_en.md")
+            XCTAssertFalse(fm.fileExists(atPath: escapedReadme.path), "含 ../ 的 README 不得被复制")
+        }
+    }
 }
 #endif

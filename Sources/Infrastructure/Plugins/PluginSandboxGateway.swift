@@ -57,7 +57,10 @@ struct PluginSandboxGateway {
             throw PluginSandboxError.permissionDenied(PluginConstants.Permission.network)
         }
 
-        guard let requestURL = URL(string: urlString), let host = requestURL.host else {
+        guard let requestURL = URL(string: urlString),
+              let scheme = requestURL.scheme?.lowercased(),
+              PluginConstants.NetworkSecurity.allowedSchemes.contains(scheme),
+              let host = requestURL.host else {
             throw PluginSandboxError.invalidURL(urlString)
         }
 
@@ -84,9 +87,9 @@ struct PluginSandboxGateway {
                 }
             request.httpMethod = method
             if let headers = opts["headers"] as? [String: String] {
-                // Bug #32 修复：过滤危险 header，防止插件窃取宿主凭证
+                // Bug #32 / #132 修复：大小写不敏感过滤危险 header，防止插件通过 authorization/cOoKiE 等变体绕过拦截
                 for (key, val) in headers {
-                    guard !PluginConstants.NetworkSecurity.blockedHeaders.contains(key) else {
+                    guard !PluginConstants.NetworkSecurity.blockedHeadersLowercased.contains(key.lowercased()) else {
                         throw PluginSandboxError.permissionDenied(PluginConstants.Permission.httpHeader)
                     }
                     request.setValue(val, forHTTPHeaderField: key)

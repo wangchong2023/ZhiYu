@@ -138,21 +138,25 @@
 | **127** | `OAuthService.sendOAuthRequest` 遗漏 `OAuthGitHubRequest` 分支，尽管 `resolveAuthRequestInfo` 已完整支持 GitHub 渠道，但实际发起登录时 100% 抛出 `NetworkError.unexpected("Unsupported auth request type")` | 请求分发分支漏接 `OAuthGitHubRequest` | GitHub OAuth 登录渠道在生产环境完全不可用 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 在 `sendOAuthRequest` 补齐 `OAuthGitHubRequest` POST 路由分发 | **✅ 已解决** | 是 (多渠道 OAuth 分发完整性核查) | 是 (`AuthOAuthStrategiesBranchTests`) | ✅ 已闭环 |
 | **128** | `SynthesisProcessor.sanitizeMermaidSyntax` 构造节点括号区间 `line.index(after: start)..<end` 前未校验 `start < end`，遇到反向括号行（如 `A] --> B[`）直接触发 Swift 运行时越界范围致命崩溃 | 缺少 `start < end` 区间合法性前置守卫 | LLM 输出畸形 Mermaid 括号时触发 App 闪退 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 补齐 `start < end` 守卫防止非法反向 Range 崩溃 | **✅ 已解决** | 是 (字符串索引区间前置守卫规范) | 是 (`SynthesisProcessorEdgeTests`) | ✅ 已闭环 |
 | **129** | `VaultLifecycleManager` 的 `createVault`/`updateVault`/`renameVault` 未对纯空白笔记本名做 trim 与非空校验，允许创建或覆盖为空白标题幽灵笔记本 | 缺少用户输入标题规范化与非空守卫 | 侧边栏出现空白无名笔记本且 `englishName` 为空 | **Medium** | UI/交互与防御性缺陷 | `createVault` 空名兜底 `L10n.Vault.defaultName`；`renameVault`/`updateVault` 拒绝空白覆写 | **✅ 已解决** | 是 (多租户名称非空规范) | 是 (`VaultLifecycleAndDataCoordinatorDeepTests`) | ✅ 已闭环 |
+| **130** | `GlobalModelManager+BYOM.importCustomModel` 未检测源路径与目标路径相同（`sourceURL == destURL`）即先执行 `removeItem(at: destURL)` 再 `copyItem`，原地重复导入 `Documents` 下已有模型会直接销毁用户数 GB 模型权重；且硬索引 `urls(...)[0]` 存在越界隐患 | 重复导入已位于 `Documents` 的同名模型文件 | 原地源文件被删除且随后复制失败，用户模型永久丢失 | **High** | 状态机并发与数据生命周期 | 增加 `standardizedFileURL` 同路径守卫（原地导入跳过删/拷与失败删除）、改用 `.first ?? temporaryDirectory` 安全解包，并清洗 `baseName` 路径非法字符 | **✅ 已解决** | 是 (文件覆盖防同路径自删规范) | 是 (`ModelManagerBYOMAndSourceTests`) | ✅ 已闭环 |
+| **131** | `CollaborationService.applyRemotePage` 未校验远端 `updatedTs.isFinite` 与非空 `title`，异常对端发送 `NaN`/`Infinity` 时间戳或纯空白标题会覆盖本地页面或永久阻塞后续同步 | 对端同步数据包缺少数值有限性与标题非空校验 | 本地正常页面标题被清空，或 `updatedAt` 污染后后续更新全部失效 | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | 在 `applyRemotePage` 入口补齐 `updatedTs.isFinite` 与 `!title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty` 守卫 | **✅ 已解决** | 是 (协作同步反序列化边界校验) | 是 (`CollaborationServiceTests`) | ✅ 已闭环 |
+| **132** | `PluginSandboxGateway.auditFetch` 存在两处高危安全绕过：危险 Header 拦截使用大小写敏感 `Set.contains(key)`（传 `authorization`/`cOoKiE`/`x-api-key` 100% 绕过）；且未校验 `requestURL.scheme` 为 `http`/`https`（传 `file://allowed.com/...` 或 `ftp://allowed.com/...` 放行） | HTTP Header 大小写不敏感特性被忽略；URL 校验缺失协议白名单 | 恶意插件可绕过黑名单注入凭证 Header 或发起非 HTTP 危险协议请求 | **High** | 架构设计与安全/网络健壮性 | `PluginConstants.NetworkSecurity` 新增 `allowedSchemes` 与 `blockedHeadersLowercased`，`auditFetch` 强制校验协议白名单与大小写不敏感 Header 拦截 | **✅ 已解决** | 是 (插件网关大小写与协议白名单审计) | 是 (`PluginSandboxGatewaySecurityTests`) | ✅ 已闭环 |
+| **133** | `PluginLoader.persistPluginAssets` 未对 `manifest.id`、`iconFile`、`locale`、`filename` 做路径穿越校验，恶意插件声明 `iconFile: "../secret.png"` 等可越权读取/覆写目标目录文件；且 `isFileNameSafe` 漏拦截空串与反斜杠 `\`，`copyPluginAsset` 未防同路径自删与源不存在误删旧目标 | 资源持久化阶段缺少与读取阶段一致的路径安全守卫 | 恶意插件包可利用路径穿越读取或破坏宿主沙盒文件 | **High** | 架构设计与安全/网络健壮性 | `isFileNameSafe` 升级为拦截空串/空白/`..`/`/`/`\`；`persistPluginAssets` 对 `manifest.id`/`iconFile`/`locale`/`filename` 全量校验；`copyPluginAsset` 增加同路径与源存在前置守卫 | **✅ 已解决** | 是 (插件资源路径穿越全链路防御) | 是 (`PluginLoaderSecurityTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**129 项**
+- **收录问题总数**：**133 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：33 项 (25.6%)
-  - 状态机并发与数据生命周期：24 项 (18.6%)
-  - 架构设计与安全/网络健壮性：34 项 (26.4%)
-  - UI/交互与防御性缺陷：15 项 (11.6%)
-  - 代码坏味道与去魔鬼化/DRY 治理：23 项 (17.8%)
+  - 功能缺陷与核心算法/解析器/数据完整性：34 项 (25.6%)
+  - 状态机并发与数据生命周期：25 项 (18.8%)
+  - 架构设计与安全/网络健壮性：36 项 (27.1%)
+  - UI/交互与防御性缺陷：15 项 (11.3%)
+  - 代码坏味道与去魔鬼化/DRY 治理：23 项 (17.3%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：58 项 (45.0%)
-  - **Medium（功能异常/算法边界/性能损耗）**：45 项 (34.9%)
-  - **Low（样式异味/边界校验/门禁规范）**：26 项 (20.2%)
-- **修复闭环率**：**100% (129/129 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：61 项 (45.9%)
+  - **Medium（功能异常/算法边界/性能损耗）**：46 项 (34.6%)
+  - **Low（样式异味/边界校验/门禁规范）**：26 项 (19.5%)
+- **修复闭环率**：**100% (133/133 项已修复闭环)**
 

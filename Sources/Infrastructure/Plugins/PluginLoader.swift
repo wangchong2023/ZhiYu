@@ -29,12 +29,15 @@ final class PluginLoader {
 
     // MARK: - 文件名安全校验
 
-    /// 校验 fileName 不含路径穿越字符
+    /// 校验 fileName 非空且不含路径穿越字符（..、/、\）
     /// - Parameter fileName: 待校验的文件名
-    /// - Returns: 校验通过返回 true，含路径穿越返回 false
-    private func isFileNameSafe(_ fileName: String) -> Bool {
-        !fileName.contains(PluginConstants.FileNameSecurity.pathTraversalMarker)
-            && !fileName.contains(PluginConstants.FileNameSecurity.pathSeparator)
+    /// - Returns: 校验通过返回 true，为空或含路径穿越返回 false
+    internal func isFileNameSafe(_ fileName: String) -> Bool {
+        let trimmed = fileName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return false }
+        return !trimmed.contains(PluginConstants.FileNameSecurity.pathTraversalMarker)
+            && !trimmed.contains(PluginConstants.FileNameSecurity.pathSeparator)
+            && !trimmed.contains(PluginConstants.FileNameSecurity.backslashSeparator)
     }
 
     // MARK: - 插件签名校验（VULN-001 修复）
@@ -200,23 +203,35 @@ final class PluginLoader {
     // MARK: - 持久化资源
 
     /// 从解压目录复制 icon.png + README 到 Documents/Plugins/{id}_*
-    private func persistPluginAssets(manifest: PluginManifest, extractedDir: URL) {
+    internal func persistPluginAssets(manifest: PluginManifest, extractedDir: URL) {
+        guard isFileNameSafe(manifest.id) else {
+            Logger.shared.warning("[PluginRegistry] \(manifest.id): 插件 ID 含非法路径字符，已拒绝持久化资源")
+            return
+        }
         let fileManager = FileManager.default
         guard let assetsDir = pluginsDirectoryURL() else { return }
         try? fileManager.createDirectory(at: assetsDir, withIntermediateDirectories: true)
 
-        // 保存图标
+        // 保存图标（校验 iconFile 路径安全性，防御路径穿越）
         if let iconFile = manifest.iconFile {
-            copyPluginAsset(
-                from: extractedDir.appendingPathComponent(iconFile),
-                to: assetsDir.appendingPathComponent("\(manifest.id)_icon.png"),
-                successLog: "[PluginRegistry] \(manifest.id): icon_saved"
-            )
+            if isFileNameSafe(iconFile) {
+                copyPluginAsset(
+                    from: extractedDir.appendingPathComponent(iconFile),
+                    to: assetsDir.appendingPathComponent("\(manifest.id)_icon.png"),
+                    successLog: "[PluginRegistry] \(manifest.id): icon_saved"
+                )
+            } else {
+                Logger.shared.warning("[PluginRegistry] \(manifest.id): iconFile (\(iconFile)) 含非法路径字符，已跳过")
+            }
         }
 
-        // 保存多语言 README
+        // 保存多语言 README（校验 locale 与 filename 路径安全性，防御路径穿越）
         if let readmeMap = manifest.readmeFiles {
             for (locale, filename) in readmeMap {
+                guard isFileNameSafe(locale), isFileNameSafe(filename) else {
+                    Logger.shared.warning("[PluginRegistry] \(manifest.id): README (\(locale): \(filename)) 含非法路径字符，已跳过")
+                    continue
+                }
                 copyPluginAsset(
                     from: extractedDir.appendingPathComponent(filename),
                     to: assetsDir.appendingPathComponent("\(manifest.id)_\(locale).md")
@@ -225,19 +240,19 @@ final class PluginLoader {
         }
     }
 
-    /// 原子性复制插件资源文件：先删除目标，源存在则复制，可选记录日志
+    /// 原子性复制插件资源文件：源存在且与目标非同一路径时才替换目标，可选记录日志
     /// - Parameters:
     ///   - src: 源文件 URL
     ///   - dst: 目标文件 URL
     ///   - successLog: 复制成功时记录的日志消息（可选）
     private func copyPluginAsset(from src: URL, to dst: URL, successLog: String? = nil) {
+        guard src.standardizedFileURL != dst.standardizedFileURL else { return }
         let fileManager = FileManager.default
+        guard fileManager.fileExists(atPath: src.path) else { return }
         try? fileManager.removeItem(at: dst)
-        if fileManager.fileExists(atPath: src.path) {
-            try? fileManager.copyItem(at: src, to: dst)
-            if let log = successLog {
-                Logger.shared.info(log)
-            }
+        try? fileManager.copyItem(at: src, to: dst)
+        if let log = successLog {
+            Logger.shared.info(log)
         }
     }
 
