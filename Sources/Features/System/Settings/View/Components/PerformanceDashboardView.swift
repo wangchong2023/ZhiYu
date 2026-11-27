@@ -114,6 +114,7 @@ struct PerformanceDashboardView: View {
             }
             .onAppear {
                 updateMetricsData()
+                timer?.invalidate()
                 timer = Timer.scheduledTimer(withTimeInterval: 10, repeats: true) { _ in
                     Task { @MainActor in
                         updateMetricsData()

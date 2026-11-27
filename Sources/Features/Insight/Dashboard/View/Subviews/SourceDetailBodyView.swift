@@ -110,6 +110,7 @@ struct SourceDetailBodyView: View {
                 Button(action: {
                     isPlaying.toggle()
                     if isPlaying {
+                        timer?.invalidate()
                         timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { _ in
                             Task { @MainActor in
                                 if playProgress < 1.0 {
@@ -118,11 +119,13 @@ struct SourceDetailBodyView: View {
                                     playProgress = 0.0
                                     isPlaying = false
                                     timer?.invalidate()
+                                    timer = nil
                                 }
                             }
                         }
                     } else {
                         timer?.invalidate()
+                        timer = nil
                     }
                 }) {
                     Image(systemName: isPlaying ? "pause.circle.fill" : "play.circle.fill")
@@ -140,6 +143,11 @@ struct SourceDetailBodyView: View {
             }
         }
         .appCardStyle(cornerRadius: DesignTokens.Spacing.standardRadius)
+        .onDisappear {
+            timer?.invalidate()
+            timer = nil
+            isPlaying = false
+        }
     }
     
     /// OCR 扫描图片文字窗口

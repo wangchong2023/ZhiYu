@@ -13,6 +13,7 @@
 @preconcurrency import Speech
 import AVFoundation
 import Foundation
+import os
 import UFPCore
 
 /// 线程安全包装器，用于在 @Sendable 闭包中持有非 Sendable 的 iOSSpeechService 引用
@@ -173,9 +174,27 @@ extension iOSSpeechService {
         let request = SFSpeechURLRecognitionRequest(url: url)
         request.shouldReportPartialResults = false
         return try await withCheckedThrowingContinuation { continuation in
+            // 原子一次性标志位：防御 Speech 框架在 isFinal 后再次回调尾随错误引发的 Continuation 双重 resume 崩溃
+            let resumedLock = OSAllocatedUnfairLock(initialState: false)
             recognizer.recognitionTask(with: request) { result, error in
-                if let error = error { continuation.resume(throwing: error); return }
-                if let result = result, result.isFinal { continuation.resume(returning: result.bestTranscription.formattedString) }
+                let shouldResume = { () -> Bool in
+                    resumedLock.withLock { resumed in
+                        guard !resumed else { return false }
+                        resumed = true
+                        return true
+                    }
+                }
+                if let error = error {
+                    if shouldResume() {
+                        continuation.resume(throwing: error)
+                    }
+                    return
+                }
+                if let result = result, result.isFinal {
+                    if shouldResume() {
+                        continuation.resume(returning: result.bestTranscription.formattedString)
+                    }
+                }
             }
         }
     }
