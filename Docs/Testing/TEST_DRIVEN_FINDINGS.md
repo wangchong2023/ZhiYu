@@ -227,21 +227,24 @@
 | **216** | `NetworkClient.handleTokenRefreshAndRetry` 忽略刷新端点的 HTTP 状态码且未校验空/空白 `refreshToken`，服务端返回 502/503/504 时误判为令牌失效并物理删除 Keychain 中 JWT 与 RefreshToken 强制踢用户下线；同时 `isSafeMultipartHeaderValue` 漏拦截 NUL 字节 | 令牌过期恰好遭遇网关 502/503/504 抖动或维护窗口，或上传含空字节文件名 | 用户无故被强制退出登录并丢失当前会话，或触发控制字符注入 | **High** | 架构设计与安全/网络健壮性 | 刷新响应先校验 `HTTPURLResponse` 与 `statusCode >= 500` 直接返回 `serverError` 保留令牌，仅非 5xx 鉴权失败才清理 Keychain；拦截空白 `refreshToken` 与 NUL 控制字符 | **✅ 已解决** | 是 (Token 刷新 5xx 容错与会话保护) | 是 (`NetworkClientStatusCodeTests`) | ✅ 已闭环 |
 | **217** | `iOSExportService` 开启 `allowFileAccessFromFileURLs` 且 `exportToPDF` 直接将 `marked.parse` 写入 `innerHTML` 未做 DOM XSS 净化；`escapeJSTemplateLiteral` 未转义 `</script>` 与 `U+2028`/`U+2029`；`sanitizedExportFileName(".")` 放行产生隐藏文件 | 导出含 `<script>`/`onerror` 的 Markdown、含行分隔符文本或名为 `.` 的文件 | 导出 PDF 时触发 WKWebView XSS 及沙盒文件跨域读取风险，或导出脚本语法崩溃 | **High** | 架构设计与安全/网络健壮性 | 关闭 `allowFileAccessFromFileURLs`；渲染后对 `#content` 执行 DOM 净化剥离危险标签/事件属性/`javascript:` 协议；补齐 `</script>` 与 `U+2028`/`U+2029` 转义及 `.`/空字节文件名清洗 | **✅ 已解决** | 是 (WebView 导出 DOM XSS 净化与脚本转义) | 是 (`IOSExportServiceTests`) | ✅ 已闭环 |
 | **218** | `AppBackupService` 存在三重隐患：`BackupEntry.fileSize(in:)` 绕过 `safeBackupFileURL` 路径校验泄露沙盒外文件大小；`safeBackupFileURL` 漏显式拦截 `.` 与空字节；`deleteBackup` 删除失败仍删索引且未重算 `lastBackupDate` 导致删除唯一备份后 300s 自动备份被误节流 | 索引文件被篡改含 `../`，或用户删除最新备份后 5 分钟内修改笔记期望自动备份 | 路径穿越探测沙盒外文件大小、残留磁盘孤儿文件或删除后自动备份静默丢失 | **High** | 状态机并发与数据生命周期 | 抽取静态 `safeBackupFileURL(for:in:)` 统一防护 `fileSize`/`restore`/`delete`/`cleanOldBackups`；`deleteBackup` 删文件失败保留索引并重算 `lastBackupDate`；全部文件名收敛至 `BackupFileConstants` | **✅ 已解决** | 是 (备份路径安全统一校验与节流状态一致性) | 是 (`BackupServiceEdgeTests`) | ✅ 已闭环 |
+| **219** | `PIIMasker` 使用 `\b` 词边界匹配手机号与身份证号，在中文语境紧贴汉字时（如「手机号13812345678请保存」）ICU 将汉字视为 `\w` 导致 `\b` 失效漏脱敏；同时漏脱敏连字符/空格分组信用卡号、Gemini/GitHub PAT 与 JWT | 用户输入含中文紧贴手机号/身份证、分组卡号或云平台密钥的文本触发日志或外发 LLM | 真实手机号、身份证号、信用卡与云密钥明文泄露至日志或外部 AI 服务 | **High** | 架构设计与安全/网络健壮性 | 将规则收敛至 `PIIPattern` 常量枚举，改用数字负向边界 `(?<!\d)`/`(?!\d)` 与 `(?<![\dA-Za-z])` 修复中文紧贴绕过，并补齐分组卡号、Gemini `AIza`、GitHub PAT 与 JWT 脱敏 | **✅ 已解决** | 是 (中文语境 PII 脱敏边界与多云密钥防护) | 是 (`PIIMaskerTests`) | ✅ 已闭环 |
+| **220** | `DeepLinkService` 存在三重缺陷：`handleURL` 在校验 Scheme 前先扣减 `IntentRateLimiter` 配额导致外部无关 URL 可耗尽限流桶；`handleSpotlightActivity` 未兼容系统原生 `CSSearchableItemActionType`/`CSSearchableItemActivityIdentifier` 导致真机 Spotlight 点击跳转失效；`search` 参数未做 trim 与最大长度截断 | 外部恶意/无关 URL 洪泛、用户从系统 Spotlight 点击笔记卡片、或传入超长 `q` 查询 | 合法深度链接被限流误拒、系统 Spotlight 搜索结果无法跳转、超长查询灌入搜索导致卡顿 | **High** | 架构设计与安全/网络健壮性 | 先校验 Scheme 再扣减限流配额；`handleSpotlightActivity` 兼容 CoreSpotlight 原生活动类型与标识符；`search` 参数 trim 并截断至 `Limits.maxSearchQueryLength`（256 字符） | **✅ 已解决** | 是 (DeepLink 限流防护与 CoreSpotlight 原生跳转兼容) | 是 (`DeepLinkTests`) | ✅ 已闭环 |
+| **221** | `SecureEnclaveCryptoService.getOrCreateHardwarePrivateKey` 使用 `try? KeychainService.shared.retrieve` 吞掉 Keychain 异常，在锁屏后台（`errSecInteractionNotAllowed`）误判为密钥不存在而静默生成新硬件私钥覆写旧 Token | 设备锁屏后台触发加解密或 Keychain 临时不可用 | 原硬件私钥 Token 被覆盖，用户全部已加密的 API Key 与敏感令牌永久无法解密 | **High** | 架构设计与安全/网络健壮性 | 抽取 `resolveKeyMaterial(loadExisting:createAndPersist:)` 严格传播 Keychain 异常，仅明确返回 `nil` 时才新建密钥；将路径与 32 字节常量收敛至 `CryptoConstants` | **✅ 已解决** | 是 (硬件密钥读取异常严禁静默覆盖) | 是 (`SecureEnclaveCryptoSupplementTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**218 项**
+- **收录问题总数**：**221 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：60 项 (27.5%)
-  - 状态机并发与数据生命周期：52 项 (23.9%)
-  - 架构设计与安全/网络健壮性：65 项 (29.8%)
-  - UI/交互与防御性缺陷：17 项 (7.8%)
-  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (11.0%)
+  - 功能缺陷与核心算法/解析器/数据完整性：60 项 (27.1%)
+  - 状态机并发与数据生命周期：52 项 (23.5%)
+  - 架构设计与安全/网络健壮性：68 项 (30.8%)
+  - UI/交互与防御性缺陷：17 项 (7.7%)
+  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (10.9%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：127 项 (58.3%)
-  - **Medium（功能异常/算法边界/性能损耗）**：64 项 (29.4%)
-  - **Low（样式异味/边界校验/门禁规范）**：27 项 (12.4%)
-- **修复闭环率**：**100% (218/218 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：130 项 (58.8%)
+  - **Medium（功能异常/算法边界/性能损耗）**：64 项 (29.0%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (12.2%)
+- **修复闭环率**：**100% (221/221 项已修复闭环)**
 

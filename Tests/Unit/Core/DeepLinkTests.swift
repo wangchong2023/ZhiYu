@@ -9,6 +9,9 @@
 //  核心职责：针对 DeepLink 开展自动化单元测试验证。
 //
 import XCTest
+#if canImport(CoreSpotlight)
+import CoreSpotlight
+#endif
 @testable import ZhiYuUnitTestHost
 
 // MARK: - 深度链接与快捷路由单元测试
@@ -243,4 +246,37 @@ final class DeepLinkTests: XCTestCase {
         }
         XCTAssertEqual(query, "Swift")
     }
+
+    // MARK: - 9. 缺陷 #220 回归：未知 Scheme 不消耗限流配额、超长搜索词截断与 CoreSpotlight 原生活动兼容
+
+    func testHandleURL_ForeignSchemeDoesNotConsumeRateLimitAndSearchQueryIsBounded() throws {
+        IntentRateLimiter.shared.reset()
+        let foreignURL = try XCTUnwrap(URL(string: "https://example.com/attack"))
+        for _ in 0..<25 {
+            XCTAssertFalse(service.handleURL(foreignURL))
+        }
+
+        // 合法 zhiyu:// 仍应拥有完整限流配额，不被外部 URL 洪泛耗尽
+        let longQuery = String(repeating: "a", count: 400)
+        let validURL = try XCTUnwrap(URL(string: "zhiyu://search?q=%20\(longQuery)%20"))
+        XCTAssertTrue(service.handleURL(validURL), "外部无关 Scheme 不得耗尽 zhiyu:// 限流配额")
+        guard case .search(let parsed) = service.consumeDeepLink() else {
+            XCTFail("应成功解析合法搜索链接"); return
+        }
+        XCTAssertEqual(parsed.count, 256, "超长搜索参数应 trim 后截断至 256 字符")
+    }
+
+    #if canImport(CoreSpotlight)
+    func testHandleSpotlightActivity_RecognizesCoreSpotlightNativeActivityType() {
+        let targetID = UUID()
+        let nativeActivity = NSUserActivity(activityType: CSSearchableItemActionType)
+        nativeActivity.userInfo = [CSSearchableItemActivityIdentifier: targetID.uuidString]
+
+        XCTAssertTrue(service.handleSpotlightActivity(nativeActivity), "必须支持系统原生 CSSearchableItemActionType 回调")
+        guard case .openPage(let parsedID) = service.consumeDeepLink() else {
+            XCTFail("应解析出 Spotlight 卡片对应的页面 UUID"); return
+        }
+        XCTAssertEqual(parsedID, targetID)
+    }
+    #endif
 }

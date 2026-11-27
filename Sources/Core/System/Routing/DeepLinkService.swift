@@ -10,6 +10,9 @@
 //
 import Foundation
 import UFPCore
+#if canImport(CoreSpotlight)
+import CoreSpotlight
+#endif
 
 // MARK: - Deep Link Service
 /// Handles deep links, universal links, and Spotlight indexing for Knowledge Base pages.
@@ -46,16 +49,22 @@ final class DeepLinkService: ObservableObject {
         static let pageID = "pageID"
     }
 
+    /// DeepLink 输入边界保护常量
+    private enum Limits {
+        static let maxSearchQueryLength = 256
+    }
+
     // MARK: - URL Scheme Handling
     /// 处理应用特有的 URL Scheme 深度路由分发
     /// - Parameter url: 传入的原始 URL 实例
     /// - Returns: 是否为系统可识别且处理成功的路由动作
     func handleURL(_ url: URL) -> Bool {
+        // 先校验 Scheme 归属本应用再扣除限流配额，防止外部无关 URL 恶意耗尽令牌桶
+        guard url.scheme?.lowercased() == CoreConstants.DeepLink.scheme.lowercased() else { return false }
         guard IntentRateLimiter.shared.request() else {
             Logger.shared.warning(" [DeepLinkService]" + " Rate limit" + " exceeded! Dropping" + " request: \(url.absoluteString)")
             return false
         }
-        guard url.scheme?.lowercased() == CoreConstants.DeepLink.scheme.lowercased() else { return false }
         return handleKnownHost(url.host, url: url)
     }
 
@@ -63,7 +72,10 @@ final class DeepLinkService: ObservableObject {
         switch host?.lowercased() {
         case Host.page: return handlePageDeepLink(url: url)
         case Host.create: pendingDeepLink = .create; return true
-        case Host.search: pendingDeepLink = .search(url.queryParameters[QueryKey.query] ?? ""); return true
+        case Host.search:
+            let rawQuery = (url.queryParameters[QueryKey.query] ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            pendingDeepLink = .search(String(rawQuery.prefix(Limits.maxSearchQueryLength)))
+            return true
         case Host.ingest, Host.voice, Host.ocr: pendingDeepLink = .ingest; return true
         case Host.graph: pendingDeepLink = .graph; return true
         case Host.chat: pendingDeepLink = .chat; return true
@@ -86,13 +98,34 @@ final class DeepLinkService: ObservableObject {
     }
     
     // MARK: - Spotlight Query Handling
-    /// 处理SpotlightActivity
+    /// 处理 Spotlight Activity（同时兼容系统原生 CoreSpotlight 回调与内部自定义 openPage 活动）
     /// - Parameter userActivity: userActivity
     /// - Returns: 是否成功
     func handleSpotlightActivity(_ userActivity: NSUserActivity) -> Bool {
-        guard userActivity.activityType == CoreConstants.DeepLink.spotlightActivityType,
-              let userInfo = userActivity.userInfo,
-              let idString = userInfo[QueryKey.pageID] as? String,
+        guard let userInfo = userActivity.userInfo else { return false }
+
+        let isRecognizedActivity: Bool
+        let rawIdentifier: String?
+        #if canImport(CoreSpotlight)
+        if userActivity.activityType == CSSearchableItemActionType {
+            isRecognizedActivity = true
+            rawIdentifier = (userInfo[CSSearchableItemActivityIdentifier] as? String)
+                ?? (userInfo[QueryKey.pageID] as? String)
+        } else if userActivity.activityType == CoreConstants.DeepLink.spotlightActivityType {
+            isRecognizedActivity = true
+            rawIdentifier = (userInfo[QueryKey.pageID] as? String)
+                ?? (userInfo[CSSearchableItemActivityIdentifier] as? String)
+        } else {
+            isRecognizedActivity = false
+            rawIdentifier = nil
+        }
+        #else
+        isRecognizedActivity = (userActivity.activityType == CoreConstants.DeepLink.spotlightActivityType)
+        rawIdentifier = userInfo[QueryKey.pageID] as? String
+        #endif
+
+        guard isRecognizedActivity,
+              let idString = rawIdentifier,
               let id = UUID(uuidString: idString) else {
             return false
         }

@@ -207,6 +207,41 @@ final class SecureEnclaveCryptoSupplementTests: XCTestCase {
         let plainData = Data(plaintext.utf8)
         XCTAssertNil(cipherData.range(of: plainData), "密文字节序列不应包含明文字节序列（加密而非编码）")
     }
+
+    // MARK: - 缺陷 #221 回归：Keychain 临时不可用时严禁吞错并重建覆盖旧密钥
+
+    func testResolveKeyMaterial_propagatesKeychainErrorWithoutCreatingNewKey() throws {
+        var createCalled = false
+        XCTAssertThrowsError(
+            try SecureEnclaveCryptoService.resolveKeyMaterial(
+                loadExisting: { () throws -> String? in
+                    throw KeychainError.retrieveFailed(errSecInteractionNotAllowed)
+                },
+                createAndPersist: {
+                    createCalled = true
+                    return "new-key"
+                }
+            )
+        ) { error in
+            guard case KeychainError.retrieveFailed(let status) = error else {
+                XCTFail("期望原样传播 KeychainError.retrieveFailed，实际为: \(error)")
+                return
+            }
+            XCTAssertEqual(status, errSecInteractionNotAllowed)
+        }
+        XCTAssertFalse(createCalled, "Keychain 锁屏不可用时严禁调用 createAndPersist 覆写旧密钥")
+
+        // 仅当 Keychain 明确返回 nil（不存在）时才允许创建新密钥
+        let created = try SecureEnclaveCryptoService.resolveKeyMaterial(
+            loadExisting: { () throws -> String? in nil },
+            createAndPersist: {
+                createCalled = true
+                return "fresh-key"
+            }
+        )
+        XCTAssertTrue(createCalled)
+        XCTAssertEqual(created, "fresh-key")
+    }
 }
 
 // MARK: - 测试辅助类

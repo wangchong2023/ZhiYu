@@ -35,4 +35,22 @@ final class PIIMaskerTests: XCTestCase {
         XCTAssertFalse(masked.contains(projectKey), "含连字符与下划线的新版项目密钥必须被完整脱敏，got: \(masked)")
         XCTAssertTrue(masked.contains("[REDACTED_PII]"))
     }
+
+    /// 缺陷 #219 回归：中文紧贴手机号/身份证、分组信用卡号及现代云密钥/JWT 必须被完整脱敏
+    func testPIIMasker_MasksChineseAdjacentPhoneIDCardHyphenatedCardAndCloudSecrets() {
+        let phone = "13812345678"
+        let idCard = "11010119900101123X"
+        let card = "4532-1234-5678-9012"
+        let geminiKey = ["AIza", "SyA1234567890abcdef", "GHIJKLMNOPQR1234"].joined()
+        let jwt = ["eyJhbGciOiJIUzI1NiJ9", "eyJzdWIiOiIxMjM0NTY3ODkwIn0", "SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"].joined(separator: ".")
+
+        let input = "我的手机号是\(phone)请保存，身份证\(idCard)已核验，卡号\(card)，密钥\(geminiKey)，令牌\(jwt)"
+        let masked = PIIMasker.shared.mask(input)
+
+        XCTAssertFalse(masked.contains(phone), "中文紧贴手机号必须脱敏，got: \(masked)")
+        XCTAssertFalse(masked.contains(idCard), "中文紧贴身份证号必须脱敏，got: \(masked)")
+        XCTAssertFalse(masked.contains(card), "连字符分组信用卡号必须脱敏，got: \(masked)")
+        XCTAssertFalse(masked.contains(geminiKey), "Gemini API Key 必须脱敏，got: \(masked)")
+        XCTAssertFalse(masked.contains(jwt), "JWT 令牌必须脱敏，got: \(masked)")
+    }
 }

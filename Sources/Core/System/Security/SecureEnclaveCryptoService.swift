@@ -23,15 +23,16 @@ class SecureEnclaveCryptoService: @unchecked Sendable {
         ServiceContainer.shared.resolveOptional(SecureEnclaveCryptoService.self) ?? _defaultShared
     }
     
-    /// 用于在 UserDefaults / Keychain 中保存硬件私钥 Token 的 Key
-    private let hardwareKeyTokenPath = "com.zhiyu.secure_enclave.token"
-    /// HKDF 盐值持久化 Key（VULN-003 修复：非空盐 + 上下文绑定，杜绝自协商确定性密钥）
-    private let hkdfSaltPath = "com.zhiyu.secure_enclave.hkdf_salt"
+    private enum CryptoConstants {
+        static let hardwareKeyTokenPath = "com.zhiyu.secure_enclave.token"
+        static let hkdfSaltPath = "com.zhiyu.secure_enclave.hkdf_salt"
+        static let legacyECDHPublicKeyPath = "com.zhiyu.secure_enclave.legacy_pub"
+        static let hkdfByteCount = 32
+    }
+
     /// HKDF 上下文绑定信息（固定值，区分不同用途的密钥派生）
     /// 引用 SystemConstants.CryptoProtocol.apiKeyEncryptionV2
     private let hkdfSharedInfo = Data(SystemConstants.CryptoProtocol.apiKeyEncryptionV2.utf8)
-    /// 旧版 ECDH 自协商公钥持久化路径（迁移用，迁移完成后可清理）
-    private let legacyECDHPublicKeyPath = "com.zhiyu.secure_enclave.legacy_pub"
     
     init() {}
     
@@ -125,33 +126,44 @@ class SecureEnclaveCryptoService: @unchecked Sendable {
             inputKeyMaterial: SymmetricKey(data: ikm),
             salt: salt,
             info: hkdfSharedInfo,
-            outputByteCount: 32
+            outputByteCount: CryptoConstants.hkdfByteCount
         )
         return derivedKey
+    }
+
+    /// 严格区分「Keychain 读取抛错（如锁屏不可用）」与「明确不存在（nil）」的密钥材料解析器：
+    /// 任何 Keychain 异常必须原样向上抛出，严禁吞错并重建覆盖旧密钥导致存量密文永久不可解密。
+    internal static func resolveKeyMaterial<T>(
+        loadExisting: () throws -> T?,
+        createAndPersist: () throws -> T
+    ) throws -> T {
+        if let existing = try loadExisting() {
+            return existing
+        }
+        return try createAndPersist()
     }
     
     /// 获取或生成持久化 HKDF 随机盐（32 字节，存储在 Keychain）
     private func getOrCreateHKDFSalt() throws -> Data {
-        // 审查修复 MED-5: 区分"盐不存在"与"Keychain 错误"，避免临时不可用时覆盖旧盐
-        do {
-            if let stored = try KeychainService.shared.retrieve(key: hkdfSaltPath),
-               let saltData = Data(base64Encoded: stored) {
+        try Self.resolveKeyMaterial(
+            loadExisting: {
+                guard let stored = try KeychainService.shared.retrieve(key: CryptoConstants.hkdfSaltPath),
+                      let saltData = Data(base64Encoded: stored) else {
+                    return nil
+                }
+                return saltData
+            },
+            createAndPersist: {
+                var randomBytes = [UInt8](repeating: 0, count: CryptoConstants.hkdfByteCount)
+                let status = SecRandomCopyBytes(kSecRandomDefault, randomBytes.count, &randomBytes)
+                guard status == errSecSuccess else {
+                    throw SecurityError.invalidSalt
+                }
+                let saltData = Data(randomBytes)
+                try KeychainService.shared.store(key: CryptoConstants.hkdfSaltPath, value: saltData.base64EncodedString())
                 return saltData
             }
-        } catch {
-            // Keychain 访问出错（非 errSecItemNotFound），向上抛出而非生成新盐
-            // 避免临时不可用时生成新盐覆盖旧盐，导致存量密文不可解密
-            throw error
-        }
-        // 盐值不存在（retrieve 返回 nil），生成新的 32 字节随机盐
-        var randomBytes = [UInt8](repeating: 0, count: 32)
-        let status = SecRandomCopyBytes(kSecRandomDefault, randomBytes.count, &randomBytes)
-        guard status == errSecSuccess else {
-            throw SecurityError.invalidSalt
-        }
-        let saltData = Data(randomBytes)
-        try KeychainService.shared.store(key: hkdfSaltPath, value: saltData.base64EncodedString())
-        return saltData
+        )
     }
     
     // MARK: - 旧版 ECDH 密钥派生（迁移用）
@@ -160,7 +172,7 @@ class SecureEnclaveCryptoService: @unchecked Sendable {
     /// - Returns: 旧版派生的 SymmetricKey，若旧公钥不存在则返回 nil
     private func deriveLegacyECDHKey() throws -> SymmetricKey? {
         // 尝试从 Keychain 读取旧版 ECDH 自协商公钥
-        guard let pubKeyB64 = try? KeychainService.shared.retrieve(key: legacyECDHPublicKeyPath),
+        guard let pubKeyB64 = try? KeychainService.shared.retrieve(key: CryptoConstants.legacyECDHPublicKeyPath),
               let pubKeyData = Data(base64Encoded: pubKeyB64) else {
             return nil
         }
@@ -171,7 +183,7 @@ class SecureEnclaveCryptoService: @unchecked Sendable {
             using: SHA256.self,
             salt: Data(),
             sharedInfo: Data(),
-            outputByteCount: 32
+            outputByteCount: CryptoConstants.hkdfByteCount
         )
         return symmetricKey
     }
@@ -180,24 +192,22 @@ class SecureEnclaveCryptoService: @unchecked Sendable {
     
     /// 获取或物理新建 Secure Enclave 内置 P-256 私钥
     private func getOrCreateHardwarePrivateKey() throws -> SecureEnclave.P256.KeyAgreement.PrivateKey {
-        // 1. 尝试从本地 Keychain 中拉取保存的私钥引用 Token
-        if let tokenDataString = try? KeychainService.shared.retrieve(key: hardwareKeyTokenPath),
-           let tokenData = Data(base64Encoded: tokenDataString) {
-            do {
-                // 利用 Token 物理连接回 Secure Enclave 内部的硬件密钥
+        try Self.resolveKeyMaterial(
+            loadExisting: {
+                // 严格传播 Keychain 异常（如锁屏 errSecInteractionNotAllowed），绝不静默覆盖旧私钥
+                guard let tokenDataString = try KeychainService.shared.retrieve(key: CryptoConstants.hardwareKeyTokenPath),
+                      let tokenData = Data(base64Encoded: tokenDataString) else {
+                    return nil
+                }
                 return try SecureEnclave.P256.KeyAgreement.PrivateKey(dataRepresentation: tokenData)
-            } catch {
-                Logger.shared.error("Failed to load existing Secure Enclave Key, recreating...", error: error)
+            },
+            createAndPersist: {
+                // 仅在 Keychain 明确不存在历史 Token 时才新建硬件私钥
+                let newKey = try SecureEnclave.P256.KeyAgreement.PrivateKey()
+                let tokenData = newKey.dataRepresentation
+                try KeychainService.shared.store(key: CryptoConstants.hardwareKeyTokenPath, value: tokenData.base64EncodedString())
+                return newKey
             }
-        }
-        
-        // 2. 本地不存在引用代币，或硬件密钥已被系统抹除，重新在 Secure Enclave 物理芯片区生成新私钥
-        // 采用 silent 模式，不设定 userPresence 弹窗强硬限制，完美支持单元测试与后台 RAG 静默运行
-        let newKey = try SecureEnclave.P256.KeyAgreement.PrivateKey()
-        let tokenData = newKey.dataRepresentation
-        
-        // 3. 将该非敏感的硬件私钥 Token 持久化进钥匙串，供以后无缝挂接
-        try KeychainService.shared.store(key: hardwareKeyTokenPath, value: tokenData.base64EncodedString())
-        return newKey
+        )
     }
 }
