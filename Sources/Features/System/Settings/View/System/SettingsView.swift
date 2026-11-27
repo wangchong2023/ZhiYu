@@ -245,6 +245,7 @@ struct SettingsView: View {
         HStack(spacing: DesignTokens.Spacing.small) {
             if !detailPath.isEmpty {
                 Button {
+                    guard !detailPath.isEmpty else { return }
                     detailPath.removeLast()
                 } label: {
                     Image(systemName: DesignTokens.Icons.back)

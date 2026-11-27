@@ -162,21 +162,22 @@
 | **151** | `iOSWatchSyncService.handleReceivedAudioChunk` 未校验 `transferId` 非空及 `total` 上限，异常数据包传入超大 `total` 或空 `transferId` 会导致 UserDefaults 分片缓存无限膨胀或冲突覆盖 | 手表同步通道收到畸形/超大 `total` 或空 `transferId` 分片 | 持久化存储被垃圾分片持续占用，不同传输流发生键冲突 | **Medium** | 状态机并发与数据生命周期 | 新增 `AudioChunkLimits.maxChunkCount = 1024` 上限校验与 `transferId` 非空守卫 | **✅ 已解决** | 是 (分片重组上下界双约束) | 是 (`IOSWatchSyncAudioChunkTests`) | ✅ 已闭环 |
 | **152** | `OnDeviceLLMService.importModel` 重复导入同名 `.mlmodel`/`.mlmodelc` 时未清理已存在的目标文件或已编译 `.mlmodelc` 目录，也未校验源/目标同路径，直接抛出 `NSFileWriteFileExistsError` 导致重新导入同名模型 100% 失败 | 用户重新导入同名本地 CoreML 模型或原地导入 | 模型覆盖导入必然报错失败并残留临时编译产物 | **Medium** | 状态机并发与数据生命周期 | 增加 `standardizedFileURL` 同路径守卫，复制与移动编译产物前先清理旧目标文件/目录 | **✅ 已解决** | 是 (模型覆盖导入同路径与幂等清理) | 是 (全仓编译与静态审计闭环) | ✅ 已闭环 |
 | **153** | 全仓残余 12 处 `FileManager.default.urls(for: ..., in: .userDomainMask)[0]` 硬索引（分布于 `Logger`、`SnapshotService`、`GlobalModelManager`、`ModelDownloadReceipt`、`ImportRecordSection`、`StreamingDownloadManager`），在极端容器不可用场景存在越界闪退隐患 | 容器目录列表为空时触发 `[0]` 硬下标访问 | 触发 Swift 数组越界致命崩溃 | **Medium** | 架构设计与安全/网络健壮性 | 全仓 12 处统一替换为 `.first ?? FileManager.default.temporaryDirectory`，实现 `Sources/` + `Packages/` `urls()[0]` 0 残余 | **✅ 已解决** | 是 (全仓目录安全解包清零) | 是 (`UFPStorage` 单测 + 全仓静态扫描 0 残余) | ✅ 已闭环 |
+| **154** | 全仓生产代码最后 1 处 `swiftlint:disable:next force_unwrapping`（`MarkdownProcessor.swift:240`）以及 `LabAudioRecorder.updateMeterTick` 未判空调用 `levels.removeFirst()`、`SettingsView` 返回按钮未防双击重入 `detailPath.removeLast()` | 异常状态或快速双击触发强制解包或空数组移除 | 潜在运行时空数组越界或强制解包闪退 | **Low** | 代码坏味道与去魔鬼化/DRY 治理 | `MarkdownProcessor` 改用 `earliestMatch.map(...) ?? true` 实现全仓生产代码 0 `force_unwrapping`；`LabAudioRecorder` 与 `SettingsView` 补齐 `!isEmpty` 守卫 | **✅ 已解决** | 是 (全仓 0 强制解包与安全集合移除) | 是 (`ZhiYuDomain` 170/170 单测 + 全仓扫描 0 残余) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**153 项**
+- **收录问题总数**：**154 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：38 项 (24.8%)
-  - 状态机并发与数据生命周期：30 项 (19.6%)
-  - 架构设计与安全/网络健壮性：46 项 (30.1%)
-  - UI/交互与防御性缺陷：16 项 (10.5%)
-  - 代码坏味道与去魔鬼化/DRY 治理：23 项 (15.0%)
+  - 功能缺陷与核心算法/解析器/数据完整性：38 项 (24.7%)
+  - 状态机并发与数据生命周期：30 项 (19.5%)
+  - 架构设计与安全/网络健壮性：46 项 (29.9%)
+  - UI/交互与防御性缺陷：16 项 (10.4%)
+  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (15.6%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：73 项 (47.7%)
-  - **Medium（功能异常/算法边界/性能损耗）**：54 项 (35.3%)
-  - **Low（样式异味/边界校验/门禁规范）**：26 项 (17.0%)
-- **修复闭环率**：**100% (153/153 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：73 项 (47.4%)
+  - **Medium（功能异常/算法边界/性能损耗）**：54 项 (35.1%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (17.5%)
+- **修复闭环率**：**100% (154/154 项已修复闭环)**
 

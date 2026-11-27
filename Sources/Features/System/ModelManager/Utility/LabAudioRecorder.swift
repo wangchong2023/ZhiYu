@@ -119,7 +119,9 @@ final class LabAudioRecorder: NSObject, ObservableObject, AVAudioRecorderDelegat
         }
 
         var levels = normalizedPowerLevels
-        levels.removeFirst()
+        if !levels.isEmpty {
+            levels.removeFirst()
+        }
         levels.append(currentLevel)
         normalizedPowerLevels = levels
 

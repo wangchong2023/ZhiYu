@@ -236,8 +236,8 @@ public final class MarkdownProcessor: Sendable {
             // 步骤 2.3：为防止跨样式对冲命中，在当前偏移量后依次运行所有格式正则，寻找“首个被物理命中的最前方格式前缀”（即 location 最小者）
             for (type, regex) in patterns {
                 if let match = regex.firstMatch(in: text, options: [], range: NSRange(location: currentOffset, length: nsText.length - currentOffset)) {
-// swiftlint:disable:next force_unwrapping
-                    if earliestMatch == nil || match.range.location < earliestMatch!.match.range.location {
+                    let isEarlier = earliestMatch.map { match.range.location < $0.match.range.location } ?? true
+                    if isEarlier {
                         earliestMatch = (type, match)
                     }
                 }
