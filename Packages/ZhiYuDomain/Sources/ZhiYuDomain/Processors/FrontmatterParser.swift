@@ -23,7 +23,12 @@ public enum FrontmatterParser {
     /// - Parameter content: Markdown 原始字符串
     /// - Returns: 元组 (frontmatterString, bodyString)
     public static func split(content: String) -> (frontmatter: String?, body: String) {
-        let lines = content.components(separatedBy: .newlines)
+        // 剥离可选 UTF-8 BOM 并归一化 CRLF/CR 为 LF，避免 Windows Markdown 产生空行或首行识别失败
+        let withoutBOM = content.hasPrefix(utf8BOM) ? String(content.dropFirst()) : content
+        let normalizedContent = withoutBOM
+            .replacingOccurrences(of: crlf, with: SystemConstants.Character.newline)
+            .replacingOccurrences(of: SystemConstants.Character.carriageReturn, with: SystemConstants.Character.newline)
+        let lines = normalizedContent.components(separatedBy: SystemConstants.Character.newline)
 
         // 必须顶格以 --- 或 ---json 开头（禁止前置缩进空格）
         guard let firstLine = lines.first,
@@ -102,11 +107,15 @@ public enum FrontmatterParser {
     /// 注意：暂不支持真正的嵌套 dict（如 `author:\n  name: x` 会被扁平化为独立顶层对象，
     /// 而非挂到父键 `author` 下）；如确有嵌套 frontmatter 需求，需引入嵌套栈解析器。
     private static func convertYamlToJson(_ yaml: String) -> String {
-        let lines = yaml.components(separatedBy: .newlines)
+        let normalizedYaml = yaml
+            .replacingOccurrences(of: crlf, with: SystemConstants.Character.newline)
+            .replacingOccurrences(of: SystemConstants.Character.carriageReturn, with: SystemConstants.Character.newline)
+        let lines = normalizedYaml.components(separatedBy: SystemConstants.Character.newline)
         var dict: [String: Any] = [:]
 
         var currentArrayKey: String?
         var currentArray: [[String: Any]] = []
+        var currentScalarArray: [String] = []
         var currentObject: [String: Any] = [:]
 
         for line in lines {
@@ -114,7 +123,12 @@ public enum FrontmatterParser {
             if trimmed.isEmpty || trimmed.hasPrefix(SystemConstants.Character.hash) { continue }
 
             if trimmed.hasPrefix(SystemConstants.Character.dash) {
-                processArrayItemLine(trimmed, currentObject: &currentObject, currentArray: &currentArray)
+                processArrayItemLine(
+                    trimmed,
+                    currentObject: &currentObject,
+                    currentArray: &currentArray,
+                    currentScalarArray: &currentScalarArray
+                )
                 continue
             }
 
@@ -123,23 +137,44 @@ public enum FrontmatterParser {
                 continue
             }
 
-            processTopLevelLine(trimmed, dict: &dict, currentArrayKey: &currentArrayKey, currentArray: &currentArray, currentObject: &currentObject)
+            processTopLevelLine(
+                trimmed,
+                dict: &dict,
+                currentArrayKey: &currentArrayKey,
+                currentArray: &currentArray,
+                currentScalarArray: &currentScalarArray,
+                currentObject: &currentObject
+            )
         }
 
-        finalizeConversion(dict: &dict, currentArrayKey: &currentArrayKey, currentArray: &currentArray, currentObject: &currentObject)
+        finalizeConversion(
+            dict: &dict,
+            currentArrayKey: &currentArrayKey,
+            currentArray: &currentArray,
+            currentScalarArray: &currentScalarArray,
+            currentObject: &currentObject
+        )
 
         if let jsonData = try? JSONSerialization.data(withJSONObject: dict, options: []),
            let jsonStr = String(data: jsonData, encoding: .utf8) {
             return jsonStr
         }
-        return "{}"
+        return emptyJSONObject
     }
 
-    private static func processArrayItemLine(_ trimmed: String, currentObject: inout [String: Any], currentArray: inout [[String: Any]]) {
+    private static func processArrayItemLine(
+        _ trimmed: String,
+        currentObject: inout [String: Any],
+        currentArray: inout [[String: Any]],
+        currentScalarArray: inout [String]
+    ) {
         flushCurrentObject(into: &currentArray, currentObject: &currentObject)
         let content = String(trimmed.dropFirst()).trimmingCharacters(in: .whitespaces)
-        if !content.isEmpty {
+        guard !content.isEmpty else { return }
+        if content.contains(SystemConstants.Character.colon) {
             parseKeyValue(content, into: &currentObject)
+        } else {
+            currentScalarArray.append(stripSurroundingQuotes(content))
         }
     }
 
@@ -148,20 +183,26 @@ public enum FrontmatterParser {
         dict: inout [String: Any],
         currentArrayKey: inout String?,
         currentArray: inout [[String: Any]],
+        currentScalarArray: inout [String],
         currentObject: inout [String: Any]
     ) {
         flushCurrentObject(into: &currentArray, currentObject: &currentObject)
 
-        if let arrayKey = currentArrayKey, !currentArray.isEmpty {
-            dict[arrayKey] = currentArray
-            currentArray = []
+        if let arrayKey = currentArrayKey {
+            if !currentArray.isEmpty {
+                dict[arrayKey] = currentArray
+                currentArray = []
+            } else if !currentScalarArray.isEmpty {
+                dict[arrayKey] = currentScalarArray
+                currentScalarArray = []
+            }
             currentArrayKey = nil
         }
 
-        let parts = trimmed.split(separator: ":", maxSplits: 1, omittingEmptySubsequences: false)
-        guard parts.count == 2 else { return }
-        let key = parts[0].trimmingCharacters(in: .whitespacesAndNewlines)
-        let valueStr = parts[1].trimmingCharacters(in: .whitespacesAndNewlines)
+        let parts = trimmed.split(separator: Character(SystemConstants.Character.colon), maxSplits: singleSplitCount, omittingEmptySubsequences: false)
+        guard parts.count == keyValuePairCount else { return }
+        let key = parts[keyPartIndex].trimmingCharacters(in: .whitespacesAndNewlines)
+        let valueStr = parts[valuePartIndex].trimmingCharacters(in: .whitespacesAndNewlines)
 
         if valueStr.isEmpty {
             currentArrayKey = key
@@ -171,14 +212,17 @@ public enum FrontmatterParser {
     }
 
     private static func parseAndInsertValue(key: String, valueStr: String, dict: inout [String: Any]) {
-        if valueStr.hasPrefix("[") && valueStr.hasSuffix("]") {
+        if isWrappedInMatchingQuotes(valueStr) {
+            // 显式引号包裹的标量始终按字符串保留，避免 `"123"` / `"true"` 被误强转为数字或布尔
+            dict[key] = stripSurroundingQuotes(valueStr)
+        } else if valueStr.hasPrefix(SystemConstants.Character.openBracket) && valueStr.hasSuffix(SystemConstants.Character.closeBracket) {
             let arrayContent = String(valueStr.dropFirst().dropLast())
                 .trimmingCharacters(in: .whitespacesAndNewlines)
             if arrayContent.isEmpty {
                 dict[key] = [String]()
             } else {
                 let items = arrayContent
-                    .components(separatedBy: ",")
+                    .components(separatedBy: SystemConstants.Character.comma)
                     .map { stripSurroundingQuotes($0.trimmingCharacters(in: .whitespacesAndNewlines)) }
                     .filter { !$0.isEmpty }
                 dict[key] = items
@@ -198,11 +242,16 @@ public enum FrontmatterParser {
         dict: inout [String: Any],
         currentArrayKey: inout String?,
         currentArray: inout [[String: Any]],
+        currentScalarArray: inout [String],
         currentObject: inout [String: Any]
     ) {
         flushCurrentObject(into: &currentArray, currentObject: &currentObject, resetObject: false)
-        if let arrayKey = currentArrayKey, !currentArray.isEmpty {
-            dict[arrayKey] = currentArray
+        if let arrayKey = currentArrayKey {
+            if !currentArray.isEmpty {
+                dict[arrayKey] = currentArray
+            } else if !currentScalarArray.isEmpty {
+                dict[arrayKey] = currentScalarArray
+            }
         }
     }
 
@@ -225,33 +274,57 @@ public enum FrontmatterParser {
     }
 
     private static func parseKeyValue(_ content: String, into dict: inout [String: Any]) {
-        let parts = content.split(separator: ":", maxSplits: 1, omittingEmptySubsequences: true)
-        guard parts.count == 2 else { return }
-        let key = parts[0].trimmingCharacters(in: .whitespacesAndNewlines)
-        let valueStr = stripSurroundingQuotes(parts[1].trimmingCharacters(in: .whitespacesAndNewlines))
+        let parts = content.split(separator: Character(SystemConstants.Character.colon), maxSplits: singleSplitCount, omittingEmptySubsequences: true)
+        guard parts.count == keyValuePairCount else { return }
+        let key = parts[keyPartIndex].trimmingCharacters(in: .whitespacesAndNewlines)
+        let rawValue = parts[valuePartIndex].trimmingCharacters(in: .whitespacesAndNewlines)
 
-        if let num = Double(valueStr), num.isFinite {
+        if isWrappedInMatchingQuotes(rawValue) {
+            dict[key] = stripSurroundingQuotes(rawValue)
+        } else if let num = Double(rawValue), num.isFinite {
             dict[key] = num
+        } else if rawValue == SystemConstants.BooleanLiteral.true {
+            dict[key] = true
+        } else if rawValue == SystemConstants.BooleanLiteral.false {
+            dict[key] = false
         } else {
-            dict[key] = valueStr
+            dict[key] = rawValue
         }
     }
 
-    /// 剥离首尾成对单引号或双引号（要求长度不少于 2，避免单字符引号被清空）
-    private static func stripSurroundingQuotes(_ raw: String) -> String {
-        guard raw.count >= minimumQuotedLength else { return raw }
+    /// 判断字符串是否被成对双引号或单引号包裹
+    private static func isWrappedInMatchingQuotes(_ raw: String) -> Bool {
+        guard raw.count >= minimumQuotedLength else { return false }
         let isDoubleQuoted = raw.hasPrefix(SystemConstants.Character.doubleQuote)
             && raw.hasSuffix(SystemConstants.Character.doubleQuote)
         let isSingleQuoted = raw.hasPrefix(SystemConstants.Character.singleQuote)
             && raw.hasSuffix(SystemConstants.Character.singleQuote)
-        if isDoubleQuoted || isSingleQuoted {
-            return String(raw.dropFirst().dropLast())
+        return isDoubleQuoted || isSingleQuoted
+    }
+
+    /// 剥离首尾成对单引号或双引号，并对双引号内的 `\"` / `\\` 执行反转义
+    private static func stripSurroundingQuotes(_ raw: String) -> String {
+        guard isWrappedInMatchingQuotes(raw) else { return raw }
+        let inner = String(raw.dropFirst().dropLast())
+        if raw.hasPrefix(SystemConstants.Character.doubleQuote) {
+            return inner
+                .replacingOccurrences(of: escapedDoubleQuote, with: SystemConstants.Character.doubleQuote)
+                .replacingOccurrences(of: escapedBackslash, with: SystemConstants.Character.backslash)
         }
-        return raw
+        return inner
     }
 
     /// 成对引号包裹字符串的最小字符数
     private static let minimumQuotedLength: Int = 2
+    private static let singleSplitCount: Int = 1
+    private static let keyValuePairCount: Int = 2
+    private static let keyPartIndex: Int = 0
+    private static let valuePartIndex: Int = 1
+    private static let emptyJSONObject: String = "{}"
+    private static let utf8BOM: String = "\u{FEFF}"
+    private static let crlf: String = SystemConstants.Character.carriageReturn + SystemConstants.Character.newline
+    private static let escapedDoubleQuote: String = SystemConstants.Character.backslash + SystemConstants.Character.doubleQuote
+    private static let escapedBackslash: String = SystemConstants.Character.backslash + SystemConstants.Character.backslash
     /// YAML 嵌套缩进两个空格
     private static let doubleSpace: String = "  "
     /// YAML 嵌套缩进四个空格

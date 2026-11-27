@@ -67,7 +67,7 @@ final class ExcelProcessorTests: XCTestCase {
 
     // MARK: - inlineStr 类型
 
-    func testParse_inlineStringType_recordsIndexFormat() {
+    func testParse_inlineStringType_recordsDirectTextValue() {
         let xml = """
         <?xml version="1.0" encoding="UTF-8"?>
         <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
@@ -81,12 +81,12 @@ final class ExcelProcessorTests: XCTestCase {
         let processor = ExcelProcessor(xmlData: Data(xml.utf8))
 
         _ = processor.parse()
-        XCTAssertEqual(processor.values, ["[3]"], "t=\"inlineStr\" 类型也应记录为 [索引] 格式")
+        XCTAssertEqual(processor.values, ["3"], "t=\"inlineStr\" 类型应直接记录内联文本而非共享字符串索引")
     }
 
     // MARK: - 非字符串类型（数字单元格）
 
-    func testParse_numericCell_notRecorded() {
+    func testParse_numericCell_recordsNumericText() {
         let xml = """
         <?xml version="1.0" encoding="UTF-8"?>
         <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
@@ -100,7 +100,7 @@ final class ExcelProcessorTests: XCTestCase {
         let processor = ExcelProcessor(xmlData: Data(xml.utf8))
 
         _ = processor.parse()
-        XCTAssertTrue(processor.values.isEmpty, "无 t 属性的数字单元格不应被记录")
+        XCTAssertEqual(processor.values, ["42"], "无 t 属性的数值单元格应提取数值文本")
     }
 
     // MARK: - 空值单元格

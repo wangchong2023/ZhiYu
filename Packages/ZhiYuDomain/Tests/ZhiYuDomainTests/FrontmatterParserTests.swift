@@ -230,6 +230,32 @@ final class FrontmatterParserTests: XCTestCase {
         XCTAssertEqual(infResult?.count, 9)
     }
 
+    // MARK: - 缺陷 #247 回归：CRLF/BOM 兼容、显式引号数字/布尔保真与 YAML 多行标量列表
+
+    func testSplit_crlfAndUTF8BOM_parsedCleanly() {
+        let content = "\u{FEFF}---\r\ntitle: Windows标题\r\n---\r\n第一行\r\n第二行"
+        let result = FrontmatterParser.split(content: content)
+        XCTAssertEqual(result.frontmatter, "title: Windows标题")
+        XCTAssertEqual(result.body, "第一行\n第二行")
+    }
+
+    func testParse_quotedNumericAndBool_preservedAsStringAndUnescaped() {
+        let yaml = "title: \"2026\"\nsubtitle: \"true\""
+        let result = FrontmatterParser.parse(QuotedModel.self, from: yaml)
+        XCTAssertEqual(result?.title, "2026", "显式引号包裹的数字不得被强转为 Double 破坏 String 解码")
+        XCTAssertEqual(result?.subtitle, "true", "显式引号包裹的布尔不得被强转为 Bool 破坏 String 解码")
+
+        let escapedYaml = "title: \"Swift 6: \\\"严格并发\\\"\""
+        let escapedResult = FrontmatterParser.parse(QuotedModel.self, from: escapedYaml)
+        XCTAssertEqual(escapedResult?.title, "Swift 6: \"严格并发\"")
+    }
+
+    func testParse_multilineScalarList_decodedAsStringArray() {
+        let yaml = "tags:\n  - swift\n  - \"ios\"\n  - 'macos'"
+        let result = FrontmatterParser.parse(ArrayModel.self, from: yaml)
+        XCTAssertEqual(result?.tags, ["swift", "ios", "macos"], "多行标量列表应正确解码为字符串数组")
+    }
+
     // MARK: - 测试辅助
 
     private struct TestFrontmatter: Decodable {

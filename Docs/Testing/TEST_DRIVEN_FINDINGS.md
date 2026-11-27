@@ -254,21 +254,24 @@
 | **243** | `AIContentEnricher` 存在四重内容破坏与误触发缺陷：`parseBlocks` 对同行图文仅提取首张图片并直接丢弃同行前后文字与第二张图片；`needsEnrichment` 将空括号 `"[]"` 当作图片标记导致普通代码数组误触发重排；`flushText` 追加纯空白块；普通带 `|` 文本未校验分隔线 `---` 即误送 LLM 表格增强 | 正文同行混排文字与图片、同行多图、或包含 `let a = []` 代码片段 | 同行说明文字与多张图片被永久吞掉丢失，或代码数组误触发 LLM 增强与段落重写 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 抽取 `extractInlineImageBlocks` 按顺序完整保留同行前后文字与全部图片；移除 `"[]"` 误触发标记；新增 `flushTable` 校验 `---` 分隔线；`flushText` 过滤纯空白块；收敛 `ContentEnrichmentMarker` | **✅ 已解决** | 是 (Markdown 图文混排保真解析与表格严格识别) | 是 (`AIContentEnricherTests`) | ✅ 已闭环 |
 | **244** | `FileSystemSyncService` 导出存在三重隐患：`pathInvalidCharacters` 漏过滤空字节 `\0`/控制字符及 Windows/exFAT 保留字符（`*?\"<>\|`）；YAML `title:` 直接裸写未转义，含 `:`/`#` 的标题会破坏 YAML Frontmatter 语法；`updated:` 使用受地区影响的 `Date.formatted()` 导致跨设备 diff 抖动 | 导出标题含 `:`/`#`/`\0` 或跨平台非法字符的笔记至本地/iCloud/exFAT 目录 | 目标磁盘写入失败、YAML 元数据解析损坏或标题被 `#` 截断、跨地区导出时间戳格式不一致 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 扩展 `pathInvalidCharacters` 覆盖 `.controlCharacters` 与跨平台保留字符；新增 `formatYAMLScalar` 对含 YAML 特殊字符的标题自动双引号转义；`updated:` 改用标准确定性 `ISO8601DateFormatter` | **✅ 已解决** | 是 (跨平台安全文件名清洗、YAML 标量安全转义与 ISO-8601 时间戳) | 是 (`FileSystemSyncServiceTests`) | ✅ 已闭环 |
 | **245** | `QuizProcessor` 存在三重解析与洗牌缺陷：`FlexibleAnswer.asIndex` 对 `"Answer: C"` 直接取首字母 `'A'` 错判为选项 A（索引 0）；`randomizeQuizAnswers` 通过 `firstIndex(of:)` 文本反查正确答案在重复选项下易定位偏差；`parseMarkdownQuiz` 未归一化 `\r\n` | LLM 输出 `"Answer: C"` / `"答案：D"`、含重复选项文本或 Windows CRLF 格式测验 | 正确答案被系统性误判为选项 A 导致用户答题判分错误 | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | `FlexibleAnswer.asIndex` 优先按 `AnswerParsing.pattern` 提取带前缀答案再匹配独立选项字母；`randomizeQuizAnswers` 携带原始索引元组洗牌追踪 `origAnswerIndex`；`parseMarkdownQuiz` 归一化 CRLF | **✅ 已解决** | 是 (测验答案前缀解析纠偏与索引追踪洗牌) | 是 (`QuizProcessorTests`) | ✅ 已闭环 |
+| **246** | `OOXMLParserBase` 与 `XMLParserLauncher` 未禁用外部实体解析（`shouldResolveExternalEntities` / `externalEntityResolvingPolicy`）且未拦截 `<!DOCTYPE` / `<!ENTITY` 声明与体积上限，存在 XXE 与 Billion Laughs XML Bomb DoS 风险 | 导入恶意构造含 DTD/内部实体递归展开的 `.docx` 或 `.xlsx` 文档 | 解析阶段内存指数级膨胀 OOM 或触发外部实体解析风险 | **High** | 架构设计与安全/网络健壮性 | `OOXMLParserBase.parse()` 统一委托 `XMLParserLauncher.parse`；新增 `isSafeXMLPayload` 限制 32MB 上限并按 ECMA-376 拒绝 `<!DOCTYPE`/`<!ENTITY`，显式关闭 `shouldResolveExternalEntities` 与 `externalEntityResolvingPolicy = .never` | **✅ 已解决** | 是 (OOXML XML 解析器 XXE / DTD Bomb 统一防线) | 是 (`DocxProcessorTests`) | ✅ 已闭环 |
+| **247** | `FrontmatterParser`（`ZhiYuDomain`）存在三重解析缺陷：未剥离 UTF-8 BOM 与归一化 `\r\n` 导致 Windows Markdown 无法识别头部 `---` 且正文空行翻倍；`parseKeyValue` 先剥引号再转 `Double` 导致 `"2026"`/`"true"` 破坏 `String` 解码；`processArrayItemLine` 丢弃所有不含冒号的多行 YAML 标量列表（`- swift`） | 解析 Windows CRLF/BOM Markdown、含引号数字/布尔值、或 Obsidian 多行标量 `tags:` 列表 | Frontmatter 完全失效、字段类型不匹配解码返回 `nil`、多行标签全部丢失 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | `split` 剥离 `\u{FEFF}` 并归一化 `\r\n`/`\r`；新增 `isWrappedInMatchingQuotes` 保留引号字符串并反转义 `\"`/`\\`；补齐 `currentScalarArray` 支持多行标量数组 | **✅ 已解决** | 是 (YAML Frontmatter CRLF/BOM 兼容、类型保真与标量列表支持) | 是 (`FrontmatterParserTests`) | ✅ 已闭环 |
+| **248** | `JSONRepairProcessor.repair`（`ZhiYuAICore`）最外层 JSON 截取存在双重漏洞：流式截断末尾尚无 `}`/`]` 时 `lastIndex` 为 `nil` 导致跳过截取，前导自然语言说明残留搞崩 `PartialJSON`；前导/尾随自然语言中的 `[提示]`/`[附录]` 方括号误触发边界截取破坏合法 JSON | LLM 输出带自然语言前缀的流式截断 JSON 或含 `[注]` 注释的响应 | JSON 自愈完全失败，测验/结构化输出降级失败 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 抽取 `extractOutermostJSONSlice` 与 `findJSONStartIndex`：校验 `[` 后继字符符合 JSON 数组语法，无闭合括号时仍剥离前导自然语言交由 `PartialJSON` 补全，闭合括号按开括号类型精准配对 | **✅ 已解决** | 是 (流式截断 JSON 前导说明剥离与括号防误匹配) | 是 (`JSONRepairProcessorTruncationTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**245 项**
+- **收录问题总数**：**248 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：70 项 (28.6%)
-  - 状态机并发与数据生命周期：56 项 (22.9%)
-  - 架构设计与安全/网络健壮性：78 项 (31.8%)
+  - 功能缺陷与核心算法/解析器/数据完整性：72 项 (29.0%)
+  - 状态机并发与数据生命周期：56 项 (22.6%)
+  - 架构设计与安全/网络健壮性：79 项 (31.9%)
   - UI/交互与防御性缺陷：17 项 (6.9%)
-  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (9.8%)
+  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (9.7%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：150 项 (61.2%)
-  - **Medium（功能异常/算法边界/性能损耗）**：68 项 (27.8%)
-  - **Low（样式异味/边界校验/门禁规范）**：27 项 (11.0%)
-- **修复闭环率**：**100% (245/245 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：153 项 (61.7%)
+  - **Medium（功能异常/算法边界/性能损耗）**：68 项 (27.4%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (10.9%)
+- **修复闭环率**：**100% (248/248 项已修复闭环)**
 

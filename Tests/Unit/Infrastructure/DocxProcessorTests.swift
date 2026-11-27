@@ -190,4 +190,30 @@ final class DocxProcessorTests: XCTestCase {
         XCTAssertTrue(processor.extractedText.contains("结尾"), "应包含结尾")
         XCTAssertTrue(processor.extractedText.contains(" "), "应包含空格拼接")
     }
+
+    // MARK: - 缺陷 #246 回归：OOXML XXE 与 Billion Laughs DTD 攻击阻断
+
+    func testParse_xxeAndDTDDeclarations_blockedSafely() {
+        let xxeDocxXML = """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE w:document [
+            <!ENTITY xxe SYSTEM "file:///etc/passwd">
+        ]>
+        <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+            <w:body><w:p><w:r><w:t>&xxe;</w:t></w:r></w:p></w:body>
+        </w:document>
+        """
+        let docx = DocxProcessor(xmlData: Data(xxeDocxXML.utf8))
+        XCTAssertFalse(docx.parse(), "含 <!DOCTYPE / <!ENTITY 的 DOCX XML 必须被 XXE 守卫直接拒绝")
+        XCTAssertTrue(docx.extractedText.isEmpty, "被拒绝的 XML 不得产出任何提取文本")
+
+        let xxeXlsxXML = """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DoCtYpE worksheet [ <!EnTiTy lol "bomb"> ]>
+        <worksheet><sheetData><row><c t="inlineStr"><t>&lol;</t></c></row></sheetData></worksheet>
+        """
+        let xlsx = ExcelProcessor(xmlData: Data(xxeXlsxXML.utf8))
+        XCTAssertFalse(xlsx.parse(), "含大小写混合 DTD 的 XLSX XML 必须被 XXE 守卫直接拒绝")
+        XCTAssertTrue(xlsx.values.isEmpty)
+    }
 }

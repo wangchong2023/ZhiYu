@@ -69,4 +69,26 @@ final class JSONRepairProcessorTruncationTests: XCTestCase {
         let result = JSONRepairProcessor.repair(input)
         XCTAssertFalse(result.isEmpty, "完全损坏的输入也必须返回非空字符串")
     }
+
+    // MARK: - 缺陷 #248 回归：带自然语言前缀的流式截断 JSON 与前导 `[提示]` 方括号干扰
+
+    func testTruncatedJSONWithNaturalLanguagePrefixAndNoClosingBrace_repaired() throws {
+        let input = "好的，这是生成的 JSON：\n{\"title\": \"测验\", \"items\": [1, 2"
+        let result = JSONRepairProcessor.repair(input)
+        let parsed = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: Data(result.utf8)) as? [String: Any],
+            "带自然语言前缀且无任何闭合括号的流式截断 JSON 必须剥离前缀并自愈为合法 JSON，实际：\(result)"
+        )
+        XCTAssertEqual(parsed["title"] as? String, "测验")
+    }
+
+    func testNaturalLanguageBracketPrefixAndSuffix_doNotCorruptJSONExtraction() throws {
+        let input = "[提示] 以下是结果：{\"key\": \"val\"} （详见[附录]）"
+        let result = JSONRepairProcessor.repair(input)
+        let parsed = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: Data(result.utf8)) as? [String: String],
+            "前后文中的非 JSON 方括号 `[提示]`/`[附录]` 不得干扰最外层 JSON 提取，实际：\(result)"
+        )
+        XCTAssertEqual(parsed["key"], "val")
+    }
 }
