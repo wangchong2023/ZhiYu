@@ -63,17 +63,23 @@ final class FeatureGateManagerTests: XCTestCase {
     }
 
     func testOfflineFallbackToColdStartBaseline() throws {
-        let gateManager = try XCTUnwrap(sut)
-        gateManager.clearQuotasCache()
-        
-        // 无缓存时应当生效冷启动基线 (Free)
-        XCTAssertTrue(gateManager.isFeatureEnabled(\.customLocalLlmEnabled))
-        XCTAssertTrue(gateManager.isFeatureEnabled(\.adFreeEnabled))
-        XCTAssertFalse(gateManager.isFeatureEnabled(\.cloudLlmModelsEnabled))
-        XCTAssertFalse(gateManager.isFeatureEnabled(\.vectorSearchEnabled))
+        let defaults = try XCTUnwrap(testUserDefaults)
+        // 默认禁用游客访问（allowsGuestAccess = false）：无缓存时应 fail-closed 拦截
+        let strictGate = try XCTUnwrap(sut)
+        strictGate.clearQuotasCache()
+        XCTAssertFalse(strictGate.isFeatureEnabled(\.customLocalLlmEnabled))
+        XCTAssertEqual(strictGate.getQuotaLimit(\.maxKnowledgePages), 0)
 
-        XCTAssertEqual(gateManager.getQuotaLimit(\.maxKnowledgePages), 1000)
-        XCTAssertEqual(gateManager.getQuotaLimit(\.maxVaultsCount), 4)
+        // 显式开启游客回退（allowsGuestAccess = true）：无缓存时应生效冷启动 Free 保底基线
+        let guestGate = FeatureGateManager(userDefaults: defaults, allowsGuestAccess: true)
+        guestGate.clearQuotasCache()
+        XCTAssertTrue(guestGate.isFeatureEnabled(\.customLocalLlmEnabled))
+        XCTAssertTrue(guestGate.isFeatureEnabled(\.adFreeEnabled))
+        XCTAssertFalse(guestGate.isFeatureEnabled(\.cloudLlmModelsEnabled))
+        XCTAssertFalse(guestGate.isFeatureEnabled(\.vectorSearchEnabled))
+
+        XCTAssertEqual(guestGate.getQuotaLimit(\.maxKnowledgePages), 1000)
+        XCTAssertEqual(guestGate.getQuotaLimit(\.maxVaultsCount), 4)
     }
 
     func testCacheFirstPreservesProPlanOffline() throws {

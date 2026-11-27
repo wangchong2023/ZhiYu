@@ -56,8 +56,8 @@ final class AuthViewLayoutTraitTests: XCTestCase {
     /// 两种布局共享同一组状态，登录逻辑不因布局分派而重复定义。
     func testAuthView_RegionFlipState_SingleSourceForBothLayouts() {
         let mirror = Mirror(reflecting: AuthView())
-        let rotateStateCount = mirror.children.filter { $0.label == "__rotateDegrees" }.count
-        let regionStateCount = mirror.children.filter { $0.label == "__displayedRegion" }.count
+        let rotateStateCount = mirror.children.filter { $0.label == "_rotateDegrees" }.count
+        let regionStateCount = mirror.children.filter { $0.label == "_displayedRegion" }.count
 
         XCTAssertEqual(rotateStateCount, 1, "rotateDegrees 状态应单一来源，两布局共享而非重复声明")
         XCTAssertEqual(regionStateCount, 1, "displayedRegion 状态应单一来源，两布局共享而非重复声明")

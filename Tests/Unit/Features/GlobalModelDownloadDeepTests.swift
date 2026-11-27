@@ -258,7 +258,12 @@ final class GlobalModelDownloadDeepTests: XCTestCase {
 
         // 创建新的 manager 以使用可控 Mock（@Dependency 在 init 时解析一次并缓存）
         let testManager = GlobalModelManager()
-        let manifest = makeManifest(modelId: "resubscribe-failed-test")
+        // 使用单源（无 fallback 镜像），确保 .failed 直接进入终态而非触发备用镜像重试
+        let manifest = makeManifest(
+            modelId: "resubscribe-failed-test",
+            huggingfaceURLString: nil,
+            modelscopeURLString: nil
+        )
 
         // 1. 第一次下载，触发订阅
         testManager.startDownload(for: manifest)

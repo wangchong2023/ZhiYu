@@ -154,7 +154,7 @@ final class SecurityComponentsSupplementTests: XCTestCase {
 
     // MARK: - SecurityManager 完整性校验降级路径
 
-    /// verifyIntegrity 无签名记录时，模拟器 DEBUG 应放行（true），真机应 fail-closed（false）
+    /// verifyIntegrity 无签名记录时，全环境（含模拟器 DEBUG）一律 fail-closed 返回 false（VULN-004）
     func testSecurityManager_VerifyIntegrity_NoSignature_SimulatorPass() async throws {
         let manager = SecurityManager.shared
         let tempDir = FileManager.default.temporaryDirectory
@@ -163,11 +163,7 @@ final class SecurityComponentsSupplementTests: XCTestCase {
         defer { try? FileManager.default.removeItem(at: fileURL) }
 
         let result = await manager.verifyIntegrity(for: fileURL)
-        #if DEBUG && targetEnvironment(simulator)
-        XCTAssertTrue(result, "模拟器 DEBUG 模式下无签名应放行")
-        #else
-        XCTAssertFalse(result, "非模拟器环境无签名应 fail-closed")
-        #endif
+        XCTAssertFalse(result, "VULN-004 修复后，无签名记录时全环境一律应 fail-closed 返回 false")
     }
 
     /// verifyIntegrity 文件不存在时：
