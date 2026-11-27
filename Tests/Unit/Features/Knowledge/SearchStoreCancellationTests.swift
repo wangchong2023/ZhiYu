@@ -21,4 +21,14 @@ final class SearchStoreCancellationTests: XCTestCase {
         try? await Task.sleep(nanoseconds: 400_000_000)
         XCTAssertFalse(store.isSearching, "清空搜索后 isSearching 应为 false")
     }
+
+    /// 验证纯空白搜索词不触发防抖搜索并清空残留诊断状态
+    @MainActor
+    func testSearchStore_whitespaceOnlyQuery_doesNotTriggerSearch() {
+        let store = SearchStore()
+        store.searchText = "   \n\t  "
+        XCTAssertFalse(store.isSearching, "纯空白搜索词不应进入 isSearching 状态")
+        XCTAssertTrue(store.searchResults.isEmpty)
+        XCTAssertNil(store.lastSearchDiagnostic)
+    }
 }

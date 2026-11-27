@@ -165,4 +165,27 @@ final class LLMClientSecurityTests: XCTestCase {
             // 也可能因 URL 构造失败抛出其他错误
         }
     }
+
+    // MARK: - Loopback 子串欺骗防御（#142）
+
+    func testLoopbackSpoofedHostAndNonHTTPSchemeThrowInvalidURL() async {
+        let spoofedURLs = [
+            "http://localhost.evil.com/v1",
+            "http://127.0.0.1.attacker.io/v1",
+            "http://evil.com/?redirect=http://localhost:1234",
+            "file://localhost/etc/passwd"
+        ]
+        for url in spoofedURLs {
+            let client = LLMClient(baseURL: url, apiKey: "sk-secret")
+            XCTAssertFalse(client.isLoopbackURL(url), "伪造 loopback URL \(url) 绝不能通过 isLoopbackURL 判定")
+            do {
+                _ = try await client.sendRequest(body: ["model": "test"])
+                XCTFail("伪造 loopback URL \(url) 必须抛出 invalidURL")
+            } catch LLMError.invalidURL {
+                // 预期拦截
+            } catch {
+                XCTFail("伪造 loopback URL \(url) 应抛出 LLMError.invalidURL，实际：\(error)")
+            }
+        }
+    }
 }

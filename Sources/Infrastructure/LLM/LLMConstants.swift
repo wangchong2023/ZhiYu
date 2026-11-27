@@ -181,6 +181,10 @@ public enum LLMConstants {
         public static let ipv6LoopbackMarker: String = "://[::1]"
         /// 任意地址绑定标记（0.0.0.0）
         public static let anyAddressMarker: String = "://0.0.0.0"
+        /// 允许的精确回环主机名集合（防 localhost.evil.com 子串欺骗）
+        public static let allowedHosts: Set<String> = ["localhost", "127.0.0.1", "::1", "[::1]", "0.0.0.0"]
+        /// 允许的 HTTP 协议集合（防 file://localhost 协议绕过）
+        public static let allowedSchemes: Set<String> = ["http", "https"]
     }
 
     // MARK: - 任务中心任务名 (Task Center Names)

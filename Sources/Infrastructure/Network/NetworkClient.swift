@@ -102,8 +102,9 @@ public actor NetworkClient {
         mimeType: String,
         requiresAuth: Bool = true
     ) async throws -> String {
-        // Bug #40 修复：校验 fileName 不含 CRLF，防止 HTTP header 注入
-        guard !fileName.unicodeScalars.contains(where: { $0.value == SystemConstants.ASCII.carriageReturn || $0.value == SystemConstants.ASCII.lineFeed }) else {
+        // Bug #40 / #143 修复：同时校验 fileName 不含 CRLF/双引号，且 mimeType 不含 CRLF，防止 multipart header 注入
+        guard Self.isSafeMultipartHeaderValue(fileName, allowQuotes: false),
+              Self.isSafeMultipartHeaderValue(mimeType, allowQuotes: false) else {
             throw NetworkError.invalidFileName
         }
         let url = try makeBackendURL(path: path)
@@ -121,17 +122,13 @@ public actor NetworkClient {
         applyDeviceHeaders(to: &request)
         applyBearerToken(to: &request, requiresAuth: requiresAuth)
 
-        // 构造 multipart body
+        // 构造 multipart body（使用 Data(...utf8) 避免强制解包）
         var body = Data()
-        // swiftlint:disable:next force_unwrapping
-        body.append(("--\(boundary)" + crlf).data(using: .utf8)!)
-        // swiftlint:disable:next force_unwrapping
-        body.append(("Content-Disposition: form-data; name=\"\(AppConstants.Network.multipartFieldName)\"; filename=\"\(fileName)\"" + crlf).data(using: .utf8)!)
-        // swiftlint:disable:next force_unwrapping
-        body.append(("Content-Type: \(mimeType)" + crlf + crlf).data(using: .utf8)!)
+        body.append(Data(("--\(boundary)" + crlf).utf8))
+        body.append(Data(("Content-Disposition: form-data; name=\"\(AppConstants.Network.multipartFieldName)\"; filename=\"\(fileName)\"" + crlf).utf8))
+        body.append(Data(("Content-Type: \(mimeType)" + crlf + crlf).utf8))
         body.append(fileData)
-        // swiftlint:disable:next force_unwrapping
-        body.append((crlf + "--\(boundary)--" + crlf).data(using: .utf8)!)
+        body.append(Data((crlf + "--\(boundary)--" + crlf).utf8))
         request.httpBody = body
 
         let (data, response) = try await activeSession.data(for: request)
@@ -312,10 +309,23 @@ public actor NetworkClient {
         }
         refreshTask = task
         
-        // 等待刷新完成并重试原请求
-// swiftlint:disable:next force_unwrapping
-        let result = await refreshTask!.value
+        // 等待刷新完成并重试原请求（直接使用局部 task 引用，避免强制解包）
+        let result = await task.value
         return try await retryRequestAfterRefresh(result: result, path: path, method: method, body: body)
+    }
+
+    private enum MultipartValidationConstants {
+        static let doubleQuoteScalar: UInt32 = 34
+    }
+
+    /// 校验 multipart header 字段值安全（拦截 CR/LF 及可选拦截双引号逃逸）
+    private static func isSafeMultipartHeaderValue(_ value: String, allowQuotes: Bool) -> Bool {
+        guard !value.isEmpty else { return false }
+        return !value.unicodeScalars.contains { scalar in
+            scalar.value == SystemConstants.ASCII.carriageReturn
+                || scalar.value == SystemConstants.ASCII.lineFeed
+                || (!allowQuotes && scalar.value == MultipartValidationConstants.doubleQuoteScalar)
+        }
     }
 
     /// 根据 Token 刷新结果重试原请求：成功则重试，失败则抛错

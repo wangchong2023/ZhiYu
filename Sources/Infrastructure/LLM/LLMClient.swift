@@ -176,13 +176,15 @@ final class LLMClient: LLMClientProtocol, Sendable {
         return request
     }
 
-    /// 审查修复 MED-1: 判断 URL 是否为 loopback 地址（本地回环）
-    /// loopback 不经过网络，无明文泄露风险，豁免 HTTPS 强制校验
-    private func isLoopbackURL(_ urlString: String) -> Bool {
-        let lower = urlString.lowercased()
-        return lower.contains(LLMConstants.Loopback.localhostMarker) ||
-               lower.contains(LLMConstants.Loopback.ipv4LoopbackMarker) ||
-               lower.contains(LLMConstants.Loopback.ipv6LoopbackMarker) ||
-               lower.contains(LLMConstants.Loopback.anyAddressMarker)
+    /// 审查修复 MED-1 / #142: 严格基于 URL scheme 与 host 精确匹配判断是否为 loopback 地址
+    /// 彻底防御 http://localhost.evil.com、http://evil.com/?u=http://localhost、file://localhost 等子串欺骗绕过
+    internal func isLoopbackURL(_ urlString: String) -> Bool {
+        guard let url = URL(string: urlString),
+              let scheme = url.scheme?.lowercased(),
+              LLMConstants.Loopback.allowedSchemes.contains(scheme),
+              let host = url.host?.lowercased() else {
+            return false
+        }
+        return LLMConstants.Loopback.allowedHosts.contains(host)
     }
 }

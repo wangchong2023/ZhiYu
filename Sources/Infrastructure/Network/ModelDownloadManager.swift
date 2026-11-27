@@ -42,44 +42,54 @@ public actor ModelDownloadManager: ModelDownloadCapabilities {
     /// 内部组合的通用流式下载器
     private let streaming: StreamingDownloadManager
 
-    /// 生产环境初始化器（仅 `shared` 单例使用）。
-    /// 注入业务路径：Documents/{modelId}.bin、Caches 下业务断点续传子目录。
-    private init() {
-        let resumeDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("com.zhiyu.app.download.resume", isDirectory: true)
-        let config = URLSessionConfiguration.background(withIdentifier: "com.zhiyu.app.model.download")
-        config.isDiscretionary = false
-        config.sessionSendsLaunchEvents = true
-        streaming = StreamingDownloadManager(
-            configuration: config,
-            resumeDataDirectory: {
-                try? FileManager.default.createDirectory(at: resumeDirectory, withIntermediateDirectories: true)
-                return resumeDirectory
-            },
-            destinationURL: { modelId in
-                let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-                return documentDirectory.appendingPathComponent("\(modelId).bin")
-            }
-        )
+    private enum PathConstants {
+        static let resumeDirectoryName = "com.zhiyu.app.download.resume"
+        static let backgroundSessionId = "com.zhiyu.app.model.download"
+        static let binExtension = ".bin"
+        static let unsafeModelIdTokens = ["..", "/", "\\", ":"]
+        static let replacementToken = "_"
     }
 
-    /// 测试环境初始化器 — 允许注入自定义 URLSessionConfiguration（含 protocolClasses），
-    /// 内部以通用 Delegate 桥接器创建 session。
-    /// - Parameter configuration: URLSession 配置
-    internal init(configuration: URLSessionConfiguration) {
-        let resumeDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("com.zhiyu.app.download.resume", isDirectory: true)
-        streaming = StreamingDownloadManager(
+    /// 清洗 modelId 中的路径穿越与非法字符，构造安全落盘文件名
+    internal static func sanitizedDestinationFileName(for modelId: String) -> String {
+        let cleaned = PathConstants.unsafeModelIdTokens.reduce(modelId) { partial, token in
+            partial.replacingOccurrences(of: token, with: PathConstants.replacementToken)
+        }
+        return cleaned + PathConstants.binExtension
+    }
+
+    private static func makeStreamingManager(configuration: URLSessionConfiguration) -> StreamingDownloadManager {
+        let fm = FileManager.default
+        let cachesDir = fm.urls(for: .cachesDirectory, in: .userDomainMask).first ?? fm.temporaryDirectory
+        let resumeDirectory = cachesDir.appendingPathComponent(PathConstants.resumeDirectoryName, isDirectory: true)
+        return StreamingDownloadManager(
             configuration: configuration,
             resumeDataDirectory: {
                 try? FileManager.default.createDirectory(at: resumeDirectory, withIntermediateDirectories: true)
                 return resumeDirectory
             },
             destinationURL: { modelId in
-                let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-                return documentDirectory.appendingPathComponent("\(modelId).bin")
+                let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+                    ?? FileManager.default.temporaryDirectory
+                return documentDirectory.appendingPathComponent(Self.sanitizedDestinationFileName(for: modelId))
             }
         )
+    }
+
+    /// 生产环境初始化器（仅 `shared` 单例使用）。
+    /// 注入业务路径：Documents/{modelId}.bin、Caches 下业务断点续传子目录。
+    private init() {
+        let config = URLSessionConfiguration.background(withIdentifier: PathConstants.backgroundSessionId)
+        config.isDiscretionary = false
+        config.sessionSendsLaunchEvents = true
+        streaming = Self.makeStreamingManager(configuration: config)
+    }
+
+    /// 测试环境初始化器 — 允许注入自定义 URLSessionConfiguration（含 protocolClasses），
+    /// 内部以通用 Delegate 桥接器创建 session。
+    /// - Parameter configuration: URLSession 配置
+    internal init(configuration: URLSessionConfiguration) {
+        streaming = Self.makeStreamingManager(configuration: configuration)
     }
 
     // MARK: - 领域状态桥接

@@ -63,8 +63,9 @@ public final class SearchStore {
     private func performDebouncedSearch(query: String) {
         searchTask?.cancel()
 
-        guard !query.isEmpty else {
+        guard !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             searchResults = []
+            lastSearchDiagnostic = nil
             isSearching = false
             return
         }

@@ -150,21 +150,25 @@
 | **139** | `iCloudSyncCoordinator`（`#if ICLOUD_ENABLED`）存在多处高危缺陷：`replaceLocalData` 漏标 `async` 却调用 `await`、`resolveConflictedMetadata` 引用未定义变量 `f` 导致开启 iCloud 编译失败；LWW 覆盖未防同路径自删；`onDisappear` 未释放挂起的 `activeConflict.continuation` 导致永久泄露 | 开启 `ICLOUD_ENABLED` 编译或冲突弹窗未决议时离开页面 | 编译失败、同路径文件自毁或同步协程永久挂起泄露 | **High** | 架构设计与安全/网络健壮性 | 修复 `async/await` 签名与日期解码器，增加 `standardizedFileURL` 同路径守卫，并在 `onDisappear` 补齐 `resolvePendingConflictIfNeeded()` | **✅ 已解决** | 是 (CheckedContinuation 生命周期收口) | 是 (静态编译与代码审计闭环) | ✅ 已闭环 |
 | **140** | `iCloudSyncManager` 将敏感密钥 `"llm_api_key"` 纳入非加密的 `NSUbiquitousKeyValueStore` 同步并明文写回 `keyStore`（UserDefaults），违反 Apple 安全规范与凭据分级存储红线 | 开启 iCloud 偏好同步时拉取/推送 LLM 配置 | 用户明文 API Key 泄露至非加密 iCloud KVS 与 UserDefaults | **High** | 架构设计与安全/网络健壮性 | 收敛为 `SyncKeys.allowedPreferenceKeys` 白名单（仅同步 `llm_model`/`llm_enabled`/`llm_provider_type`），并在 `pushToCloud` 拦截敏感键 | **✅ 已解决** | 是 (云端 KVS 敏感凭据禁同步规范) | 是 (安全红线与静态审计闭环) | ✅ 已闭环 |
 | **141** | `MaintenanceService.seedDefaultContent` 绕过已通过 `@Dependency(\.vaultService)` 注入的实例，直接访问全局单例 `VaultService.shared.currentVault?.name`，破坏 DIP 并导致测试隔离失效 | 未传 `vaultName` 参数调用 `seedDefaultContent` | 注入的自定义/Mock `vaultService` 失效，读取到污染的全局状态 | **Medium** | 架构设计与安全/网络健壮性 | 改为使用 DI 注入的 `vaultService.currentVault?.name` | **✅ 已解决** | 是 (DI 实例一致性防全局单例逃逸) | 是 (`MaintenanceAndImportDeepTests`) | ✅ 已闭环 |
+| **142** | `LLMClient.isLoopbackURL` 使用 `String.contains("://localhost")` 等子串匹配判断回环地址，攻击者构造 `http://localhost.evil.com/v1`、`http://evil.com/?u=http://localhost` 或 `file://localhost/...` 可 100% 绕过 HTTPS 强制校验并将 `Authorization: Bearer <API_KEY>` 明文发送至外部主机 | 恶意/错误配置的 LLM Base URL 包含回环子串 | 用户 API Key 通过明文 HTTP 泄露至第三方主机 | **High** | 架构设计与安全/网络健壮性 | `LLMConstants.Loopback` 新增 `allowedHosts` 与 `allowedSchemes`，`isLoopbackURL` 改为解析 `URL` 后精确匹配 `scheme` 与 `host` | **✅ 已解决** | 是 (URL 安全校验禁止子串匹配) | 是 (`LLMClientSecurityTests`) | ✅ 已闭环 |
+| **143** | `NetworkClient.uploadFile` 存在 Multipart Header 注入缺口：仅检查 `fileName` 的 CR/LF，漏检 `fileName` 双引号 `"` 属性逃逸及 `mimeType` 的 CR/LF 注入；同时 `NetworkClient` 残留 5 处强制解包（`.data(using: .utf8)!` 与 `refreshTask!.value`） | 上传接口传入含双引号文件名或含 CRLF 的 MIME 类型 | 可在 multipart 请求体中注入伪造 Header 或表单字段 | **High** | 架构设计与安全/网络健壮性 | 抽取 `isSafeMultipartHeaderValue` 同时拦截 `fileName`/`mimeType` 的 CR/LF/双引号，并全部消除 5 处强制解包 | **✅ 已解决** | 是 (Multipart 上传字段全量安全校验) | 是 (`NetworkClientSecurityTests`) | ✅ 已闭环 |
+| **144** | `ModelDownloadManager` 初始化中存在 4 处 `FileManager.default.urls(...)[0]` 硬索引越界风险，且 `destinationURL` 直接拼接 `"\(modelId).bin"` 未清洗路径穿越字符（`../`/`/`/`\`） | 异常沙盒目录为空或远端清单包含恶意 `modelId` | 硬索引崩溃或模型权重落盘写穿 `Documents` 目录 | **High** | 架构设计与安全/网络健壮性 | 抽取 `sanitizedDestinationFileName(for:)` 清洗非法路径字符，合并双初始化器并改用 `.first ?? temporaryDirectory` 安全解包 | **✅ 已解决** | 是 (下载落盘路径清洗规范) | 是 (`NetworkClientSecurityTests`) | ✅ 已闭环 |
+| **145** | `SearchStore.performDebouncedSearch` 仅校验 `!query.isEmpty` 漏检纯空白输入，键入空格仍触发 300ms 防抖与全库混合搜索，且清空搜索词时未重置 `lastSearchDiagnostic` | 搜索框输入纯空格或清空搜索框 | 触发无意义向量检索且残留上次搜索诊断信息 | **Medium** | UI/交互与防御性缺陷 | 改为 `!query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty`，空白时同步清空 `lastSearchDiagnostic` | **✅ 已解决** | 是 (防抖输入空白与状态同步清空) | 是 (`SearchStoreCancellationTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**141 项**
+- **收录问题总数**：**145 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：36 项 (25.5%)
-  - 状态机并发与数据生命周期：27 项 (19.1%)
-  - 架构设计与安全/网络健壮性：40 项 (28.4%)
-  - UI/交互与防御性缺陷：15 项 (10.6%)
-  - 代码坏味道与去魔鬼化/DRY 治理：23 项 (16.3%)
+  - 功能缺陷与核心算法/解析器/数据完整性：36 项 (24.8%)
+  - 状态机并发与数据生命周期：27 项 (18.6%)
+  - 架构设计与安全/网络健壮性：43 项 (29.7%)
+  - UI/交互与防御性缺陷：16 项 (11.0%)
+  - 代码坏味道与去魔鬼化/DRY 治理：23 项 (15.9%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：67 项 (47.5%)
-  - **Medium（功能异常/算法边界/性能损耗）**：48 项 (34.0%)
-  - **Low（样式异味/边界校验/门禁规范）**：26 项 (18.4%)
-- **修复闭环率**：**100% (141/141 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：70 项 (48.3%)
+  - **Medium（功能异常/算法边界/性能损耗）**：49 项 (33.8%)
+  - **Low（样式异味/边界校验/门禁规范）**：26 项 (17.9%)
+- **修复闭环率**：**100% (145/145 项已修复闭环)**
 
