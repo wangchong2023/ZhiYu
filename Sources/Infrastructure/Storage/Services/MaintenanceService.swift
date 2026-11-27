@@ -97,8 +97,8 @@ public final class MaintenanceService {
         
         // 是否处于自动化 UI 测试模式，用于自愈保护
         
-        // 尝试获取当前选中笔记本名称（当 vaultName 为 nil 时兜底）
-        let resolvedName: String? = vaultName ?? VaultService.shared.currentVault?.name
+        // 尝试获取当前选中笔记本名称（优先使用 DI 注入的 vaultService，避免绕过依赖注入）
+        let resolvedName: String? = vaultName ?? vaultService.currentVault?.name
         
         do {
             if resolvedName == L10n.Vault.defaultName || resolvedName == L10n.Vault.defaultNameZh || resolvedName == L10n.Vault.defaultNameEn {

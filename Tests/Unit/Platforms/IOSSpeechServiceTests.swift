@@ -11,6 +11,7 @@
 
 #if !os(watchOS)
 import XCTest
+import AVFoundation
 @testable import ZhiYuUnitTestHost
 
 @MainActor
@@ -164,6 +165,41 @@ final class IOSSpeechServiceTests: XCTestCase {
         } catch {
             XCTAssertFalse(error.localizedDescription.isEmpty, "transcribeFile 不存在音频抛错原因不应为空：\(error)")
         }
+    }
+
+    // MARK: - calculateAudioLevel 边界防御（零帧/非 Float32 缓冲/空历史数组）
+
+    /// 零帧缓冲与非 Float32（floatChannelData == nil）缓冲不得触发除零 NaN 或空指针崩溃
+    func testCalculateAudioLevel_zeroFrameAndInt16Buffer_doesNotCrashOrProduceNaN() async throws {
+        let service = iOSSpeechService()
+        service.audioLevelHistory = []
+
+        // 1. Float32 零帧缓冲
+        let floatFormat = try XCTUnwrap(AVAudioFormat(standardFormatWithSampleRate: 44_100, channels: 1))
+        let zeroBuffer = try XCTUnwrap(AVAudioPCMBuffer(pcmFormat: floatFormat, frameCapacity: 1024))
+        zeroBuffer.frameLength = 0
+        service.calculateAudioLevel(from: zeroBuffer)
+
+        // 2. Int16 非浮点缓冲（floatChannelData 为 nil，frameLength > 0）
+        let int16Format = try XCTUnwrap(
+            AVAudioFormat(commonFormat: .pcmFormatInt16, sampleRate: 44_100, channels: 1, interleaved: false)
+        )
+        let int16Buffer = try XCTUnwrap(AVAudioPCMBuffer(pcmFormat: int16Format, frameCapacity: 512))
+        int16Buffer.frameLength = 512
+        service.calculateAudioLevel(from: int16Buffer)
+
+        // 3. 合法 Float32 缓冲在空 audioLevelHistory 下也不得触发 removeFirst() 崩溃
+        let validBuffer = try XCTUnwrap(AVAudioPCMBuffer(pcmFormat: floatFormat, frameCapacity: 256))
+        validBuffer.frameLength = 256
+        if let samples = validBuffer.floatChannelData?[0] {
+            for idx in 0..<256 { samples[idx] = 0.25 }
+        }
+        service.calculateAudioLevel(from: validBuffer)
+
+        try await Task.sleep(nanoseconds: 50_000_000)
+        XCTAssertTrue(service.audioLevel.isFinite, "audioLevel 必须为有限数值而非 NaN")
+        XCTAssertGreaterThan(service.audioLevel, 0, "有效浮点音频帧应计算出正音量电平")
+        XCTAssertEqual(service.audioLevelHistory.count, 1, "空历史数组收到首帧后应安全追加而非崩溃")
     }
 }
 #endif

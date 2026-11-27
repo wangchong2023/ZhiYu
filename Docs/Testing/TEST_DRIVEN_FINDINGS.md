@@ -146,21 +146,25 @@
 | **135** | `XlsxProcessorProxy.extractText` 映射共享字符串索引时仅校验 `index < sharedStrings.count` 而漏检 `index >= 0`，畸形 XLSX 传入负数索引（如 `-1`）直接触发 Swift 数组负索引致命崩溃；且遍历 `archive` 字典顺序不确定导致多工作表内容顺序随机漂移 | 畸形/恶意 XLSX 工作表包含负数共享字符串索引或多 sheet 解压 | 导入特定 Excel 文件直接导致 App 闪退，或多表文本顺序不稳定 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 改为 `sharedStrings.indices.contains(index)` 同时校验上下界，并按 `archive.sorted(by: { $0.key < $1.key })` 确定顺序遍历工作表 | **✅ 已解决** | 是 (解析器数组索引双向边界校验) | 是 (`DocumentExtractionServiceDeepTests`) | ✅ 已闭环 |
 | **136** | `ImageExtractor` 存在两处缺陷：`downloadImage` 每次新建 `URLSession(configuration:)` 未调用 `finishTasksAndInvalidate()` 造成永久内存与连接句柄泄露；`resolveURL` 对 `/` 开头根相对路径调用 `appendingPathComponent` 会把 `?w=800` 中的 `?` 错误编码为 `%3F` 导致带查询参数的 CDN 图片全部 404 | 网页抓取含图片页面或带 query 参数的根相对图片路径（如 `/_next/image?url=...`） | 持续内存/FD 泄露，带参数的网页图片 OCR 全部失败 | **High** | 状态机并发与数据生命周期 | `downloadImage` 增加 `defer { session.finishTasksAndInvalidate() }`；`resolveURL` 根相对路径改用 `URL(string: src, relativeTo: base)?.absoluteURL` 原生解析 | **✅ 已解决** | 是 (临时 URLSession 生命周期收口规范) | 是 (`ImageExtractorParsingTests`) | ✅ 已闭环 |
 | **137** | `ContentModerationEngine.matchesAny` 剥离正则修饰符构造 AC 自动机词表时误将 `|` 分隔符一并删除且未清掉 `(?i)` 整体，导致 `components(separatedBy: "|")` 切分出单条拼接废词，AC 自动机 100% 永远无法命中 | 正则清洗表达式包含 `\|` 导致提前清除分隔符 | AC 自动机完全失效，每次合规检测均白构建无用自动机并退化为全正则扫描 | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | 抽取 `extractPlainKeywords(from:)` 仅剥离 `(?i)`/`(?:`/`(`/`)`/`^`/`$` 而保留 `|`，恢复 AC 自动机快速精确匹配 | **✅ 已解决** | 是 (正则转纯文本词表边界校验) | 是 (`ContentModerationEngineTests`) | ✅ 已闭环 |
+| **138** | `iOSSpeechService.calculateAudioLevel` 存在三处致命缺陷：`floatChannelData == nil` 且 `frameLength > 0`（如 Int16 缓冲）直接触发 `UnsafeBufferPointer` 空指针致命崩溃；`frameLength == 0` 触发 `0/0` 产生 `NaN` 污染波形 UI；`audioLevelHistory.removeFirst()` 未判空存在越界崩溃 | 硬件静音空帧、非 Float32 音频格式或历史数组为空时回调音量计算 | 语音录制时 App 闪退或波形条渲染 NaN 异常 | **High** | 状态机并发与数据生命周期 | 增加 `frameLength > 0` 与 `floatChannelData?[0]` 前置守卫、抽取 `AudioLevelConstants` 校验 `isFinite`，并在 `removeFirst()` 前判空 | **✅ 已解决** | 是 (音频缓冲空指针与除零防御) | 是 (`IOSSpeechServiceTests`) | ✅ 已闭环 |
+| **139** | `iCloudSyncCoordinator`（`#if ICLOUD_ENABLED`）存在多处高危缺陷：`replaceLocalData` 漏标 `async` 却调用 `await`、`resolveConflictedMetadata` 引用未定义变量 `f` 导致开启 iCloud 编译失败；LWW 覆盖未防同路径自删；`onDisappear` 未释放挂起的 `activeConflict.continuation` 导致永久泄露 | 开启 `ICLOUD_ENABLED` 编译或冲突弹窗未决议时离开页面 | 编译失败、同路径文件自毁或同步协程永久挂起泄露 | **High** | 架构设计与安全/网络健壮性 | 修复 `async/await` 签名与日期解码器，增加 `standardizedFileURL` 同路径守卫，并在 `onDisappear` 补齐 `resolvePendingConflictIfNeeded()` | **✅ 已解决** | 是 (CheckedContinuation 生命周期收口) | 是 (静态编译与代码审计闭环) | ✅ 已闭环 |
+| **140** | `iCloudSyncManager` 将敏感密钥 `"llm_api_key"` 纳入非加密的 `NSUbiquitousKeyValueStore` 同步并明文写回 `keyStore`（UserDefaults），违反 Apple 安全规范与凭据分级存储红线 | 开启 iCloud 偏好同步时拉取/推送 LLM 配置 | 用户明文 API Key 泄露至非加密 iCloud KVS 与 UserDefaults | **High** | 架构设计与安全/网络健壮性 | 收敛为 `SyncKeys.allowedPreferenceKeys` 白名单（仅同步 `llm_model`/`llm_enabled`/`llm_provider_type`），并在 `pushToCloud` 拦截敏感键 | **✅ 已解决** | 是 (云端 KVS 敏感凭据禁同步规范) | 是 (安全红线与静态审计闭环) | ✅ 已闭环 |
+| **141** | `MaintenanceService.seedDefaultContent` 绕过已通过 `@Dependency(\.vaultService)` 注入的实例，直接访问全局单例 `VaultService.shared.currentVault?.name`，破坏 DIP 并导致测试隔离失效 | 未传 `vaultName` 参数调用 `seedDefaultContent` | 注入的自定义/Mock `vaultService` 失效，读取到污染的全局状态 | **Medium** | 架构设计与安全/网络健壮性 | 改为使用 DI 注入的 `vaultService.currentVault?.name` | **✅ 已解决** | 是 (DI 实例一致性防全局单例逃逸) | 是 (`MaintenanceAndImportDeepTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**137 项**
+- **收录问题总数**：**141 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：36 项 (26.3%)
-  - 状态机并发与数据生命周期：26 项 (19.0%)
-  - 架构设计与安全/网络健壮性：37 项 (27.0%)
-  - UI/交互与防御性缺陷：15 项 (10.9%)
-  - 代码坏味道与去魔鬼化/DRY 治理：23 项 (16.8%)
+  - 功能缺陷与核心算法/解析器/数据完整性：36 项 (25.5%)
+  - 状态机并发与数据生命周期：27 项 (19.1%)
+  - 架构设计与安全/网络健壮性：40 项 (28.4%)
+  - UI/交互与防御性缺陷：15 项 (10.6%)
+  - 代码坏味道与去魔鬼化/DRY 治理：23 项 (16.3%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：64 项 (46.7%)
-  - **Medium（功能异常/算法边界/性能损耗）**：47 项 (34.3%)
-  - **Low（样式异味/边界校验/门禁规范）**：26 项 (19.0%)
-- **修复闭环率**：**100% (137/137 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：67 项 (47.5%)
+  - **Medium（功能异常/算法边界/性能损耗）**：48 项 (34.0%)
+  - **Low（样式异味/边界校验/门禁规范）**：26 项 (18.4%)
+- **修复闭环率**：**100% (141/141 项已修复闭环)**
 

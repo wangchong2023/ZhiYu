@@ -46,18 +46,24 @@ final class iCloudSyncManager {
         // 3. 监听本地变更并推送 (在此可添加具体的 AppStorage 键名监听)
     }
 
-    /// 将云端数据拉取到本地 UserDefaults
+    /// 仅允许通过 NSUbiquitousKeyValueStore 同步的非敏感偏好键白名单（严禁同步 API Key 等敏感凭据）
+    private enum SyncKeys {
+        static let allowedPreferenceKeys: [String] = ["llm_model", "llm_enabled", "llm_provider_type"]
+        static let allowedPreferenceKeySet: Set<String> = Set(allowedPreferenceKeys)
+    }
+
+    /// 将云端非敏感偏好拉取到本地 KeyStore
     private func pullFromCloud() {
-        let keys = ["llm_api_key", "llm_model", "llm_enabled", "llm_provider_type"]
-        for key in keys {
+        for key in SyncKeys.allowedPreferenceKeys {
             if let cloudValue = kvStore.object(forKey: key) {
                 keyStore?.set(cloudValue, forKey: key)
             }
         }
     }
 
-    /// 将本地数据同步至云端
+    /// 将本地非敏感偏好同步至云端（拒绝敏感凭据写入 KVS）
     func pushToCloud(key: String, value: Any) {
+        guard SyncKeys.allowedPreferenceKeySet.contains(key) else { return }
         kvStore.set(value, forKey: key)
         kvStore.synchronize()
     }

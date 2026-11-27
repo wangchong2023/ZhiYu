@@ -39,6 +39,11 @@ final class iCloudSyncCoordinator {
 
     private var autoSyncTimer: Timer?
     private static let autoSyncInterval: TimeInterval = 300
+    private enum SyncMetadataConstants {
+        static let fallbackDateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+        static let posixLocaleIdentifier = "en_US_POSIX"
+        static let invalidDateDescription = "Invalid date string"
+    }
 
     var iCloudAvailable: Bool { syncService.iCloudAvailable }
     var syncStatus: SyncStatus { syncService.syncStatus }
@@ -62,6 +67,15 @@ final class iCloudSyncCoordinator {
     /// 视图消失回调
     func onDisappear() {
         cancelAutoSync()
+        resolvePendingConflictIfNeeded()
+    }
+
+    /// 释放未决议的冲突挂起句柄，防止 CheckedContinuation 永久泄露
+    private func resolvePendingConflictIfNeeded() {
+        if let pending = activeConflict {
+            activeConflict = nil
+            pending.continuation.resume(returning: conflictResolution)
+        }
     }
 
     // MARK: - Auto Sync
@@ -110,7 +124,7 @@ final class iCloudSyncCoordinator {
                 localLogs: store.logEntries
             )
             if !finalPages.isEmpty {
-                replaceLocalData(with: finalPages)
+                await replaceLocalData(with: finalPages)
             }
         } catch {
             autoSyncErrorMessage = error.localizedDescription
@@ -130,7 +144,7 @@ final class iCloudSyncCoordinator {
             do {
                 let pages = try await operation()
                 if !pages.isEmpty {
-                    replaceLocalData(with: pages)
+                    await replaceLocalData(with: pages)
                 }
             } catch {
                 errorMessage = error.localizedDescription
@@ -192,7 +206,7 @@ final class iCloudSyncCoordinator {
                     localPages: store.pages,
                     localLogs: store.logEntries
                 )
-                replaceLocalData(with: finalPages)
+                await replaceLocalData(with: finalPages)
             } catch {
                 errorMessage = error.localizedDescription
                 showError = true
@@ -221,7 +235,7 @@ final class iCloudSyncCoordinator {
     // MARK: - Data Management
 
     /// 以拉取到的云端页面全量替换本地数据：清空 → 逐条导入 → 落盘。
-    func replaceLocalData(with pages: [KnowledgePage]) {
+    func replaceLocalData(with pages: [KnowledgePage]) async {
         guard let store else { return }
         try? store.clearAllData()
         for page in pages {
@@ -246,6 +260,11 @@ final class iCloudSyncCoordinator {
             return false
         }
         
+        // 同路径无需覆盖，防止先删后拷自毁文件
+        guard local.standardizedFileURL != remote.standardizedFileURL else {
+            return true
+        }
+        
         do {
             let localData = try Data(contentsOf: local)
             let remoteData = try Data(contentsOf: remote)
@@ -255,22 +274,16 @@ final class iCloudSyncCoordinator {
             decoder.dateDecodingStrategy = .custom { decoder in
                 let container = try decoder.singleValueContainer()
                 let dateStr = try container.decode(String.self)
-                // 尝试多种常见的日期格式
-                let formatters = [
-                    ISO8601DateFormatter(),
-                    {
-                        let formatter = DateFormatter()
-                        formatter.dateFormat = ""
-                        formatter.locale = Locale(identifier: "en_US_POSIX")
-                        return f
-                    }()
-                ]
-                for formatter in formatters {
-                    if let date = formatter.date(from: dateStr) {
-                        return date
-                    }
+                if let isoDate = ISO8601DateFormatter().date(from: dateStr) {
+                    return isoDate
                 }
-                throw DecodingError.dataCorruptedError(in: container, debugDescription: "")
+                let fallbackFormatter = DateFormatter()
+                fallbackFormatter.dateFormat = SyncMetadataConstants.fallbackDateFormat
+                fallbackFormatter.locale = Locale(identifier: SyncMetadataConstants.posixLocaleIdentifier)
+                if let fallbackDate = fallbackFormatter.date(from: dateStr) {
+                    return fallbackDate
+                }
+                throw DecodingError.dataCorruptedError(in: container, debugDescription: SyncMetadataConstants.invalidDateDescription)
             }
             
             struct ConfigMetadata: Codable {

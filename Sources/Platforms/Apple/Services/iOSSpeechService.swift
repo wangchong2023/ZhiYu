@@ -78,19 +78,37 @@ final class iOSSpeechService: NSObject, SpeechServiceProtocol {
         audioRecorder?.record()
     }
 
+    private enum AudioLevelConstants {
+        static let rmsFloor: Float = 1e-8
+        static let decibelScale: Float = 20
+        static let decibelOffset: Float = 50
+        static let minNormalizedLevel: Float = 0
+        static let maxNormalizedLevel: Float = 1
+    }
+
     // iOS 27.0 installAudioTap 的 tapProvider 是 @Sendable 闭包，需 nonisolated 访问。
     // 内部已用 DispatchQueue.main.async 包裹 @MainActor 属性访问。
     nonisolated func calculateAudioLevel(from buffer: AVAudioPCMBuffer) {
-        let channelData = buffer.floatChannelData?[0]
-        let channelDataArray = Array(UnsafeBufferPointer(start: channelData, count: Int(buffer.frameLength)))
-        let rms = sqrt(channelDataArray.map { $0 * $0 }.reduce(0, +) / Float(channelDataArray.count))
-        let avgPower = 20 * log10(max(rms, 1e-8))
+        let frameLength = Int(buffer.frameLength)
+        guard frameLength > 0, let channelData = buffer.floatChannelData?[0] else {
+            return
+        }
+        let channelDataArray = Array(UnsafeBufferPointer(start: channelData, count: frameLength))
+        let meanSquare = channelDataArray.reduce(Float(0)) { $0 + $1 * $1 } / Float(frameLength)
+        let rms = sqrt(max(meanSquare, AudioLevelConstants.minNormalizedLevel))
+        let avgPower = AudioLevelConstants.decibelScale * log10(max(rms, AudioLevelConstants.rmsFloor))
+        let rawLevel = (avgPower + AudioLevelConstants.decibelOffset) / AudioLevelConstants.decibelOffset
+        let normalizedLevel = rawLevel.isFinite
+            ? max(AudioLevelConstants.minNormalizedLevel, min(AudioLevelConstants.maxNormalizedLevel, rawLevel))
+            : AudioLevelConstants.minNormalizedLevel
 
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            self.audioLevel = max(0, min(1, (avgPower + 50) / 50))
-            self.audioLevelHistory.removeFirst()
-            self.audioLevelHistory.append(max(0, min(1, (avgPower + 50) / 50)))
+            self.audioLevel = normalizedLevel
+            if !self.audioLevelHistory.isEmpty {
+                self.audioLevelHistory.removeFirst()
+            }
+            self.audioLevelHistory.append(normalizedLevel)
         }
     }
 
