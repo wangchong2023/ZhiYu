@@ -36,6 +36,23 @@ final class IOSExportServiceTests: XCTestCase {
         XCTAssertNotNil(service, "iOSExportService 应成功初始化")
     }
 
+    // MARK: - 缺陷 #217 回归：JS 模板字面量脚本逃逸与单点/空字节导出文件名清洗
+
+    func testEscapeJSTemplateLiteral_escapesScriptCloseAndLineSeparators() {
+        let payload = "hello `world` ${1}\u{2028}\u{2029}</SCRIPT><img src=x>"
+        let escaped = iOSExportService.escapeJSTemplateLiteral(payload)
+        XCTAssertFalse(escaped.lowercased().contains("</script"), "闭合 </script> 必须被转义防止脚本注入")
+        XCTAssertFalse(escaped.contains("\u{2028}"), "U+2028 行分隔符必须被转义")
+        XCTAssertFalse(escaped.contains("\u{2029}"), "U+2029 段分隔符必须被转义")
+        XCTAssertTrue(escaped.contains("\\`"))
+        XCTAssertTrue(escaped.contains("\\$"))
+    }
+
+    func testSanitizedExportFileName_rejectsCurrentDirAndNullByte() {
+        XCTAssertEqual(iOSExportService.sanitizedExportFileName("."), "export", "单点 '.' 必须回退至默认导出名")
+        XCTAssertEqual(iOSExportService.sanitizedExportFileName("report\0evil"), "reportevil", "空字节必须被剔除")
+    }
+
     // MARK: - exportToPDF
 
     /// 导出简单 Markdown 为 PDF 应返回有效 URL 或抛出受控导出错误

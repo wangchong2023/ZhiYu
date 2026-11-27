@@ -91,6 +91,68 @@ final class NetworkClientStatusCodeTests: XCTestCase {
         }
     }
 
+    // MARK: - 缺陷 #216 回归：刷新令牌遇到 5xx 服务端抖动不得误删本地令牌
+
+    func testTokenRefresh_http503DoesNotDeleteKeychainTokens() async throws {
+        let originalAccess = try? KeychainService.shared.retrieve(key: AppConstants.Network.jwtTokenKey)
+        let originalRefresh = try? KeychainService.shared.retrieve(key: AppConstants.Network.refreshTokenKey)
+        try KeychainService.shared.store(key: AppConstants.Network.jwtTokenKey, value: "expired_access_token")
+        try KeychainService.shared.store(key: AppConstants.Network.refreshTokenKey, value: "valid_refresh_token")
+
+        var callIndex = 0
+        NetworkMockURLProtocol.requestHandler = { _ in
+            callIndex += 1
+            if callIndex == 1 {
+                let expiredBody: [String: Any] = [
+                    "code": AppConstants.Network.BusinessCode.tokenExpired,
+                    "message": "token expired",
+                    "requestId": "req-40101",
+                    "timestamp": Int64(Date().timeIntervalSince1970 * 1000)
+                ]
+                return (200, (try? JSONSerialization.data(withJSONObject: expiredBody)) ?? Data())
+            }
+            let gatewayErrorBody: [String: Any] = [
+                "code": 503,
+                "message": "service unavailable",
+                "requestId": "req-503",
+                "timestamp": Int64(Date().timeIntervalSince1970 * 1000)
+            ]
+            return (503, (try? JSONSerialization.data(withJSONObject: gatewayErrorBody)) ?? Data())
+        }
+
+        await NetworkClient.shared.setTestSession(makeMockSession())
+        defer {
+            NetworkMockURLProtocol.reset()
+            Task { await NetworkClient.shared.setTestSession(nil) }
+            if let originalAccess {
+                try? KeychainService.shared.store(key: AppConstants.Network.jwtTokenKey, value: originalAccess)
+            } else {
+                try? KeychainService.shared.delete(key: AppConstants.Network.jwtTokenKey)
+            }
+            if let originalRefresh {
+                try? KeychainService.shared.store(key: AppConstants.Network.refreshTokenKey, value: originalRefresh)
+            } else {
+                try? KeychainService.shared.delete(key: AppConstants.Network.refreshTokenKey)
+            }
+        }
+
+        do {
+            let _: String = try await NetworkClient.shared.request(
+                path: "/api/protected",
+                method: "GET",
+                requiresAuth: true
+            )
+            XCTFail("503 刷新失败应向上抛出 NetworkError.serverError")
+        } catch NetworkError.serverError(let code, _) {
+            XCTAssertEqual(code, 503)
+        } catch {
+            XCTFail("期望 NetworkError.serverError(503)，实际为: \(error)")
+        }
+
+        let remainingRefresh = try? KeychainService.shared.retrieve(key: AppConstants.Network.refreshTokenKey)
+        XCTAssertEqual(remainingRefresh, "valid_refresh_token", "5xx 临时故障绝不得误删用户 Keychain 中的 refreshToken")
+    }
+
     // MARK: - 辅助方法
 
     private func makeMockSession() -> URLSession {
@@ -117,11 +179,13 @@ final class NetworkMockURLProtocol: URLProtocol {
     nonisolated(unsafe) static var responseBody: Data = Data()
     nonisolated(unsafe) static var statusCode: Int = 200
     nonisolated(unsafe) static var lastRequest: URLRequest?
+    nonisolated(unsafe) static var requestHandler: ((URLRequest) -> (Int, Data))?
 
     static func reset() {
         responseBody = Data()
         statusCode = 200
         lastRequest = nil
+        requestHandler = nil
     }
 
     override class func canInit(with request: URLRequest) -> Bool {
@@ -140,16 +204,25 @@ final class NetworkMockURLProtocol: URLProtocol {
             return
         }
 
+        let resolvedStatus: Int
+        let resolvedBody: Data
+        if let handler = NetworkMockURLProtocol.requestHandler {
+            (resolvedStatus, resolvedBody) = handler(request)
+        } else {
+            resolvedStatus = NetworkMockURLProtocol.statusCode
+            resolvedBody = NetworkMockURLProtocol.responseBody
+        }
+
         let response = HTTPURLResponse(
             url: url,
-            statusCode: NetworkMockURLProtocol.statusCode,
+            statusCode: resolvedStatus,
             httpVersion: "HTTP/1.1",
             headerFields: ["Content-Type": "application/json"]
         )
         if let response = response {
             client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
         }
-        client?.urlProtocol(self, didLoad: NetworkMockURLProtocol.responseBody)
+        client?.urlProtocol(self, didLoad: resolvedBody)
         client?.urlProtocolDidFinishLoading(self)
     }
 

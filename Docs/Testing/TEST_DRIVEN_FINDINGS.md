@@ -224,21 +224,24 @@
 | **213** | `iOSSpotlightIndexer.indexPages` 未校验 `page.isPrivate`，将加密私密页面的标题、明文正文前 200 字与标签直接写入系统 Spotlight 全局搜索索引 | 创建或更新 `isPrivate == true` 的加密私密页面，或将公开页面切换为私密 | 私密笔记正文在系统锁屏/桌面 Spotlight 搜索中明文泄露 | **High** | 架构设计与安全/网络健壮性 | 抽取 `partitionPagesForIndexing`：私密页面严禁生成 `CSSearchableItem` 并加入 `privateIDs` 主动调用 `deleteSearchableItems` 撤销历史索引，空批次短路返回 | **✅ 已解决** | 是 (Spotlight 隐私隔离与私密页索引撤销) | 是 (`IOSSpotlightIndexerTests`) | ✅ 已闭环 |
 | **214** | `iOSPDFService` 存在四重隐患：`isFileNameSafe(".")` 放行导致 `deletePDF(".")` 删空整个 `AppPDFs` 目录；`extractImages` 未校验 `mediaBox` 有限数与最大像素上限导致超大工程图/NaN 引发崩溃或 OOM；`buildOutlineMap` 递归无深度上限与环检测；`allPDFFilenames` 区分 `.pdf`/`.PDF` 大小写 | 删除名为 `"."` 的文件、导入超大尺寸/畸形大纲/大写 `.PDF` 文件 | 整个 PDF 目录被误删、渲染时进程 OOM 闪退或栈溢出、大写 `.PDF` 文件丢失 | **High** | 架构设计与安全/网络健壮性 | 新增 `sanitizedSafeFileName` 拦截 `.`/空字节并归一化空白；新增 `safeRenderLayout` 拦截 `NaN`/`Infinity`/负值并等比钳位至 4096px；`buildOutlineMap` 增加 64 层深度上限与环检测；全部常量收敛至 `PlatformConstants.PDFSecurity` | **✅ 已解决** | 是 (PDF 文件名安全归一化、渲染像素钳位与大纲环检测) | 是 (`IOSPDFServiceSecurityTests`) | ✅ 已闭环 |
 | **215** | `VaultLifecycleManager.selectVault` 派发两个不可取消的匿名 `Task`，快速连切笔记本（A → B）或切换后立即 `exitVault()`/`deleteVault()` 时，旧切库任务后完成会覆盖底层 SQLite 连接 | 快速连续点击不同笔记本或切换后立即退出/删除原笔记本 | UI 显示已进入笔记本 B 或已退出，但底层数据库被旧任务悄悄切回笔记本 A，导致跨笔记本数据错写 | **High** | 状态机并发与数据生命周期 | 在 `VaultService` 维护 `activeSwitchTask` 与递增 `switchGeneration`，在 `selectVault`/`selectVaultAndWait`/`clearVaultSelectionState` 统一取消旧任务并在每次 `await` 前后校验代次与 `selectedVaultID` | **✅ 已解决** | 是 (多 Vault 切库代次防竞态状态机) | 是 (`VaultLifecycleAndCoordinatorDeepTests`) | ✅ 已闭环 |
+| **216** | `NetworkClient.handleTokenRefreshAndRetry` 忽略刷新端点的 HTTP 状态码且未校验空/空白 `refreshToken`，服务端返回 502/503/504 时误判为令牌失效并物理删除 Keychain 中 JWT 与 RefreshToken 强制踢用户下线；同时 `isSafeMultipartHeaderValue` 漏拦截 NUL 字节 | 令牌过期恰好遭遇网关 502/503/504 抖动或维护窗口，或上传含空字节文件名 | 用户无故被强制退出登录并丢失当前会话，或触发控制字符注入 | **High** | 架构设计与安全/网络健壮性 | 刷新响应先校验 `HTTPURLResponse` 与 `statusCode >= 500` 直接返回 `serverError` 保留令牌，仅非 5xx 鉴权失败才清理 Keychain；拦截空白 `refreshToken` 与 NUL 控制字符 | **✅ 已解决** | 是 (Token 刷新 5xx 容错与会话保护) | 是 (`NetworkClientStatusCodeTests`) | ✅ 已闭环 |
+| **217** | `iOSExportService` 开启 `allowFileAccessFromFileURLs` 且 `exportToPDF` 直接将 `marked.parse` 写入 `innerHTML` 未做 DOM XSS 净化；`escapeJSTemplateLiteral` 未转义 `</script>` 与 `U+2028`/`U+2029`；`sanitizedExportFileName(".")` 放行产生隐藏文件 | 导出含 `<script>`/`onerror` 的 Markdown、含行分隔符文本或名为 `.` 的文件 | 导出 PDF 时触发 WKWebView XSS 及沙盒文件跨域读取风险，或导出脚本语法崩溃 | **High** | 架构设计与安全/网络健壮性 | 关闭 `allowFileAccessFromFileURLs`；渲染后对 `#content` 执行 DOM 净化剥离危险标签/事件属性/`javascript:` 协议；补齐 `</script>` 与 `U+2028`/`U+2029` 转义及 `.`/空字节文件名清洗 | **✅ 已解决** | 是 (WebView 导出 DOM XSS 净化与脚本转义) | 是 (`IOSExportServiceTests`) | ✅ 已闭环 |
+| **218** | `AppBackupService` 存在三重隐患：`BackupEntry.fileSize(in:)` 绕过 `safeBackupFileURL` 路径校验泄露沙盒外文件大小；`safeBackupFileURL` 漏显式拦截 `.` 与空字节；`deleteBackup` 删除失败仍删索引且未重算 `lastBackupDate` 导致删除唯一备份后 300s 自动备份被误节流 | 索引文件被篡改含 `../`，或用户删除最新备份后 5 分钟内修改笔记期望自动备份 | 路径穿越探测沙盒外文件大小、残留磁盘孤儿文件或删除后自动备份静默丢失 | **High** | 状态机并发与数据生命周期 | 抽取静态 `safeBackupFileURL(for:in:)` 统一防护 `fileSize`/`restore`/`delete`/`cleanOldBackups`；`deleteBackup` 删文件失败保留索引并重算 `lastBackupDate`；全部文件名收敛至 `BackupFileConstants` | **✅ 已解决** | 是 (备份路径安全统一校验与节流状态一致性) | 是 (`BackupServiceEdgeTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**215 项**
+- **收录问题总数**：**218 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：60 项 (27.9%)
-  - 状态机并发与数据生命周期：51 项 (23.7%)
-  - 架构设计与安全/网络健壮性：63 项 (29.3%)
-  - UI/交互与防御性缺陷：17 项 (7.9%)
-  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (11.2%)
+  - 功能缺陷与核心算法/解析器/数据完整性：60 项 (27.5%)
+  - 状态机并发与数据生命周期：52 项 (23.9%)
+  - 架构设计与安全/网络健壮性：65 项 (29.8%)
+  - UI/交互与防御性缺陷：17 项 (7.8%)
+  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (11.0%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：124 项 (57.7%)
-  - **Medium（功能异常/算法边界/性能损耗）**：64 项 (29.8%)
-  - **Low（样式异味/边界校验/门禁规范）**：27 项 (12.6%)
-- **修复闭环率**：**100% (215/215 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：127 项 (58.3%)
+  - **Medium（功能异常/算法边界/性能损耗）**：64 项 (29.4%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (12.4%)
+- **修复闭环率**：**100% (218/218 项已修复闭环)**
 

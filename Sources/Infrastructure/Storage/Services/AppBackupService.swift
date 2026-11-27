@@ -21,6 +21,14 @@ final class BackupService: ObservableObject {
     @Published var lastBackupDate: Date?
     @Published var isAutoBackupEnabled: Bool = true
 
+    private enum BackupFileConstants {
+        static let directoryName: String = "AppBackups"
+        static let indexFileName: String = "backup_index.json"
+        static let dirtyFlagFileName: String = ".knowledge-management_dirty"
+        static let missingSizePlaceholder: String = "-"
+        static let fileNameDateFormat: String = "yyyy-MM-dd_HH-mm-ss-SSS"
+    }
+
     /// Maximum number of backups to retain before auto-cleanup removes the oldest.
     private static let maxBackups = 20
     /// Minimum time interval (seconds) between consecutive auto-backups to avoid thrashing.
@@ -72,12 +80,14 @@ final class BackupService: ObservableObject {
         /// fileSize
         /// - Returns: 字符串
         func fileSize(in directory: URL) -> String {
-            let url = directory.appendingPathComponent(fileName)
+            guard let url = BackupService.safeBackupFileURL(for: fileName, in: directory) else {
+                return BackupFileConstants.missingSizePlaceholder
+            }
             if let attrs = try? FileManager.default.attributesOfItem(atPath: url.path),
                let size = attrs[.size] as? UInt64 {
                 return ByteCountFormatter.string(fromByteCount: Int64(size), countStyle: .file)
             }
-            return "-"
+            return BackupFileConstants.missingSizePlaceholder
         }
     }
 
@@ -87,30 +97,37 @@ final class BackupService: ObservableObject {
     static func defaultBackupDirectory() -> URL {
         let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
             ?? FileManager.default.temporaryDirectory
-        return docs.appendingPathComponent("AppBackups", isDirectory: true)
+        return docs.appendingPathComponent(BackupFileConstants.directoryName, isDirectory: true)
     }
 
     var backupDirectory: URL {
-        let dir = baseDirectory.appendingPathComponent("AppBackups", isDirectory: true)
+        let dir = baseDirectory.appendingPathComponent(BackupFileConstants.directoryName, isDirectory: true)
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         return dir
     }
 
-    /// 校验备份文件名严格落在 backupDirectory 内，防止篡改索引触发目录穿越读/删任意文件
-    internal func safeBackupFileURL(for fileName: String) -> URL? {
+    /// 静态校验备份文件名严格落在目标目录内，防止篡改索引触发目录穿越读/删/探测任意文件
+    nonisolated internal static func safeBackupFileURL(for fileName: String, in directory: URL) -> URL? {
         let trimmed = fileName.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty,
+              trimmed != SystemConstants.Character.dot,
+              !trimmed.unicodeScalars.contains(UnicodeScalar(0)),
               !trimmed.contains(SystemConstants.Character.slash),
               !trimmed.contains(SystemConstants.Character.backslash),
               !trimmed.contains(SystemConstants.Character.dot + SystemConstants.Character.dot) else {
             return nil
         }
-        let baseDir = backupDirectory.standardizedFileURL
+        let baseDir = directory.standardizedFileURL
         let candidate = baseDir.appendingPathComponent(trimmed).standardizedFileURL
         guard candidate.deletingLastPathComponent().path == baseDir.path else {
             return nil
         }
         return candidate
+    }
+
+    /// 校验备份文件名严格落在 backupDirectory 内，防止篡改索引触发目录穿越读/删任意文件
+    internal func safeBackupFileURL(for fileName: String) -> URL? {
+        Self.safeBackupFileURL(for: fileName, in: backupDirectory)
     }
 
     // MARK: - Init
@@ -156,7 +173,7 @@ final class BackupService: ObservableObject {
 
         let timestamp = Date()
         // Bug #42 修复：文件名包含毫秒，避免同秒备份文件名冲突
-        let fileName = "backup_\(DateFormatterFactory.shared.string(from: timestamp, format: "yyyy-MM-dd_HH-mm-ss-SSS")).json"
+        let fileName = "\(StorageConstants.Backup.prefix)\(DateFormatterFactory.shared.string(from: timestamp, format: BackupFileConstants.fileNameDateFormat)).\(SystemConstants.FileExtension.json)"
 
         do {
             let data = try encoder.encode(pages)
@@ -229,20 +246,32 @@ final class BackupService: ObservableObject {
     }
 
     // MARK: - Delete Backup
-    /// 删除备份
+    /// 删除备份（物理删除失败时保留索引防孤儿，删除成功后同步重算 lastBackupDate 防误节流）
     /// - Parameter entry: entry
     func deleteBackup(_ entry: BackupEntry) {
-        if let url = safeBackupFileURL(for: entry.fileName) {
-            try? FileManager.default.removeItem(at: url)
+        if let url = safeBackupFileURL(for: entry.fileName),
+           FileManager.default.fileExists(atPath: url.path) {
+            do {
+                try FileManager.default.removeItem(at: url)
+            } catch {
+                Logger.shared.addLog(
+                    action: .error,
+                    target: entry.fileName,
+                    details: error.localizedDescription,
+                    module: StorageConstants.LogModule.backupService
+                )
+                return
+            }
         }
         backupEntries.removeAll { $0.id == entry.id }
+        lastBackupDate = backupEntries.map(\.timestamp).max()
         saveBackupEntries()
     }
 
     // MARK: - Crash Recovery
     private func checkForCrashRecovery() {
         // Check if there's a "dirty flag" file indicating unsaved changes at crash
-        let dirtyFlag = baseDirectory.appendingPathComponent(".knowledge-management_dirty")
+        let dirtyFlag = baseDirectory.appendingPathComponent(BackupFileConstants.dirtyFlagFileName)
 
         if FileManager.default.fileExists(atPath: dirtyFlag.path) {
             Logger.shared.addLog(action: .systemInit, target: StorageConstants.LogTarget.backupService, details: L10n.Backup.log.crashRecovery)
@@ -254,18 +283,18 @@ final class BackupService: ObservableObject {
 
     /// markDirty
     func markDirty() {
-        let dirtyFlag = baseDirectory.appendingPathComponent(".knowledge-management_dirty")
+        let dirtyFlag = baseDirectory.appendingPathComponent(BackupFileConstants.dirtyFlagFileName)
         try? Data().write(to: dirtyFlag)
     }
 
     /// mark清理
     func markClean() {
-        let dirtyFlag = baseDirectory.appendingPathComponent(".knowledge-management_dirty")
+        let dirtyFlag = baseDirectory.appendingPathComponent(BackupFileConstants.dirtyFlagFileName)
         try? FileManager.default.removeItem(at: dirtyFlag)
     }
 
     var hasUnsavedChanges: Bool {
-        let dirtyFlag = baseDirectory.appendingPathComponent(".knowledge-management_dirty")
+        let dirtyFlag = baseDirectory.appendingPathComponent(BackupFileConstants.dirtyFlagFileName)
         return FileManager.default.fileExists(atPath: dirtyFlag.path)
     }
 
@@ -304,7 +333,7 @@ final class BackupService: ObservableObject {
         encoder.dateEncodingStrategy = .iso8601
         do {
             let data = try encoder.encode(backupEntries)
-            let url = backupDirectory.appendingPathComponent("backup_index.json")
+            let url = backupDirectory.appendingPathComponent(BackupFileConstants.indexFileName)
             try data.write(to: url, options: .atomicWrite)
         } catch {
             Logger.shared.addLog(action: .error, target: StorageConstants.LogTarget.backupService, details: String(format: L10n.Backup.log.saveIndexFailed, error.localizedDescription))
@@ -315,7 +344,7 @@ final class BackupService: ObservableObject {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
 
-        let url = backupDirectory.appendingPathComponent("backup_index.json")
+        let url = backupDirectory.appendingPathComponent(BackupFileConstants.indexFileName)
         do {
             let data = try Data(contentsOf: url)
             backupEntries = try decoder.decode([BackupEntry].self, from: data)

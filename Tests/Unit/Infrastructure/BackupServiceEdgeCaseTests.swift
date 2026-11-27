@@ -149,6 +149,43 @@ final class BackupServiceEdgeTests: XCTestCase {
 
         XCTAssertFalse(backupService.backupEntries.contains { $0.id == entry.id }, "记录应被删除")
         XCTAssertFalse(FileManager.default.fileExists(atPath: fileURL.path), "物理文件应被删除")
+        XCTAssertNil(backupService.lastBackupDate, "删除唯一备份后应同步清空 lastBackupDate，避免后续自动备份被误节流")
+    }
+
+    // MARK: - 缺陷 #218 回归：fileSize 路径穿越隔离与删除后解除误节流
+
+    func testBackupEntryFileSize_blocksPathTraversalOutsideBackupDirectory() throws {
+        let secretURL = tempDir.appendingPathComponent("outside_secret.txt")
+        try Data("secret-payload".utf8).write(to: secretURL)
+
+        let traversalEntry = BackupService.BackupEntry(
+            id: UUID(),
+            timestamp: Date(),
+            pageCount: 1,
+            totalWords: 1,
+            fileName: "../outside_secret.txt"
+        )
+        XCTAssertEqual(
+            traversalEntry.fileSize(in: backupService.backupDirectory),
+            "-",
+            "fileSize 必须拦截路径穿越文件名，不得探测目录外文件大小"
+        )
+        XCTAssertNil(backupService.safeBackupFileURL(for: "."))
+        XCTAssertNil(backupService.safeBackupFileURL(for: "backup\0.json"))
+    }
+
+    func testDeleteLatestBackup_recomputesLastBackupDateAndUnblocksAutoBackup() {
+        backupService.createBackup(pages: makePages(count: 1))
+        guard let onlyEntry = backupService.backupEntries.first else {
+            XCTFail("首次备份应成功")
+            return
+        }
+        backupService.deleteBackup(onlyEntry)
+        XCTAssertNil(backupService.lastBackupDate)
+
+        // 紧接着触发自动备份不应被刚删除的备份误节流
+        backupService.createBackup(pages: makePages(count: 2))
+        XCTAssertEqual(backupService.backupEntries.count, 1, "删除唯一备份后立即自动备份不应被节流跳过")
     }
 
     // MARK: - crash recovery dirty flag

@@ -13,7 +13,7 @@ import Foundation
 import WebKit
 import UFPCore
 
-/// JS 模板字面量转义符（注入 WebView 前需转义反斜杠/反引号/美元符号）
+/// JS 模板字面量转义符（注入 WebView 前需转义反斜杠/反引号/美元符号/行分隔符）
 private enum JSTemplateEscape {
     static let backslash: String = SystemConstants.Character.backslash
     static let doubleBackslash: String = "\\\\"
@@ -21,9 +21,30 @@ private enum JSTemplateEscape {
     static let escapedBacktick: String = "\\`"
     static let dollar: String = "$"
     static let escapedDollar: String = "\\$"
+    static let lineSeparator: String = "\u{2028}"
+    static let escapedLineSeparator: String = "\\u2028"
+    static let paragraphSeparator: String = "\u{2029}"
+    static let escapedParagraphSeparator: String = "\\u2029"
+    static let scriptCloseTag: String = "</script"
+    static let escapedScriptCloseTag: String = "<\\/script"
     static let defaultExportFileName: String = "export"
     static let unsafeFileNameTokens: [String] = ["..", "/", "\\", ":", "\"", "'", "\n", "\r"]
     static let replacementUnderscore: String = "_"
+    static let sanitizeContentDOMScript: String = """
+    const sanitizeNode = (rootNode) => {
+        if (!rootNode) return;
+        rootNode.querySelectorAll('script, iframe, object, embed, link, meta').forEach(el => el.remove());
+        rootNode.querySelectorAll('*').forEach(el => {
+            Array.from(el.attributes).forEach(attr => {
+                const name = attr.name.toLowerCase();
+                const val = (attr.value || '').trim().toLowerCase();
+                if (name.startsWith('on') || ((name === 'href' || name === 'src' || name === 'xlink:href') && (val.startsWith('javascript:') || val.startsWith('vbscript:')))) {
+                    el.removeAttribute(attr.name);
+                }
+            });
+        });
+    };
+    """
     static let resetContainersScript: String = """
     (() => {
         const contentNode = document.getElementById('content');
@@ -46,8 +67,8 @@ final class iOSExportService: NSObject, ExportServiceProtocol {
     }
     
     private func setupWebView() {
+        // 本地 JS 库均通过 loadLocalJS 内联注入，禁用 allowFileAccessFromFileURLs 防止沙盒本地文件跨域泄露
         let config = WKWebViewConfiguration()
-        config.preferences.setValue(true, forKey: "allowFileAccessFromFileURLs")
         
         webView = WKWebView(frame: CGRect(x: 0, y: 0, width: 800, height: 1000), configuration: config)
         webView?.navigationDelegate = self
@@ -103,19 +124,26 @@ final class iOSExportService: NSObject, ExportServiceProtocol {
         }
     }
 
-    /// 转义 JS 模板字面量特殊字符（反斜杠/反引号/美元符号）
-    private func escapeJSTemplateLiteral(_ raw: String) -> String {
+    /// 转义 JS 模板字面量特殊字符（反斜杠/反引号/美元符号/行分隔符/闭合 script 标签）
+    internal static func escapeJSTemplateLiteral(_ raw: String) -> String {
         raw.replacingOccurrences(of: JSTemplateEscape.backslash, with: JSTemplateEscape.doubleBackslash)
             .replacingOccurrences(of: JSTemplateEscape.backtick, with: JSTemplateEscape.escapedBacktick)
             .replacingOccurrences(of: JSTemplateEscape.dollar, with: JSTemplateEscape.escapedDollar)
+            .replacingOccurrences(of: JSTemplateEscape.lineSeparator, with: JSTemplateEscape.escapedLineSeparator)
+            .replacingOccurrences(of: JSTemplateEscape.paragraphSeparator, with: JSTemplateEscape.escapedParagraphSeparator)
+            .replacingOccurrences(of: JSTemplateEscape.scriptCloseTag, with: JSTemplateEscape.escapedScriptCloseTag, options: .caseInsensitive)
     }
 
-    /// 清洗导出文件名：移除路径穿越字符、斜杠、引号与换行，空串回退至默认名
+    /// 清洗导出文件名：移除路径穿越字符、斜杠、引号、空字节与换行，单点 "." 或空串回退至默认名
     internal static func sanitizedExportFileName(_ raw: String) -> String {
-        let cleaned = JSTemplateEscape.unsafeFileNameTokens.reduce(raw.trimmingCharacters(in: .whitespacesAndNewlines)) { partial, token in
+        let withoutNull = String(raw.unicodeScalars.filter { $0 != UnicodeScalar(0) })
+        let cleaned = JSTemplateEscape.unsafeFileNameTokens.reduce(withoutNull.trimmingCharacters(in: .whitespacesAndNewlines)) { partial, token in
             partial.replacingOccurrences(of: token, with: JSTemplateEscape.replacementUnderscore)
         }
-        return cleaned.isEmpty ? JSTemplateEscape.defaultExportFileName : cleaned
+        guard !cleaned.isEmpty, cleaned != PlatformConstants.PDFSecurity.currentDirectoryMarker else {
+            return JSTemplateEscape.defaultExportFileName
+        }
+        return cleaned
     }
 
     /// 占用导出槽位并执行闭包，结束后仅清空容器内容而保留 #content / #mermaid-root DOM 节点。
@@ -139,15 +167,19 @@ final class iOSExportService: NSObject, ExportServiceProtocol {
     /// - Parameter fileName: fileName
     /// - Returns: 链接
     func exportToPDF(markdown: String, fileName: String) async throws -> URL {
-        let escapedMarkdown = escapeJSTemplateLiteral(markdown)
+        let escapedMarkdown = Self.escapeJSTemplateLiteral(markdown)
         return try await withExportSlot { webView in
         
         let js = """
         (async () => {
+            \(JSTemplateEscape.sanitizeContentDOMScript)
             const root = document.getElementById('mermaid-root');
             if (root) root.innerHTML = '';
             const content = document.getElementById('content');
-            if (content) content.innerHTML = marked.parse(`\(escapedMarkdown)`);
+            if (content) {
+                content.innerHTML = marked.parse(`\(escapedMarkdown)`);
+                sanitizeNode(content);
+            }
             
             await new Promise(r => {
                 if (document.readyState === 'complete') r();
@@ -168,7 +200,7 @@ final class iOSExportService: NSObject, ExportServiceProtocol {
     /// - Parameter fileName: fileName
     /// - Returns: 链接
     func exportMindmapToPDF(mermaidCode: String, fileName: String) async throws -> URL {
-        let escapedCode = escapeJSTemplateLiteral(mermaidCode)
+        let escapedCode = Self.escapeJSTemplateLiteral(mermaidCode)
         return try await withExportSlot { webView in
         let js = """
         (async () => {

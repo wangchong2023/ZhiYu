@@ -265,11 +265,13 @@ public actor NetworkClient {
                 self.refreshTask = nil
             }
             
-            // 拿到长效 Refresh Token
-            guard let refreshToken = try? KeychainService.shared.retrieve(key: AppConstants.Network.refreshTokenKey) else {
+            // 拿到长效 Refresh Token（拦截空串与纯空白，防止发无效刷新请求）
+            guard let rawRefreshToken = try? KeychainService.shared.retrieve(key: AppConstants.Network.refreshTokenKey),
+                  !rawRefreshToken.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
                 NotificationCenter.default.post(name: .userAuthExpired, object: nil)
                 return .failure(NetworkError.missingRefreshToken)
             }
+            let refreshToken = rawRefreshToken
             
             // 发起刷新请求
             let req = RefreshRequest(refreshToken: refreshToken)
@@ -284,7 +286,14 @@ public actor NetworkClient {
             
             do {
                 request.httpBody = try encoder.encode(req)
-                let (data, _) = try await activeSession.data(for: request)
+                let (data, urlResponse) = try await activeSession.data(for: request)
+                guard let httpResponse = urlResponse as? HTTPURLResponse else {
+                    return .failure(NetworkError.invalidHTTPResponse)
+                }
+                // 5xx 服务端抖动/网关超时不得误删本地令牌或踢用户下线，交由调用方重试
+                if httpResponse.statusCode >= SystemConstants.HTTPStatusCode.internalServerError {
+                    return .failure(NetworkError.serverError(httpResponse.statusCode, "\(MultipartValidationConstants.httpStatusPrefix)\(httpResponse.statusCode)"))
+                }
                 let response = try decoder.decode(ApiResponse<LoginResponse>.self, from: data)
                 
                 if response.isSuccess, let loginData = response.data {
@@ -315,14 +324,17 @@ public actor NetworkClient {
     }
 
     private enum MultipartValidationConstants {
+        static let nullScalar: UInt32 = 0
         static let doubleQuoteScalar: UInt32 = 34
+        static let httpStatusPrefix: String = "HTTP_"
     }
 
-    /// 校验 multipart header 字段值安全（拦截 CR/LF 及可选拦截双引号逃逸）
+    /// 校验 multipart header 字段值安全（拦截 NUL/CR/LF 及可选拦截双引号逃逸）
     private static func isSafeMultipartHeaderValue(_ value: String, allowQuotes: Bool) -> Bool {
         guard !value.isEmpty else { return false }
         return !value.unicodeScalars.contains { scalar in
-            scalar.value == SystemConstants.ASCII.carriageReturn
+            scalar.value == MultipartValidationConstants.nullScalar
+                || scalar.value == SystemConstants.ASCII.carriageReturn
                 || scalar.value == SystemConstants.ASCII.lineFeed
                 || (!allowQuotes && scalar.value == MultipartValidationConstants.doubleQuoteScalar)
         }
