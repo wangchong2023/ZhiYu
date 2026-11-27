@@ -176,4 +176,28 @@ final class FileSystemSyncServiceTests: XCTestCase {
         let files = try FileManager.default.contentsOfDirectory(atPath: conceptsDir.path)
         XCTAssertEqual(files.count, 1, "文件必须严格写入 concepts 目录内不得穿越")
     }
+
+    // MARK: - 缺陷 #192 回归：同名/清洗后冲突页面自动去重不互相覆盖 & 标签换行清洗
+
+    func testExportToMarkdown_collidingTitles_disambiguatedWithoutOverwrite() throws {
+        let pages = [
+            KnowledgePage(title: "A/B", pageType: .concept, content: "第一篇内容", tags: ["正常", "折行\n注入"]),
+            KnowledgePage(title: "A:B", pageType: .concept, content: "第二篇内容"),
+            KnowledgePage(title: "a-b", pageType: .concept, content: "第三篇大小写冲突内容")
+        ]
+        let service = FileSystemSyncService()
+        try service.exportToMarkdown(pages: pages, destinationURL: tempRoot)
+
+        let conceptsDir = tempRoot.appendingPathComponent("concepts")
+        let files = try FileManager.default.contentsOfDirectory(atPath: conceptsDir.path).sorted()
+        XCTAssertEqual(files.count, 3, "同名、清洗冲突及大小写冲突页面必须全部保留，不得互相覆盖")
+
+        let allContents = try files.map { fileName in
+            try String(contentsOf: conceptsDir.appendingPathComponent(fileName), encoding: .utf8)
+        }
+        XCTAssertTrue(allContents.contains { $0.contains("第一篇内容") })
+        XCTAssertTrue(allContents.contains { $0.contains("第二篇内容") })
+        XCTAssertTrue(allContents.contains { $0.contains("第三篇大小写冲突内容") })
+        XCTAssertTrue(allContents.contains { $0.contains("tags: 正常, 折行 注入") }, "标签中的换行符应被清洗为空格")
+    }
 }

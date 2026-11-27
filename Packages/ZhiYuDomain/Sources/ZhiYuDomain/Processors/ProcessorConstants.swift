@@ -184,9 +184,12 @@ public enum ProcessorConstants {
         public static let wordDocumentPath: String = "word/document.xml"
         public static let cellElement: String = "c"
         public static let valueElement: String = "v"
+        public static let textElement: String = "t"
         public static let cellTypeAttribute: String = "t"
         public static let cellTypeShared: String = "s"
         public static let cellTypeInlineString: String = "inlineStr"
+        public static let cellTypeFormulaString: String = "str"
+        public static let cellTypeNumber: String = "n"
         public static let sharedStringIndexOpen: String = "["
         public static let sharedStringIndexClose: String = "]"
         public static let sharedStringIndexMax: Int = 10000

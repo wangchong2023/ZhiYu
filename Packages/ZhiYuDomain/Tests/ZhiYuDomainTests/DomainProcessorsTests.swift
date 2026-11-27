@@ -71,6 +71,23 @@ final class DomainProcessorsTests: XCTestCase {
         XCTAssertEqual(sheetParser.values.count, 2)
     }
 
+    /// 缺陷 #193 回归：ExcelProcessor 拦截负数共享字符串索引，并完整提取内联字符串、公式字符串与数值单元格
+    func testExcelProcessorHandlesInlineStrFormulaNumberAndRejectsNegativeSharedIndex() {
+        let sheet = """
+        <worksheet>
+            <c t="s"><v>-1</v></c>
+            <c t="s"><v>0</v></c>
+            <c t="inlineStr"><is><t>内联标题</t></is></c>
+            <c t="str"><v>公式结果</v></c>
+            <c><v>1234.56</v></c>
+            <c t="n"><v>99</v></c>
+        </worksheet>
+        """
+        let parser = ExcelProcessor(xmlData: Data(sheet.utf8))
+        XCTAssertTrue(parser.parse())
+        XCTAssertEqual(parser.values, ["[0]", "内联标题", "公式结果", "1234.56", "99"])
+    }
+
     func testSwiftMarkdownASTCleanerClosesUnclosedFenceAndBold() {
         let broken = "```swift\nlet x = 1\n\n\n\n**unclosed"
         let cleaned = SwiftMarkdownASTCleaner.cleanAST(broken)

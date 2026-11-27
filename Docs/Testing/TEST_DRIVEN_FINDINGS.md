@@ -199,21 +199,24 @@
 | **188** | `WikiLinkExtractor.extractLinks` 对空白别名（如 `[[页面|   ]]`）将 `alias` 赋为 `""` 而非 `nil`，导致 `WikiLinkMatch.displayTitle` 返回空字符串 | 用户在 Markdown 中误写竖线后仅空白的双链别名 | 双链渲染文字为空白“隐身”且不可点击 | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | 将去空白后的空别名归一化为 `nil`，并在 `WikiLinkMatch.displayTitle` 中兜底非空校验 | **✅ 已解决** | 是 (双向链接别名归一化守卫) | 是 (`WikiLinkExtractorEdgeTests`) | ✅ 已闭环 |
 | **189** | `GraphLayoutProcessor.layout` 与 `applyForcesAndConstraints` 未校验 `canvasSize` 的正性与有限性及 `padding` 边界倒置，传入 `.zero`/负值/`NaN` 或窄画布时产出 `NaN` 坐标或全部节点坍缩到越界点 | SwiftUI 初次布局尚未测得尺寸传入 `.zero`，或窄画布 `width < 2 * padding` 执行力导向仿真 | 知识图谱节点消失或重叠为单点导致渲染异常 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 新增 `GraphConstants.Layout.fallbackCanvasDimension` 与 `sanitizedCanvasSize`；`applyForcesAndConstraints` 校验有限性并钳位 `safePadding <= size / 2` | **✅ 已解决** | 是 (图谱布局几何有限性与边界守卫) | 是 (`GraphLayoutProcessorEdgeTests`) | ✅ 已闭环 |
 | **190** | `ModelBenchmarkRunner` 在模拟与硬件压测循环中未检查 `Task.isCancelled`，且使用 `try? await Task.sleep` 吞掉 `CancellationError`，导致任务取消后不仅继续空跑，还因睡眠被打断归零而算出上万 Tok/s 的虚假爆表跑分 | 用户在基准跑分中途取消或关闭页面 | 后台持续空跑消耗资源，并回调/返回严重失真的 `.excellent` 虚假高分 | **High** | 状态机并发与数据生命周期 | 循环与挂起点补齐 `Task.isCancelled` 检查并将 `Task.sleep` 取消转为立即中止；新增 `finalizeBenchmarkResult` 在 `completedRounds == 0` 时安全返回零值与 `.warning` | **✅ 已解决** | 是 (异步循环协同取消与睡眠中断防护) | 是 (`ModelBenchmarkTests`) | ✅ 已闭环 |
+| **191** | `PromptSanitizer.sanitize` 虽使用 NFKC 归一化文本检测注入，但替换阶段仅作用于原始未归一化文本，导致全角/Unicode 兼容字符混淆注入（如 `ｉｇｎｏｒｅ...`）触发日志却零替换原样透传；且 `sanitizeContext` 图片外链正则区分大小写且未容忍前导空白，`HTTPS://` 可绕过 DLP 拦截 | 攻击者使用全角字母构造 Prompt 注入或使用大写 `HTTPS://` 构造 Markdown 外链图片 | 恶意 Prompt 注入与 DLP 外泄链接绕过安全防线直达 LLM | **High** | 架构设计与安全/网络健壮性 | 原文本替换未命中时切至 NFKC 归一化文本执行抹除替换；`sanitizeContext` 正则加固为 `(?i)` 且容忍前导空白 | **✅ 已解决** | 是 (Unicode 归一化防绕过与 DLP 正则加固) | 是 (`PromptDefenseTests`) | ✅ 已闭环 |
+| **192** | `FileSystemSyncService.exportToMarkdown` 直接以清洗后的标题作为文件名落盘，未处理同目录同名、清洗后重名（如 `A/B` 与 `A:B`）或大小写冲突，且未清洗 `page.tags` 换行符 | 知识库同类型下存在同名或清洗后重名页面并执行 Markdown 导出 | 后导出页面静默覆盖先导出文件导致导出备份永久丢页，或畸形标签破坏 YAML 结构 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 新增 `uniqueFileURL` 按小写路径集合判重并自动追加递增去重后缀；对 `page.tags` 执行 `sanitizeYAMLTitle` 换行清洗 | **✅ 已解决** | 是 (导出文件去重防覆盖与 YAML 清洗) | 是 (`FileSystemSyncServiceTests`) | ✅ 已闭环 |
+| **193** | `ExcelProcessor` 对共享字符串索引 `t="s"` 未校验非负下界（允许 `-1` 产出 `[-1]`），同时丢弃普通数值单元格（`<c><v>`/`t="n"`）、公式字符串（`t="str"`）及 `<is><t>` 内联字符串 | 导入包含数字、公式或内联字符串的 `.xlsx` 表格，或含负数索引的畸形工作表 | 财务/数据表格中的所有数字和内联文本在导入后全部丢失 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | `t="s"` 增加 `value >= 0` 下界校验；监听 `<t>` 与 `<v>` 元素并按单元格类型提取 `inlineStr`/`str`/`n`/默认数值文本 | **✅ 已解决** | 是 (OOXML Excel 单元格类型全量解析与索引守卫) | 是 (`DomainProcessorsTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**190 项**
+- **收录问题总数**：**193 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：49 项 (25.8%)
-  - 状态机并发与数据生命周期：47 项 (24.7%)
-  - 架构设计与安全/网络健壮性：53 项 (27.9%)
-  - UI/交互与防御性缺陷：17 项 (8.9%)
-  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (12.6%)
+  - 功能缺陷与核心算法/解析器/数据完整性：51 项 (26.4%)
+  - 状态机并发与数据生命周期：47 项 (24.4%)
+  - 架构设计与安全/网络健壮性：54 项 (28.0%)
+  - UI/交互与防御性缺陷：17 项 (8.8%)
+  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (12.4%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：100 项 (52.6%)
-  - **Medium（功能异常/算法边界/性能损耗）**：63 项 (33.2%)
-  - **Low（样式异味/边界校验/门禁规范）**：27 项 (14.2%)
-- **修复闭环率**：**100% (190/190 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：103 项 (53.4%)
+  - **Medium（功能异常/算法边界/性能损耗）**：63 项 (32.6%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (14.0%)
+- **修复闭环率**：**100% (193/193 项已修复闭环)**
 

@@ -76,11 +76,20 @@ final class PromptSanitizer: Sendable {
             )
 
             // 将恶意指令替换为无害的安全警告占位符
-            // 在原始 prompt 上替换匹配到的范围
-            sanitized = RegexReplacementHelper.applyReplacements(
+            // 优先在原始 prompt 上替换以保留正常排版；若因全角/Unicode 兼容字符变形导致原文本未命中替换，
+            // 则切至 NFKC 归一化文本执行替换，防止 Unicode 混淆绕过。
+            let replaced = RegexReplacementHelper.applyReplacements(
                 sanitized,
                 rules: [(pattern: pattern, template: L10n.Security.promptInjectionPlaceholder)]
             )
+            if replaced == sanitized {
+                sanitized = RegexReplacementHelper.applyReplacements(
+                    sanitized.precomposedStringWithCompatibilityMapping,
+                    rules: [(pattern: pattern, template: L10n.Security.promptInjectionPlaceholder)]
+                )
+            } else {
+                sanitized = replaced
+            }
         }
 
         return sanitized
@@ -91,8 +100,8 @@ final class PromptSanitizer: Sendable {
     /// - Parameter context: 召回的原始上下文内容
     /// - Returns: DLP 净化后的安全上下文
     func sanitizeContext(_ context: String) -> String {
-        // 匹配 Markdown 图片语法正则，特别关注包含网络主机的动态图片外链
-        let markdownImagePattern = #"!\[([^\]]*)\]\((https?://[^)]+)\)"#
+        // 匹配 Markdown 图片语法正则（大小写不敏感且容忍前导空白），拦截 HTTP/HTTPS 动态图片外链
+        let markdownImagePattern = #"(?i)!\[([^\]]*)\]\(\s*(https?://[^)]+)\)"#
 
         // 将所有检测到的动态网络图像替换为本地安全卡片提示，物理隔绝 HTTP 外发请求
         return RegexReplacementHelper.applyReplacements(

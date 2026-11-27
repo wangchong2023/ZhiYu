@@ -20,6 +20,8 @@ final class FileSystemSyncService {
         static let replacementDash = "-"
         static let colonSeparator = ":"
         static let space = " "
+        static let tagJoinSeparator = ", "
+        static let duplicateSuffixStart = 2
         static let pathInvalidCharacters = CharacterSet(
             charactersIn: SystemConstants.Character.slash
                 + SystemConstants.Character.backslash
@@ -55,6 +57,8 @@ final class FileSystemSyncService {
             try fm.createDirectory(at: destinationURL, withIntermediateDirectories: true)
         }
         
+        var usedNormalizedPaths: Set<String> = []
+        
         for page in pages {
             // 确定子目录 (如 knowledge/entities/)
             let subfolder = page.folderName
@@ -64,17 +68,22 @@ final class FileSystemSyncService {
                 try fm.createDirectory(at: folderURL, withIntermediateDirectories: true)
             }
             
-            // 构建文件名 (防止路径穿越与非法字符)
+            // 构建唯一文件名 (防止路径穿越、非法字符及同名/大小写冲突互相覆盖)
             let safeTitle = Self.sanitizeFilename(page.title)
-            let fileURL = folderURL.appendingPathComponent(safeTitle + ExportConstants.markdownExtension)
+            let fileURL = Self.uniqueFileURL(
+                in: folderURL,
+                baseName: safeTitle,
+                usedNormalizedPaths: &usedNormalizedPaths
+            )
             
             // 构建 Markdown 内容 (包含元数据 YAML)
             let safeYAMLTitle = Self.sanitizeYAMLTitle(page.title)
+            let safeTags = page.tags.map(Self.sanitizeYAMLTitle).joined(separator: ExportConstants.tagJoinSeparator)
             let yaml = """
             ---
             title: \(safeYAMLTitle)
             type: \(page.pageType.rawValue)
-            tags: \(page.tags.joined(separator: ", "))
+            tags: \(safeTags)
             updated: \(page.updatedAt.formatted())
             ---
             
@@ -82,6 +91,33 @@ final class FileSystemSyncService {
             let fullContent = yaml + page.content
             
             try fullContent.write(to: fileURL, atomically: true, encoding: .utf8)
+        }
+    }
+
+    /// 为待导出文件分配不与本批次已有文件冲突的唯一路径（按小写路径判重，兼容大小写不敏感文件系统）
+    private static func uniqueFileURL(
+        in folderURL: URL,
+        baseName: String,
+        usedNormalizedPaths: inout Set<String>
+    ) -> URL {
+        var candidateURL = folderURL.appendingPathComponent(baseName + ExportConstants.markdownExtension)
+        var normalizedKey = candidateURL.path.lowercased()
+        if usedNormalizedPaths.insert(normalizedKey).inserted {
+            return candidateURL
+        }
+
+        var suffixIndex = ExportConstants.duplicateSuffixStart
+        while true {
+            let disambiguatedName = baseName
+                + ExportConstants.replacementDash
+                + String(suffixIndex)
+                + ExportConstants.markdownExtension
+            candidateURL = folderURL.appendingPathComponent(disambiguatedName)
+            normalizedKey = candidateURL.path.lowercased()
+            if usedNormalizedPaths.insert(normalizedKey).inserted {
+                return candidateURL
+            }
+            suffixIndex += 1
         }
     }
 }

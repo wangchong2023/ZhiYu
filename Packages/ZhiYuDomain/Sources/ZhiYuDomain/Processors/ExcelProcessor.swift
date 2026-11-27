@@ -28,32 +28,39 @@ public final class ExcelProcessor: NSObject, XMLParserDelegate {
         XMLParserLauncher.parse(xmlData: xmlData, delegate: self)
     }
 
-    /// XMLParserDelegate: 元素开始 — 检测单元格 <c> 和值节点 <v>，记录单元格类型 t 属性。
+    /// XMLParserDelegate: 元素开始 — 检测单元格 <c>、值节点 <v> 与内联文本节点 <t>，记录单元格类型 t 属性。
     public func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String: String] = [:]) {
         if elementName == ProcessorConstants.OOXML.cellElement {
             currentCellType = attributeDict[ProcessorConstants.OOXML.cellTypeAttribute]
             currentText = ""
-        } else if elementName == ProcessorConstants.OOXML.valueElement {
+        } else if elementName == ProcessorConstants.OOXML.valueElement || elementName == ProcessorConstants.OOXML.textElement {
             inValueElement = true
-            currentText = ""
         }
     }
 
-    /// XMLParserDelegate: 字符捕获 — 在 <v> 值节点内累积文本。
+    /// XMLParserDelegate: 字符捕获 — 在 <v>/<t> 节点内累积文本。
     public func parser(_ parser: XMLParser, foundCharacters string: String) {
         if inValueElement {
             currentText += string
         }
     }
 
-    /// XMLParserDelegate: 元素结束 — <v> 关闭时停止累积；<c> 关闭时将共享字符串索引 (t="s") 记录为待映射值。
+    /// XMLParserDelegate: 元素结束 — <v>/<t> 关闭时停止累积；<c> 关闭时提取共享字符串合法非负索引或直接单元格文本/数值。
     public func parser(_ parser: XMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?) {
-        if elementName == ProcessorConstants.OOXML.valueElement {
+        if elementName == ProcessorConstants.OOXML.valueElement || elementName == ProcessorConstants.OOXML.textElement {
             inValueElement = false
         } else if elementName == ProcessorConstants.OOXML.cellElement {
-            if !currentText.isEmpty && (currentCellType == ProcessorConstants.OOXML.cellTypeShared || currentCellType == ProcessorConstants.OOXML.cellTypeInlineString) {
-                if let value = Int(currentText), value < ProcessorConstants.OOXML.sharedStringIndexMax {
-                    values.append("\(ProcessorConstants.OOXML.sharedStringIndexOpen)\(value)\(ProcessorConstants.OOXML.sharedStringIndexClose)")
+            let trimmed = currentText.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmed.isEmpty {
+                if currentCellType == ProcessorConstants.OOXML.cellTypeShared {
+                    if let value = Int(trimmed), value >= 0, value < ProcessorConstants.OOXML.sharedStringIndexMax {
+                        values.append("\(ProcessorConstants.OOXML.sharedStringIndexOpen)\(value)\(ProcessorConstants.OOXML.sharedStringIndexClose)")
+                    }
+                } else if currentCellType == nil
+                    || currentCellType == ProcessorConstants.OOXML.cellTypeInlineString
+                    || currentCellType == ProcessorConstants.OOXML.cellTypeFormulaString
+                    || currentCellType == ProcessorConstants.OOXML.cellTypeNumber {
+                    values.append(trimmed)
                 }
             }
             currentCellType = nil
