@@ -90,4 +90,31 @@ final class StoreKitServiceTests: XCTestCase {
 
         await queue.cancelAllPending()
     }
+
+    // MARK: - AuthSession.logout 清空支付重试队列（缺陷 #183）
+
+    func testAuthSessionLogoutClearsPaymentRetryQueue() async {
+        let queue = PaymentRetryQueue.shared
+        await queue.cancelAllPending()
+        await queue.enqueue(productId: "pro.monthly", receiptData: "base64_receipt", transactionId: "tx_logout_guard")
+        let beforeCount = await queue.pendingCount
+        XCTAssertEqual(beforeCount, 1)
+
+        AuthSession.shared.logout()
+        try? await Task.sleep(for: .milliseconds(80))
+
+        let afterCount = await queue.pendingCount
+        XCTAssertEqual(afterCount, 0, "登出时必须清空待重试支付队列，防止跨账号错绑订阅权益")
+    }
+
+    // MARK: - ModelReceiptStore 路径穿越防护（缺陷 #181）
+
+    func testModelReceiptStoreBlocksPathTraversalModelIDs() {
+        let store = ModelReceiptStore.shared
+        let maliciousIDs = ["", " ", ".", "..", "../secret", "dir/sub", "dir\\sub", "bad\nid"]
+        for badID in maliciousIDs {
+            XCTAssertNil(store.safeReceiptURL(for: badID), "非法 modelId 应被拦截: \(badID)")
+        }
+        XCTAssertNotNil(store.safeReceiptURL(for: "gemma-4-e2b-it"))
+    }
 }

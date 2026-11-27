@@ -68,4 +68,28 @@ final class IngestQueueTests: XCTestCase {
         XCTAssertFalse(queue.isProcessing, "即便完成任务，队列也必须重置状态")
         XCTAssertEqual(queue.pendingCount, 0, "计数器必须归零")
     }
+
+    /// 缺陷 #182 回归：Vault 切换发出 .vaultWillSwitch 后必须立即取消队列并阻止旧任务回调写穿新 Vault
+    func testVaultSwitchCancelsPendingIngestAndBlocksStaleCallback() async throws {
+        let queue = IngestQueue.shared
+        var callbackInvoked = false
+
+        queue.enqueue(
+            title: "VaultA_StaleNote",
+            content: "旧 Vault 摄入正文",
+            llmService: llmService,
+            pages: [],
+            onResult: { _ in
+                callbackInvoked = true
+            }
+        )
+
+        // 入队后立即切换 Vault
+        NotificationCenter.default.post(name: .vaultWillSwitch, object: nil)
+        try? await Task.sleep(for: .milliseconds(150))
+
+        XCTAssertFalse(queue.isProcessing, "切换 Vault 后 isProcessing 必须复位")
+        XCTAssertEqual(queue.pendingCount, 0, "切换 Vault 后 pendingCount 必须归零")
+        XCTAssertFalse(callbackInvoked, "被 Vault 切换取消的旧任务绝不得回调写穿新 Vault")
+    }
 }

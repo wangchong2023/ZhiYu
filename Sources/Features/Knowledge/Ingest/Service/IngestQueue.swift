@@ -28,6 +28,8 @@ final class IngestQueue: ObservableObject {
     }()
 
     private var activeTasks: [UUID: Task<Void, Never>] = [:]
+    /// 单调递增代数标记：每次 Vault 切换取消任务时递增，杜绝旧 Vault 异步结果写穿新 Vault
+    private var generation: UInt64 = 0
     private var cancellables: Set<AnyCancellable> = []
 
     private init() {
@@ -41,6 +43,7 @@ final class IngestQueue: ObservableObject {
     /// 拦截通知取消所有任务
     private func cancelAllTasks() {
         Logger.shared.debug(" [IngestQueue] Vault will switch, cancelling all pending tasks")
+        generation &+= 1
         operationQueue.cancelAllOperations()
         for task in activeTasks.values {
             task.cancel()
@@ -53,43 +56,44 @@ final class IngestQueue: ObservableObject {
     /// 将导入任务加入队列
     func enqueue(title: String, content: String, llmService: any LLMServiceProtocol, pages: [KnowledgePage], onResult: @escaping @Sendable @MainActor (KnowledgePage) -> Void) {
         let taskID = UUID()
-        let operation = BlockOperation { [weak self] in
-            guard let self = self else { return }
+        let capturedGeneration = generation
+        pendingCount += 1
+        isProcessing = true
 
-            DispatchQueue.main.async { self.isProcessing = true }
+        // 在 @MainActor 同步登记 activeTasks，消除旧 OperationQueue -> DispatchQueue.main.async 登记窗口竞态
+        let task = Task { [weak self] in
+            do {
+                try Task.checkCancellation()
+                Logger.shared.debug(FeatureConstants.LogDetails.ingestQueuePrefix + FeatureConstants.LogDetails.processingTask + " \(title)")
+                let result = try await llmService.smartIngest(title: title, rawContent: content, pages: pages)
+                try Task.checkCancellation()
 
-            let task = Task {
-                do {
-                    try Task.checkCancellation()
-                    Logger.shared.debug(FeatureConstants.LogDetails.ingestQueuePrefix + FeatureConstants.LogDetails.processingTask + " \(title)")
-                    let result = try await llmService.smartIngest(title: title, rawContent: content, pages: pages)
-                    try Task.checkCancellation()
-                    
-                    let page = KnowledgePage(title: title, content: result.compiledContent, tags: result.suggestedTags)
+                let page = KnowledgePage(title: title, content: result.compiledContent, tags: result.suggestedTags)
 
-                    await MainActor.run {
-                        onResult(page)
-                        self.activeTasks.removeValue(forKey: taskID)
-                        self.decrementCount()
-                    }
-                } catch is CancellationError {
-                    Logger.shared.debug(FeatureConstants.LogDetails.ingestQueuePrefix + FeatureConstants.LogDetails.taskCancelled + " \(title)")
-                } catch {
-                    Logger.shared.error(FeatureConstants.LogDetails.taskFailedPrefix + title + FeatureConstants.LogDetails.errorPrefix + String(describing: error))
-                    await MainActor.run { 
-                        self.activeTasks.removeValue(forKey: taskID)
-                        self.decrementCount() 
-                    }
+                await MainActor.run {
+                    guard let self, !Task.isCancelled, self.generation == capturedGeneration else { return }
+                    onResult(page)
+                    self.activeTasks.removeValue(forKey: taskID)
+                    self.decrementCount()
                 }
-            }
-            
-            DispatchQueue.main.async {
-                self.activeTasks[taskID] = task
+            } catch is CancellationError {
+                Logger.shared.debug(FeatureConstants.LogDetails.ingestQueuePrefix + FeatureConstants.LogDetails.taskCancelled + " \(title)")
+                await MainActor.run {
+                    guard let self, self.generation == capturedGeneration else { return }
+                    self.activeTasks.removeValue(forKey: taskID)
+                    self.decrementCount()
+                }
+            } catch {
+                Logger.shared.error(FeatureConstants.LogDetails.taskFailedPrefix + title + FeatureConstants.LogDetails.errorPrefix + String(describing: error))
+                await MainActor.run {
+                    guard let self, self.generation == capturedGeneration else { return }
+                    self.activeTasks.removeValue(forKey: taskID)
+                    self.decrementCount()
+                }
             }
         }
 
-        pendingCount += 1
-        operationQueue.addOperation(operation)
+        activeTasks[taskID] = task
     }
 
     private func decrementCount() {

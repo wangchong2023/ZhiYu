@@ -189,21 +189,24 @@
 | **178** | `PaymentRetryQueue` 存在三处并发与边界缺陷：① `scheduleNextAttempt()` 睡眠被取消时未清空 `scheduledTask` 导致僵尸非 `nil` 永久锁死后续重试；② `backoffDelay(for:)` 仅做上界 `min` 未做下界 `max(0, ...)`，持久化数据异常出现负 `attemptCount` 时数组越界闪退；③ `enqueue` 未拦截空白 `transactionId`/`productId`/`receiptData` | 支付重试调度被取消、持久化文件损坏或传入空交易参数 | 支付验证重试队列永久停摆或触发数组越界崩溃 | **High** | 状态机并发与数据生命周期 | 取消分支先执行 `clearScheduledTask(reschedule: false)`，`backoffDelay` 补齐 `max(0, ...)` 下界钳位，`enqueue` 增加三字段非空校验 | **✅ 已解决** | 是 (Actor 调度 Task 取消清理与数组上下界钳位) | 是 (`StoreKitServiceTests`) | ✅ 已闭环 |
 | **179** | `MultipeerCollaborationProvider` 重复调用 `startHosting`/`startBrowsing`/`joinRoom` 时未先取消旧的 `NWListener`/`NWBrowser`/`NWConnection` 导致端口与扫描会话永久泄露，且 `broadcast` 完成回调强捕获 `self` | 局域网协同重复开启主机/扫描/加入房间或断开广播 | 端口占用、重复 Bonjour 广播与回调强引用泄露 | **High** | 状态机并发与数据生命周期 | 三个入口启动前先 `cancel()` 并置空旧句柄，`broadcast` 回调改为 `[weak self]` | **✅ 已解决** | 是 (Network Framework 句柄替换前先取消规范) | 是 (`MultipeerCollaborationSessionTests`) | ✅ 已闭环 |
 | **180** | `LinkService.backlinks(for:in:)` 未排除 `p.id == pageID` 页面自身，当笔记正文自引用 `[[本页标题]]` 或 `relatedPageIDs` 含自身时返回循环反向链接 | 笔记内包含指向自身标题的双向链接 | 反向链接面板展示当前页面自身导致循环跳转 | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | 过滤逻辑前置 `guard p.id != pageID else { return false }` 排除自引用 | **✅ 已解决** | 是 (图/双向链接查询自环排除规范) | 是 (`LinkServiceEdgeCaseTests`) | ✅ 已闭环 |
+| **181** | `ModelReceiptStore` 的 `saveReceipt`/`getReceipt`/`removeReceipt` 直接拼接 `"\(modelId).receipt.json"` 未校验 `modelId`，恶意或损坏的 `../` 标识符可越出 `ModelReceipts/` 目录读写或删除其他文件 | 传入含 `../`/`/`/`\`/空串的 `modelId` 操作收据存储 | 沙盒收据目录外文件面临越权写入或误删风险 | **High** | 架构设计与安全/网络健壮性 | 新增 `safeReceiptURL(for:)` 严格校验合法字符与标准化父目录等于 `receiptsDirectory` | **✅ 已解决** | 是 (沙盒收据路径安全解析范式) | 是 (`StoreKitServiceTests`) | ✅ 已闭环 |
+| **182** | `IngestQueue.enqueue` 通过 `OperationQueue` 后台启动 `Task` 后再 `DispatchQueue.main.async` 登记 `activeTasks`，存在显著登记窗口竞态；且未校验 Vault 切换代数与取消态，导致旧 Vault 摄入回调写穿新 Vault 或 `isProcessing`/`activeTasks` 泄露卡死 | 知识摄入入队后立即切换 Vault 或取消任务 | 旧 Vault 笔记被异步回调写入新 Vault，或队列加载指示器永久卡死 | **High** | 状态机并发与数据生命周期 | 引入单调 `generation` 代数与 `@MainActor` 同步登记 `activeTasks`，回调前双重校验 `!Task.isCancelled && self.generation == capturedGeneration`，取消分支同步清理状态 | **✅ 已解决** | 是 (异步摄入队列代数隔离与零竞态登记) | 是 (`IngestQueueTests`) | ✅ 已闭环 |
+| **183** | `AuthSession.logout()` 登出账号时未清空 `PaymentRetryQueue` 中的待重试支付验证凭证，切换到账号 B 登录后后台重试会携带账号 B 的 `accessToken` 提交账号 A 的苹果收据 | 账号 A 购买验证失败入队后登出并切换账号 B 登录 | 高危跨账号权益错绑：账号 A 的付费订阅被错误激活到账号 B | **High** | 状态机并发与数据生命周期 | `AuthSession.logout()` 异步触发 `PaymentRetryQueue.shared.cancelAllPending()` 立即清空旧账号支付重试队列 | **✅ 已解决** | 是 (登出全量支付队列隔离清理) | 是 (`StoreKitServiceTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**180 项**
+- **收录问题总数**：**183 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：43 项 (23.9%)
-  - 状态机并发与数据生命周期：44 项 (24.4%)
-  - 架构设计与安全/网络健壮性：52 项 (28.9%)
-  - UI/交互与防御性缺陷：17 项 (9.4%)
-  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (13.3%)
+  - 功能缺陷与核心算法/解析器/数据完整性：43 项 (23.5%)
+  - 状态机并发与数据生命周期：46 项 (25.1%)
+  - 架构设计与安全/网络健壮性：53 项 (29.0%)
+  - UI/交互与防御性缺陷：17 项 (9.3%)
+  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (13.1%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：93 项 (51.7%)
-  - **Medium（功能异常/算法边界/性能损耗）**：60 项 (33.3%)
-  - **Low（样式异味/边界校验/门禁规范）**：27 项 (15.0%)
-- **修复闭环率**：**100% (180/180 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：96 项 (52.5%)
+  - **Medium（功能异常/算法边界/性能损耗）**：60 项 (32.8%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (14.8%)
+- **修复闭环率**：**100% (183/183 项已修复闭环)**
 

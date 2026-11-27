@@ -46,9 +46,12 @@ public final class AuthSession {
         self.isGuest = false
     }
     
-    /// 退出登录
+    /// 退出登录（同步清空待重试支付队列，防止切换新账号后将旧账号收据错绑到新账号）
     public func logout() {
         self.currentUser = nil
         self.isGuest = false
+        Task {
+            await PaymentRetryQueue.shared.cancelAllPending()
+        }
     }
 }

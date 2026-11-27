@@ -64,15 +64,34 @@ public final class ModelReceiptStore: Sendable {
         try? FileManager.default.createDirectory(at: receiptsDirectory, withIntermediateDirectories: true)
     }
 
-    /// 获取特定模型的权威凭据路径
-    private func receiptURL(for modelId: String) -> URL {
-        receiptsDirectory.appendingPathComponent("\(modelId).receipt.json")
+    /// 校验 modelId 并解析严格落在 ModelReceipts 目录内的安全路径，阻断 `../` 路径穿越读/写/删
+    internal func safeReceiptURL(for modelId: String) -> URL? {
+        let trimmed = modelId.trimmingCharacters(in: .whitespacesAndNewlines)
+        let doubleDot = SystemConstants.Character.dot + SystemConstants.Character.dot
+        guard !trimmed.isEmpty,
+              trimmed == modelId,
+              trimmed != SystemConstants.Character.dot,
+              !trimmed.contains(doubleDot),
+              !trimmed.contains(SystemConstants.Character.slash),
+              !trimmed.contains(SystemConstants.Character.backslash),
+              trimmed.unicodeScalars.allSatisfy({ !CharacterSet.controlCharacters.contains($0) }) else {
+            return nil
+        }
+        let baseDir = receiptsDirectory.standardizedFileURL
+        let candidate = baseDir.appendingPathComponent("\(trimmed).receipt.json").standardizedFileURL
+        guard candidate.deletingLastPathComponent().path == baseDir.path else {
+            return nil
+        }
+        return candidate
     }
 
     /// 写入权威完成凭据
     public func saveReceipt(_ receipt: ModelDownloadReceipt) {
         createReceiptsDirectoryIfNeeded()
-        let url = receiptURL(for: receipt.modelId)
+        guard let url = safeReceiptURL(for: receipt.modelId) else {
+            Logger.shared.warning("[ModelReceiptStore] 非法 modelId，拒绝写入收据: \(receipt.modelId)")
+            return
+        }
         if let data = try? JSONEncoder().encode(receipt) {
             try? data.write(to: url, options: .atomic)
         }
@@ -80,14 +99,17 @@ public final class ModelReceiptStore: Sendable {
 
     /// 读取特定模型的权威完成凭据
     public func getReceipt(for modelId: String) -> ModelDownloadReceipt? {
-        let url = receiptURL(for: modelId)
-        guard let data = try? Data(contentsOf: url) else { return nil }
+        guard let url = safeReceiptURL(for: modelId),
+              let data = try? Data(contentsOf: url) else { return nil }
         return try? JSONDecoder().decode(ModelDownloadReceipt.self, from: data)
     }
 
     /// 物理删除特定模型的完成凭据（当用户主动删除模型时调用）
     public func removeReceipt(for modelId: String) {
-        let url = receiptURL(for: modelId)
+        guard let url = safeReceiptURL(for: modelId) else {
+            Logger.shared.warning("[ModelReceiptStore] 非法 modelId，拒绝删除收据: \(modelId)")
+            return
+        }
         try? FileManager.default.removeItem(at: url)
     }
 }
