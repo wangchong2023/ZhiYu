@@ -78,6 +78,9 @@ final class BaseProtocolsAndStubsTests: XCTestCase {
         XCTAssertEqual(chunks.count, 4)
         XCTAssertEqual(AudioSplitter.merge(chunks: chunks), payload)
         XCTAssertTrue(AudioSplitter.split(data: Data()).isEmpty)
+        // 非法 chunkSize（0 或负数）不得死循环或触发 Range 越界崩溃
+        XCTAssertTrue(AudioSplitter.split(data: payload, chunkSize: 0).isEmpty)
+        XCTAssertTrue(AudioSplitter.split(data: payload, chunkSize: -64).isEmpty)
     }
 
     func testAppNotificationNamesAreStable() {

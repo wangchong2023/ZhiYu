@@ -25,10 +25,10 @@ public final class AudioSplitter: Sendable {
     /// 将音频数据分割为指定大小的小分片
     /// - Parameters:
     ///   - data: 原始音频数据
-    ///   - chunkSize: 每个分片的最大字节数（默认 256KB）
+    ///   - chunkSize: 每个分片的最大字节数（默认 256KB；必须大于 0，否则返回空数组防止死循环或越界崩溃）
     /// - Returns: 切割后的数据分片数组
     public static func split(data: Data, chunkSize: Int = SplitDefaults.defaultChunkSizeKB * Int(SystemConstants.bytesPerKB)) -> [Data] {
-        guard !data.isEmpty else { return [] }
+        guard !data.isEmpty, chunkSize > 0 else { return [] }
         var chunks: [Data] = []
         var offset = 0
         while offset < data.count {
@@ -44,7 +44,9 @@ public final class AudioSplitter: Sendable {
     /// - Parameter chunks: 数据分片数组
     /// - Returns: 拼接后的完整数据
     public static func merge(chunks: [Data]) -> Data {
+        let totalBytes = chunks.reduce(0) { $0 + $1.count }
         var mergedData = Data()
+        mergedData.reserveCapacity(totalBytes)
         for chunk in chunks {
             mergedData.append(chunk)
         }

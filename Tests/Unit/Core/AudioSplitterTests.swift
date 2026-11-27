@@ -19,6 +19,13 @@ final class AudioSplitterTests: XCTestCase {
         XCTAssertTrue(result.isEmpty, "空数据应返回空数组")
     }
 
+    /// 非法 chunkSize（0 或负数）必须返回空数组，防止死循环或 Range 越界崩溃（缺陷 #255）
+    func testSplitZeroOrNegativeChunkSizeReturnsEmptyWithoutHangOrCrash() {
+        let data = Data(repeating: 0xAB, count: 64)
+        XCTAssertTrue(AudioSplitter.split(data: data, chunkSize: 0).isEmpty, "chunkSize=0 应直接返回空数组防止死循环")
+        XCTAssertTrue(AudioSplitter.split(data: data, chunkSize: -16).isEmpty, "负数 chunkSize 应直接返回空数组防止越界崩溃")
+    }
+
     /// 数据长度 < chunkSize → 单分片
     func testSplitDataLessThanChunkSizeSingleChunk() {
         let data = Data(repeating: 0xAB, count: 100)

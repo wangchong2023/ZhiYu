@@ -91,6 +91,37 @@ final class StoreKitServiceTests: XCTestCase {
         await queue.cancelAllPending()
     }
 
+    /// 验证重复 transactionId 的持久化 JSON 解码不崩溃，且保留更高 attemptCount（缺陷 #257）
+    func testPaymentRetryQueueDecodePersistedDeduplicatesDuplicateTransactionIDs() throws {
+        let json = """
+        [
+          {"productId":"pro.monthly","receiptData":"r1","transactionId":"tx-dup","orderNo":null,"attemptCount":1,"lastAttemptAt":null},
+          {"productId":"pro.monthly","receiptData":"r2","transactionId":"tx-dup","orderNo":"ord-2","attemptCount":3,"lastAttemptAt":null},
+          {"productId":"pro.yearly","receiptData":"r3","transactionId":"tx-unique","orderNo":null,"attemptCount":0,"lastAttemptAt":null}
+        ]
+        """
+        let decoded = PaymentRetryQueue.decodePersistedItems(from: Data(json.utf8))
+        XCTAssertEqual(decoded.count, 2, "重复 transactionId 应安全合并而非触发 Dictionary 崩溃")
+        XCTAssertEqual(decoded["tx-dup"]?.attemptCount, 3, "重复条目合并应保留较大的 attemptCount 进度")
+        XCTAssertEqual(decoded["tx-unique"]?.attemptCount, 0)
+    }
+
+    /// 验证重复入队同一交易 ID 不会产生重复项且幂等保留状态（缺陷 #257）
+    func testPaymentRetryQueueReEnqueueIsIdempotent() async {
+        let queue = PaymentRetryQueue.shared
+        await queue.cancelAllPending()
+
+        await queue.enqueue(productId: "pro.monthly", receiptData: "receipt-v1", transactionId: "tx-idem", orderNo: "ord-1")
+        await queue.enqueue(productId: "pro.monthly", receiptData: "receipt-v2", transactionId: "tx-idem", orderNo: nil)
+
+        let count = await queue.pendingCount
+        let attempts = await queue.attemptCount(for: "tx-idem")
+        XCTAssertEqual(count, 1, "同一交易重复入队应幂等去重")
+        XCTAssertEqual(attempts, 0)
+
+        await queue.cancelAllPending()
+    }
+
     // MARK: - AuthSession.logout 清空支付重试队列（缺陷 #183）
 
     func testAuthSessionLogoutClearsPaymentRetryQueue() async {

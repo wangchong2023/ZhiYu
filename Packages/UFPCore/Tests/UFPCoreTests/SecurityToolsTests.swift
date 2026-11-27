@@ -11,6 +11,7 @@
 //
 
 import XCTest
+import os
 @testable import UFPCore
 
 // MARK: - AhoCorasickEngine
@@ -165,6 +166,31 @@ final class IntentRateLimiterTests: XCTestCase {
         }
         limiter.resetStateForTesting()
         XCTAssertTrue(limiter.request(), "resetStateForTesting 后应再次放行")
+    }
+
+    /// 窗口推进超过 1 秒后应自动恢复放行；时钟异常回拨时不得永久锁死限流器（缺陷 #256）
+    func testIntentRateLimiter_WindowExpiryAndClockRollbackRecovery() {
+        let clockBox = OSAllocatedUnfairLock(initialState: TimeInterval(1000.0))
+        let limiter = IntentRateLimiter(nowProvider: { clockBox.withLock { $0 } })
+
+        for _ in 0..<10 {
+            XCTAssertTrue(limiter.request(), "窗口内前 10 次应放行")
+        }
+        XCTAssertFalse(limiter.request(), "满载后第 11 次应被拒绝")
+
+        // 模拟时钟回拨 1 小时：旧未来时间戳应被自动驱逐，不得导致永久熔断
+        clockBox.withLock { $0 = 1000.0 - 3600.0 }
+        XCTAssertTrue(limiter.request(), "时钟回拨后应驱逐异常未来记录并恢复放行")
+
+        // 再次打满 10 次（含刚放行的 1 次，再补 9 次）
+        for _ in 0..<9 {
+            XCTAssertTrue(limiter.request())
+        }
+        XCTAssertFalse(limiter.request(), "回拨后新窗口满载应正常熔断")
+
+        // 推进单调时钟超过 1.0 秒滑动窗口，应自动恢复放行
+        clockBox.withLock { $0 += 1.01 }
+        XCTAssertTrue(limiter.request(), "窗口过期后应自动恢复放行")
     }
 }
 

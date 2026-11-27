@@ -50,9 +50,13 @@ actor PaymentRetryQueue {
     private var pending: [String: PendingVerify] = [:]
     /// 当前正在运行的重试调度 Task
     private var scheduledTask: Task<Void, Never>?
+    /// 调度代际令牌：防止取消/登出前的旧 Task 在网络挂起返回后误清新一轮调度
+    private var scheduleGeneration: UInt64 = 0
 
     private init() {
-        pending = Self.loadPersisted()
+        @Dependency(\.keyStore) var injectedKeyStore
+        let store = injectedKeyStore ?? UserDefaultsKeyStore.shared
+        pending = Self.loadPersisted(from: store, key: storageKey)
     }
 
     // MARK: - 对外接口
@@ -71,14 +75,26 @@ actor PaymentRetryQueue {
             Logger.shared.warning("[PaymentRetryQueue] 拒绝入队空交易或空凭证记录")
             return
         }
-        pending[trimmedTx] = PendingVerify(
-            productId: trimmedProduct,
-            receiptData: trimmedReceipt,
-            transactionId: trimmedTx,
-            orderNo: orderNo,
-            attemptCount: 0,
-            lastAttemptAt: nil
-        )
+        // 幂等合并：同一交易重复入队时保留已有退避进度，防止无限重置 attemptCount
+        if let existing = pending[trimmedTx] {
+            pending[trimmedTx] = PendingVerify(
+                productId: trimmedProduct,
+                receiptData: trimmedReceipt,
+                transactionId: trimmedTx,
+                orderNo: orderNo ?? existing.orderNo,
+                attemptCount: existing.attemptCount,
+                lastAttemptAt: existing.lastAttemptAt
+            )
+        } else {
+            pending[trimmedTx] = PendingVerify(
+                productId: trimmedProduct,
+                receiptData: trimmedReceipt,
+                transactionId: trimmedTx,
+                orderNo: orderNo,
+                attemptCount: 0,
+                lastAttemptAt: nil
+            )
+        }
         persist()
         scheduleNextAttempt()
         Logger.shared.info("[PaymentRetryQueue] 支付验证失败已入队待重试 transactionId=\(trimmedTx)")
@@ -97,17 +113,19 @@ actor PaymentRetryQueue {
         guard scheduledTask == nil,
               let (transactionId, item) = oldestPending() else { return }
 
+        scheduleGeneration &+= 1
+        let generation = scheduleGeneration
         let delay = backoffDelay(for: item.attemptCount)
         scheduledTask = Task { [weak self] in
             do {
                 try await Task.sleep(for: .seconds(delay))
             } catch {
-                // 取消时必须同步清理 scheduledTask，防止僵尸非 nil 锁死后续所有入队与重启调度
-                await self?.clearScheduledTask(reschedule: false)
+                // 取消时仅在代际一致时清理 scheduledTask，防止误清新一轮调度
+                await self?.clearScheduledTask(generation: generation, reschedule: false)
                 return
             }
             await self?.performRetry(transactionId: transactionId)
-            await self?.clearScheduledTask(reschedule: true)
+            await self?.clearScheduledTask(generation: generation, reschedule: true)
         }
     }
 
@@ -127,8 +145,14 @@ actor PaymentRetryQueue {
     /// 当前待重试条目数量
     internal var pendingCount: Int { pending.count }
 
+    /// 查询指定交易当前已记录的退避重试次数（供测试与诊断）
+    internal func attemptCount(for transactionId: String) -> Int? {
+        pending[transactionId]?.attemptCount
+    }
+
     /// 取消当前调度并清空全部待重试队列（用于登出或重置支付状态）
     func cancelAllPending() {
+        scheduleGeneration &+= 1
         scheduledTask?.cancel()
         scheduledTask = nil
         pending.removeAll()
@@ -173,8 +197,9 @@ actor PaymentRetryQueue {
         }
     }
 
-    /// 清空当前调度 Task，并在需要且队列仍有待重试项时继续调度
-    private func clearScheduledTask(reschedule: Bool = true) {
+    /// 清空当前调度 Task，并在代际匹配且队列仍有待重试项时继续调度
+    private func clearScheduledTask(generation: UInt64, reschedule: Bool = true) {
+        guard generation == scheduleGeneration else { return }
         scheduledTask = nil
         if reschedule, pending.contains(where: { $0.value.attemptCount < maxAttempts }) {
             scheduleNextAttempt()
@@ -192,17 +217,27 @@ actor PaymentRetryQueue {
         }
     }
 
-    private static func loadPersisted() -> [String: PendingVerify] {
-        guard let data = UserDefaultsKeyStore.shared.data(forKey: AppConstants.Keys.Storage.paymentRetryQueue) else {
-            return [:]
-        }
+    /// 解析持久化的待重试队列 JSON，遇到重复 transactionId 安全合并（保留更高 attemptCount）防止字典构造崩溃
+    internal static func decodePersistedItems(from data: Data) -> [String: PendingVerify] {
         do {
             let items = try JSONDecoder().decode([PendingVerify].self, from: data)
-            return Dictionary(uniqueKeysWithValues: items.map { ($0.transactionId, $0) })
+            return Dictionary(
+                items.map { ($0.transactionId, $0) },
+                uniquingKeysWith: { existing, incoming in
+                    existing.attemptCount >= incoming.attemptCount ? existing : incoming
+                }
+            )
         } catch {
             Logger.shared.error("[PaymentRetryQueue] 队列恢复失败", error: error)
             return [:]
         }
+    }
+
+    private static func loadPersisted(from store: any KeyStoreProtocol, key: String) -> [String: PendingVerify] {
+        guard let data = store.data(forKey: key) else {
+            return [:]
+        }
+        return decodePersistedItems(from: data)
     }
 
     // MARK: - 内部枚举
@@ -219,7 +254,7 @@ actor PaymentRetryQueue {
     // MARK: - 内部模型
 
     /// 一条待重试的验证项
-    private struct PendingVerify: Codable, Sendable {
+    internal struct PendingVerify: Codable, Sendable {
         let productId: String
         let receiptData: String
         let transactionId: String

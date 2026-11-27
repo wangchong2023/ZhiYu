@@ -27,9 +27,15 @@ public final class IntentRateLimiter: @unchecked Sendable, TestStateResettable {
 
     // 使用 OSAllocatedUnfairLock 确保并发安全（Swift 5.9+，Sendable，无需手动 unlock）
     private let lock = OSAllocatedUnfairLock()
-    private var requests: [Date] = []
+    /// 单调递增时钟提供者（默认使用 systemUptime，彻底免疫墙上时钟回拨导致的永久限流锁死）
+    private let nowProvider: @Sendable () -> TimeInterval
+    private var requests: [TimeInterval] = []
 
-    private init() {
+    /// 构造限流器实例（支持注入单调时钟用于确定性单元测试）
+    public init(
+        nowProvider: @escaping @Sendable () -> TimeInterval = { ProcessInfo.processInfo.systemUptime }
+    ) {
+        self.nowProvider = nowProvider
         // 单例自注册到测试状态重置注册表
         TestStateResetRegistry.shared.register(self)
     }
@@ -38,11 +44,11 @@ public final class IntentRateLimiter: @unchecked Sendable, TestStateResettable {
     /// - Returns: 是否允许本次操作
     public func request() -> Bool {
         lock.withLock {
-            let now = Date()
-            let windowStart = now.addingTimeInterval(-RateLimitConstants.windowSeconds)
+            let now = nowProvider()
+            let windowStart = now - RateLimitConstants.windowSeconds
 
-            // 清理窗口外的历史请求记录
-            requests = requests.filter { $0 > windowStart }
+            // 清理窗口外及异常未来时间戳（双重防御时钟回拨）
+            requests = requests.filter { $0 > windowStart && $0 <= now }
 
             if requests.count < RateLimitConstants.maxRequests {
                 requests.append(now)
