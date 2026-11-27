@@ -125,6 +125,8 @@ public final class SynthesisStore {
 
     let maxSynthesisDocsPerType = 5
 
+    /// 多 Vault 切换代次计数器（防止旧 Vault 异步合成结果落盘污染新 Vault 状态）
+    @ObservationIgnored private var vaultGeneration: UInt64 = 0
     @ObservationIgnored private var cancellables = Set<AnyCancellable>()
 
     public init() {
@@ -142,8 +144,9 @@ public final class SynthesisStore {
             .store(in: &cancellables)
     }
 
-    /// 切换 Vault 时复位所有瞬态合成状态（不抹除持久化文档）
+    /// 切换 Vault 时复位所有瞬态合成状态并推进代次（不抹除持久化文档）
     private func resetTransientStatesForVaultSwitch() {
+        vaultGeneration &+= 1
         withMutation(keyPath: \.synthesisStates) {
             for type in SynthesisType.allCases {
                 _synthesisStates[type] = .idle
@@ -233,6 +236,7 @@ public final class SynthesisStore {
             throw AppError.synthesis(L10n.AI.Synthesis.Error.limitReached, code: -2)
         }
 
+        let capturedVaultGeneration = vaultGeneration
         withMutation(keyPath: \.synthesisStates) {
             _synthesisStates[type] = SynthesisStatus.generating
         }
@@ -255,6 +259,10 @@ public final class SynthesisStore {
 
         do {
             let content = try await dispatchSynthesis(type: type, content: augmentedContent)
+            guard vaultGeneration == capturedVaultGeneration else {
+                taskCenter.failTask(id: taskID, error: L10n.AI.Synthesis.Error.invalidResult)
+                throw CancellationError()
+            }
             let strategy = SynthesisStrategyFactory.strategy(for: type)
             let processedContent = strategy.process(rawContent: content, sourceContent: combinedContent)
             
@@ -274,23 +282,35 @@ public final class SynthesisStore {
             return savedDoc
         } catch {
             Logger.shared.addLog(action: .ingest, target: type.title, details: "[TraceID: \(traceID)] [SynthesisStatus: Error] \(error.localizedDescription)")
-            withMutation(keyPath: \.synthesisStates) {
-                self._synthesisStates[type] = SynthesisStatus.error(error.localizedDescription)
+            if vaultGeneration == capturedVaultGeneration {
+                withMutation(keyPath: \.synthesisStates) {
+                    self._synthesisStates[type] = SynthesisStatus.error(error.localizedDescription)
+                }
             }
             taskCenter.failTask(id: taskID, error: error.localizedDescription)
             throw error
         }
     }
 
-    /// 重命名SynthesisDoc
+    /// 重命名SynthesisDoc（拦截纯空白名称并完整保留 sourcePageIDs 溯源引用）
     /// - Parameter type: type
     /// - Parameter docID: docID
     /// - Parameter newName: newName
     public func renameSynthesisDoc(type: SynthesisType, docID: UUID, newName: String) {
-        guard var docs = _synthesisResults[type],
+        let trimmedName = newName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedName.isEmpty,
+              var docs = _synthesisResults[type],
               let idx = docs.firstIndex(where: { $0.id == docID }) else { return }
         let original = docs[idx]
-        docs[idx] = SynthesisDocument(id: original.id, type: original.type, name: newName, content: original.content, createdAt: original.createdAt, size: original.size)
+        docs[idx] = SynthesisDocument(
+            id: original.id,
+            type: original.type,
+            name: trimmedName,
+            content: original.content,
+            createdAt: original.createdAt,
+            size: original.size,
+            sourcePageIDs: original.sourcePageIDs
+        )
         synthesisResults[type] = docs
         persistResults(for: type)
     }

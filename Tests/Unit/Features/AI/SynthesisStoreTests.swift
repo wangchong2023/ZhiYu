@@ -172,4 +172,26 @@ final class SynthesisStoreTests: XCTestCase {
         XCTAssertEqual(store.synthesisStates[.mindmap], .idle, "切换 Vault 后旧错误态必须复位为 .idle")
         XCTAssertEqual(store.synthesisStates[.report], .idle, "切换 Vault 后旧生成态必须复位为 .idle")
     }
+
+    // MARK: - 缺陷 #228 回归：重命名合成文档不得丢失 sourcePageIDs 且必须拦截空白名称
+
+    func testRenameSynthesisDoc_preservesSourcePageIDsAndRejectsBlankName() {
+        let sourceA = UUID()
+        let sourceB = UUID()
+        let validBody = String(repeating: "深度合成正文内容，确保超过最小有效字节阈值。", count: 5)
+        guard let doc = store.saveSynthesisResult(type: .report, content: validBody, sourcePageIDs: [sourceA, sourceB]) else {
+            XCTFail("应成功保存合成文档")
+            return
+        }
+
+        // 1. 空白名称必须被忽略
+        store.renameSynthesisDoc(type: .report, docID: doc.id, newName: "   \n  ")
+        XCTAssertEqual(store.synthesisResults[.report]?.first?.name, doc.name, "空白重命名不得覆盖原名称")
+
+        // 2. 合法重命名应归一化空白并完整保留 sourcePageIDs
+        store.renameSynthesisDoc(type: .report, docID: doc.id, newName: "  架构演进周报  ")
+        let renamed = store.synthesisResults[.report]?.first
+        XCTAssertEqual(renamed?.name, "架构演进周报")
+        XCTAssertEqual(renamed?.sourcePageIDs, [sourceA, sourceB], "重命名后必须完整保留 sourcePageIDs 溯源引用")
+    }
 }

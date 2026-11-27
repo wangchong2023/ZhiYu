@@ -73,6 +73,16 @@ final class PluginRuntime {
     /// AI 调用限流计数器（requestAIAccess 专用，与拦截管道隔离）
     private var aiCallCounts: [String: Int] = [:]
 
+    /// 可取消的拦截限流窗口重置任务（每个插件在窗口内仅维护一个定时器，避免泄漏与提前清零）
+    private var pluginThrottleResetTasks: [String: Task<Void, Never>] = [:]
+
+    /// 可取消的 AI 限流窗口重置任务
+    private var aiThrottleResetTasks: [String: Task<Void, Never>] = [:]
+
+    private enum ThrottleConstants {
+        static let nanosecondsPerSecond: Double = 1_000_000_000
+    }
+
     // MARK: - 配置常量
 
     /// 单插件最大执行时间 0.5s
@@ -200,19 +210,23 @@ final class PluginRuntime {
             // 安全隔离：过滤已挂起的插件
             guard !suspendedPluginIDs.contains(pluginID) else { continue }
 
-            // 动态流控监控 (Throttling)
+            // 动态流控监控 (Throttling)：严格限制窗口内调用次数不超过 maxCallsPerWindow，且每个窗口仅调度一次重置
             let callCount = pluginCallCounts[pluginID] ?? 0
-            if callCount > maxCallsPerWindow {
+            if callCount >= maxCallsPerWindow {
                 Logger.shared.debug(" [Throttling]  \(pluginID) ")
                 continue
             }
             pluginCallCounts[pluginID] = callCount + 1
 
-            // 异步重置计数器 (简易窗口期)
-            let nanosecondsPerSecond: Double = 1_000_000_000
-            Task { @MainActor in
-                try? await Task.sleep(nanoseconds: UInt64(throttlingWindow * nanosecondsPerSecond))
-                self.pluginCallCounts[pluginID] = 0
+            if callCount == 0 {
+                pluginThrottleResetTasks[pluginID]?.cancel()
+                pluginThrottleResetTasks[pluginID] = Task { [weak self] in
+                    guard let self else { return }
+                    try? await Task.sleep(nanoseconds: UInt64(self.throttlingWindow * ThrottleConstants.nanosecondsPerSecond))
+                    guard !Task.isCancelled else { return }
+                    self.pluginCallCounts[pluginID] = 0
+                    self.pluginThrottleResetTasks.removeValue(forKey: pluginID)
+                }
             }
 
             let start = CFAbsoluteTimeGetCurrent()
@@ -270,11 +284,14 @@ final class PluginRuntime {
         }
         aiCallCounts[pluginID] = count + 1
         if count == 0 {
-            // 窗口起点调度一次归零，避免计数永久累积
-            let nanosecondsPerSecond: Double = 1_000_000_000
-            Task { @MainActor in
-                try? await Task.sleep(nanoseconds: UInt64(throttlingWindow * nanosecondsPerSecond))
+            // 窗口起点调度一次可取消归零任务，避免计数永久累积与 reset 后旧定时器误清零
+            aiThrottleResetTasks[pluginID]?.cancel()
+            aiThrottleResetTasks[pluginID] = Task { [weak self] in
+                guard let self else { return }
+                try? await Task.sleep(nanoseconds: UInt64(self.throttlingWindow * ThrottleConstants.nanosecondsPerSecond))
+                guard !Task.isCancelled else { return }
                 self.aiCallCounts[pluginID] = 0
+                self.aiThrottleResetTasks.removeValue(forKey: pluginID)
             }
         }
         return true
@@ -294,6 +311,10 @@ final class PluginRuntime {
         registry.eventListeners.removeAll()
         suspendedPluginIDs.removeAll()
         keyStore?.removeObject(forKey: AppConstants.Keys.Storage.suspendedPlugins)
+        pluginThrottleResetTasks.values.forEach { $0.cancel() }
+        pluginThrottleResetTasks.removeAll()
+        aiThrottleResetTasks.values.forEach { $0.cancel() }
+        aiThrottleResetTasks.removeAll()
         pluginCallCounts.removeAll()
         aiCallCounts.removeAll()
         pluginResourceUsage.removeAll()

@@ -236,21 +236,24 @@
 | **225** | `PluginMarketService` 存在三重隐患：`isAllowedDownloadURL` 仅检查 HTTP/HTTPS 未接入 `SSRFGuard.isSafeURL` 允许下载指向内网/云元数据地址；`downloadPlugin` 缺少并发互斥且 `defer { Task { downloadingPluginID = nil } }` 存在异步竞态清空新任务状态；`weak var registry!` 释放后强解包崩溃 | 恶意插件清单指向 `127.0.0.1`/`169.254.169.254`、连点两个插件下载或宿主提前释放 | 内网 SSRF 探测、下载状态错乱或 SIGTRAP 闪退 | **High** | 架构设计与安全/网络健壮性 | `isAllowedDownloadURL` 强制接入 `SSRFGuard.isSafeURL`；`downloadPlugin` 增加 `downloadingPluginID == nil` 互斥与同步 `defer` 清理；改用 `registry?.scanAndLoadLocalPlugins()` 并将文件名收敛至 `MarketFileConstants` | **✅ 已解决** | 是 (插件市场下载 SSRF 防护与互斥状态机) | 是 (`PluginMarketServiceTests`) | ✅ 已闭环 |
 | **226** | `ChatCoordinator` 存在三重状态机竞态：`clearChatHistory()` 未取消正在运行的 `currentStreamTask` 导致清史后幽灵 AI 回复复活；`regenerateLastMessage` 在流式生成中直接删历史再调 `sendMessage` 触发早退导致用户提问丢失；异步 `generatePredictedQuestions` 无代次校验会跨会话污染追问 | 流式回复中途点击清空历史、重新生成或快速切换新会话 | 清空后凭空冒出旧 AI 回复、用户提问永久丢失或追问串话 | **High** | 状态机并发与数据生命周期 | 引入 `historyGeneration` 代次守卫；`clearChatHistory` 推进代次并取消旧流；`regenerateLastMessage` 先取消进行中的流再重建；`runStreamTask` 与 `generatePredictedQuestions` 写回前严格校验代次 | **✅ 已解决** | 是 (对话流式与追问代次一致性守卫) | 是 (`ChatCoordinatorStreamFaultInjectionTests`) | ✅ 已闭环 |
 | **227** | `IngestQueue` 声明了 `maxConcurrentOperationCount = 2` 的 `operationQueue` 却从未实际调度，每次 `enqueue` 直接派发无限并发 `Task`，且未拦截纯空白内容 | 批量导入几十篇文档或传入纯空白内容 | 瞬间并发打爆 LLM 429 限流与本地内存，或空内容白耗 Token | **High** | 状态机并发与数据生命周期 | 移除僵尸 `operationQueue`，改用带 `QueueLimits.maxConcurrentTasks(2)` 上限的 FIFO 调度器（`pendingJobs` + `drainPendingJobs`），入口拦截纯空白内容，切 Vault 时一并清空排队任务 | **✅ 已解决** | 是 (异步摄入队列严格并发上限控制) | 是 (`IngestQueueTests`) | ✅ 已闭环 |
+| **228** | `SynthesisStore.renameSynthesisDoc` 重建 `SynthesisDocument` 时遗漏 `sourcePageIDs` 且未拦截空白名称，导致重命名后永久丢失深度引用溯源来源；同时 `performSynthesis` 缺少 Vault 代次守卫，切库后旧合成结果落盘并覆写新库状态 | 重命名带深度引用来源的合成文档、输入纯空白名称，或合成进行中切换 Vault | 合成文档溯源引用链永久断裂、出现空白标题文档，或旧库合成结果污染新库状态 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | `renameSynthesisDoc` 校验非空 trim 并完整保留 `original.sourcePageIDs`；引入 `vaultGeneration` 代次守卫，切库后中止旧合成结果落盘与状态覆写 | **✅ 已解决** | 是 (合成文档溯源完整性与多 Vault 代次守卫) | 是 (`SynthesisStoreTests`) | ✅ 已闭环 |
+| **229** | `PluginRuntime.applyPreProcess` 流控存在三重缺陷：`callCount > maxCallsPerWindow` off-by-one 多放行 1 次；每次调用都派发新的 60s 睡眠 `Task` 轮番将计数器归零导致限流失效与任务泄漏；`reset()` 未取消历史重置任务 | 恶意或高频插件在 60 秒窗口内连续触发内容拦截 | 限流配额被提前反复清零形同虚设，同时产生大量无主睡眠任务泄漏 | **High** | 架构设计与安全/网络健壮性 | 修正边界为 `callCount >= maxCallsPerWindow`，引入可取消的 `pluginThrottleResetTasks`/`aiThrottleResetTasks` 字典，每窗口仅在首调调度一次且在 `reset()` 统一取消 | **✅ 已解决** | 是 (插件限流窗口单定时器与精确配额边界) | 是 (`PluginRuntimeTests`) | ✅ 已闭环 |
+| **230** | `SearchStore` 存在双重并发状态竞态：`performDebouncedSearch` 取消旧防抖任务时无条件设置 `isSearching = false` 误关新搜索的加载状态；`performAdvancedSearch` 缺少代次守卫，切换 Vault 后旧搜索结果返回仍覆写 `searchResults` | 用户在 300ms 内快速连续键入搜索词，或高级搜索进行中切换 Vault | 搜索加载指示器提前闪烁消失，或旧 Vault 搜索结果泄露到新 Vault | **High** | 状态机并发与数据生命周期 | 引入单调递增 `searchGeneration` 代次守卫与 `SearchLimits.debounceDelayNanoseconds` 常量，所有写回 `isSearching`/`searchResults`/`lastSearchDiagnostic` 严格校验代次一致 | **✅ 已解决** | 是 (搜索防抖与高级检索代次防竞态) | 是 (`SearchStoreCancellationTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**227 项**
+- **收录问题总数**：**230 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：60 项 (26.4%)
-  - 状态机并发与数据生命周期：55 项 (24.2%)
-  - 架构设计与安全/网络健壮性：71 项 (31.3%)
-  - UI/交互与防御性缺陷：17 项 (7.5%)
-  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (10.6%)
+  - 功能缺陷与核心算法/解析器/数据完整性：61 项 (26.5%)
+  - 状态机并发与数据生命周期：56 项 (24.3%)
+  - 架构设计与安全/网络健壮性：72 项 (31.3%)
+  - UI/交互与防御性缺陷：17 项 (7.4%)
+  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (10.4%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：135 项 (59.5%)
-  - **Medium（功能异常/算法边界/性能损耗）**：65 项 (28.6%)
-  - **Low（样式异味/边界校验/门禁规范）**：27 项 (11.9%)
-- **修复闭环率**：**100% (227/227 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：138 项 (60.0%)
+  - **Medium（功能异常/算法边界/性能损耗）**：65 项 (28.3%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (11.7%)
+- **修复闭环率**：**100% (230/230 项已修复闭环)**
 

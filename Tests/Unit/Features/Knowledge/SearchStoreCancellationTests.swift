@@ -31,4 +31,20 @@ final class SearchStoreCancellationTests: XCTestCase {
         XCTAssertTrue(store.searchResults.isEmpty)
         XCTAssertNil(store.lastSearchDiagnostic)
     }
+
+    /// 缺陷 #230 回归：快速连续输入取消旧防抖任务时，旧任务不得把新搜索的 isSearching 误置为 false
+    @MainActor
+    func testSearchStore_rapidTypingDoesNotClearNewSearchLoadingState() async throws {
+        let store = SearchStore()
+        store.searchText = "a"
+        try? await Task.sleep(for: .milliseconds(50))
+        store.searchText = "ab"
+        try? await Task.sleep(for: .milliseconds(50))
+
+        XCTAssertTrue(store.isSearching, "取消旧防抖任务时，新搜索仍在防抖窗口内，isSearching 必须保持 true")
+
+        // 清理收尾
+        store.clearAll()
+        XCTAssertFalse(store.isSearching)
+    }
 }

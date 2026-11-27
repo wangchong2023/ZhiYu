@@ -215,6 +215,25 @@ final class PluginRuntimeTests: XCTestCase {
         XCTAssertEqual(runtime.pluginResourceUsage["usage.track"]?.callCount, 1)
     }
 
+    /// 缺陷 #229 回归：applyPreProcess 严格执行 maxCallsPerWindow 上限（不得 off-by-one 多放行 1 次）
+    func testApplyPreProcess_enforcesExactMaxCallsPerWindowLimit() {
+        let pluginID = "intercept.exact.limit"
+        let plugin = MockInterceptionPlugin(manifest: makeManifest(id: pluginID))
+        plugin.processedContent = "mutated"
+        runtime.loadPlugin(plugin)
+
+        let limit = PluginConstants.Sandbox.maxCallsPerWindow
+        for _ in 0..<limit {
+            let output = runtime.applyPreProcess(to: "original")
+            XCTAssertEqual(output, "mutated")
+        }
+
+        // 第 limit + 1 次必须被流控拦截，返回原文且不再累加 callCount
+        let throttledOutput = runtime.applyPreProcess(to: "original")
+        XCTAssertEqual(throttledOutput, "original", "达到 maxCallsPerWindow 后第 limit+1 次调用必须被限流拦截")
+        XCTAssertEqual(runtime.pluginResourceUsage[pluginID]?.callCount, limit)
+    }
+
     // MARK: - consumeAICallQuota
 
     func testConsumeAICallQuota_allowsCallsWithinWindowLimit() {
