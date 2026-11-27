@@ -16,6 +16,8 @@ private enum MermaidMacSpec {
     static let drawsBackgroundKey = "drawsBackground"
     static let theme = "dark"
     static let fallbackBulletPrefix = "• "
+    static let minimumPageZoom: CGFloat = 0.5
+    static let maximumPageZoom: CGFloat = 5.0
     static let resetPageZoom: CGFloat = 1.0
 }
 
@@ -48,10 +50,11 @@ struct MermaidPlatformWebView: NSViewRepresentable {
         nsView.loadHTMLString(html, baseURL: Bundle.main.bundleURL)
     }
 
-    /// 按比例缩放（macOS 使用 WKWebView.pageZoom 实现，与 iOS scrollView 缩放保持统一调用面）
+    /// 按比例缩放（macOS 使用 WKWebView.pageZoom 实现，与 iOS 保持 min/max 边界钳位）
     static func zoom(_ webView: WKWebView?, by factor: CGFloat) {
-        guard let webView else { return }
-        webView.pageZoom *= factor
+        guard let webView, factor.isFinite, factor > 0 else { return }
+        let nextZoom = webView.pageZoom * factor
+        webView.pageZoom = min(max(nextZoom, MermaidMacSpec.minimumPageZoom), MermaidMacSpec.maximumPageZoom)
     }
 
     /// 重置缩放

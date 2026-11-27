@@ -65,5 +65,17 @@ final class IOSPDFServiceSecurityTests: XCTestCase {
         XCTAssertFalse(copiedPath.hasSuffix("."), "无扩展名文件复制后不得产生尾随点")
         XCTAssertTrue(fm.fileExists(atPath: copiedPath))
     }
+
+    /// 验证 generateMermaidHTML 转义 `</script>` 闭合标签、启用 strict 安全级别且 fallback 不拼接 raw innerHTML
+    func testGenerateMermaidHTML_blocksScriptBreakoutAndUsesStrictMode() {
+        let html = generateMermaidHTML(
+            mermaidCode: "graph TD\nA</script><img src=x onerror=alert(1)>",
+            theme: "neutral"
+        )
+        XCTAssertFalse(html.contains("A</script>"), "用户输入中的 </script> 必须被转义为 <\\/script>")
+        XCTAssertTrue(html.contains("securityLevel: 'strict'"), "Mermaid 必须启用 strict 安全模式")
+        XCTAssertFalse(html.contains("securityLevel: 'loose'"), "严禁启用 loose 模式")
+        XCTAssertTrue(html.contains("textContent"), "catch 回退路径必须通过 textContent 构造安全 DOM")
+    }
 }
 #endif

@@ -21,6 +21,36 @@ struct IdentifiableURL: Identifiable {
 
 // MARK: - Mermaid HTML 生成共享函数
 
+/// 转义注入 JS 模板字面量的 Mermaid 代码（含防 `</script>` 闭合逃逸）
+private func escapeMermaidForScript(_ mermaidCode: String) -> String {
+    mermaidCode
+        .replacingOccurrences(of: "\\", with: "\\\\")
+        .replacingOccurrences(of: "`", with: "\\`")
+        .replacingOccurrences(of: "$", with: "\\$")
+        .replacingOccurrences(of: "</", with: "<\\/")
+        .replacingOccurrences(of: "\n", with: "\\n")
+        .replacingOccurrences(of: "\r", with: "")
+}
+
+/// 生成渲染失败时的纯文本安全 DOM 回退脚本（通过 textContent 彻底免疫 XSS）
+private func mermaidFallbackScript(escapedCode: String, fallbackBulletPrefix: String) -> String {
+    """
+    const rawCode = `\(escapedCode)`;
+    const lines = rawCode.split('\\n').filter(l => l.trim() && !l.trim().startsWith('```'));
+    root.textContent = '';
+    const box = document.createElement('div');
+    box.className = 'fallback-box';
+    lines.forEach(line => {
+        const trimmed = line.trim();
+        const node = document.createElement(trimmed.startsWith('#') ? 'h3' : 'div');
+        node.className = trimmed.startsWith('#') ? 'fallback-h3' : 'fallback-item';
+        node.textContent = trimmed.startsWith('#') ? trimmed.replace(/^#+\\s*/, '') : '\(fallbackBulletPrefix)' + trimmed;
+        box.appendChild(node);
+    });
+    root.appendChild(box);
+    """
+}
+
 /// 为 iOS/macOS 双平台提供统一的 Mermaid 渲染 HTML 模板，消除两处 `generateHTML()` 的重复。
 /// - Parameters:
 ///   - mermaidCode: 原始 Mermaid 图表代码
@@ -35,13 +65,8 @@ func generateMermaidHTML(
     bodyExtraStyle: String = "",
     fallbackBulletPrefix: String = ""
 ) -> String {
-    let escapedCode = mermaidCode
-        .replacingOccurrences(of: "\\", with: "\\\\")
-        .replacingOccurrences(of: "`", with: "\\`")
-        .replacingOccurrences(of: "$", with: "\\$")
-        .replacingOccurrences(of: "\n", with: "\\n")
-        .replacingOccurrences(of: "\r", with: "")
-
+    let escapedCode = escapeMermaidForScript(mermaidCode)
+    let fallbackJS = mermaidFallbackScript(escapedCode: escapedCode, fallbackBulletPrefix: fallbackBulletPrefix)
     let viewportTag = viewportMeta
         ? "<meta " + "name=\"viewport\" " + "content=\"width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes\">"
         : ""
@@ -65,32 +90,14 @@ func generateMermaidHTML(
     <body>
         <div id="mermaid-root"></div>
         <script>
-            mermaid.initialize({
-                startOnLoad: false,
-                theme: '\(theme)',
-                securityLevel: 'loose',
-                mindmap: { useMaxWidth: true }
-            });
+            mermaid.initialize({ startOnLoad: false, theme: '\(theme)', securityLevel: 'strict', mindmap: { useMaxWidth: true } });
             (async () => {
                 const root = document.getElementById('mermaid-root');
                 try {
                     const { svg } = await mermaid.render('mindmap-svg', `\(escapedCode)`);
                     root.innerHTML = svg;
                 } catch (e) {
-                    const rawCode = `\(escapedCode)`;
-                    const lines = rawCode.split('\\n').filter(l => l.trim() && !l.trim().startsWith('```'));
-                    let listHtml = '<div class="fallback-box">';
-                    lines.forEach(line => {
-                        const trimmed = line.trim();
-                        if (trimmed.startsWith('#')) {
-                            const headerText = trimmed.replace(/^#+\\s*/, '');
-                            listHtml += `<h3 class="fallback-h3">${headerText}</h3>`;
-                        } else {
-                            listHtml += `<div class="fallback-item">\(fallbackBulletPrefix)${trimmed}</div>`;
-                        }
-                    });
-                    listHtml += '</div>';
-                    root.innerHTML = listHtml;
+                    \(fallbackJS)
                 }
             })();
         </script>

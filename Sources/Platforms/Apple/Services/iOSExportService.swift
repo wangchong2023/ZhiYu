@@ -177,12 +177,16 @@ final class iOSExportService: NSObject, ExportServiceProtocol {
             const root = document.getElementById('mermaid-root');
             if (!root) return false;
             
-            mermaid.initialize({ startOnLoad: false, theme: 'neutral', securityLevel: 'loose', mindmap: { useMaxWidth: true } });
+            mermaid.initialize({ startOnLoad: false, theme: 'neutral', securityLevel: 'strict', mindmap: { useMaxWidth: true } });
             try {
                 const { svg } = await mermaid.render('mindmap-export', `\(escapedCode)`);
                 root.innerHTML = svg;
             } catch (e) {
-                root.innerHTML = '<div style="color:red">' + e.message + '</div>';
+                root.textContent = '';
+                const errNode = document.createElement('div');
+                errNode.style.color = 'red';
+                errNode.textContent = e && e.message ? e.message : String(e);
+                root.appendChild(errNode);
             }
             await new Promise(r => setTimeout(r, 800));
             return true;

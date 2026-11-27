@@ -168,21 +168,22 @@
 | **157** | `iOSOCRService.recognizeText` 在 `withCheckedThrowingContinuation` 内同时从 `VNRecognizeTextRequest` 回调与 `handler.perform` 的 `catch` 分支调用 `continuation.resume`，缺少一次性原子锁保护，Vision 失败双路径回调时直接触发 `SWIFT TASK CONTINUATION MISUSE` 致命崩溃 | Vision OCR 请求失败同时触发 completionHandler 与抛出 perform 异常 | OCR 识别异常时 App 直接闪退 | **High** | 状态机并发与数据生命周期 | 引入 `OSAllocatedUnfairLock(initialState: false)` 保护一次性 `tryClaimResume()` 守卫，彻底杜绝双重 resume | **✅ 已解决** | 是 (Vision 回调转 Continuation 原子守卫) | 是 (`IOSOCRServiceTests`) | ✅ 已闭环 |
 | **158** | `AppleAuthStrategy` 在 delegate 回调 `continuation?.resume` 后未将 `self.continuation = nil` 置空，重复回调会引发双重 resume 崩溃，且再次调用 `acquireCredentials` 会覆盖泄露旧 continuation | Apple 登录 delegate 重复回调或连续触发登录 | 登录流程触发 Continuation 崩溃或协程永久挂起 | **High** | 状态机并发与数据生命周期 | 新增 `consumeContinuation()` 原子取出并置空，入口若存在挂起旧 continuation 先 `CancellationError` 释放 | **✅ 已解决** | 是 (Delegate Continuation 消费置空规范) | 是 (`AuthOAuthStrategiesBranchTests`) | ✅ 已闭环 |
 | **159** | `GitHubAuthStrategy.acquireCredentials` 未强持有 `ASWebAuthenticationSession` 且忽略 `session.start()` 返回值（启动失败时回调永不触发导致 continuation 永久挂死）；另 `Graph3DView+SceneLogic.startFPSMonitor` 未先 `invalidate` 旧 Timer | GitHub OAuth 会话提前释放、启动失败或 3D 图谱重复触发 FPS 监控 | GitHub 登录卡死无响应或 3D 图谱孤儿 Timer 泄露 | **High** | 状态机并发与数据生命周期 | `GitHubAuthStrategy` 实例强持有 `activeSession` 并校验 `guard session.start()` 失败立即抛错；`startFPSMonitor` 补齐 `fpsUpdateTimer?.invalidate()` | **✅ 已解决** | 是 (ASWebAuthenticationSession 持有与启动失败收口) | 是 (`AuthOAuthStrategiesBranchTests`) | ✅ 已闭环 |
+| **160** | `MermaidWebView.generateMermaidHTML` 与 `iOSExportService.exportMindmapToPDF` 存在三处高危 XSS 注入漏洞：① 未转义 `</script>` 闭合标签逃逸；② 启用了 `securityLevel: 'loose'` 允许图表内嵌脚本执行；③ `catch` 回退路径直接将未转义用户输入拼入 `root.innerHTML`；另 `MacMermaidWebView.zoom` 缺少 `pageZoom` 上下界钳位 | 渲染含 `</script>` 或恶意 HTML 标签的外部 Markdown/Mermaid 文档 | WebView 本地 Bundle 上下文触发存储型 XSS 执行任意 JS | **High** | 架构设计与安全/网络健壮性 | 转义 `</` 为 `<\/`、全量收紧为 `securityLevel: 'strict'`、回退路径改用 `document.createElement` + `textContent` 安全 DOM；macOS `pageZoom` 补齐 `[0.5, 5.0]` 钳位 | **✅ 已解决** | 是 (WebView XSS 零 innerHTML 拼接规范) | 是 (`IOSPDFServiceSecurityTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**159 项**
+- **收录问题总数**：**160 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：38 项 (23.9%)
-  - 状态机并发与数据生命周期：35 项 (22.0%)
-  - 架构设计与安全/网络健壮性：46 项 (28.9%)
-  - UI/交互与防御性缺陷：16 项 (10.1%)
-  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (15.1%)
+  - 功能缺陷与核心算法/解析器/数据完整性：38 项 (23.8%)
+  - 状态机并发与数据生命周期：35 项 (21.9%)
+  - 架构设计与安全/网络健壮性：47 项 (29.4%)
+  - UI/交互与防御性缺陷：16 项 (10.0%)
+  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (15.0%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：77 项 (48.4%)
-  - **Medium（功能异常/算法边界/性能损耗）**：55 项 (34.6%)
-  - **Low（样式异味/边界校验/门禁规范）**：27 项 (17.0%)
-- **修复闭环率**：**100% (159/159 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：78 项 (48.8%)
+  - **Medium（功能异常/算法边界/性能损耗）**：55 项 (34.4%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (16.9%)
+- **修复闭环率**：**100% (160/160 项已修复闭环)**
 
