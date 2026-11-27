@@ -180,22 +180,25 @@
 | **169** | `GenericDatabaseManager.switchDatabase` 缺少并发串行化保护，快速连续切换 Vault 时两个异步切库任务在 `await` 挂起点交错关闭连接池导致 `dbURL`/`dbWriter` 错配；另 `VaultDataCoordinator.loadVaults()` 在异步 `Task` 加载 `self.vaults` 前就同步调用 `autoRestoreActiveVault()` 导致冷启动恢复上次 Vault 失效 | 快速连续点击切换笔记本，或冷启动恢复上次打开的笔记本 | 切库后数据库句柄被误关闭/写入错库，或冷启动无法恢复上次笔记本 | **High** | 状态机并发与数据生命周期 | `GenericDatabaseManager` 引入 `DatabaseSwitchSerializer` actor 按 FIFO 严格串行化切库；`loadVaults()` 将 `autoRestoreActiveVault()` 移入异步加载完成之后执行 | **✅ 已解决** | 是 (多库热切换串行化与冷启动时序修复) | 是 (`GenericDatabaseManagerTests`) | ✅ 已闭环 |
 | **170** | `ContextReranker.rerank` 未对 `topK <= 0` 与非有限分数（`NaN`/`±Inf`）做守卫，负数 `topK` 直接触发 `Array.prefix` 致命断言闪退，非有限 `initialScore` 破坏排序严格弱序 | RAG 上游传入负数 `topK` 或异常浮点得分 | RAG 检索重排阶段直接闪退或返回异常排序结果 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 入口增加 `guard topK > 0, minScore.isFinite`，循环内过滤非有限 `initialScore` 与 `finalScore` | **✅ 已解决** | 是 (RAG 重排数学边界与有限性守卫) | 是 (`ContextRerankerEdgeCaseTests`) | ✅ 已闭环 |
 | **171** | `VectorMath.cosineSimilarity` 未对 `NaN`/`Inf` 向量或大数值平方和溢出为 `+Inf` 做有限性守卫，`Inf / Inf` 直接返回 `NaN` 污染下游余弦相似度检索排序，且浮点误差可能超出 `[-1, 1]` | 嵌入模型输出含 `NaN`/`Inf` 或极大值分量 | 向量检索相似度返回 `NaN` 导致排序异常 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 增加 `dotProduct.isFinite`、`denominator.isFinite`、`raw.isFinite` 三重守卫并将结果钳位至 `[-1.0, 1.0]` | **✅ 已解决** | 是 (vDSP 向量计算有限性与值域钳位规范) | 是 (`VectorMathCosineSimilarityTests`) | ✅ 已闭环 |
-| **172** | `ModelStoreView.hfTokenConfigSheet`（模型源与令牌）存在三处 UI/交互缺陷：① `GlobalModelManager.downloadSourcePreference` 为无存储属性支撑的纯计算属性，在 `keyStore` 未就绪或为 `nil` 时写入丢失导致顶部 Segmented Tab 无法切换；② Sheet 缺失 `themeManager.pageBackground()` 与 `.scrollContentBackground(.hidden)` 导致背景与主题色割裂；③ 取消/保存按钮悬浮在表单中部而非原生 `.toolbar` | 在端侧模型市场点击「模型源与令牌」打开配置 Sheet | 顶部下载源 Tab 无法切换、页面背景色与全局主题不一致、操作按钮不符合系统风格 | **Medium** | UI/交互与防御性缺陷 | `GlobalModelManager` 增加 `@Observable` 存储属性 `cachedDownloadSourcePreference` 兜底；Sheet 重构为标准 `themeManager.pageBackground()` + `Form(.appGroupedFormStyle)` + `@State sourcePreferenceInput` 驱动 Segmented Picker + 原生 `.toolbar` 取消/保存按钮 | **✅ 已解决** | 是 (Sheet 主题背景与原生工具栏表单统一范式) | 是 (`GlobalModelDownloadDeepTests`) | ✅ 已闭环 |
+| **172** | `ModelStoreView.hfTokenConfigSheet`（模型源与令牌）存在三处 UI/交互缺陷：① `GlobalModelManager.downloadSourcePreference` 为无存储属性支撑的纯计算属性，在 `keyStore` 未就绪或为 `nil` 时写入丢失导致顶部 Segmented Tab 无法切换；② Sheet 缺失 `themeManager.pageBackground()` 与 `.scrollContentBackground(.hidden)` 导致背景与主题色割裂；③ 取消/保存按钮悬浮在表单中部而非原生 `.toolbar` | 在端侧模型市场点击「模型源与令牌」打开配置 Sheet | 顶部下载源 Tab 无法切换、页面背景色与全局主题不一致、操作按钮不符合系统风格 | **Medium** | UI/交互与防御性缺陷 | `GlobalModelManager` 增加 `@Observable` 存储属性 `cachedDownloadSourcePreference` 兜底；Sheet 重构为标准 `themeManager.pageBackground()` + `Form(.appGroupedFormStyle)` + 三档原生单选列表（含优先级说明与自动识别标签）+ 原生 `.toolbar` 取消/保存按钮 | **✅ 已解决** | 是 (Sheet 主题背景与原生工具栏表单统一范式) | 是 (`GlobalModelDownloadDeepTests`) | ✅ 已闭环 |
+| **173** | `UndoService` 作为全局单例持有整库页面快照栈（`undoStack`/`redoStack`），但从未在多 Vault 切换或数据库热切换时清空，导致用户在 Vault B 执行撤销时把 Vault A 的整库页面快照覆盖写入 Vault B | 在 Vault A 编辑/删除页面后切换至 Vault B 并触发撤销 | 灾难性跨 Vault 数据污染与 Vault B 原有笔记丢失 | **High** | 状态机并发与数据生命周期 | `UndoService.init()` 订阅 `.vaultWillSwitch` 与 `.databaseDidSwitch` 通知并自动 `clear()` 清空撤销/重做栈 | **✅ 已解决** | 是 (全局状态服务多 Vault 切换自动清理规范) | 是 (`UndoServiceEdgeCaseTests`) | ✅ 已闭环 |
+| **174** | `SourceStore.shared` 全局单例缓存当前 RAG 命中的私密信源片段（标题、`snippet`、`pageID`），在多 Vault 切换时从未清空导致侧边栏 Sources 面板持续泄露旧 Vault 的私密笔记片段 | 在 Vault A 触发 AI 对话后切换至 Vault B | 跨 Vault 私密笔记片段泄露与失效页面跳转 | **High** | 状态机并发与数据生命周期 | `SourceStore.init()` 订阅 `.vaultWillSwitch` 通知立即清空 `activeSources` | **✅ 已解决** | 是 (多 Vault 全局 Store 通知隔离) | 是 (`SourceStoreTests`) | ✅ 已闭环 |
+| **175** | `LLMContextBuilder.buildRelevantContext` 未对纯空白 `query` 做前置拦截（导致对空白生成随机向量误召回无关笔记），且当 `reranker.rerank` 将所有低相关候选剪枝为空后仍继续拼接空标题上下文 | 传入纯空白查询或重排阶段全部候选未达阈值被剪枝 | 浪费上下文 Token 并向 LLM 注入无关随机片段或空模板 | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | 抽取 `emptyContextResult` 复用，对空白 `query` 与重排空结果立即早退返回无数据上下文 | **✅ 已解决** | 是 (RAG 检索前后置空值早退守卫) | 是 (`LLMContextBuilderEdgeCaseTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**172 项**
+- **收录问题总数**：**175 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：41 项 (23.8%)
-  - 状态机并发与数据生命周期：38 项 (22.1%)
-  - 架构设计与安全/网络健壮性：52 项 (30.2%)
-  - UI/交互与防御性缺陷：17 项 (9.9%)
-  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (14.0%)
+  - 功能缺陷与核心算法/解析器/数据完整性：42 项 (24.0%)
+  - 状态机并发与数据生命周期：40 项 (22.9%)
+  - 架构设计与安全/网络健壮性：52 项 (29.7%)
+  - UI/交互与防御性缺陷：17 项 (9.7%)
+  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (13.7%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：88 项 (51.2%)
-  - **Medium（功能异常/算法边界/性能损耗）**：57 项 (33.1%)
-  - **Low（样式异味/边界校验/门禁规范）**：27 项 (15.7%)
-- **修复闭环率**：**100% (172/172 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：90 项 (51.4%)
+  - **Medium（功能异常/算法边界/性能损耗）**：58 项 (33.1%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (15.4%)
+- **修复闭环率**：**100% (175/175 项已修复闭环)**
 

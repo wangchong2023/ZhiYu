@@ -181,4 +181,26 @@ final class UndoServiceEdgeTests: XCTestCase {
         XCTAssertFalse(undoService.canRedo, "新操作后 redo 应被清空")
         XCTAssertTrue(undoService.canUndo, "新操作后 undo 应可用")
     }
+
+    // MARK: - 多 Vault 切换数据隔离（缺陷 #173）
+
+    /// 验证：收到 .vaultWillSwitch 或 .databaseDidSwitch 通知时必须立即清空 undo/redo 栈，
+    /// 防止切换到 Vault B 后按撤销将 Vault A 快照覆盖写入 Vault B。
+    func testVaultSwitchClearsUndoAndRedoStacks() {
+        undoService.pushSnapshot(makePages(count: 2))
+        undoService.pushSnapshot(makePages(count: 3))
+        _ = undoService.undo(currentPages: makePages(count: 4))
+        XCTAssertTrue(undoService.canUndo)
+        XCTAssertTrue(undoService.canRedo)
+
+        NotificationCenter.default.post(name: .vaultWillSwitch, object: nil)
+        XCTAssertFalse(undoService.canUndo, ".vaultWillSwitch 后必须清空 undoStack")
+        XCTAssertFalse(undoService.canRedo, ".vaultWillSwitch 后必须清空 redoStack")
+        XCTAssertNil(undoService.undo(currentPages: makePages(count: 1)))
+
+        undoService.pushSnapshot(makePages(count: 2))
+        XCTAssertTrue(undoService.canUndo)
+        NotificationCenter.default.post(name: .databaseDidSwitch, object: nil)
+        XCTAssertFalse(undoService.canUndo, ".databaseDidSwitch 后必须清空 undoStack")
+    }
 }

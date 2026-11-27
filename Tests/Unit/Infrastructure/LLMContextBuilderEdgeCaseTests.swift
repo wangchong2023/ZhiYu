@@ -119,4 +119,12 @@ final class LLMContextBuilderEdgeCaseTests: XCTestCase {
         let prompt = builder.buildRewritePrompt(query: "用户查询")
         XCTAssertTrue(prompt.contains("用户查询"), "应包含用户查询")
     }
+
+    // MARK: - 空白查询早退（缺陷 #175）
+
+    func testBuildRelevantContextWithWhitespaceQueryReturnsNoDataImmediately() async {
+        let (context, sources) = await builder.buildRelevantContext(query: "   \n\t  ")
+        XCTAssertTrue(sources.isEmpty, "纯空白查询不得召回随机信源")
+        XCTAssertTrue(context.contains(L10n.Common.Global.noData), "纯空白查询应直接返回无数据占位文本")
+    }
 }

@@ -26,6 +26,18 @@ final class UndoService: ObservableObject, @unchecked Sendable {
 
     private var undoStack: [[KnowledgePage]] = []
     private var redoStack: [[KnowledgePage]] = []
+    private var cancellables = Set<AnyCancellable>()
+
+    init() {
+        // 多 Vault 切换/底层数据库热切换时立即清空撤销与重做栈，
+        // 杜绝在 Vault B 按撤销把 Vault A 的整库快照覆盖写入 Vault B 造成跨库数据污染。
+        NotificationCenter.default.publisher(for: .vaultWillSwitch)
+            .merge(with: NotificationCenter.default.publisher(for: .databaseDidSwitch))
+            .sink { [weak self] _ in
+                self?.clear()
+            }
+            .store(in: &cancellables)
+    }
 
     // MARK: - Snapshot Management
     /// 推送Snapshot

@@ -10,6 +10,7 @@
 //
 import Foundation
 import Observation
+import UFPCore
 
 /// [L1.5] 信源状态存储器
 @MainActor
@@ -20,7 +21,15 @@ public final class SourceStore {
     /// 当前活跃的信源列表 (对标 NotebookLM 的 Sources 面板)
     public private(set) var activeSources: [KnowledgeSource] = []
     
-    private init() {}
+    private init() {
+        // 多 Vault 切换时立即清空旧笔记本的 RAG 信源引用，防止跨 Vault 私密片段泄露
+        Task { [weak self] in
+            for await _ in NotificationCenter.default.notifications(named: .vaultWillSwitch) {
+                guard let self else { break }
+                self.clear()
+            }
+        }
+    }
     
     /// 根据检索到的 RAG 源片段刷新侧边栏信源列表
     /// - Parameter sources: 已通过向量排名的信源块数组

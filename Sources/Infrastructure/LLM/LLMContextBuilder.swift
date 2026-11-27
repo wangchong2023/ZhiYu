@@ -129,30 +129,15 @@ struct LLMContextBuilder: Sendable {
         return prompt
     }
 
-    /// 使用多路召回与二阶段重排序 (Two-Stage Rerank) 获取高度相关的知识片段，并完成 XML 沙箱化隔离。
-    /// - Returns: (格式化后的 Prompt 字符串, 提取出的信源数据对象列表)
-    func buildRelevantContext(query: String) async -> (context: String, sources: [KnowledgeSource]) {
-        // 0. 越狱注入攻击扫描——检测到越狱时中断流程，返回空上下文
-        do {
-            try sanitizer.scanJailbreakAttempt(in: query)
-        } catch {
-            Logger.shared.warning("[LLMContextBuilder] 拦截越狱攻击，返回空上下文: \(error)")
-            return ("\(L10n.AI.LLM.Prompt.relevantPages)\n\(L10n.Common.Global.noData)\n", [])
-        }
+    /// 空上下文统一返回结果（消除多处重复拼接）
+    private var emptyContextResult: (context: String, sources: [KnowledgeSource]) {
+        ("\(L10n.AI.LLM.Prompt.relevantPages)\n\(L10n.Common.Global.noData)\n", [])
+    }
 
-        let embeddingProvider = self.embeddingProvider
-
-        // 1. 执行多路召回
-        let rawResults = await embeddingProvider.multiQuerySearch(query: query, topK: AppConfig.AI.topKResults)
-
-        guard !rawResults.isEmpty else {
-            return ("\(L10n.AI.LLM.Prompt.relevantPages)\n\(L10n.Common.Global.noData)\n", [])
-        }
-
-        // 2. 执行二阶段重排序 (Two-Stage Rerank)
-        let searchResults = reranker.rerank(query: query, candidates: rawResults, topK: PromptConstants.RAGPrompt.maxContextPages)
-
-        // 3. 智能压缩逻辑 (Compression)
+    /// 按字符预算对重排后的候选分块执行智能压缩，保留高分与摘要块
+    private func compressSearchResults(
+        _ searchResults: [(chunk: PageChunk, score: Float)]
+    ) -> [(chunk: PageChunk, score: Float)] {
         let maxContextLength = AppConfig.AI.maxContextLength
         var currentLength = 0
         var compressedResults: [(chunk: PageChunk, score: Float)] = []
@@ -170,6 +155,42 @@ struct LLMContextBuilder: Sendable {
                 currentLength += chunkLen
             }
         }
+        return compressedResults
+    }
+
+    /// 使用多路召回与二阶段重排序 (Two-Stage Rerank) 获取高度相关的知识片段，并完成 XML 沙箱化隔离。
+    /// - Returns: (格式化后的 Prompt 字符串, 提取出的信源数据对象列表)
+    func buildRelevantContext(query: String) async -> (context: String, sources: [KnowledgeSource]) {
+        let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedQuery.isEmpty else {
+            return emptyContextResult
+        }
+
+        // 0. 越狱注入攻击扫描——检测到越狱时中断流程，返回空上下文
+        do {
+            try sanitizer.scanJailbreakAttempt(in: trimmedQuery)
+        } catch {
+            Logger.shared.warning("[LLMContextBuilder] 拦截越狱攻击，返回空上下文: \(error)")
+            return emptyContextResult
+        }
+
+        let embeddingProvider = self.embeddingProvider
+
+        // 1. 执行多路召回
+        let rawResults = await embeddingProvider.multiQuerySearch(query: trimmedQuery, topK: AppConfig.AI.topKResults)
+
+        guard !rawResults.isEmpty else {
+            return emptyContextResult
+        }
+
+        // 2. 执行二阶段重排序 (Two-Stage Rerank)
+        let searchResults = reranker.rerank(query: trimmedQuery, candidates: rawResults, topK: PromptConstants.RAGPrompt.maxContextPages)
+        guard !searchResults.isEmpty else {
+            return emptyContextResult
+        }
+
+        // 3. 智能压缩逻辑 (Compression)
+        let compressedResults = compressSearchResults(searchResults)
 
         // 4. 聚合分块上下文并提取 Source 模型
         var rawContext = "\(L10n.AI.LLM.Prompt.relevantPages)\n"

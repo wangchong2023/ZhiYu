@@ -59,4 +59,17 @@ final class SourceStoreTests: XCTestCase {
         XCTAssertEqual(SourceStore.shared.activeSources[1].title, "B")
         XCTAssertEqual(SourceStore.shared.activeSources[2].title, "C")
     }
+
+    // MARK: - 多 Vault 切换隔离（缺陷 #174）
+
+    func testVaultWillSwitch_clearsActiveSources() async {
+        let secret = KnowledgeSource(pageID: UUID(), title: "Vault A 私密信源", snippet: "敏感内容", score: 0.95)
+        SourceStore.shared.updateSources([secret])
+        XCTAssertEqual(SourceStore.shared.activeSources.count, 1)
+
+        NotificationCenter.default.post(name: .vaultWillSwitch, object: nil)
+        try? await Task.sleep(for: .milliseconds(80))
+
+        XCTAssertTrue(SourceStore.shared.activeSources.isEmpty, "切换 Vault 后必须清空旧笔记本的 RAG 信源列表")
+    }
 }
