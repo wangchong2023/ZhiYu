@@ -1001,6 +1001,12 @@ extension L10n {
             public static var auto: String { ModelManager.tr("model_manager.source.auto") }
             public static var modelscope: String { ModelManager.tr("model_manager.source.modelscope") }
             public static var huggingface: String { ModelManager.tr("model_manager.source.huggingface") }
+            public static var autoDesc: String { ModelManager.tr("model_manager.source.auto_desc") }
+            public static func autoDetected(_ sourceName: String) -> String {
+                ModelManager.trf("model_manager.source.auto_detected_format", sourceName)
+            }
+            public static var modelscopeDesc: String { ModelManager.tr("model_manager.source.modelscope_desc") }
+            public static var huggingfaceDesc: String { ModelManager.tr("model_manager.source.huggingface_desc") }
             public static var msTokenTitle: String { ModelManager.tr("model_manager.source.ms_token_title") }
             public static var msTokenPlaceholder: String { ModelManager.tr("model_manager.source.ms_token_placeholder") }
             public static var msTokenDesc: String { ModelManager.tr("model_manager.source.ms_token_desc") }

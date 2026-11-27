@@ -69,6 +69,8 @@ public struct ModelStoreView: View {
     @State private var hfTokenInput = ""
     /// 魔搭社区 SDK 令牌编辑态文本
     @State private var msTokenInput = ""
+    /// 首选下载源编辑态偏好（直接驱动 Segmented Picker，点击保存后回写中台）
+    @State private var sourcePreferenceInput: GlobalModelManager.DownloadSourcePreference = .auto
 
     /// 是否需要外层 ScrollView 包装，用于扁平化整合单页滚动
     public var embedInScrollView: Bool = true
@@ -251,6 +253,7 @@ public struct ModelStoreView: View {
             .accessibilityIdentifier("importLocalModelButton")
 
             Button(action: {
+                sourcePreferenceInput = modelManager.downloadSourcePreference
                 msTokenInput = modelManager.loadModelScopeToken()
                 hfTokenInput = modelManager.loadHuggingFaceToken()
                 showHFTokenSheet = true
@@ -287,99 +290,150 @@ public struct ModelStoreView: View {
     @ViewBuilder
     private var hfTokenConfigSheet: some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: DesignTokens.Spacing.large) {
-                    // 1. 首选下载源路由策略（自动 / 魔搭社区 / HuggingFace）
-                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
-                        Text(L10n.ModelManager.ModelSource.preferenceLabel)
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.appText)
+            ZStack {
+                themeManager.pageBackground()
+                    .ignoresSafeArea()
 
-                        Picker(
-                            L10n.ModelManager.ModelSource.preferenceLabel,
-                            selection: Binding(
-                                get: { modelManager.downloadSourcePreference },
-                                set: { modelManager.downloadSourcePreference = $0 }
-                            )
-                        ) {
-                            ForEach(GlobalModelManager.DownloadSourcePreference.allCases) { pref in
-                                Text(pref.displayTitle).tag(pref)
-                            }
-                        }
-                        .pickerStyle(.segmented)
-                        .labelsHidden()
-                    }
-
-                    Divider()
-
-                    // 2. 魔搭社区 (ModelScope) SDK 令牌
-                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
-                        HStack {
-                            Text(L10n.ModelManager.ModelSource.msTokenTitle)
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundStyle(.appText)
-                            if modelManager.hasModelScopeToken {
-                                Text(L10n.ModelManager.HFToken.configured)
-                                    .font(.caption2.bold())
-                                    .foregroundStyle(Color.theme.green)
-                            }
-                        }
-                        Text(L10n.ModelManager.ModelSource.msTokenDesc)
-                            .font(.caption)
-                            .foregroundStyle(.appSecondary)
-                        SecureField(L10n.ModelManager.ModelSource.msTokenPlaceholder, text: $msTokenInput)
-                            .textFieldStyle(.roundedBorder)
-                    }
-
-                    Divider()
-
-                    // 3. HuggingFace 访问令牌
-                    VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
-                        HStack {
-                            Text(L10n.ModelManager.HFToken.title)
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundStyle(.appText)
-                            if modelManager.hasHuggingFaceToken {
-                                Text(L10n.ModelManager.HFToken.configured)
-                                    .font(.caption2.bold())
-                                    .foregroundStyle(Color.theme.green)
-                            }
-                        }
-                        Text(L10n.ModelManager.HFToken.description)
-                            .font(.caption)
-                            .foregroundStyle(.appSecondary)
-                        SecureField(L10n.ModelManager.HFToken.placeholder, text: $hfTokenInput)
-                            .textFieldStyle(.roundedBorder)
-                    }
-
-                    HStack(spacing: DesignTokens.Spacing.medium) {
-                        if modelManager.hasAnySourceToken {
-                            Button(L10n.ModelManager.HFToken.clear, role: .destructive) {
-                                modelManager.clearModelScopeToken()
-                                modelManager.clearHuggingFaceToken()
-                                msTokenInput = ""
-                                hfTokenInput = ""
-                                showHFTokenSheet = false
-                            }
-                        }
-                        Spacer()
-                        Button(L10n.Common.cancel) {
-                            showHFTokenSheet = false
-                        }
-                        Button(L10n.Common.save) {
-                            modelManager.saveModelScopeToken(msTokenInput)
-                            modelManager.saveHuggingFaceToken(hfTokenInput)
-                            showHFTokenSheet = false
-                        }
-                        .buttonStyle(.borderedProminent)
-                    }
-                }
-                .padding(DesignTokens.Spacing.wide)
+                modelSourceFormContent
             }
             .navigationTitle(L10n.ModelManager.ModelSource.title)
             .appNavigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(L10n.Common.cancel) {
+                        showHFTokenSheet = false
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(L10n.Common.save) {
+                        modelManager.downloadSourcePreference = sourcePreferenceInput
+                        modelManager.saveModelScopeToken(msTokenInput)
+                        modelManager.saveHuggingFaceToken(hfTokenInput)
+                        showHFTokenSheet = false
+                    }
+                }
+            }
         }
-        .frame(minWidth: DesignTokens.Metrics.authFormWidth, minHeight: DesignTokens.Metrics.authHeroWidth)
+        .tint(themeManager.accentColor)
+        .preferredColorScheme(themeManager.colorSchemeMode.preferredColorScheme)
+    }
+
+    @ViewBuilder
+    private var modelSourceFormContent: some View {
+        Form {
+            // 1. 首选下载源路由策略（三档单选列表，明确主源优先级与自动容灾说明）
+            Section {
+                ForEach(GlobalModelManager.DownloadSourcePreference.allCases) { pref in
+                    sourcePreferenceRow(for: pref)
+                }
+            } header: {
+                Text(L10n.ModelManager.ModelSource.preferenceLabel)
+                    .foregroundStyle(.appSecondary)
+            }
+            .appListRowBackground()
+
+            // 2. 魔搭社区 (ModelScope) SDK 令牌
+            Section {
+                SecureField(L10n.ModelManager.ModelSource.msTokenPlaceholder, text: $msTokenInput)
+                    .appAutocapitalizationDisabled()
+            } header: {
+                tokenSectionHeader(
+                    title: L10n.ModelManager.ModelSource.msTokenTitle,
+                    isConfigured: modelManager.hasModelScopeToken
+                )
+            } footer: {
+                Text(L10n.ModelManager.ModelSource.msTokenDesc)
+                    .foregroundStyle(.appSecondary)
+            }
+            .appListRowBackground()
+
+            // 3. HuggingFace 访问令牌
+            Section {
+                SecureField(L10n.ModelManager.HFToken.placeholder, text: $hfTokenInput)
+                    .appAutocapitalizationDisabled()
+            } header: {
+                tokenSectionHeader(
+                    title: L10n.ModelManager.HFToken.title,
+                    isConfigured: modelManager.hasHuggingFaceToken
+                )
+            } footer: {
+                Text(L10n.ModelManager.HFToken.description)
+                    .foregroundStyle(.appSecondary)
+            }
+            .appListRowBackground()
+
+            // 4. 清除已配置令牌（仅当已配置时显示）
+            if modelManager.hasAnySourceToken {
+                Section {
+                    Button(role: .destructive) {
+                        modelManager.clearModelScopeToken()
+                        modelManager.clearHuggingFaceToken()
+                        msTokenInput = ""
+                        hfTokenInput = ""
+                        showHFTokenSheet = false
+                    } label: {
+                        HStack {
+                            Spacer()
+                            Text(L10n.ModelManager.HFToken.clear)
+                            Spacer()
+                        }
+                    }
+                }
+                .appListRowBackground()
+            }
+        }
+        .appGroupedFormStyle()
+        .scrollContentBackground(.hidden)
+    }
+
+    private func sourcePreferenceRow(for pref: GlobalModelManager.DownloadSourcePreference) -> some View {
+        let isSelected = sourcePreferenceInput == pref
+        return Button {
+            sourcePreferenceInput = pref
+        } label: {
+            HStack(alignment: .center, spacing: DesignTokens.Spacing.medium) {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.tiny) {
+                    HStack(spacing: DesignTokens.Spacing.small) {
+                        Text(pref.displayTitle)
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.appText)
+                        if pref == .auto {
+                            Text(L10n.ModelManager.ModelSource.autoDetected(modelManager.autoDetectedSourceTitle))
+                                .font(.caption2.weight(.medium))
+                                .foregroundStyle(.appAccent)
+                                .padding(.horizontal, DesignTokens.SystemSpacing.small)
+                                .padding(.vertical, DesignTokens.SystemSpacing.atomic)
+                                .background(Color.appAccent.opacity(DesignTokens.Opacity.glass))
+                                .clipShape(Capsule())
+                        }
+                    }
+                    Text(pref.priorityDescription)
+                        .font(.caption)
+                        .foregroundStyle(.appSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer()
+                if isSelected {
+                    Image(systemName: DesignTokens.Icons.checkmarkCircleFill)
+                        .font(.body)
+                        .foregroundStyle(.appAccent)
+                }
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func tokenSectionHeader(title: String, isConfigured: Bool) -> some View {
+        HStack(spacing: DesignTokens.Spacing.tiny) {
+            Text(title)
+                .foregroundStyle(.appSecondary)
+            if isConfigured {
+                Text(L10n.ModelManager.HFToken.configured)
+                    .font(.caption2.bold())
+                    .foregroundStyle(Color.theme.green)
+            }
+        }
     }
 
     private func handleModelImportResult(_ result: Result<[URL], Error>) {

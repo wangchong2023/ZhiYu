@@ -17,11 +17,17 @@ import Accelerate
 /// 封装了对 Accelerate 框架 (vDSP) 的调用，用于加速大规模向量相似度检索及相关计算。
 public enum VectorMath {
 
+    /// 余弦相似度理论值域上下界
+    private enum Bounds {
+        static let minSimilarity: Float = -1.0
+        static let maxSimilarity: Float = 1.0
+    }
+
     /// 计算两个单精度浮点向量的余弦相似度
     /// - Parameters:
     ///   - v1: 第一个向量
     ///   - v2: 第二个向量
-    /// - Returns: 余弦相似度得分，如果长度不匹配或包含全0向量则返回 0
+    /// - Returns: 余弦相似度得分（严格有限且钳位在 [-1, 1]）；长度不匹配、空向量、含 NaN/Inf 或零向量返回 0
     public static func cosineSimilarity(_ v1: [Float], _ v2: [Float]) -> Float {
         guard v1.count == v2.count, !v1.isEmpty else { return 0 }
 
@@ -38,8 +44,10 @@ public enum VectorMath {
         vDSP_svesq(v2, 1, &v2SumSq, length)
 
         let denominator = sqrt(v1SumSq) * sqrt(v2SumSq)
-        guard denominator > 0 else { return 0 }
+        guard dotProduct.isFinite, denominator.isFinite, denominator > 0 else { return 0 }
 
-        return dotProduct / denominator
+        let raw = dotProduct / denominator
+        guard raw.isFinite else { return 0 }
+        return min(max(raw, Bounds.minSimilarity), Bounds.maxSimilarity)
     }
 }

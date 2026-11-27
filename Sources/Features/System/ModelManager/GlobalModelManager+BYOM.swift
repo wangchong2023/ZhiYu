@@ -30,6 +30,20 @@ extension GlobalModelManager {
             case .huggingface: return L10n.ModelManager.ModelSource.huggingface
             }
         }
+
+        /// 三档下载源优先级的详细路由与容灾说明
+        public var priorityDescription: String {
+            switch self {
+            case .auto: return L10n.ModelManager.ModelSource.autoDesc
+            case .modelscope: return L10n.ModelManager.ModelSource.modelscopeDesc
+            case .huggingface: return L10n.ModelManager.ModelSource.huggingfaceDesc
+            }
+        }
+    }
+
+    /// 自动模式下当前地区实时识别出的主下载源名称
+    public var autoDetectedSourceTitle: String {
+        isChinaRegion ? L10n.ModelManager.ModelSource.modelscope : L10n.ModelManager.ModelSource.huggingface
     }
 
     /// BYOM 本地模型导入错误
@@ -71,14 +85,15 @@ extension GlobalModelManager {
     /// 用户首选下载源偏好（默认 .auto：国内优先魔搭社区，海外优先 HuggingFace）
     public var downloadSourcePreference: DownloadSourcePreference {
         get {
-            access(keyPath: \.downloadSourcePreference)
+            if let cached = cachedDownloadSourcePreference {
+                return cached
+            }
             let raw = keyStore?.string(forKey: BYOMConstants.sourcePreferenceKey) ?? DownloadSourcePreference.auto.rawValue
             return DownloadSourcePreference(rawValue: raw) ?? .auto
         }
         set {
-            withMutation(keyPath: \.downloadSourcePreference) {
-                keyStore?.set(newValue.rawValue, forKey: BYOMConstants.sourcePreferenceKey)
-            }
+            cachedDownloadSourcePreference = newValue
+            keyStore?.set(newValue.rawValue, forKey: BYOMConstants.sourcePreferenceKey)
         }
     }
 

@@ -53,6 +53,9 @@ public final class GlobalModelManager: TestStateResettable {
     /// 当前是否已配置魔搭社区（ModelScope）SDK 令牌
     public internal(set) var hasModelScopeToken: Bool = false
 
+    /// 内存缓存的下载源路由偏好（兜底 keyStore 未就绪场景，确保 @Observable 与 UI Picker 切换即时响应）
+    internal var cachedDownloadSourcePreference: DownloadSourcePreference?
+
     /// 模型调用次数统计，按 modelId 索引
     public private(set) var modelCallCounts: [String: Int] = [:]
 
@@ -335,6 +338,7 @@ public final class GlobalModelManager: TestStateResettable {
         isLoading = false
         subscribedModelIds = []
         pendingFallbackURLs = [:]
+        cachedDownloadSourcePreference = nil
     }
 
     // MARK: - TestStateResettable

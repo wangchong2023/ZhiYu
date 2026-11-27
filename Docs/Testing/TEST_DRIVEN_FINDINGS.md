@@ -176,21 +176,26 @@
 | **165** | `PluginRuntime.removePluginFilesFromDisk` 未校验 `pluginID` 路径穿越风险，且使用宽泛子串 `name.contains(idSlug)` 清理磁盘残留，卸载短 ID 插件（如 `toc`/`ai`）时会把所有名称含该子串的无辜插件全部物理删除 | 卸载短 ID 插件或传入含 `../` 的 `pluginID` | 其他已安装插件被连带物理误删或沙盒外文件越权删除 | **High** | 架构设计与安全/网络健壮性 | 接入 `PluginMarketService.isSafePluginID` 路径边界守卫，并抽取 `shouldRemovePluginFile` 改为完整 ID / 精确短名 / 规范点号后缀匹配，彻底移除宽泛子串 `contains` | **✅ 已解决** | 是 (插件卸载磁盘精确匹配与路径边界规范) | 是 (`PluginRuntimeTests`) | ✅ 已闭环 |
 | **166** | `KeychainService.store(key:value:)` 采用先 `delete` 后 `SecItemAdd` 的两步写入，多线程并发写入同一键时在 delete 与 add 间隙会触发 `errSecDuplicateItem (-25299)` 导致写入失败 | 多线程并发刷新凭据或冷启动并发初始化数据库口令/盐值 | 合法凭据保存失败并抛出 `KeychainError.storeFailed(-25299)` | **High** | 状态机并发与数据生命周期 | 当 `SecItemAdd` 返回 `errSecDuplicateItem` 时自动原子降级调用 `SecItemUpdate` 覆盖写入（保留 `kSecAttrAccessibleWhenUnlockedThisDeviceOnly`） | **✅ 已解决** | 是 (Keychain Add-or-Update 并发安全范式) | 是 (`KeychainServiceTests`) | ✅ 已闭环 |
 | **167** | `PromptTemplateEngine.fetchRemotePrompt` 直接使用外部 `url` 发起 `URLSession.data(for:)`，未校验 `http`/`https` 协议白名单也未通过 `SSRFGuard.isSafeURL` 检查，存在 `file://` 本地读取与内网 SSRF 探测风险 | Skill 配置含 `file://` 或内网/环回/云元数据地址的 `remotePromptURLString` | 触发本地协议访问或内网 SSRF 探测 | **High** | 架构设计与安全/网络健壮性 | 新增 `isSafeRemotePromptURL(_:)` 强制校验 `http`/`https` 白名单并接入 `SSRFGuard.isSafeURL`，不合规 URL 记录警告并平滑降级本地模板 | **✅ 已解决** | 是 (远程资源拉取统一 SSRF 与协议白名单守卫) | 是 (`PromptTemplateEngineTests`) | ✅ 已闭环 |
+| **168** | `EmbeddingManager` 作为全局单例在内存中持有 `vectorCache`/`chunkVectorCache`/`chunkMetadata`，但全仓从未在多 Vault 切换时调用 `clearCacheAndReload()`，导致从 Vault A 切换到 Vault B 后语义搜索与 RAG 上下文持续召回 Vault A 的私密笔记向量与原文分块 | 多笔记本环境下切换或退出 Vault 后执行语义检索/AI 对话 | 严重跨 Vault 数据隔离泄露，展示其他笔记本的私密内容 | **High** | 状态机并发与数据生命周期 | `EmbeddingManager` 订阅 `.vaultWillSwitch` 立即执行 `clearCache()`、订阅 `.databaseDidSwitch` 执行 `clearCacheAndReload()`，并在 `deinit` 自动取消监听任务 | **✅ 已解决** | 是 (多 Vault 内存缓存通知隔离范式) | 是 (`EmbeddingManagerCrashResistanceTests`) | ✅ 已闭环 |
+| **169** | `GenericDatabaseManager.switchDatabase` 缺少并发串行化保护，快速连续切换 Vault 时两个异步切库任务在 `await` 挂起点交错关闭连接池导致 `dbURL`/`dbWriter` 错配；另 `VaultDataCoordinator.loadVaults()` 在异步 `Task` 加载 `self.vaults` 前就同步调用 `autoRestoreActiveVault()` 导致冷启动恢复上次 Vault 失效 | 快速连续点击切换笔记本，或冷启动恢复上次打开的笔记本 | 切库后数据库句柄被误关闭/写入错库，或冷启动无法恢复上次笔记本 | **High** | 状态机并发与数据生命周期 | `GenericDatabaseManager` 引入 `DatabaseSwitchSerializer` actor 按 FIFO 严格串行化切库；`loadVaults()` 将 `autoRestoreActiveVault()` 移入异步加载完成之后执行 | **✅ 已解决** | 是 (多库热切换串行化与冷启动时序修复) | 是 (`GenericDatabaseManagerTests`) | ✅ 已闭环 |
+| **170** | `ContextReranker.rerank` 未对 `topK <= 0` 与非有限分数（`NaN`/`±Inf`）做守卫，负数 `topK` 直接触发 `Array.prefix` 致命断言闪退，非有限 `initialScore` 破坏排序严格弱序 | RAG 上游传入负数 `topK` 或异常浮点得分 | RAG 检索重排阶段直接闪退或返回异常排序结果 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 入口增加 `guard topK > 0, minScore.isFinite`，循环内过滤非有限 `initialScore` 与 `finalScore` | **✅ 已解决** | 是 (RAG 重排数学边界与有限性守卫) | 是 (`ContextRerankerEdgeCaseTests`) | ✅ 已闭环 |
+| **171** | `VectorMath.cosineSimilarity` 未对 `NaN`/`Inf` 向量或大数值平方和溢出为 `+Inf` 做有限性守卫，`Inf / Inf` 直接返回 `NaN` 污染下游余弦相似度检索排序，且浮点误差可能超出 `[-1, 1]` | 嵌入模型输出含 `NaN`/`Inf` 或极大值分量 | 向量检索相似度返回 `NaN` 导致排序异常 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 增加 `dotProduct.isFinite`、`denominator.isFinite`、`raw.isFinite` 三重守卫并将结果钳位至 `[-1.0, 1.0]` | **✅ 已解决** | 是 (vDSP 向量计算有限性与值域钳位规范) | 是 (`VectorMathCosineSimilarityTests`) | ✅ 已闭环 |
+| **172** | `ModelStoreView.hfTokenConfigSheet`（模型源与令牌）存在三处 UI/交互缺陷：① `GlobalModelManager.downloadSourcePreference` 为无存储属性支撑的纯计算属性，在 `keyStore` 未就绪或为 `nil` 时写入丢失导致顶部 Segmented Tab 无法切换；② Sheet 缺失 `themeManager.pageBackground()` 与 `.scrollContentBackground(.hidden)` 导致背景与主题色割裂；③ 取消/保存按钮悬浮在表单中部而非原生 `.toolbar` | 在端侧模型市场点击「模型源与令牌」打开配置 Sheet | 顶部下载源 Tab 无法切换、页面背景色与全局主题不一致、操作按钮不符合系统风格 | **Medium** | UI/交互与防御性缺陷 | `GlobalModelManager` 增加 `@Observable` 存储属性 `cachedDownloadSourcePreference` 兜底；Sheet 重构为标准 `themeManager.pageBackground()` + `Form(.appGroupedFormStyle)` + `@State sourcePreferenceInput` 驱动 Segmented Picker + 原生 `.toolbar` 取消/保存按钮 | **✅ 已解决** | 是 (Sheet 主题背景与原生工具栏表单统一范式) | 是 (`GlobalModelDownloadDeepTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**167 项**
+- **收录问题总数**：**172 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：39 项 (23.4%)
-  - 状态机并发与数据生命周期：36 项 (21.6%)
-  - 架构设计与安全/网络健壮性：52 项 (31.1%)
-  - UI/交互与防御性缺陷：16 项 (9.6%)
-  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (14.4%)
+  - 功能缺陷与核心算法/解析器/数据完整性：41 项 (23.8%)
+  - 状态机并发与数据生命周期：38 项 (22.1%)
+  - 架构设计与安全/网络健壮性：52 项 (30.2%)
+  - UI/交互与防御性缺陷：17 项 (9.9%)
+  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (14.0%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：84 项 (50.3%)
-  - **Medium（功能异常/算法边界/性能损耗）**：56 项 (33.5%)
-  - **Low（样式异味/边界校验/门禁规范）**：27 项 (16.2%)
-- **修复闭环率**：**100% (167/167 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：88 项 (51.2%)
+  - **Medium（功能异常/算法边界/性能损耗）**：57 项 (33.1%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (15.7%)
+- **修复闭环率**：**100% (172/172 项已修复闭环)**
 

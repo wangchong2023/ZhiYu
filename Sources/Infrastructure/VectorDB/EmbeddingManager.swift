@@ -50,9 +50,26 @@ public actor EmbeddingManager: EmbeddingProvider {
     public init(repository: any VectorRepository) {
         self.repository = repository
         self.embeddingModel = NLEmbedding.sentenceEmbedding(for: .simplifiedChinese)
-        
+
         Task {
             await loadInitialCache()
+        }
+        startVaultIsolationObservers()
+    }
+
+    /// 订阅 Vault 切换与底层数据库热切换通知，保证多笔记本向量缓存严格物理隔离，杜绝跨 Vault 数据泄露
+    private nonisolated func startVaultIsolationObservers() {
+        Task { [weak self] in
+            for await _ in NotificationCenter.default.notifications(named: .vaultWillSwitch) {
+                guard let self else { break }
+                await self.clearCache()
+            }
+        }
+        Task { [weak self] in
+            for await _ in NotificationCenter.default.notifications(named: .databaseDidSwitch) {
+                guard let self else { break }
+                await self.clearCacheAndReload()
+            }
         }
     }
 
@@ -196,11 +213,16 @@ public actor EmbeddingManager: EmbeddingProvider {
         return results.sorted { $0.score > $1.score }.prefix(topK).map { $0 }
     }
 
-    /// 物理清空内存向量缓存并重载
-    public func clearCacheAndReload() async {
+    /// 物理清空内存向量缓存（供 Vault 切换/退出时立即隔离旧笔记本数据）
+    public func clearCache() {
         vectorCache.removeAll()
         chunkVectorCache.removeAll()
         chunkMetadata.removeAll()
+    }
+
+    /// 物理清空内存向量缓存并重载
+    public func clearCacheAndReload() async {
+        clearCache()
         await loadInitialCache()
     }
 

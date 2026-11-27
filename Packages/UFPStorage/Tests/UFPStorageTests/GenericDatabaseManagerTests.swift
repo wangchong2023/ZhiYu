@@ -359,4 +359,37 @@ final class GenericDatabaseManagerTests: XCTestCase {
         try await Task.sleep(for: .milliseconds(100))
         XCTAssertGreaterThanOrEqual(integrityCalls, 1, "存在文件时应触发完整性校验")
     }
+
+    /// 缺陷 #169 回归：并发触发多次 switchDatabase 时必须由 DatabaseSwitchSerializer 严格串行化，
+    /// 最终 dbWriter 与 dbURL 保持完全一致且可正常读写，不发生交错关闭连接池。
+    func testConcurrentSwitchDatabase_SerializesAndMaintainsConsistentState() async throws {
+        let vaultA = tempDir.appendingPathComponent("concurrent_a.sqlite3")
+        let vaultB = tempDir.appendingPathComponent("concurrent_b.sqlite3")
+        let vaultC = tempDir.appendingPathComponent("concurrent_c.sqlite3")
+        try engine.setup(at: vaultA, globalDatabaseName: "global.sqlite3")
+
+        // 注入短暂异步延迟以放大并发交错窗口
+        engine.drainTransactions = {
+            try? await Task.sleep(for: .milliseconds(25))
+            return true
+        }
+
+        let targetEngine = try XCTUnwrap(engine)
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            group.addTask { try await targetEngine.switchDatabase(to: UUID(), at: vaultB) }
+            group.addTask { try await targetEngine.switchDatabase(to: UUID(), at: vaultC) }
+            try await group.waitForAll()
+        }
+
+        XCTAssertNotNil(engine.dbWriter, "并发切换结束后 dbWriter 必须保持有效开启")
+        XCTAssertNotNil(engine.dbURL, "并发切换结束后 dbURL 不得为空")
+        // 验证最终句柄可正常写入和读取，未被并发任务误关闭
+        try await engine.dbWriter?.write { db in
+            try db.execute(sql: "INSERT INTO test_items (name) VALUES (?)", arguments: ["post-switch-ok"])
+        }
+        let count = try await engine.dbWriter?.read { db in
+            try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM test_items")
+        }
+        XCTAssertEqual(count, 1, "串行化切库后最终挂载的数据库应可正常读写")
+    }
 }

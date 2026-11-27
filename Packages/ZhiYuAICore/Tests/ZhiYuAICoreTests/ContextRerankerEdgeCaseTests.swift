@@ -73,4 +73,26 @@ final class ContextRerankerEdgeCaseTests: XCTestCase {
         let result = reranker.rerank(query: "same", candidates: candidates, topK: 5, minScore: 0.0)
         XCTAssertEqual(result.count, 2, "重复 content 的 chunk 必须独立保留")
     }
+
+    /// 缺陷 #170 回归：负数 topK 不得触发 prefix 致命崩溃，NaN/Inf 初始分数与非有限 minScore 必须安全过滤
+    func testNegativeTopKAndNonFiniteScoresHandledSafely() {
+        let reranker = ContextReranker()
+        let candidates: [(chunk: ContextRerankChunk, initialScore: Float)] = [
+            (ContextRerankChunk(id: "nan", content: "swift concurrency", index: 0), .nan),
+            (ContextRerankChunk(id: "inf", content: "swift concurrency", index: 1), .infinity),
+            (ContextRerankChunk(id: "negInf", content: "swift concurrency", index: 2), -.infinity),
+            (ContextRerankChunk(id: "valid", content: "swift concurrency", index: 3), 0.8)
+        ]
+
+        // 1. 负数 topK 返回空数组而非崩溃
+        XCTAssertTrue(reranker.rerank(query: "swift", candidates: candidates, topK: -5, minScore: 0.0).isEmpty)
+
+        // 2. 非有限 minScore 返回空数组
+        XCTAssertTrue(reranker.rerank(query: "swift", candidates: candidates, topK: 5, minScore: .nan).isEmpty)
+        XCTAssertTrue(reranker.rerank(query: "swift", candidates: candidates, topK: 5, minScore: .infinity).isEmpty)
+
+        // 3. 过滤所有 NaN/±Inf 候选，仅保留有限分数的有效候选
+        let filtered = reranker.rerank(query: "swift", candidates: candidates, topK: 5, minScore: 0.0)
+        XCTAssertEqual(filtered.map(\.chunk.id), ["valid"], "仅有限分数的候选应保留，NaN/Inf 不得污染排序")
+    }
 }

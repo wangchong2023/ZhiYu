@@ -52,15 +52,17 @@ public struct ContextReranker: Sendable {
         topK: Int = Defaults.topK,
         minScore: Float = Defaults.minScore
     ) -> [RerankedResult] {
+        guard topK > 0, minScore.isFinite else { return [] }
         let queryTokens = Set(query.lowercased().split(separator: " ").map(String.init))
 
         let reranked = candidates.compactMap { candidate -> RerankedResult? in
+            guard candidate.initialScore.isFinite else { return nil }
             let chunkTokens = Set(candidate.chunk.content.lowercased().split(separator: " ").map(String.init))
             let overlap = Float(queryTokens.intersection(chunkTokens).count)
             let crossScore = queryTokens.isEmpty ? 0.0 : (overlap / Float(queryTokens.count))
 
             let finalScore = candidate.initialScore * Defaults.initialScoreWeight + crossScore * Defaults.crossScoreWeight
-            guard finalScore >= minScore else { return nil }
+            guard finalScore.isFinite, finalScore >= minScore else { return nil }
 
             return RerankedResult(chunk: candidate.chunk, score: finalScore)
         }

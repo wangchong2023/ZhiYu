@@ -46,4 +46,40 @@ final class EmbeddingManagerCrashResistanceTests: XCTestCase {
         let negChunkResults = await manager.multiQuerySearch(query: "Swift", topK: -5)
         XCTAssertTrue(negChunkResults.isEmpty)
     }
+
+    /// 缺陷 #168 回归：多 Vault 切换发出 `.vaultWillSwitch` 时必须立即清空内存向量与分块缓存，杜绝跨 Vault 数据泄露
+    func testVaultWillSwitchClearsInMemoryVectorAndChunkCaches() async {
+        let repository = MockVectorRepository()
+        let manager = EmbeddingManager(repository: repository)
+
+        let pageID = UUID()
+        let page = KnowledgePage(
+            id: pageID,
+            title: "Vault A 私密笔记",
+            pageType: .concept,
+            content: "仅属于 Vault A 的敏感向量内容",
+            createdAt: Date(),
+            updatedAt: Date()
+        )
+        await manager.updateEmbedding(for: page)
+        let chunk = PageChunk(
+            id: "vaultA-chunk-1",
+            pageID: pageID,
+            content: "Vault A 私密分块",
+            index: 0
+        )
+        await manager.indexChunks(pageID: pageID, chunks: [chunk])
+
+        let beforeEmbeddings = await manager.getAllEmbeddings()
+        XCTAssertNotNil(beforeEmbeddings[pageID], "前置：Vault A 向量应已缓存在内存中")
+
+        // 触发跨 Vault 切换通知
+        NotificationCenter.default.post(name: .vaultWillSwitch, object: nil)
+        try? await Task.sleep(for: .milliseconds(80))
+
+        let afterEmbeddings = await manager.getAllEmbeddings()
+        XCTAssertTrue(afterEmbeddings.isEmpty, "收到 .vaultWillSwitch 后必须立即清空旧 Vault 内存页面向量缓存")
+        let leakedChunks = await manager.multiQuerySearch(query: "Vault A 私密分块", topK: 5)
+        XCTAssertTrue(leakedChunks.isEmpty, "收到 .vaultWillSwitch 后不得继续召回旧 Vault 的内存分块")
+    }
 }

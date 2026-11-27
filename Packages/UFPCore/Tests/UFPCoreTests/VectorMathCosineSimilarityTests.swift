@@ -67,4 +67,25 @@ final class VectorMathCosineSimilarityTests: XCTestCase {
         let similarity = VectorMath.cosineSimilarity(v1, v2)
         XCTAssertEqual(similarity, 1.0, accuracy: 1e-5, "等比例高维向量方向一致，相似度应为 1.0")
     }
+
+    // MARK: - NaN / Inf / 浮点溢出防护（缺陷 #171）
+
+    func testCosineSimilarity_nanAndInfVectors_returnsZeroAndFinite() {
+        let normal: [Float] = [1.0, 2.0, 3.0]
+        let nanVec: [Float] = [1.0, .nan, 3.0]
+        let infVec: [Float] = [1.0, .infinity, 3.0]
+        let overflowVec: [Float] = [Float.greatestFiniteMagnitude, Float.greatestFiniteMagnitude, 1.0]
+
+        let r1 = VectorMath.cosineSimilarity(normal, nanVec)
+        XCTAssertEqual(r1, 0.0)
+        XCTAssertTrue(r1.isFinite, "含 NaN 向量不得返回 NaN")
+
+        let r2 = VectorMath.cosineSimilarity(normal, infVec)
+        XCTAssertEqual(r2, 0.0)
+        XCTAssertTrue(r2.isFinite, "含 Inf 向量不得返回 NaN/Inf")
+
+        let r3 = VectorMath.cosineSimilarity(overflowVec, overflowVec)
+        XCTAssertEqual(r3, 0.0)
+        XCTAssertTrue(r3.isFinite, "平方和溢出为 Inf 的向量应安全降级为 0")
+    }
 }

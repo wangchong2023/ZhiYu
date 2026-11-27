@@ -68,6 +68,9 @@ public final class GenericDatabaseManager: TestStateResettable, @unchecked Senda
     /// 挂起的异步签名刷新任务（保证 releaseDatabaseConnection / setup 与后续 switchDatabase 串行，消除 WAL 签名竞态）。
     private var pendingSignatureTask: Task<Void, Never>?
 
+    /// 切库串行化协调器（保证并发多 Vault 热切换按 FIFO 严格串行，杜绝交错关闭连接池与 dbURL/dbWriter 错配）。
+    private let switchSerializer = DatabaseSwitchSerializer()
+
     // MARK: - 注入点（业务能力通过闭包注入，本类型零业务依赖）
 
     /// 完整性校验闭包（多库热切换前调用）。返回是否通过；失败时应自行抛出业务错误。
@@ -236,8 +239,16 @@ public final class GenericDatabaseManager: TestStateResettable, @unchecked Senda
     // MARK: - 多库热切换
 
     /// 物理热切换当前激活的专属数据库（Multi-Vault Switching）。
-    /// - Important: `async throws`，通过注入的事务排空闭包消除主线程信号量等待死锁隐患。
+    /// - Important: `async throws`，通过 `DatabaseSwitchSerializer` 严格串行化并发切库请求，
+    ///   并通过注入的事务排空闭包消除主线程信号量等待死锁隐患。
     public func switchDatabase(to vaultID: UUID, at url: URL) async throws {
+        try await switchSerializer.enqueue { [self] in
+            try await self.performSwitchDatabase(to: vaultID, at: url)
+        }
+    }
+
+    /// 实际执行单次物理热切换逻辑（由 `switchSerializer` 保证互斥串行）
+    private func performSwitchDatabase(to vaultID: UUID, at url: URL) async throws {
         MinimalLogger.shared.info(" [GenericDatabaseManager] Starting physical multi-database hot swap => Target: \(url.lastPathComponent)")
 
         // 等待前一次释放连接或初始化触发的签名更新落盘，消除 exitVault → selectVault 竞态
@@ -396,5 +407,22 @@ public final class GenericDatabaseManager: TestStateResettable, @unchecked Senda
     /// 重置单例状态用于测试隔离。
     public func resetStateForTesting() {
         reset()
+    }
+}
+
+/// 切库串行化协调器：按 FIFO 顺序串行化所有并发 `switchDatabase` 请求，防止交错关闭连接池。
+private actor DatabaseSwitchSerializer {
+    private var lastTask: Task<Void, Never>?
+
+    func enqueue<T: Sendable>(_ operation: @Sendable @escaping () async throws -> T) async throws -> T {
+        let previous = lastTask
+        let task = Task<T, Error> {
+            await previous?.value
+            return try await operation()
+        }
+        lastTask = Task {
+            _ = try? await task.value
+        }
+        return try await task.value
     }
 }

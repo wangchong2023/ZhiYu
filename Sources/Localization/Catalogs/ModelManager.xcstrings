@@ -23813,6 +23813,74 @@
         }
       }
     },
+    "model_manager.source.auto_desc": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uses ModelScope in Mainland China and Hugging Face overseas, with automatic fallback"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "中国大陆优先魔搭社区，海外优先 Hugging Face；主源失败时自动切换备用源"
+          }
+        }
+      }
+    },
+    "model_manager.source.auto_detected_format": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detected: %@"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "当前已识别：%@"
+          }
+        }
+      }
+    },
+    "model_manager.source.modelscope_desc": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Always prefers ModelScope Hub, falling back to Hugging Face on failure"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "始终优先从魔搭社区下载，失败时自动降级至 Hugging Face"
+          }
+        }
+      }
+    },
+    "model_manager.source.huggingface_desc": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Always prefers Hugging Face, falling back to ModelScope Hub on failure"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "始终优先从 Hugging Face 下载，失败时自动降级至魔搭社区"
+          }
+        }
+      }
+    },
     "model_manager.source.ms_token_title": {
       "extractionState": "manual",
       "localizations": {

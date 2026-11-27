@@ -63,15 +63,15 @@ extension VaultService {
 
                 self.vaults = loadedVaults
                 await refreshAllPageCounts()
+                autoRestoreActiveVault()
                 applyDefaultVaultSelectionPolicy()
             } catch {
                 Logger.shared.error(" [VaultService] Failed to asynchronously load notebook metadata: \(error)", error: error)
                 self.vaults = buildFallbackDemoVaults()
+                autoRestoreActiveVault()
                 applyDefaultVaultSelectionPolicy()
             }
         }
-
-        autoRestoreActiveVault()
     }
 
     /// 构建初始化的默认演示笔记本
