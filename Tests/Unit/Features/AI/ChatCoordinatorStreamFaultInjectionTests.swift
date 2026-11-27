@@ -95,4 +95,39 @@ final class ChatCoordinatorStreamFaultInjectionTests: XCTestCase {
         // 2. 预测后续追问
         await coordinator.generatePredictedQuestions(pages: pages)
     }
+
+    // MARK: - 4. 缺陷 #226 回归：流式生成中途清史不产生幽灵回复，流式中重新生成不丢失用户提问
+
+    func testClearHistoryDuringStreamingCancelsStreamAndPreventsGhostReply() async {
+        let coordinator = ChatCoordinator()
+        coordinator.clearChatHistory()
+        let pages = [KnowledgePage(title: "Test", pageType: .concept, content: "Content")]
+
+        let sendTask = Task {
+            await coordinator.sendMessage(query: "请解释量子纠缠", pages: pages)
+        }
+        try? await Task.sleep(for: .milliseconds(5))
+        coordinator.clearChatHistory()
+        await sendTask.value
+
+        XCTAssertTrue(coordinator.chatHistory.isEmpty, "流式生成中途清史后不得出现幽灵 AI 回复")
+        XCTAssertFalse(coordinator.isProcessing)
+        XCTAssertEqual(coordinator.streamingContent, "")
+    }
+
+    func testRegenerateWhileProcessingDoesNotDropLastUserMessage() async {
+        let coordinator = ChatCoordinator()
+        coordinator.clearChatHistory()
+        let pages = [KnowledgePage(title: "Test", pageType: .concept, content: "Content")]
+
+        coordinator.chatHistory = [ChatMessage(role: .user, content: "核心架构问题")]
+        coordinator.status = .loading(L10n.Chat.aiRunning)
+
+        await coordinator.regenerateLastMessage(pages: pages)
+
+        XCTAssertTrue(
+            coordinator.chatHistory.contains { $0.role == .user && $0.content == "核心架构问题" },
+            "流式进行中触发重新生成时必须先取消旧流并保留用户原提问"
+        )
+    }
 }

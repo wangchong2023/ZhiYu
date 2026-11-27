@@ -92,4 +92,43 @@ final class IngestQueueTests: XCTestCase {
         XCTAssertEqual(queue.pendingCount, 0, "切换 Vault 后 pendingCount 必须归零")
         XCTAssertFalse(callbackInvoked, "被 Vault 切换取消的旧任务绝不得回调写穿新 Vault")
     }
+
+    /// 缺陷 #227 回归：空白内容不入队，批量入队时活跃并发数严格受限于 maxConcurrentTasks(2)
+    func testEnqueue_rejectsBlankContentAndCapsActiveConcurrency() async throws {
+        let queue = IngestQueue.shared
+
+        // 1. 纯空白内容应直接忽略，不占用队列
+        queue.enqueue(title: "Blank", content: "   \n\t  ", llmService: llmService, pages: [], onResult: { _ in })
+        XCTAssertEqual(queue.pendingCount, 0)
+        XCTAssertFalse(queue.isProcessing)
+
+        // 2. 批量压入 5 个任务，立即检查并发数不超过上限 2，且最终全部完成
+        let totalJobs = 5
+        var completedCount = 0
+        let allDone = expectation(description: "All queued ingest jobs completed")
+        for index in 0..<totalJobs {
+            queue.enqueue(
+                title: "Batch_\(index)",
+                content: "正文内容 \(index)",
+                llmService: llmService,
+                pages: [],
+                onResult: { _ in
+                    completedCount += 1
+                    if completedCount == totalJobs {
+                        allDone.fulfill()
+                    }
+                }
+            )
+            XCTAssertLessThanOrEqual(
+                queue.activeTaskCount,
+                IngestQueue.QueueLimits.maxConcurrentTasks,
+                "并发活跃任务数不得突破 maxConcurrentTasks 上限"
+            )
+        }
+
+        await fulfillment(of: [allDone], timeout: 5.0)
+        XCTAssertEqual(queue.pendingCount, 0)
+        XCTAssertEqual(queue.activeTaskCount, 0)
+        XCTAssertFalse(queue.isProcessing)
+    }
 }

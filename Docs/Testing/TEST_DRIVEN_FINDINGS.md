@@ -233,21 +233,24 @@
 | **222** | `WebScraperProcessor` 存在三重缺陷：`fetchUTF8Content` 跟随 HTTP 重定向后未复检最终落点 URL 导致 SSRF 302 绕过且无响应体大小上限；`DumbExtractorHandler.extractFromHTML` 剥离 `<script>` 区分大小写漏过 `<SCRIPT>`；`cleanHTMLTags` 依赖随机字典遍历顺序会导致 `&amp;lt;` 双重解码且未解码 `<title>` 实体 | 目标链接 302 重定向到内网元数据服务、返回超大流、或网页含大写 `<SCRIPT>` / `&amp;lt;` | 攻击者绕过初始 SSRF 检查探测内网或诱发 OOM，正文残留脚本或标题显示 `&amp;` 乱码 | **High** | 架构设计与安全/网络健壮性 | 新增 `validateScrapedResponse` 复检最终落点 `SSRFGuard.isSafeURL` 并限制单次响应 10MB；`<script>` 替换启用 `.caseInsensitive`；`cleanHTMLTags` 固定 `&amp;` 末位解码并同步清洗 `<title>` | **✅ 已解决** | 是 (网页抓取重定向 SSRF 复检与确定性 HTML 实体解码) | 是 (`WebScraperProcessorEdgeTests`) | ✅ 已闭环 |
 | **223** | `MultipeerCollaborationProvider` 客户端 `joinRoom` 连接在 `.failed`/`.cancelled` 时未从 `connections` 移除也未通知 `providerDidDisconnectPeer`，且 `handleNewConnection` 在 `.ready` 前提前加入连接池导致向未就绪/僵尸连接广播，同时残留多处协议魔鬼字符串与数字 | 多端协作对端断网、退出房间或握手失败后继续广播同步消息 | 僵尸连接永久残留、反复触发广播发送错误、或重复上报断连事件 | **High** | 状态机并发与数据生命周期 | 抽取幂等 `removeConnectionIfPresent(_:peerID:)` 在 `.failed`/`.cancelled` 统一清理连接并仅通知一次断连，入站连接延迟至 `.ready` 入池；全部协议键与缓冲区大小收敛至 `PlatformConstants.NetworkCollaboration` | **✅ 已解决** | 是 (P2P 协作连接生命周期幂等清理) | 是 (`IOSCollaborationAndWatchSyncDeepTests`) | ✅ 已闭环 |
 | **224** | `OAuthService.sendAuthRequestToBackend` 未校验第三方授权码非空、运营商一键登录 `carrierToken` 与 `privacyConsent` 完整性及渠道合法性，空白凭证仍穿透至后端且残留多处硬编码字典键与错误文案 | OAuth SDK 异常返回空授权码、用户未勾选运营商隐私协议或传入未知渠道 | 无效认证请求穿透到后端鉴权接口并产生模糊错误 | **Medium** | 架构设计与安全/网络健壮性 | 新增 `OAuthExtraKey` 强类型常量枚举与 `validateCredential(_:)` 前置守卫，空凭证/未同意隐私协议/未知渠道直接拦截抛错 | **✅ 已解决** | 是 (OAuth 多渠道凭证前置完整性校验) | 是 (`AuthLoginOAuthDeepTests`) | ✅ 已闭环 |
+| **225** | `PluginMarketService` 存在三重隐患：`isAllowedDownloadURL` 仅检查 HTTP/HTTPS 未接入 `SSRFGuard.isSafeURL` 允许下载指向内网/云元数据地址；`downloadPlugin` 缺少并发互斥且 `defer { Task { downloadingPluginID = nil } }` 存在异步竞态清空新任务状态；`weak var registry!` 释放后强解包崩溃 | 恶意插件清单指向 `127.0.0.1`/`169.254.169.254`、连点两个插件下载或宿主提前释放 | 内网 SSRF 探测、下载状态错乱或 SIGTRAP 闪退 | **High** | 架构设计与安全/网络健壮性 | `isAllowedDownloadURL` 强制接入 `SSRFGuard.isSafeURL`；`downloadPlugin` 增加 `downloadingPluginID == nil` 互斥与同步 `defer` 清理；改用 `registry?.scanAndLoadLocalPlugins()` 并将文件名收敛至 `MarketFileConstants` | **✅ 已解决** | 是 (插件市场下载 SSRF 防护与互斥状态机) | 是 (`PluginMarketServiceTests`) | ✅ 已闭环 |
+| **226** | `ChatCoordinator` 存在三重状态机竞态：`clearChatHistory()` 未取消正在运行的 `currentStreamTask` 导致清史后幽灵 AI 回复复活；`regenerateLastMessage` 在流式生成中直接删历史再调 `sendMessage` 触发早退导致用户提问丢失；异步 `generatePredictedQuestions` 无代次校验会跨会话污染追问 | 流式回复中途点击清空历史、重新生成或快速切换新会话 | 清空后凭空冒出旧 AI 回复、用户提问永久丢失或追问串话 | **High** | 状态机并发与数据生命周期 | 引入 `historyGeneration` 代次守卫；`clearChatHistory` 推进代次并取消旧流；`regenerateLastMessage` 先取消进行中的流再重建；`runStreamTask` 与 `generatePredictedQuestions` 写回前严格校验代次 | **✅ 已解决** | 是 (对话流式与追问代次一致性守卫) | 是 (`ChatCoordinatorStreamFaultInjectionTests`) | ✅ 已闭环 |
+| **227** | `IngestQueue` 声明了 `maxConcurrentOperationCount = 2` 的 `operationQueue` 却从未实际调度，每次 `enqueue` 直接派发无限并发 `Task`，且未拦截纯空白内容 | 批量导入几十篇文档或传入纯空白内容 | 瞬间并发打爆 LLM 429 限流与本地内存，或空内容白耗 Token | **High** | 状态机并发与数据生命周期 | 移除僵尸 `operationQueue`，改用带 `QueueLimits.maxConcurrentTasks(2)` 上限的 FIFO 调度器（`pendingJobs` + `drainPendingJobs`），入口拦截纯空白内容，切 Vault 时一并清空排队任务 | **✅ 已解决** | 是 (异步摄入队列严格并发上限控制) | 是 (`IngestQueueTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**224 项**
+- **收录问题总数**：**227 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：60 项 (26.8%)
-  - 状态机并发与数据生命周期：53 项 (23.7%)
-  - 架构设计与安全/网络健壮性：70 项 (31.3%)
-  - UI/交互与防御性缺陷：17 项 (7.6%)
-  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (10.7%)
+  - 功能缺陷与核心算法/解析器/数据完整性：60 项 (26.4%)
+  - 状态机并发与数据生命周期：55 项 (24.2%)
+  - 架构设计与安全/网络健壮性：71 项 (31.3%)
+  - UI/交互与防御性缺陷：17 项 (7.5%)
+  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (10.6%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：132 项 (58.9%)
-  - **Medium（功能异常/算法边界/性能损耗）**：65 项 (29.0%)
-  - **Low（样式异味/边界校验/门禁规范）**：27 项 (12.1%)
-- **修复闭环率**：**100% (224/224 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：135 项 (59.5%)
+  - **Medium（功能异常/算法边界/性能损耗）**：65 项 (28.6%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (11.9%)
+- **修复闭环率**：**100% (227/227 项已修复闭环)**
 

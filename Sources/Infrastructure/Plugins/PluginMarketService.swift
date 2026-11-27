@@ -300,14 +300,29 @@ final class PluginMarketService: ObservableObject {
         return true
     }
 
-    /// 校验远程下载链接协议严格属于 HTTP/HTTPS 白名单，阻断 file:// 等本地协议滥用
+    private enum MarketFileConstants {
+        static let pluginsDirectoryName = "Plugins"
+        static let indexJSFileName = "index.js"
+        static let iconPNGFileName = "icon.png"
+        static let readmeMDFileName = "README.md"
+        static let readmeZhHansMDFileName = "README.zh-Hans.md"
+    }
+
+    /// 校验远程下载链接协议严格属于 HTTP/HTTPS 白名单且通过 SSRF 内网地址防护
     internal nonisolated static func isAllowedDownloadURL(_ url: URL) -> Bool {
-        guard let scheme = url.scheme?.lowercased() else { return false }
-        return PluginConstants.NetworkSecurity.allowedSchemes.contains(scheme)
+        guard let scheme = url.scheme?.lowercased(),
+              PluginConstants.NetworkSecurity.allowedSchemes.contains(scheme) else {
+            return false
+        }
+        return SSRFGuard.isSafeURL(url)
     }
 
     /// 下载指定的插件并将其保存到本地沙盒存储目录中
     func downloadPlugin(_ plugin: MarketPlugin) async -> Bool {
+        guard downloadingPluginID == nil else {
+            Logger.shared.warning("[PluginMarket] 已有插件正在下载中，已拒绝并发重入: \(plugin.id)")
+            return false
+        }
         guard Self.isSafePluginID(plugin.id) else {
             Logger.shared.warning("[PluginMarket] 非法插件 ID，已拒绝下载: \(plugin.id)")
             return false
@@ -319,13 +334,10 @@ final class PluginMarketService: ObservableObject {
             return false
         }
 
-        await MainActor.run { 
-            downloadingPluginID = plugin.id
-            errorMessage = nil 
-        }
-        
-        defer { 
-            Task { @MainActor in downloadingPluginID = nil }
+        downloadingPluginID = plugin.id
+        errorMessage = nil
+        defer {
+            downloadingPluginID = nil
         }
         
         let fileManager = FileManager.default
@@ -337,19 +349,15 @@ final class PluginMarketService: ObservableObject {
             
             try await executeDownloadTasks(tasks)
             
-            await MainActor.run {
-                Logger.shared.info(" [PluginMarket] 插件下载并安装成功: \(plugin.name)")
-            }
+            Logger.shared.info(" [PluginMarket] 插件下载并安装成功: \(plugin.name)")
             
-            // 扫描并重新加载插件以供系统挂载
-            registry.scanAndLoadLocalPlugins()
+            // 扫描并重新加载插件以供系统挂载（安全可选链，防止 weak registry 释放触发崩溃）
+            registry?.scanAndLoadLocalPlugins()
             return true
         } catch {
             performDownloadRollback(for: plugin.id, fileManager: fileManager)
-            await MainActor.run {
-                Logger.shared.error(" [PluginMarket] 插件明文并发下载安装失败: \(plugin.name)", error: error)
-                self.errorMessage = error.localizedDescription
-            }
+            Logger.shared.error(" [PluginMarket] 插件明文并发下载安装失败: \(plugin.name)", error: error)
+            self.errorMessage = error.localizedDescription
             return false
         }
     }
@@ -360,7 +368,7 @@ final class PluginMarketService: ObservableObject {
               let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
             return nil
         }
-        let pluginsDirectory = documentsURL.appendingPathComponent("Plugins").standardizedFileURL
+        let pluginsDirectory = documentsURL.appendingPathComponent(MarketFileConstants.pluginsDirectoryName).standardizedFileURL
         let destinationFolderURL = pluginsDirectory.appendingPathComponent(pluginID).standardizedFileURL
         guard destinationFolderURL.deletingLastPathComponent().path == pluginsDirectory.path else {
             return nil
@@ -401,23 +409,23 @@ final class PluginMarketService: ObservableObject {
                 isRequired: true
             ),
             FileDownloadTask(
-                remoteURL: baseURL.appendingPathComponent("index.js"),
-                localURL: destinationFolderURL.appendingPathComponent("index.js"),
+                remoteURL: baseURL.appendingPathComponent(MarketFileConstants.indexJSFileName),
+                localURL: destinationFolderURL.appendingPathComponent(MarketFileConstants.indexJSFileName),
                 isRequired: true
             ),
             FileDownloadTask(
-                remoteURL: baseURL.appendingPathComponent("icon.png"),
-                localURL: destinationFolderURL.appendingPathComponent("icon.png"),
+                remoteURL: baseURL.appendingPathComponent(MarketFileConstants.iconPNGFileName),
+                localURL: destinationFolderURL.appendingPathComponent(MarketFileConstants.iconPNGFileName),
                 isRequired: false
             ),
             FileDownloadTask(
-                remoteURL: baseURL.appendingPathComponent("README.md"),
-                localURL: destinationFolderURL.appendingPathComponent("README.md"),
+                remoteURL: baseURL.appendingPathComponent(MarketFileConstants.readmeMDFileName),
+                localURL: destinationFolderURL.appendingPathComponent(MarketFileConstants.readmeMDFileName),
                 isRequired: false
             ),
             FileDownloadTask(
-                remoteURL: baseURL.appendingPathComponent("README.zh-Hans.md"),
-                localURL: destinationFolderURL.appendingPathComponent("README.zh-Hans.md"),
+                remoteURL: baseURL.appendingPathComponent(MarketFileConstants.readmeZhHansMDFileName),
+                localURL: destinationFolderURL.appendingPathComponent(MarketFileConstants.readmeZhHansMDFileName),
                 isRequired: false
             )
         ]

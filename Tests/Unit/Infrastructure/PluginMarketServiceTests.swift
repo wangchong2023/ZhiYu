@@ -665,4 +665,58 @@ final class PluginMarketServiceTests: XCTestCase {
         XCTAssertTrue(service.readmeCandidateURLs(forID: "../secret", downloadURLString: "https://example.com/p/a").isEmpty)
         XCTAssertTrue(service.readmeCandidateURLs(forID: "valid-id", downloadURLString: "file:///tmp/a").isEmpty)
     }
+
+    /// 缺陷 #225 回归：isAllowedDownloadURL 与 downloadPlugin 必须拦截内网 SSRF 地址并阻止并发重入
+    func testDownloadPlugin_blocksSSRFHostsAndConcurrentReentry() async throws {
+        let localhostURL = try XCTUnwrap(URL(string: "http://127.0.0.1:8080/plugins/evil"))
+        let metadataURL = try XCTUnwrap(URL(string: "http://169.254.169.254/latest/meta-data"))
+        let publicURL = try XCTUnwrap(URL(string: "https://raw.githubusercontent.com/org/repo/main/plugins/demo"))
+
+        XCTAssertFalse(PluginMarketService.isAllowedDownloadURL(localhostURL), "环回地址必须被 SSRF 拦截")
+        XCTAssertFalse(PluginMarketService.isAllowedDownloadURL(metadataURL), "云元数据链路本地地址必须被 SSRF 拦截")
+        XCTAssertTrue(PluginMarketService.isAllowedDownloadURL(publicURL))
+
+        let ssrfPlugin = MarketPlugin(
+            id: "com.zhiyu.plugin.ssrf",
+            version: "1.0.0",
+            author: "Attacker",
+            downloads: "0",
+            rating: 0,
+            icon: "wrench",
+            downloadURL: localhostURL.absoluteString,
+            minAppVersion: nil,
+            requiredPermissions: nil,
+            monetization: nil,
+            reviewCount: nil,
+            category: nil,
+            source: nil,
+            names: ["en": "SSRF"],
+            descriptions: ["en": "SSRF"]
+        )
+        let ssrfAllowed = await service.downloadPlugin(ssrfPlugin)
+        XCTAssertFalse(ssrfAllowed, "指向内网地址的插件下载必须被阻断")
+
+        // 并发重入守卫：已有下载任务进行时，第二次下载调用应立即拒绝
+        service.downloadingPluginID = "com.zhiyu.plugin.other"
+        let validPlugin = MarketPlugin(
+            id: "com.zhiyu.plugin.demo",
+            version: "1.0.0",
+            author: "Author",
+            downloads: "0",
+            rating: 0,
+            icon: "wrench",
+            downloadURL: publicURL.absoluteString,
+            minAppVersion: nil,
+            requiredPermissions: nil,
+            monetization: nil,
+            reviewCount: nil,
+            category: nil,
+            source: nil,
+            names: ["en": "Demo"],
+            descriptions: ["en": "Demo"]
+        )
+        let reentryResult = await service.downloadPlugin(validPlugin)
+        XCTAssertFalse(reentryResult, "正在下载其他插件时应拒绝并发重入")
+        service.downloadingPluginID = nil
+    }
 }

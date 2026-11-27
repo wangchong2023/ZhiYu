@@ -61,6 +61,8 @@ final class ChatCoordinator {
     
     /// 当前流式请求的后台 Task，用于支持显式取消
     @ObservationIgnored private var currentStreamTask: Task<Void, Never>?
+    /// 对话历史代次计数器（每次新发送/清史/重新生成递增，防止旧流或旧预测追问跨会话回写污染）
+    @ObservationIgnored private var historyGeneration: UInt64 = 0
 
     init() {
         self.chatHistory = chatService.loadHistory()
@@ -99,6 +101,8 @@ final class ChatCoordinator {
         }
         
         if query == nil { inputText = "" }
+        historyGeneration &+= 1
+        let capturedGeneration = historyGeneration
         status = .idle // 清空旧错误/加载状态
         predictedQuestions = [] // 清空旧的预测追问，避免在新输入过程中产生视觉干扰
         
@@ -112,7 +116,7 @@ final class ChatCoordinator {
         // 2. 启动流式请求 Task，保存引用以支持显式取消
         currentStreamTask = Task { [weak self] in
             guard let self else { return }
-            await self.runStreamTask(text: text, pages: pages)
+            await self.runStreamTask(text: text, pages: pages, generation: capturedGeneration)
         }
         
         // 等待流式 Task 完成
@@ -123,19 +127,20 @@ final class ChatCoordinator {
     /// - Parameters:
     ///   - text: 经过清洗的用户提问文本
     ///   - pages: 相关知识库页面
-    private func runStreamTask(text: String, pages: [KnowledgePage]) async {
+    ///   - generation: 发送时的对话历史代次，用于拦截清史/重试后的过时回写
+    private func runStreamTask(text: String, pages: [KnowledgePage], generation: UInt64) async {
         do {
             _ = try await self.perf.measureAsync("chatStreamDelay") {
                 let stream = self.chatService.streamChat(query: text, pages: pages)
                 for try await chunk in stream {
-                    // 检查 Task 是否已被取消（比 isProcessing 标志更可靠）
-                    guard !Task.isCancelled else { break }
+                    // 检查 Task 是否已被取消或历史代次已变更
+                    guard !Task.isCancelled, self.historyGeneration == generation else { break }
                     self.streamingContent += chunk
                 }
             }
             
-            // 只有在未被取消的情况下才保存结果并异步预测问题
-            if !Task.isCancelled {
+            // 只有在未被取消且仍处于同一历史代次的情况下才保存结果并异步预测问题
+            if !Task.isCancelled && self.historyGeneration == generation {
                 self.chatService.saveAssistantMessage(self.streamingContent)
                 self.chatHistory.append(ChatMessage(role: .assistant, content: self.streamingContent))
                 
@@ -146,9 +151,11 @@ final class ChatCoordinator {
                 }
             }
             // 成功结束（含未取消分支）：复位为 idle
-            self.status = .idle
+            if self.historyGeneration == generation {
+                self.status = .idle
+            }
         } catch {
-            if !Task.isCancelled {
+            if !Task.isCancelled && self.historyGeneration == generation {
                 // 提供明确的错误反馈，包括 notConfigured 场景不再静默吞噬
                 if case LLMError.notConfigured = error {
                     self.showLLMAlert = true
@@ -157,14 +164,16 @@ final class ChatCoordinator {
                     self.status = .failure(error.localizedDescription)
                 }
                 self.logger.error(" [ChatCoordinator] 流式响应出错 ", error: error)
-            } else {
+            } else if self.historyGeneration == generation {
                 self.status = .idle
             }
         }
         
-        // 流式处理结束，清理残留半截内容
-        self.streamingContent = ""
-        self.currentStreamTask = nil
+        // 仅清理属于当前代次的残留半截内容与任务引用
+        if self.historyGeneration == generation {
+            self.streamingContent = ""
+            self.currentStreamTask = nil
+        }
     }
 
     /// 取消Current请求
@@ -179,6 +188,11 @@ final class ChatCoordinator {
 
     /// 重新生成最后一次助手消息
     func regenerateLastMessage(pages: [KnowledgePage]) async {
+        // 0. 若当前仍在流式生成，先中止旧流，防止后续 sendMessage 命中 isProcessing 早退导致用户消息丢失
+        if isProcessing {
+            cancelCurrentRequest()
+        }
+
         // 1. 寻找最后一次用户提问
         guard let lastUserMsgIndex = chatHistory.lastIndex(where: { $0.role == .user }) else { return }
         let lastUserQuery = chatHistory[lastUserMsgIndex].content
@@ -187,6 +201,7 @@ final class ChatCoordinator {
         let retainedHistory = Array(chatHistory[..<lastUserMsgIndex])
 
         // 3. 同步更新内存与持久化（清空后重写保留部分，sendMessage 会重新保存用户提问）
+        historyGeneration &+= 1
         chatHistory = retainedHistory
         chatService.clearHistory()
         for msg in retainedHistory {
@@ -201,8 +216,10 @@ final class ChatCoordinator {
         await sendMessage(query: lastUserQuery, pages: pages)
     }
 
-    /// 清除ChatHistory
+    /// 清除ChatHistory（同步取消进行中的流式请求并推进代次，防止旧回复幽灵回写）
     func clearChatHistory() {
+        historyGeneration &+= 1
+        cancelCurrentRequest()
         chatService.clearHistory()
         chatHistory.removeAll()
         predictedQuestions.removeAll() // 清除历史时，同时重置预测追问问题
@@ -259,13 +276,18 @@ final class ChatCoordinator {
     func generatePredictedQuestions(pages: [KnowledgePage]) async {
         guard !chatHistory.isEmpty && llmService.isEnabled && !isGeneratingPredictedQuestions else { return }
         
+        let capturedGeneration = historyGeneration
         isGeneratingPredictedQuestions = true
+        defer { isGeneratingPredictedQuestions = false }
         do {
-            predictedQuestions = try await aiSynthesis.predictFollowUpQuestions(history: chatHistory, pages: pages)
+            let questions = try await aiSynthesis.predictFollowUpQuestions(history: chatHistory, pages: pages)
+            guard historyGeneration == capturedGeneration && !chatHistory.isEmpty else { return }
+            predictedQuestions = questions
         } catch {
-            predictedQuestions = []
+            if historyGeneration == capturedGeneration {
+                predictedQuestions = []
+            }
             logger.error(" [ChatCoordinator] 预测后续问题失败: ", error: error)
         }
-        isGeneratingPredictedQuestions = false
     }
 }
