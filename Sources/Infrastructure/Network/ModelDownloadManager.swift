@@ -46,16 +46,32 @@ public actor ModelDownloadManager: ModelDownloadCapabilities {
         static let resumeDirectoryName = "com.zhiyu.app.download.resume"
         static let backgroundSessionId = "com.zhiyu.app.model.download"
         static let binExtension = ".bin"
+        static let fallbackModelName = "model"
+        static let allowedSchemes: Set<String> = ["http", "https"]
         static let unsafeModelIdTokens = ["..", "/", "\\", ":"]
         static let replacementToken = "_"
     }
 
-    /// 清洗 modelId 中的路径穿越与非法字符，构造安全落盘文件名
+    /// 校验远程模型下载 URL 协议属于 HTTP/HTTPS 白名单并通过 SSRF 内网防护
+    internal static func isAllowedModelURL(_ url: URL) -> Bool {
+        guard let scheme = url.scheme?.lowercased(),
+              PathConstants.allowedSchemes.contains(scheme) else {
+            return false
+        }
+        return SSRFGuard.isSafeURL(url)
+    }
+
+    /// 清洗 modelId 中的路径穿越、空字节与非法字符，构造安全非隐藏落盘文件名
     internal static func sanitizedDestinationFileName(for modelId: String) -> String {
-        let cleaned = PathConstants.unsafeModelIdTokens.reduce(modelId) { partial, token in
+        let withoutNull = String(modelId.unicodeScalars.filter { $0 != UnicodeScalar(0) })
+        let trimmed = withoutNull.trimmingCharacters(in: .whitespacesAndNewlines)
+        let cleaned = PathConstants.unsafeModelIdTokens.reduce(trimmed) { partial, token in
             partial.replacingOccurrences(of: token, with: PathConstants.replacementToken)
         }
-        return cleaned + PathConstants.binExtension
+        let safeStem = (cleaned.isEmpty || cleaned == SystemConstants.Character.dot)
+            ? PathConstants.fallbackModelName
+            : cleaned
+        return safeStem + PathConstants.binExtension
     }
 
     private static func makeStreamingManager(configuration: URLSessionConfiguration) -> StreamingDownloadManager {
@@ -115,8 +131,11 @@ public actor ModelDownloadManager: ModelDownloadCapabilities {
 
     // MARK: - Capabilities 契约接口实现
 
-    /// 开始下载大模型权重文件
+    /// 开始下载大模型权重文件（前置校验 HTTP/HTTPS 与 SSRF 内网防护）
     public func startDownload(modelId: String, remoteURL: URL) async throws {
+        guard Self.isAllowedModelURL(remoteURL) else {
+            throw URLError(.unsupportedURL)
+        }
         try await streaming.startDownload(taskID: modelId, remoteURL: remoteURL)
     }
 

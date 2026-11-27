@@ -186,9 +186,9 @@ final class EmbeddingManagerDeterminismTests: XCTestCase {
         XCTAssertEqual(dbChunks.count, 1)
         XCTAssertNotNil(dbChunks.first?.embedding, "分块向量应已序列化持久化")
 
-        // 创建新 manager，触发 loadInitialCache 从 DB 加载分块向量
+        // 创建新 manager，显式等待 loadInitialCache 从 DB 加载分块向量（避免脆弱 sleep 与宿主启动广播竞态）
         let newManager = EmbeddingManager(repository: mockRepository)
-        try await Task.sleep(nanoseconds: 1_000_000_000)
+        await newManager.loadInitialCache()
 
         // 用相同文本查询 multiQuerySearch
         let results = await newManager.multiQuerySearch(query: chunk.content, topK: 5)
@@ -339,5 +339,31 @@ final class EmbeddingManagerDeterminismTests: XCTestCase {
         // 没有 chunk，所以返回空
         let multiResults = await manager.multiQuerySearch(query: query, topK: 5)
         XCTAssertTrue(multiResults.isEmpty, "multiQuerySearch 无 chunk 时应返回空")
+    }
+
+    // MARK: - 缺陷 #233 回归：FNV-1a 跨进程确定性 Fallback 向量、空白查询拦截与重索引清理幽灵旧分块
+
+    func testDeterministicFallbackVector_isStableAcrossProcessesAndReindexClearsStaleChunks() async {
+        // 1. FNV-1a 64-bit 跨进程确定性验证：固定输入必须产出完全一致且非零的 512 维向量
+        let vec1 = EmbeddingManager.deterministicFallbackVector(for: "ZhiYu_FNV1a_Determinism")
+        let vec2 = EmbeddingManager.deterministicFallbackVector(for: "ZhiYu_FNV1a_Determinism")
+        XCTAssertEqual(vec1.count, EmbeddingManager.SearchDefaults.vectorDimension)
+        XCTAssertEqual(vec1, vec2, "相同文本必须产出逐位一致的确定性向量")
+        XCTAssertEqual(EmbeddingManager.cosineSimilarity(vec1, vec2), 1.0, accuracy: 1e-6)
+
+        // 2. 空白查询必须直接返回空数组
+        let blankResults = await manager.search(query: "   \n\t  ", topK: 5)
+        XCTAssertTrue(blankResults.isEmpty)
+
+        // 3. 重索引同页分块后，被删除的旧分块绝不得残留在内存缓存中
+        let pageID = UUID()
+        let oldChunk = PageChunk(id: "old_chunk_1", pageID: pageID, chunkType: .regular, content: "即将被删除的旧分块正文", index: 0, startIndex: 0)
+        await manager.indexChunks(pageID: pageID, chunks: [oldChunk])
+
+        let newChunk = PageChunk(id: "new_chunk_1", pageID: pageID, chunkType: .regular, content: "全新替换后的分块正文", index: 0, startIndex: 0)
+        await manager.indexChunks(pageID: pageID, chunks: [newChunk])
+
+        let matches = await manager.multiQuerySearch(query: "即将被删除的旧分块正文", topK: 10)
+        XCTAssertFalse(matches.contains { $0.chunk.id == "old_chunk_1" }, "同页重索引后旧分块必须从 chunkVectorCache 彻底清除")
     }
 }

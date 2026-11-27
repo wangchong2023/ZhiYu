@@ -10,22 +10,33 @@
 //           从 PluginRegistry 独立提取，遵循单一职责原则 (SRP)。
 //
 import Foundation
+import UFPCore
 
 /// 插件数据持久化管理器
 /// 负责插件私有 key-value 数据的加密存储与读取。
 final class PluginDataStore: Sendable {
 
-    /// 获取插件专用存储路径
-    private func dataURL(for pluginID: String) -> URL? {
+    private enum DataStoreConstants {
+        static let directoryName = "PluginsData"
+        static let fileExtension = SystemConstants.FileExtension.json
+    }
+
+    /// 获取插件专用存储路径（强制校验 pluginID 安全并限制落盘在 PluginsData 目录内，防御沙盒穿越）
+    internal func dataURL(for pluginID: String) -> URL? {
+        guard PluginMarketService.isSafePluginID(pluginID) else { return nil }
         let fileManager = FileManager.default
         guard let appSupportURL = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else { return nil }
-        let directoryURL = appSupportURL.appendingPathComponent("PluginsData")
+        let directoryURL = appSupportURL.appendingPathComponent(DataStoreConstants.directoryName).standardizedFileURL
 
         if !fileManager.fileExists(atPath: directoryURL.path) {
             try? fileManager.createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
         }
 
-        return directoryURL.appendingPathComponent("\(pluginID).json")
+        let candidate = directoryURL.appendingPathComponent("\(pluginID)\(SystemConstants.Character.dot)\(DataStoreConstants.fileExtension)").standardizedFileURL
+        guard candidate.deletingLastPathComponent().path == directoryURL.path else {
+            return nil
+        }
+        return candidate
     }
 
     /// 保存插件私有数据（AES-GCM 加密）

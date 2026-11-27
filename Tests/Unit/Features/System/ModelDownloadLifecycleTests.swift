@@ -176,4 +176,29 @@ final class ModelDownloadLifecycleTests: XCTestCase {
             XCTFail("截断文件必须被标记为 .failed")
         }
     }
+
+    // MARK: - 5. 缺陷 #232 回归：模型下载 SSRF 防护与空白/单点 modelId 文件名兜底
+
+    func testModelDownloadManager_blocksSSRFAndSanitizesBlankOrDotModelID() async throws {
+        let localhostURL = try XCTUnwrap(URL(string: "http://127.0.0.1:8080/model.gguf"))
+        let fileURL = try XCTUnwrap(URL(string: "file:///etc/passwd"))
+        let publicURL = try XCTUnwrap(URL(string: "https://huggingface.co/org/model.gguf"))
+
+        XCTAssertFalse(ModelDownloadManager.isAllowedModelURL(localhostURL))
+        XCTAssertFalse(ModelDownloadManager.isAllowedModelURL(fileURL))
+        XCTAssertTrue(ModelDownloadManager.isAllowedModelURL(publicURL))
+
+        XCTAssertEqual(ModelDownloadManager.sanitizedDestinationFileName(for: ""), "model.bin")
+        XCTAssertEqual(ModelDownloadManager.sanitizedDestinationFileName(for: "   "), "model.bin")
+        XCTAssertEqual(ModelDownloadManager.sanitizedDestinationFileName(for: "."), "model.bin")
+        XCTAssertEqual(ModelDownloadManager.sanitizedDestinationFileName(for: "bad\0name"), "badname.bin")
+
+        let downloader = ModelDownloadManager(configuration: .ephemeral)
+        do {
+            try await downloader.startDownload(modelId: "evil", remoteURL: localhostURL)
+            XCTFail("指向内网 SSRF 地址的模型下载必须被拒绝")
+        } catch let error as URLError {
+            XCTAssertEqual(error.code, .unsupportedURL)
+        }
+    }
 }

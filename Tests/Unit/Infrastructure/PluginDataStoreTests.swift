@@ -145,6 +145,20 @@ final class PluginDataStoreTests: XCTestCase {
         XCTAssertEqual(store.loadPluginData(pluginID: testPluginID, key: "config"), value)
     }
 
+    // MARK: - 缺陷 #231 回归：非法或路径穿越 pluginID 必须被拦截，严禁逃逸 PluginsData 目录
+
+    func testDataURL_blocksPathTraversalAndControlCharacters() {
+        XCTAssertNil(store.dataURL(for: "../escape"))
+        XCTAssertNil(store.dataURL(for: "../../Vaults/vault"))
+        XCTAssertNil(store.dataURL(for: "sub/evil"))
+        XCTAssertNil(store.dataURL(for: "."))
+        XCTAssertNil(store.dataURL(for: "   "))
+        XCTAssertNil(store.dataURL(for: "bad\0id"))
+
+        store.savePluginData(pluginID: "../escape", key: "k", value: "v")
+        XCTAssertNil(store.loadPluginData(pluginID: "../escape", key: "k"))
+    }
+
     // MARK: - 辅助方法
 
     private func cleanPluginDataFile(for pluginID: String) {

@@ -30,6 +30,12 @@ public actor EmbeddingManager: EmbeddingProvider {
     /// 内存缓存：分块元数据
     private var chunkMetadata: [String: PageChunk] = [:]
 
+    /// 跨进程绝对确定性 FNV-1a 64-bit 哈希常量（替代进程级随机种子的 Swift.Hasher）
+    private enum DeterministicHashConstants {
+        static let fnvOffsetBasis: UInt64 = 14_695_981_039_346_656_037
+        static let fnvPrime: UInt64 = 1_099_511_628_211
+    }
+
     /// 向量检索默认参数常量
     public enum SearchDefaults {
         /// 默认召回候选数量
@@ -113,8 +119,17 @@ public actor EmbeddingManager: EmbeddingProvider {
         try? await repository.saveEmbedding(id: page.id, vector: vector, modelName: modelName)
     }
 
-    /// 批量索引页面分块（支持异步向量化与持久化）
+    /// 批量索引页面分块（先清理同页旧分块缓存防止幽灵命中，再异步向量化与持久化）
     public func indexChunks(pageID: UUID, chunks: [PageChunk]) async {
+        // 清理该页面在内存中的历史旧分块，避免缩减分块数量后残留幽灵分块
+        let staleChunkIDs = chunkMetadata.compactMap { entry in
+            entry.value.pageID == pageID ? entry.key : nil
+        }
+        for staleID in staleChunkIDs {
+            chunkVectorCache.removeValue(forKey: staleID)
+            chunkMetadata.removeValue(forKey: staleID)
+        }
+
         guard !chunks.isEmpty else { return }
         
         // 1. 生成向量
@@ -151,12 +166,14 @@ public actor EmbeddingManager: EmbeddingProvider {
     ///   - topK: 最多召回的候选数量。
     /// - Returns: 匹配命中的页面 UUID 标识和相似度得分列表。
     public func search(query: String, topK: Int = SearchDefaults.defaultTopK) async -> [(id: UUID, score: Float)] {
-        guard topK > 0 else { return [] }
+        guard topK > 0, !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return [] }
         let queryVector = getVector(for: query)
+        var fallbackQueryVector: [Float]?
         var results: [(id: UUID, score: Float)] = []
         
         for (id, vector) in vectorCache {
-            let score = EmbeddingManager.cosineSimilarity(queryVector, vector)
+            let effectiveQuery = resolveQueryVector(primary: queryVector, fallbackCache: &fallbackQueryVector, query: query, targetDimension: vector.count)
+            let score = EmbeddingManager.cosineSimilarity(effectiveQuery, vector)
             if score > SearchConstants.semanticThresholdShort {
                 results.append((id, score))
             }
@@ -199,18 +216,38 @@ public actor EmbeddingManager: EmbeddingProvider {
         topK: Int,
         threshold: Float
     ) -> [(chunk: PageChunk, score: Float)] {
-        guard topK > 0 else { return [] }
+        guard topK > 0, !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return [] }
         let queryVector = getVector(for: query)
+        var fallbackQueryVector: [Float]?
         var results: [(chunk: PageChunk, score: Float)] = []
 
         for (idString, vector) in chunkVectorCache {
-            let score = EmbeddingManager.cosineSimilarity(queryVector, vector)
+            let effectiveQuery = resolveQueryVector(primary: queryVector, fallbackCache: &fallbackQueryVector, query: query, targetDimension: vector.count)
+            let score = EmbeddingManager.cosineSimilarity(effectiveQuery, vector)
             if score > threshold, let metadata = chunkMetadata[idString] {
                 results.append((metadata, score))
             }
         }
 
         return results.sorted { $0.score > $1.score }.prefix(topK).map { $0 }
+    }
+
+    /// 当历史落盘向量为 512 维 Fallback 向量而当前 NLEmbedding 为 640 维时，懒加载同维 Fallback 查询向量，避免维度失配导致检索归零
+    private func resolveQueryVector(
+        primary: [Float],
+        fallbackCache: inout [Float]?,
+        query: String,
+        targetDimension: Int
+    ) -> [Float] {
+        guard primary.count != targetDimension, targetDimension == SearchDefaults.vectorDimension else {
+            return primary
+        }
+        if let cached = fallbackCache {
+            return cached
+        }
+        let generated = Self.deterministicFallbackVector(for: query)
+        fallbackCache = generated
+        return generated
     }
 
     /// 物理清空内存向量缓存（供 Vault 切换/退出时立即隔离旧笔记本数据）
@@ -228,23 +265,28 @@ public actor EmbeddingManager: EmbeddingProvider {
 
     // MARK: - 内部数学工具
 
+    /// 跨进程确定性 Fallback 向量生成（使用 FNV-1a 64-bit 哈希，彻底消除 Swift.Hasher 随机种子跨重启失效）
+    internal static func deterministicFallbackVector(for text: String) -> [Float] {
+        var seed = DeterministicHashConstants.fnvOffsetBasis
+        for byte in text.utf8 {
+            seed ^= UInt64(byte)
+            seed = seed &* DeterministicHashConstants.fnvPrime
+        }
+        let modulus = UInt64(SearchDefaults.deterministicModulus)
+        var deterministicVector = [Float](repeating: 0, count: SearchDefaults.vectorDimension)
+        for index in 0..<SearchDefaults.vectorDimension {
+            let mixed = (seed ^ UInt64(index)) &* DeterministicHashConstants.fnvPrime
+            deterministicVector[index] = Float(mixed % modulus) / SearchDefaults.deterministicModulus
+        }
+        return deterministicVector
+    }
+
     /// 获取文本对应的向量表示。
     private func getVector(for text: String) -> [Float] {
         if let model = embeddingModel, let vector = model.vector(for: text) {
             return vector.map { Float($0) }
         }
-        
-        // Fallback: 确定性随机向量 (保障测试确定性)
-        var hasher = Hasher()
-        hasher.combine(text)
-        let seed = hasher.finalize()
-        var deterministicVector = [Float](repeating: 0, count: SearchDefaults.vectorDimension)
-        for i in 0..<SearchDefaults.vectorDimension {
-            // UInt64(bitPattern:) 零成本转换，消除 abs(Int.min) 溢出风险
-            let mixed = UInt64(bitPattern: Int64(truncatingIfNeeded: seed ^ i))
-            deterministicVector[i] = Float(mixed % UInt64(SearchDefaults.deterministicModulus)) / SearchDefaults.deterministicModulus
-        }
-        return deterministicVector
+        return Self.deterministicFallbackVector(for: text)
     }
 
     /// 安全反序列化二进制向量，避免非对齐 raw pointer 或截断字节触发 bindMemory 致命崩溃
