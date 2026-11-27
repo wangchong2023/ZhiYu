@@ -266,21 +266,24 @@
 | **255** | `AudioSplitter.split`（`UFPCore`）未校验 `chunkSize > 0`：传入 `chunkSize == 0` 时 `offset += 0` 触发永久死循环直至 OOM，传入负数时构造非法 `Range` 直接触发 `Fatal error` 崩溃；`merge` 未预分配容量导致大音频反复扩容拷贝 | 调用方配置或外部参数传入 `chunkSize <= 0` 执行音频分片切割 | App 卡死无响应直至被系统强杀或直接触发越界闪退 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | `split` 入口增加 `guard !data.isEmpty, chunkSize > 0 else { return [] }` 守卫；`merge` 预计算总字节数并调用 `reserveCapacity` | **✅ 已解决** | 是 (二进制分片步长正数防线与容量预分配) | 是 (`BaseProtocolsAndStubsTests` / `AudioSplitterTests`) | ✅ 已闭环 |
 | **256** | `IntentRateLimiter`（`UFPCore`）采用墙上时钟 `Date()` 计算 10Hz 滑动窗口：当设备触发 NTP 校时或用户手动回拨系统时间时，历史“未来时间戳”持续满足 `$0 > windowStart` 无法被清理，导致限流器永久满载拒绝所有合法 DeepLink/Intent 写入请求（时钟回拨 DoS） | 设备发生系统时钟回拨或时区/NTP 校时回退 | 限流器长时间永久熔断，所有外部快捷指令与深度链接全部失效 | **High** | 架构设计与安全/网络健壮性 | 改用单调递增时钟 `ProcessInfo.processInfo.systemUptime`，并增加 `$0 > windowStart && $0 <= now` 双向边界驱逐异常未来时间戳；支持注入 `nowProvider` 便于确定性窗口测试 | **✅ 已解决** | 是 (限流器单调时钟与时钟回拨自愈范式) | 是 (`SecurityToolsTests`) | ✅ 已闭环 |
 | **257** | `PaymentRetryQueue` 存在三重状态机与持久化缺陷：重复入队同一 `transactionId` 会覆写并重置 `attemptCount` 为 `0` 导致无限重试循环；`loadPersisted` 硬编码读取 `UserDefaultsKeyStore.shared` 与 `@Dependency(\.keyStore)` 写入端分裂，且 `Dictionary(uniqueKeysWithValues:)` 遇到重复 `transactionId` 直接 `fatalError` 崩溃；`cancelAllPending()` 后旧调度任务从网络挂起返回仍无条件调用 `clearScheduledTask` 误清新登录用户的 `scheduledTask` | StoreKit 重复推送失败交易、持久化队列存在重复 `transactionId`、或重试网络挂起期间切换账号登出再入队 | 支付验证陷入无限重试、启动恢复直接闪退、跨账号登出后新支付重试调度被误清或并发双跑 | **High** | 状态机并发与数据生命周期 | 引入 `scheduleGeneration` 代际令牌守卫 `clearScheduledTask`；`enqueue` 对已有交易幂等合并保留 `attemptCount` 与 `lastAttemptAt`；抽取 `decodePersistedItems` 使用 `uniquingKeysWith` 保留更高退避进度并统一由注入 `keyStore` 读写 | **✅ 已解决** | 是 (支付重试队列代际防重、幂等退避与容错解码) | 是 (`StoreKitServiceTests`) | ✅ 已闭环 |
+| **258** | `StoreKitService` 存在三重订阅状态机缺陷：`processVerifiedTransaction` 在校验 `allProductIds.contains(productId)` 前即按 `revocationDate`/`expirationDate` 调用 `downgradeToFree()`，导致无关商品过期/退款误降级当前 Pro 权益；`restorePurchases()` 缺少并发防重入守卫且超时纳秒数为内联魔鬼数字；后台交易后端验证失败未主动入队 `PaymentRetryQueue` | 收到历史/无关商品的过期退款推送、用户双击恢复购买、或续费/家庭共享交易遇网络抖动 | 付费 Pro 用户被误降级为 Free、并发恢复状态踩踏、后台续费到账长时间延迟 | **High** | 状态机并发与数据生命周期 | 抽取 `classifyTransaction` 先校验 `allProductIds` 再判定吊销/过期/有效 Pro；`restorePurchases()` 增加 `guard !isRestoring` 防重入并收敛 `SyncConstants`；验证失败主动入队 `PaymentRetryQueue` | **✅ 已解决** | 是 (StoreKit 商品归属优先判定与恢复购买防重入) | 是 (`StoreKitServiceTests`) | ✅ 已闭环 |
+| **259** | `DeepLinkService` 存在输入边界与容错缺陷：`zhiyu://page?title=` 无长度限制且未剥离 `\r`/`\n`/`\0` 等控制字符（`search?q=` 亦未剥离控制字符）；URL `id` 与 Spotlight `pageID` 未裁剪首尾空白导致合法 UUID 解析失败 | 外部链接传入超长/含控制字符标题，或复制分享链接携带首尾空白/换行 | 超长畸形字符串透传至检索与 UI 层、合法分享链接点击无响应 | **Medium** | 架构设计与安全/网络健壮性 | 新增 `sanitizeTextParameter` 剥离控制字符与换行并统一限制 256 字符上限（`Limits.maxTitleLength`/`maxSearchQueryLength`）；对 URL `id` 与 Spotlight `pageID` 先 trim 首尾空白再解析 UUID | **✅ 已解决** | 是 (DeepLink 外部文本参数清洗截断与 UUID 容错) | 是 (`DeepLinkTests`) | ✅ 已闭环 |
+| **260** | `UndoService` 标注 `@unchecked Sendable` 且订阅 `.vaultWillSwitch`/`.databaseDidSwitch` 通知，但 `undoStack`/`redoStack` 完全无锁保护；后台线程触发切库通知或多线程并发调用时触发数据竞争与后台修改 `@Published` 告警 | 后台线程发送 Vault/DB 切换通知或并发触发快照推入/撤销/重做 | 多线程数据竞争导致内存破坏崩溃与 SwiftUI 后台发布告警 | **High** | 状态机并发与数据生命周期 | 引入 `OSAllocatedUnfairLock<StackState>` 原子保护 `undoStack`/`redoStack` 全部读写操作；`updatePublishedState` 在主线程同步更新、后台线程自动派发回主队列读取最新快照 | **✅ 已解决** | 是 (UndoService 并发锁隔离与主线程状态发布范式) | 是 (`UndoServiceEdgeCaseTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**257 项**
+- **收录问题总数**：**260 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：77 项 (30.0%)
-  - 状态机并发与数据生命周期：57 项 (22.2%)
-  - 架构设计与安全/网络健壮性：82 项 (31.9%)
-  - UI/交互与防御性缺陷：17 项 (6.6%)
-  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (9.3%)
+  - 功能缺陷与核心算法/解析器/数据完整性：77 项 (29.6%)
+  - 状态机并发与数据生命周期：59 项 (22.7%)
+  - 架构设计与安全/网络健壮性：83 项 (31.9%)
+  - UI/交互与防御性缺陷：17 项 (6.5%)
+  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (9.2%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：160 项 (62.3%)
-  - **Medium（功能异常/算法边界/性能损耗）**：70 项 (27.2%)
-  - **Low（样式异味/边界校验/门禁规范）**：27 项 (10.5%)
-- **修复闭环率**：**100% (257/257 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：162 项 (62.3%)
+  - **Medium（功能异常/算法边界/性能损耗）**：71 项 (27.3%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (10.4%)
+- **修复闭环率**：**100% (260/260 项已修复闭环)**
 

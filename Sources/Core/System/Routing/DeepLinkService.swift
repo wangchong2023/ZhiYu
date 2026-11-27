@@ -52,6 +52,16 @@ final class DeepLinkService: ObservableObject {
     /// DeepLink 输入边界保护常量
     private enum Limits {
         static let maxSearchQueryLength = 256
+        static let maxTitleLength = 256
+    }
+
+    /// 清洗外部链接文本参数：剥离控制字符与换行、裁剪首尾空白并限制最大长度
+    private func sanitizeTextParameter(_ raw: String, maxLength: Int) -> String {
+        let disallowed = CharacterSet.controlCharacters.union(.newlines)
+        let cleanedScalars = raw.unicodeScalars.filter { !disallowed.contains($0) }
+        let trimmed = String(String.UnicodeScalarView(cleanedScalars))
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return String(trimmed.prefix(maxLength))
     }
 
     // MARK: - URL Scheme Handling
@@ -73,8 +83,11 @@ final class DeepLinkService: ObservableObject {
         case Host.page: return handlePageDeepLink(url: url)
         case Host.create: pendingDeepLink = .create; return true
         case Host.search:
-            let rawQuery = (url.queryParameters[QueryKey.query] ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-            pendingDeepLink = .search(String(rawQuery.prefix(Limits.maxSearchQueryLength)))
+            let sanitized = sanitizeTextParameter(
+                url.queryParameters[QueryKey.query] ?? "",
+                maxLength: Limits.maxSearchQueryLength
+            )
+            pendingDeepLink = .search(sanitized)
             return true
         case Host.ingest, Host.voice, Host.ocr: pendingDeepLink = .ingest; return true
         case Host.graph: pendingDeepLink = .graph; return true
@@ -84,15 +97,17 @@ final class DeepLinkService: ObservableObject {
     }
 
     private func handlePageDeepLink(url: URL) -> Bool {
-        if let idString = url.queryParameters[QueryKey.id],
-           let id = UUID(uuidString: idString) {
+        if let rawID = url.queryParameters[QueryKey.id]?.trimmingCharacters(in: .whitespacesAndNewlines),
+           let id = UUID(uuidString: rawID) {
             pendingDeepLink = .openPage(id: id)
             return true
         }
-        if let title = url.queryParameters[QueryKey.title]?.trimmingCharacters(in: .whitespacesAndNewlines),
-           !title.isEmpty {
-            pendingDeepLink = .openPageByTitle(title)
-            return true
+        if let rawTitle = url.queryParameters[QueryKey.title] {
+            let sanitizedTitle = sanitizeTextParameter(rawTitle, maxLength: Limits.maxTitleLength)
+            if !sanitizedTitle.isEmpty {
+                pendingDeepLink = .openPageByTitle(sanitizedTitle)
+                return true
+            }
         }
         return false
     }
@@ -125,7 +140,7 @@ final class DeepLinkService: ObservableObject {
         #endif
 
         guard isRecognizedActivity,
-              let idString = rawIdentifier,
+              let idString = rawIdentifier?.trimmingCharacters(in: .whitespacesAndNewlines),
               let id = UUID(uuidString: idString) else {
             return false
         }

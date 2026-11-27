@@ -203,4 +203,38 @@ final class UndoServiceEdgeTests: XCTestCase {
         NotificationCenter.default.post(name: .databaseDidSwitch, object: nil)
         XCTAssertFalse(undoService.canUndo, ".databaseDidSwitch 后必须清空 undoStack")
     }
+
+    // MARK: - 多线程并发读写与后台通知安全（缺陷 #260）
+
+    /// 验证：高并发 pushSnapshot/undo/redo 与后台线程发送 .vaultWillSwitch 并发交错时无数据竞争崩溃
+    func testConcurrentOperationsAndBackgroundVaultSwitchAreThreadSafe() async throws {
+        let service = try XCTUnwrap(undoService)
+        let samplePages = makePages(count: 2)
+
+        await withTaskGroup(of: Void.self) { group in
+            for worker in 0..<8 {
+                group.addTask {
+                    for step in 0..<40 {
+                        service.pushSnapshot(samplePages)
+                        if step % 3 == 0 {
+                            _ = service.undo(currentPages: samplePages)
+                        }
+                        if step % 5 == 0 {
+                            _ = service.redo(currentPages: samplePages)
+                        }
+                        if worker == 0 && step % 10 == 0 {
+                            NotificationCenter.default.post(name: .vaultWillSwitch, object: nil)
+                        }
+                    }
+                }
+            }
+        }
+
+        await MainActor.run {
+            service.clear()
+            XCTAssertFalse(service.canUndo, "并发结束后清空应无残留 undo 状态")
+            XCTAssertFalse(service.canRedo, "并发结束后清空应无残留 redo 状态")
+            XCTAssertNil(service.undo(currentPages: samplePages))
+        }
+    }
 }

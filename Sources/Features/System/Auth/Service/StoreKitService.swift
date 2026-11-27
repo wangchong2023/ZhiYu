@@ -74,6 +74,40 @@ public final class StoreKitService {
         transactionListenerTask = nil
     }
     
+    // MARK: - 常量与交易分类
+
+    private enum SyncConstants {
+        /// AppStore.sync() 超时保护（5 秒，防模拟器无沙盒账号死锁）
+        static let timeoutNanoseconds: UInt64 = 5_000_000_000
+    }
+
+    /// 交易判定结果（先校验商品归属，防止无关商品过期/退款误降级当前 Pro 权益）
+    internal enum TransactionDecision: Equatable {
+        case unknownProduct
+        case revoked
+        case expired
+        case validPro
+    }
+
+    /// 判定单笔已验证交易的权益处理策略
+    internal static func classifyTransaction(
+        productId: String,
+        revocationDate: Date?,
+        expirationDate: Date?,
+        now: Date = Date()
+    ) -> TransactionDecision {
+        guard AppConstants.Subscription.allProductIds.contains(productId) else {
+            return .unknownProduct
+        }
+        if revocationDate != nil {
+            return .revoked
+        }
+        if let expirationDate, expirationDate < now {
+            return .expired
+        }
+        return .validPro
+    }
+
     // MARK: - 恢复购买
     
     /// 触发 App Store 收据同步，恢复已购内购项目
@@ -81,8 +115,9 @@ public final class StoreKitService {
     /// - 调用 `AppStore.sync()` 触发票据核验，已购但未激活的 Transaction 会通过
     ///   `Transaction.updates` 流重新推送，由 `handle(transactionResult:)` 完成本地激活。
     /// - 若用户未购买过任何项目，此调用会静默完成（不产生错误）。
-    /// - 包含超时保护，避免在模拟器无沙盒账号环境下无限挂起。
+    /// - 包含并发防重入与超时保护，避免双击重入状态踩踏及模拟器环境死锁。
     public func restorePurchases() async -> Bool {
+        guard !isRestoring else { return false }
         isRestoring = true
         restoreMessage = nil
 
@@ -93,8 +128,7 @@ public final class StoreKitService {
                     try await StoreKit.AppStore.sync()
                 }
                 group.addTask {
-                    let syncTimeoutNs: UInt64 = 5_000_000_000
-                    try await Task.sleep(nanoseconds: syncTimeoutNs)
+                    try await Task.sleep(nanoseconds: SyncConstants.timeoutNanoseconds)
                     throw StoreKitSyncTimeout()
                 }
                 try await group.next()
@@ -128,47 +162,46 @@ public final class StoreKitService {
     /// 处理已通过苹果校验的交易
     private func processVerifiedTransaction(_ transaction: Transaction) async {
         let productId = transaction.productID
-        
-        // 检查是否为已吊销（退款 / 家长控制撤销）的交易
-        if let revocationDate = transaction.revocationDate {
-            Logger.shared.warning("[StoreKitService] 交易已被吊销（\(revocationDate)），降级用户权益")
+        let decision = Self.classifyTransaction(
+            productId: productId,
+            revocationDate: transaction.revocationDate,
+            expirationDate: transaction.expirationDate
+        )
+
+        switch decision {
+        case .unknownProduct:
+            // 未知 productId：绝不触发降级，仅记录 warning 并 finish 清理
+            Logger.shared.warning("[StoreKitService] 收到未知 productId: \(productId)，未在 allProductIds 中注册")
+            await transaction.finish()
+        case .revoked:
+            Logger.shared.warning("[StoreKitService] 交易已被吊销，降级用户权益 productId=\(productId)")
             downgradeToFree()
             await transaction.finish()
-            return
-        }
-        
-        // 检查订阅是否已过期
-        if let expirationDate = transaction.expirationDate, expirationDate < Date() {
-            Logger.shared.info("[StoreKitService] 订阅已过期（\(expirationDate)），降级用户权益")
+        case .expired:
+            Logger.shared.info("[StoreKitService] 订阅已过期，降级用户权益 productId=\(productId)")
             downgradeToFree()
             await transaction.finish()
-            return
-        }
-        
-        // 有效交易 - 检查商品 ID 并激活 Pro 权益
-        if AppConstants.Subscription.allProductIds.contains(productId) {
+        case .validPro:
             Logger.shared.info("[StoreKitService] 有效内购交易，商品 ID: \(productId)，激活 Pro 权益")
-            
-            // 向后端发送收据验证（同步权益）
             let receipt = transaction.jsonRepresentation.base64EncodedString()
             let success = await AuthService.shared.verifyApplePurchase(
                 productId: productId,
                 receiptData: receipt,
                 orderNo: nil
             )
-            
             if success {
                 Logger.shared.info("[StoreKitService] 后端收据验证成功，Pro 权益已激活")
                 await transaction.finish()
             } else {
-                // 后端验证失败时，不立即降级（可能是网络波动）。
-                // 保留本地 Pro 权益，不 finish 交易以便 StoreKit 下次重新推送重试验证。
-                Logger.shared.warning("[StoreKitService] 后端收据验证失败，保留本地权益待重试（交易未 finish）")
+                // 后端验证失败：不 finish 交易，并主动入队指数退避重试缩短到账等待
+                await PaymentRetryQueue.shared.enqueue(
+                    productId: productId,
+                    receiptData: receipt,
+                    transactionId: String(transaction.id),
+                    orderNo: nil
+                )
+                Logger.shared.warning("[StoreKitService] 后端收据验证失败，已入队指数退避重试（交易未 finish）")
             }
-        } else {
-            // 未知 productId：记录 warning 便于排查配置不一致
-            Logger.shared.warning("[StoreKitService] 收到未知 productId: \(productId)，未在 allProductIds 中注册")
-            await transaction.finish()
         }
     }
     

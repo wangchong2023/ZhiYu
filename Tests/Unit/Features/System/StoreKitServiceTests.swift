@@ -148,4 +148,46 @@ final class StoreKitServiceTests: XCTestCase {
         }
         XCTAssertNotNil(store.safeReceiptURL(for: "gemma-4-e2b-it"))
     }
+
+    // MARK: - StoreKitService 交易分类与恢复购买防重入（缺陷 #258）
+
+    /// 验证未知商品即便已吊销或已过期也绝不判定为降级，防止无关内购误剥夺 Pro 权益
+    func testClassifyTransaction_UnknownProductNeverTriggersDowngrade() {
+        let now = Date()
+        let past = now.addingTimeInterval(-3600)
+        let future = now.addingTimeInterval(3600)
+
+        XCTAssertEqual(
+            StoreKitService.classifyTransaction(
+                productId: "com.other.legacy.item",
+                revocationDate: past,
+                expirationDate: past,
+                now: now
+            ),
+            .unknownProduct,
+            "未知商品的吊销/过期交易必须返回 .unknownProduct，不得触发 Pro 降级"
+        )
+
+        let proId = AppConstants.Subscription.monthlyProductId
+        XCTAssertEqual(
+            StoreKitService.classifyTransaction(productId: proId, revocationDate: past, expirationDate: future, now: now),
+            .revoked
+        )
+        XCTAssertEqual(
+            StoreKitService.classifyTransaction(productId: proId, revocationDate: nil, expirationDate: past, now: now),
+            .expired
+        )
+        XCTAssertEqual(
+            StoreKitService.classifyTransaction(productId: proId, revocationDate: nil, expirationDate: future, now: now),
+            .validPro
+        )
+    }
+
+    /// 验证 restorePurchases 在进行中时防重入，立即返回 false 且不破坏进行态
+    func testRestorePurchases_ReentryGuardReturnsFalseWhileRestoring() async {
+        service.isRestoring = true
+        let result = await service.restorePurchases()
+        XCTAssertFalse(result, "恢复购买进行中再次调用必须被防重入拦截")
+        XCTAssertTrue(service.isRestoring, "被拦截的重入调用不得误重置 isRestoring 状态")
+    }
 }

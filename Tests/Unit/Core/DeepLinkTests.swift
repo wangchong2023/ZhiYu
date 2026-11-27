@@ -279,4 +279,46 @@ final class DeepLinkTests: XCTestCase {
         XCTAssertEqual(parsedID, targetID)
     }
     #endif
+
+    // MARK: - 10. 缺陷 #259 回归：page title 长度与控制字符清洗、带空白 UUID 容错解析
+
+    func testHandleURL_PageTitleSanitizesControlCharsAndBoundsLength() throws {
+        IntentRateLimiter.shared.reset()
+
+        // 1. 超长 title 且混入换行与控制字符：应剥离控制字符并截断至 256 字符
+        let longTitle = "Hello\r\nWorld\u{0000}" + String(repeating: "x", count: 300)
+        var components = try XCTUnwrap(URLComponents(string: "zhiyu://page"))
+        components.queryItems = [URLQueryItem(name: "title", value: longTitle)]
+        let url = try XCTUnwrap(components.url)
+
+        XCTAssertTrue(service.handleURL(url))
+        guard case .openPageByTitle(let parsedTitle) = service.consumeDeepLink() else {
+            XCTFail("应解析出清洗后的页面标题"); return
+        }
+        XCTAssertEqual(parsedTitle.count, 256, "超长 title 应截断至 256 字符")
+        XCTAssertFalse(parsedTitle.contains("\r") || parsedTitle.contains("\n") || parsedTitle.contains("\0"))
+        XCTAssertTrue(parsedTitle.hasPrefix("HelloWorld"))
+
+        // 2. 纯控制字符 title 清洗后为空，必须被拦截
+        var ctrlComponents = try XCTUnwrap(URLComponents(string: "zhiyu://page"))
+        ctrlComponents.queryItems = [URLQueryItem(name: "title", value: "\r\n\u{0000}\t")]
+        XCTAssertFalse(service.handleURL(try XCTUnwrap(ctrlComponents.url)))
+
+        // 3. 首尾带空白的合法 UUID 参数与 Spotlight pageID 应能容错解析
+        let targetID = UUID()
+        let paddedURL = try XCTUnwrap(URL(string: "zhiyu://page?id=%20\(targetID.uuidString)%0A"))
+        XCTAssertTrue(service.handleURL(paddedURL))
+        guard case .openPage(let parsedID) = service.consumeDeepLink() else {
+            XCTFail("首尾带空白的合法 UUID 应能容错解析"); return
+        }
+        XCTAssertEqual(parsedID, targetID)
+
+        let paddedActivity = NSUserActivity(activityType: "com.zhiyu.app.openPage")
+        paddedActivity.userInfo = ["pageID": "  \(targetID.uuidString)\n"]
+        XCTAssertTrue(service.handleSpotlightActivity(paddedActivity))
+        guard case .openPage(let spotlightID) = service.consumeDeepLink() else {
+            XCTFail("Spotlight 首尾带空白的 pageID 应能容错解析"); return
+        }
+        XCTAssertEqual(spotlightID, targetID)
+    }
 }

@@ -10,6 +10,7 @@
 //
 import Foundation
 import Combine
+import os
 import UFPCore
 import Dependencies
 
@@ -24,8 +25,19 @@ final class UndoService: ObservableObject, @unchecked Sendable {
         static let maxStackSize: Int = 50
     }
 
-    private var undoStack: [[KnowledgePage]] = []
-    private var redoStack: [[KnowledgePage]] = []
+    private struct StackState {
+        var undoStack: [[KnowledgePage]] = []
+        var redoStack: [[KnowledgePage]] = []
+    }
+
+    private struct StackTransition {
+        let pages: [KnowledgePage]?
+        let canUndo: Bool
+        let canRedo: Bool
+    }
+
+    /// 保护 undoStack/redoStack 并发读写（如后台 Vault/DB 切换通知与前台编辑并发）
+    private let stateLock = OSAllocatedUnfairLock(initialState: StackState())
     private var cancellables = Set<AnyCancellable>()
 
     init() {
@@ -43,55 +55,83 @@ final class UndoService: ObservableObject, @unchecked Sendable {
     /// 推送Snapshot
     /// - Parameter pages: pages
     func pushSnapshot(_ pages: [KnowledgePage]) {
-        undoStack.append(pages.map { $0 })
-        if undoStack.count > Config.maxStackSize {
-            undoStack.removeFirst()
+        let flags: (canUndo: Bool, canRedo: Bool) = stateLock.withLock { state in
+            state.undoStack.append(pages.map { $0 })
+            if state.undoStack.count > Config.maxStackSize {
+                state.undoStack.removeFirst()
+            }
+            // Any new action clears the redo stack
+            state.redoStack.removeAll()
+            return (!state.undoStack.isEmpty, !state.redoStack.isEmpty)
         }
-        // Any new action clears the redo stack
-        redoStack.removeAll()
-        updatePublishedState()
+        updatePublishedState(canUndo: flags.canUndo, canRedo: flags.canRedo)
     }
 
     /// 撤销
     /// - Parameter currentPages: currentPages
     /// - Returns: 列表
     func undo(currentPages: [KnowledgePage]) -> [KnowledgePage]? {
-        guard !undoStack.isEmpty else { return nil }
-        // Save current state to redo stack
-        redoStack.append(currentPages.map { $0 })
-        if redoStack.count > Config.maxStackSize {
-            redoStack.removeFirst()
+        let outcome: StackTransition = stateLock.withLock { state in
+            guard !state.undoStack.isEmpty else {
+                return StackTransition(pages: nil, canUndo: !state.undoStack.isEmpty, canRedo: !state.redoStack.isEmpty)
+            }
+            state.redoStack.append(currentPages.map { $0 })
+            if state.redoStack.count > Config.maxStackSize {
+                state.redoStack.removeFirst()
+            }
+            let previous = state.undoStack.removeLast()
+            return StackTransition(pages: previous, canUndo: !state.undoStack.isEmpty, canRedo: !state.redoStack.isEmpty)
         }
-        let previous = undoStack.removeLast()
-        updatePublishedState()
-        return previous
+        if outcome.pages != nil {
+            updatePublishedState(canUndo: outcome.canUndo, canRedo: outcome.canRedo)
+        }
+        return outcome.pages
     }
 
     /// 重做
     /// - Parameter currentPages: currentPages
     /// - Returns: 列表
     func redo(currentPages: [KnowledgePage]) -> [KnowledgePage]? {
-        guard !redoStack.isEmpty else { return nil }
-        // Save current state to undo stack
-        undoStack.append(currentPages.map { $0 })
-        if undoStack.count > Config.maxStackSize {
-            undoStack.removeFirst()
+        let outcome: StackTransition = stateLock.withLock { state in
+            guard !state.redoStack.isEmpty else {
+                return StackTransition(pages: nil, canUndo: !state.undoStack.isEmpty, canRedo: !state.redoStack.isEmpty)
+            }
+            state.undoStack.append(currentPages.map { $0 })
+            if state.undoStack.count > Config.maxStackSize {
+                state.undoStack.removeFirst()
+            }
+            let next = state.redoStack.removeLast()
+            return StackTransition(pages: next, canUndo: !state.undoStack.isEmpty, canRedo: !state.redoStack.isEmpty)
         }
-        let next = redoStack.removeLast()
-        updatePublishedState()
-        return next
+        if outcome.pages != nil {
+            updatePublishedState(canUndo: outcome.canUndo, canRedo: outcome.canRedo)
+        }
+        return outcome.pages
     }
 
     /// 清除
     func clear() {
-        undoStack.removeAll()
-        redoStack.removeAll()
-        updatePublishedState()
+        stateLock.withLock { state in
+            state.undoStack.removeAll()
+            state.redoStack.removeAll()
+        }
+        updatePublishedState(canUndo: false, canRedo: false)
     }
 
-    private func updatePublishedState() {
-        canUndo = !undoStack.isEmpty
-        canRedo = !redoStack.isEmpty
+    private func updatePublishedState(canUndo: Bool, canRedo: Bool) {
+        if Thread.isMainThread {
+            self.canUndo = canUndo
+            self.canRedo = canRedo
+        } else {
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
+                let latest: (Bool, Bool) = self.stateLock.withLock {
+                    (!$0.undoStack.isEmpty, !$0.redoStack.isEmpty)
+                }
+                self.canUndo = latest.0
+                self.canRedo = latest.1
+            }
+        }
     }
 }
 
