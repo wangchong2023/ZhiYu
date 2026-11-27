@@ -26,6 +26,26 @@ final class DeepLinkService: ObservableObject {
         case chat
     }
     
+    /// 支持的 DeepLink Host 常量（大小写不敏感匹配）
+    private enum Host {
+        static let page = "page"
+        static let create = "create"
+        static let search = "search"
+        static let ingest = "ingest"
+        static let voice = "voice"
+        static let ocr = "ocr"
+        static let graph = "graph"
+        static let chat = "chat"
+    }
+
+    /// DeepLink 查询参数与 UserActivity 键常量
+    private enum QueryKey {
+        static let id = "id"
+        static let title = "title"
+        static let query = "q"
+        static let pageID = "pageID"
+    }
+
     // MARK: - URL Scheme Handling
     /// 处理应用特有的 URL Scheme 深度路由分发
     /// - Parameter url: 传入的原始 URL 实例
@@ -40,24 +60,24 @@ final class DeepLinkService: ObservableObject {
     }
 
     private func handleKnownHost(_ host: String?, url: URL) -> Bool {
-        switch host {
-        case "page": return handlePageDeepLink(url: url)
-        case "create": pendingDeepLink = .create; return true
-        case "search": pendingDeepLink = .search(url.queryParameters["q"] ?? ""); return true
-        case "ingest": pendingDeepLink = .ingest; return true
-        case "graph": pendingDeepLink = .graph; return true
-        case "chat": pendingDeepLink = .chat; return true
+        switch host?.lowercased() {
+        case Host.page: return handlePageDeepLink(url: url)
+        case Host.create: pendingDeepLink = .create; return true
+        case Host.search: pendingDeepLink = .search(url.queryParameters[QueryKey.query] ?? ""); return true
+        case Host.ingest, Host.voice, Host.ocr: pendingDeepLink = .ingest; return true
+        case Host.graph: pendingDeepLink = .graph; return true
+        case Host.chat: pendingDeepLink = .chat; return true
         default: return false
         }
     }
 
     private func handlePageDeepLink(url: URL) -> Bool {
-        if let idString = url.queryParameters["id"],
+        if let idString = url.queryParameters[QueryKey.id],
            let id = UUID(uuidString: idString) {
             pendingDeepLink = .openPage(id: id)
             return true
         }
-        if let title = url.queryParameters["title"]?.trimmingCharacters(in: .whitespacesAndNewlines),
+        if let title = url.queryParameters[QueryKey.title]?.trimmingCharacters(in: .whitespacesAndNewlines),
            !title.isEmpty {
             pendingDeepLink = .openPageByTitle(title)
             return true
@@ -72,7 +92,7 @@ final class DeepLinkService: ObservableObject {
     func handleSpotlightActivity(_ userActivity: NSUserActivity) -> Bool {
         guard userActivity.activityType == CoreConstants.DeepLink.spotlightActivityType,
               let userInfo = userActivity.userInfo,
-              let idString = userInfo["pageID"] as? String,
+              let idString = userInfo[QueryKey.pageID] as? String,
               let id = UUID(uuidString: idString) else {
             return false
         }

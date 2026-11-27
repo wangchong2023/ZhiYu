@@ -216,4 +216,31 @@ final class DeepLinkTests: XCTestCase {
         XCTAssertFalse(service.handleURL(blankTitleURL))
         XCTAssertNil(service.consumeDeepLink())
     }
+
+    // MARK: - 8. Widget voice/ocr 快捷入口与 Host 大小写不敏感路由（缺陷 #164）
+    func testHandleURL_WidgetVoiceOCRAndCaseInsensitiveHost() throws {
+        IntentRateLimiter.shared.reset()
+
+        // 1. 桌面小组件 zhiyu://voice 应路由至 .ingest
+        let voiceURL = try XCTUnwrap(URL(string: "zhiyu://voice"))
+        XCTAssertTrue(service.handleURL(voiceURL), "zhiyu://voice 应被成功路由")
+        guard case .ingest = service.consumeDeepLink() else {
+            XCTFail("zhiyu://voice 应解析为 .ingest"); return
+        }
+
+        // 2. 桌面小组件 zhiyu://ocr 应路由至 .ingest
+        let ocrURL = try XCTUnwrap(URL(string: "zhiyu://ocr"))
+        XCTAssertTrue(service.handleURL(ocrURL), "zhiyu://ocr 应被成功路由")
+        guard case .ingest = service.consumeDeepLink() else {
+            XCTFail("zhiyu://ocr 应解析为 .ingest"); return
+        }
+
+        // 3. 大写 Host (RFC 3986 大小写不敏感) 应正常路由
+        let upperHostURL = try XCTUnwrap(URL(string: "ZHIYU://SEARCH?q=Swift"))
+        XCTAssertTrue(service.handleURL(upperHostURL), "大写 Host 应被大小写不敏感解析")
+        guard case .search(let query) = service.consumeDeepLink() else {
+            XCTFail("大写 SEARCH Host 应解析为 .search"); return
+        }
+        XCTAssertEqual(query, "Swift")
+    }
 }

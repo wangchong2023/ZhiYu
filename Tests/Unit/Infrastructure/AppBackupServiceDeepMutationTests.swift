@@ -142,4 +142,54 @@ final class AppBackupServiceDeepMutationTests: XCTestCase {
         backupService.deleteBackup(entry)
         XCTAssertTrue(backupService.backupEntries.isEmpty)
     }
+
+    // MARK: - 5. 清理旧备份路径穿越防护（缺陷 #163）
+
+    /// 验证篡改索引中的 `../` 越界文件路径在触发 `cleanOldBackups()` 淘汰旧条目时不会被误删
+    func testCleanOldBackups_BlocksPathTraversalDeletion() throws {
+        // 在 backupDirectory 的父目录放置一个敏感哨兵文件
+        let sentinelURL = tempDirectory.appendingPathComponent("outside_sentinel.txt")
+        try Data("DO_NOT_DELETE".utf8).write(to: sentinelURL)
+
+        // 构造超过 maxBackups 数量的索引，最旧一条指向 ../outside_sentinel.txt
+        let oldestPoisonEntry = BackupService.BackupEntry(
+            id: UUID(),
+            timestamp: Date(timeIntervalSince1970: 1000),
+            pageCount: 1,
+            totalWords: 10,
+            fileName: "../outside_sentinel.txt"
+        )
+        var poisonedEntries: [BackupService.BackupEntry] = [oldestPoisonEntry]
+        for index in 0..<25 {
+            poisonedEntries.append(
+                BackupService.BackupEntry(
+                    id: UUID(),
+                    timestamp: Date(timeIntervalSince1970: TimeInterval(2000 + index)),
+                    pageCount: 1,
+                    totalWords: 10,
+                    fileName: "backup_valid_\(index).json"
+                )
+            )
+        }
+
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        let indexURL = backupService.backupDirectory.appendingPathComponent("backup_index.json")
+        try encoder.encode(poisonedEntries).write(to: indexURL, options: .atomicWrite)
+
+        // 重新初始化加载被篡改的索引并触发一次强制备份以激活 cleanOldBackups()
+        let reloadedService = BackupService(baseDirectory: tempDirectory)
+        let page = KnowledgePage(
+            id: UUID(),
+            title: "触发清理",
+            pageType: .concept,
+            content: "内容",
+            createdAt: Date(),
+            updatedAt: Date()
+        )
+        reloadedService.createForcedBackup(pages: [page])
+
+        XCTAssertTrue(FileManager.default.fileExists(atPath: sentinelURL.path), "cleanOldBackups 不得删除备份目录外的哨兵文件")
+        XCTAssertFalse(reloadedService.backupEntries.contains { $0.fileName == "../outside_sentinel.txt" }, "非法路径条目应从索引中安全清理")
+    }
 }

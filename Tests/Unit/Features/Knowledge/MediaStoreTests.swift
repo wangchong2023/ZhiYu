@@ -162,4 +162,47 @@ final class MediaStoreTests: XCTestCase {
         // 再读应失败
         XCTAssertThrowsError(try mediaStore.loadMedia(fileName: fileName))
     }
+
+    // MARK: - 安全边界（缺陷 #162：路径穿越读/删/写防护）
+
+    /// 验证 loadMedia 与 deleteMedia 拦截 `../`、`/`、`\`、`.`、空字符串等路径穿越输入，不泄露也不误删 Vault 根目录文件
+    func testPathTraversalBlockedForLoadAndDelete() throws {
+        // 在 Vault 根目录放置一个敏感哨兵文件（位于 Attachments 目录之外）
+        let sentinelURL = tempDir.appendingPathComponent("vault_secret.sqlite")
+        let sentinelData = Data("SENSITIVE_VAULT_DATA".utf8)
+        try sentinelData.write(to: sentinelURL)
+
+        let maliciousNames = [
+            "../vault_secret.sqlite",
+            "../../etc/passwd",
+            ".",
+            "..",
+            "",
+            "   ",
+            "sub/file.png",
+            "sub\\file.png"
+        ]
+
+        for badName in maliciousNames {
+            XCTAssertThrowsError(try mediaStore.loadMedia(fileName: badName), "loadMedia 应拦截非法路径: \(badName)")
+            XCTAssertThrowsError(try mediaStore.deleteMedia(fileName: badName), "deleteMedia 应拦截非法路径: \(badName)")
+        }
+
+        // 哨兵文件与 Attachments 目录必须完好无损
+        XCTAssertTrue(FileManager.default.fileExists(atPath: sentinelURL.path), "Vault 根目录哨兵文件不得被越权删除")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: mediaStore.attachmentsDirectoryURL.path), "Attachments 目录不得被 `.` 或空路径删除")
+    }
+
+    /// 验证 saveMedia 清洗恶意扩展名（含 `../` 或空扩展名不拼尾随点）
+    func testSaveMediaSanitizesMaliciousExtension() throws {
+        let data = Data("safe_payload".utf8)
+
+        let traversalName = try mediaStore.saveMedia(data: data, fileExtension: "../evil/png")
+        XCTAssertFalse(traversalName.contains("/"), "清洗后的文件名不得包含斜杠")
+        XCTAssertFalse(traversalName.contains(".."), "清洗后的文件名不得包含父目录穿越")
+        XCTAssertTrue(traversalName.hasSuffix(".evilpng"))
+
+        let emptyExtName = try mediaStore.saveMedia(data: data, fileExtension: "   ")
+        XCTAssertFalse(emptyExtName.hasSuffix("."), "空扩展名不得生成尾随点")
+    }
 }

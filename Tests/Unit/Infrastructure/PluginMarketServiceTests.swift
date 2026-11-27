@@ -607,4 +607,62 @@ final class PluginMarketServiceTests: XCTestCase {
         XCTAssertNotNil(service.errorMessage, "无法解析的载荷应设置连接错误提示")
         XCTAssertFalse(service.isLoading, "解析失败后 isLoading 应复位")
     }
+
+    // MARK: - 安全边界（缺陷 #161：插件 ID 路径穿越与下载协议白名单校验）
+
+    /// 验证非法 plugin.id（如 `../`、`..`、`.`、`/`、`\`、空串）与非 http/https 协议下载链接均被阻断
+    func testDownloadPluginBlocksPathTraversalAndDisallowedSchemes() async throws {
+        // 1. 静态路径安全校验
+        let maliciousIDs = ["", " ", ".", "..", "../Documents", "a/b", "a\\b", "foo..bar", "bad\nid"]
+        for badID in maliciousIDs {
+            XCTAssertFalse(PluginMarketService.isSafePluginID(badID), "非法插件 ID 应被拦截: \(badID)")
+        }
+        XCTAssertTrue(PluginMarketService.isSafePluginID("com.zhiyu.plugin.demo-1_0"))
+
+        // 2. 恶意 plugin.id 发起 downloadPlugin 必须直接返回 false，绝不触发沙盒目录删除
+        let traversalPlugin = MarketPlugin(
+            id: "../Documents",
+            version: "1.0.0",
+            author: "Attacker",
+            downloads: "0",
+            rating: 0,
+            icon: "wrench",
+            downloadURL: "https://example.com/plugins/evil",
+            minAppVersion: nil,
+            requiredPermissions: nil,
+            monetization: nil,
+            reviewCount: nil,
+            category: nil,
+            source: nil,
+            names: ["en": "Evil"],
+            descriptions: ["en": "Evil"]
+        )
+        let traversalResult = await service.downloadPlugin(traversalPlugin)
+        XCTAssertFalse(traversalResult, "包含路径穿越字符的 plugin.id 应被拒绝下载")
+
+        // 3. file:// 等非 HTTP(S) 协议下载链接必须被阻断
+        let fileSchemePlugin = MarketPlugin(
+            id: "com.zhiyu.plugin.valid",
+            version: "1.0.0",
+            author: "Attacker",
+            downloads: "0",
+            rating: 0,
+            icon: "wrench",
+            downloadURL: "file:///etc/passwd",
+            minAppVersion: nil,
+            requiredPermissions: nil,
+            monetization: nil,
+            reviewCount: nil,
+            category: nil,
+            source: nil,
+            names: ["en": "FileScheme"],
+            descriptions: ["en": "FileScheme"]
+        )
+        let fileSchemeResult = await service.downloadPlugin(fileSchemePlugin)
+        XCTAssertFalse(fileSchemeResult, "file:// 协议下载链接应被拒绝")
+
+        // 4. readmeCandidateURLs 对非法 ID 或非 HTTP(S) 协议应返回空数组
+        XCTAssertTrue(service.readmeCandidateURLs(forID: "../secret", downloadURLString: "https://example.com/p/a").isEmpty)
+        XCTAssertTrue(service.readmeCandidateURLs(forID: "valid-id", downloadURLString: "file:///tmp/a").isEmpty)
+    }
 }

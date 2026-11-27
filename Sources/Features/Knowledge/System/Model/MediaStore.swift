@@ -20,6 +20,16 @@ public final class MediaStore: Sendable {
         static let attachmentsDirectoryName = "Attachments"
         /// MD5 哈希十六进制格式字符串
         static let md5HexFormat = "%02hhx"
+        /// 当前目录路径片段
+        static let currentDir = "."
+        /// 父目录路径穿越片段
+        static let parentDir = ".."
+        /// 正斜杠路径分隔符
+        static let forwardSlash = "/"
+        /// 反斜杠路径分隔符
+        static let backslash = "\\"
+        /// 扩展名分隔点
+        static let extensionDot = "."
     }
 
     /// 目标笔记本的根路径
@@ -53,6 +63,33 @@ public final class MediaStore: Sendable {
         }
     }
     
+    /// 校验附件文件名严格落在 `attachmentsDirectoryURL` 内，阻断 `../` 路径穿越读/删 Vault 外文件
+    private func safeAttachmentURL(for fileName: String) throws -> URL {
+        let trimmed = fileName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty,
+              trimmed == fileName,
+              trimmed != MediaConfig.currentDir,
+              !trimmed.contains(MediaConfig.parentDir),
+              !trimmed.contains(MediaConfig.forwardSlash),
+              !trimmed.contains(MediaConfig.backslash) else {
+            throw CocoaError(.fileReadInvalidFileName)
+        }
+        let baseDir = attachmentsDirectoryURL.standardizedFileURL
+        let candidate = baseDir.appendingPathComponent(trimmed).standardizedFileURL
+        guard candidate.deletingLastPathComponent().path == baseDir.path else {
+            throw CocoaError(.fileReadInvalidFileName)
+        }
+        return candidate
+    }
+
+    /// 清洗扩展名：仅保留 ASCII 字母和数字并转小写，防止构造 `../` 或尾随点非法文件名
+    private func sanitizedExtension(from rawExtension: String) -> String {
+        let allowed = CharacterSet.alphanumerics
+        return String(
+            rawExtension.unicodeScalars.filter { allowed.contains($0) }
+        ).lowercased()
+    }
+
     /// 将二进制附件物理保存到沙盒，并生成以 MD5 命名的唯一物理路径。
     ///
     /// - Parameters:
@@ -65,9 +102,10 @@ public final class MediaStore: Sendable {
         // 注：MD5 仅用于去重命名，非安全用途，无需迁移至 SHA256
         let hash = Insecure.MD5.hash(data: data)
         let hexString = hash.map { String(format: MediaConfig.md5HexFormat, $0) }.joined()
-        let fileName = "\(hexString).\(fileExtension.lowercased())"
+        let cleanExt = sanitizedExtension(from: fileExtension)
+        let fileName = cleanExt.isEmpty ? hexString : "\(hexString)\(MediaConfig.extensionDot)\(cleanExt)"
         
-        let destinationURL = attachmentsDirectoryURL.appendingPathComponent(fileName)
+        let destinationURL = try safeAttachmentURL(for: fileName)
         
         // 2. 物理写入文件系统
         try data.write(to: destinationURL, options: .atomic)
@@ -79,18 +117,18 @@ public final class MediaStore: Sendable {
     ///
     /// - Parameter fileName: 存储的唯一文件名
     /// - Returns: 物理文件的二进制数据
-    /// - Throws: 文件不存在或读取失败时抛出 `CocoaError` 或 `URLError`
+    /// - Throws: 文件不存在、文件名非法或读取失败时抛出 `CocoaError` 或 `URLError`
     public func loadMedia(fileName: String) throws -> Data {
-        let fileURL = attachmentsDirectoryURL.appendingPathComponent(fileName)
+        let fileURL = try safeAttachmentURL(for: fileName)
         return try Data(contentsOf: fileURL)
     }
     
     /// 从沙盒中物理删除指定的附件。
     ///
     /// - Parameter fileName: 待删除的唯一文件名
-    /// - Throws: 物理删除失败时抛出错误
+    /// - Throws: 文件名非法或物理删除失败时抛出错误
     public func deleteMedia(fileName: String) throws {
-        let fileURL = attachmentsDirectoryURL.appendingPathComponent(fileName)
+        let fileURL = try safeAttachmentURL(for: fileName)
         if FileManager.default.fileExists(atPath: fileURL.path) {
             try FileManager.default.removeItem(at: fileURL)
         }

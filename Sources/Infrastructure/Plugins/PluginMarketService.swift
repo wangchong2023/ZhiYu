@@ -284,10 +284,38 @@ final class PluginMarketService: ObservableObject {
         return false
     }
 
+    /// 校验插件 ID 不含路径穿越字符或目录分隔符，防止沙盒目录越界读/写/删
+    internal nonisolated static func isSafePluginID(_ pluginID: String) -> Bool {
+        let trimmed = pluginID.trimmingCharacters(in: .whitespacesAndNewlines)
+        let doubleDot = SystemConstants.Character.dot + SystemConstants.Character.dot
+        guard !trimmed.isEmpty,
+              trimmed == pluginID,
+              trimmed != SystemConstants.Character.dot,
+              !trimmed.contains(doubleDot),
+              !trimmed.contains(SystemConstants.Character.slash),
+              !trimmed.contains(SystemConstants.Character.backslash),
+              trimmed.unicodeScalars.allSatisfy({ !CharacterSet.controlCharacters.contains($0) }) else {
+            return false
+        }
+        return true
+    }
+
+    /// 校验远程下载链接协议严格属于 HTTP/HTTPS 白名单，阻断 file:// 等本地协议滥用
+    internal nonisolated static func isAllowedDownloadURL(_ url: URL) -> Bool {
+        guard let scheme = url.scheme?.lowercased() else { return false }
+        return PluginConstants.NetworkSecurity.allowedSchemes.contains(scheme)
+    }
+
     /// 下载指定的插件并将其保存到本地沙盒存储目录中
     func downloadPlugin(_ plugin: MarketPlugin) async -> Bool {
-        guard let urlString = plugin.downloadURL, let baseURL = URL(string: urlString) else {
-            Logger.shared.warning("[PluginMarket] 插件 \(plugin.name) 下载链接无效或缺失。")
+        guard Self.isSafePluginID(plugin.id) else {
+            Logger.shared.warning("[PluginMarket] 非法插件 ID，已拒绝下载: \(plugin.id)")
+            return false
+        }
+        guard let urlString = plugin.downloadURL,
+              let baseURL = URL(string: urlString),
+              Self.isAllowedDownloadURL(baseURL) else {
+            Logger.shared.warning("[PluginMarket] 插件 \(plugin.name) 下载链接无效或协议不受支持。")
             return false
         }
 
@@ -326,17 +354,36 @@ final class PluginMarketService: ObservableObject {
         }
     }
 
+    /// 为指定插件解析严格落在 Plugins 根目录内的物理沙盒目标文件夹
+    private func safeDestinationFolderURL(for pluginID: String, fileManager: FileManager) -> URL? {
+        guard Self.isSafePluginID(pluginID),
+              let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            return nil
+        }
+        let pluginsDirectory = documentsURL.appendingPathComponent("Plugins").standardizedFileURL
+        let destinationFolderURL = pluginsDirectory.appendingPathComponent(pluginID).standardizedFileURL
+        guard destinationFolderURL.deletingLastPathComponent().path == pluginsDirectory.path else {
+            return nil
+        }
+        return destinationFolderURL
+    }
+
     /// 为指定插件准备物理沙盒目标文件夹，清理老旧缓存
     private func prepareDestinationFolder(for pluginID: String, fileManager: FileManager) throws -> URL {
-        guard let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
+        guard Self.isSafePluginID(pluginID) else {
             throw NSError(
                 domain: PluginConstants.MarketError.domain,
-                code: 404,
+                code: PluginConstants.MarketError.invalidPluginIDCode,
+                userInfo: [NSLocalizedDescriptionKey: PluginConstants.MarketError.invalidPluginIDReason]
+            )
+        }
+        guard let destinationFolderURL = safeDestinationFolderURL(for: pluginID, fileManager: fileManager) else {
+            throw NSError(
+                domain: PluginConstants.MarketError.domain,
+                code: SystemConstants.HTTPStatusCode.notFound,
                 userInfo: [NSLocalizedDescriptionKey: PluginConstants.MarketError.documentsNotFound]
             )
         }
-        let pluginsDirectory = documentsURL.appendingPathComponent("Plugins")
-        let destinationFolderURL = pluginsDirectory.appendingPathComponent(pluginID)
         
         if fileManager.fileExists(atPath: destinationFolderURL.path) {
             try fileManager.removeItem(at: destinationFolderURL)
@@ -407,11 +454,9 @@ final class PluginMarketService: ObservableObject {
 
     /// 发生异常时的下载清理回滚动作
     private func performDownloadRollback(for pluginID: String, fileManager: FileManager) {
-        if let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first {
-            let destinationFolderURL = documentsURL.appendingPathComponent("Plugins").appendingPathComponent(pluginID)
-            if fileManager.fileExists(atPath: destinationFolderURL.path) {
-                try? fileManager.removeItem(at: destinationFolderURL)
-            }
+        if let destinationFolderURL = safeDestinationFolderURL(for: pluginID, fileManager: fileManager),
+           fileManager.fileExists(atPath: destinationFolderURL.path) {
+            try? fileManager.removeItem(at: destinationFolderURL)
         }
     }
 
@@ -421,7 +466,9 @@ final class PluginMarketService: ObservableObject {
         downloadURLString: String,
         preferredLanguages: [String] = [Localized.currentLanguage]
     ) -> [URL] {
-        guard let downloadURL = URL(string: downloadURLString) else { return [] }
+        guard Self.isSafePluginID(pluginID),
+              let downloadURL = URL(string: downloadURLString),
+              Self.isAllowedDownloadURL(downloadURL) else { return [] }
         let base = downloadURL.deletingLastPathComponent()
         let preferredLanguage = preferredLanguages.first ?? PluginConstants.LanguagePrefix.en
         

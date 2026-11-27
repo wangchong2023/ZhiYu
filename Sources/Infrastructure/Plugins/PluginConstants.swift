@@ -122,6 +122,10 @@ enum PluginConstants {
         static let httpPrefix: String = "HTTP "
         /// 文档目录定位失败描述
         static var documentsNotFound: String { L10n.Plugin.Error.documentsNotFound }
+        /// 非法插件标识符错误码（HTTP 403 Forbidden）
+        static let invalidPluginIDCode: Int = SystemConstants.HTTPStatusCode.forbidden
+        /// 非法插件标识符错误描述
+        static let invalidPluginIDReason: String = "Invalid plugin identifier"
     }
 
     // MARK: - 插件 ID 前缀 (Plugin ID Prefix)

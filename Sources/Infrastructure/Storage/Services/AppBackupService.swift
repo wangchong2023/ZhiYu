@@ -280,7 +280,10 @@ final class BackupService: ObservableObject {
         // 文件不存在的条目（如被覆盖）直接移除，避免索引孤儿
         var kept = Array(sorted.prefix(Self.maxBackups))
         for entry in toRemove {
-            let url = backupDirectory.appendingPathComponent(entry.fileName)
+            guard let url = safeBackupFileURL(for: entry.fileName) else {
+                // 拦截篡改索引中的路径穿越项：绝不执行物理删除，并从索引中安全清理
+                continue
+            }
             if FileManager.default.fileExists(atPath: url.path) {
                 do {
                     try FileManager.default.removeItem(at: url)

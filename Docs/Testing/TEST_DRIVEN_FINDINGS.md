@@ -169,21 +169,25 @@
 | **158** | `AppleAuthStrategy` 在 delegate 回调 `continuation?.resume` 后未将 `self.continuation = nil` 置空，重复回调会引发双重 resume 崩溃，且再次调用 `acquireCredentials` 会覆盖泄露旧 continuation | Apple 登录 delegate 重复回调或连续触发登录 | 登录流程触发 Continuation 崩溃或协程永久挂起 | **High** | 状态机并发与数据生命周期 | 新增 `consumeContinuation()` 原子取出并置空，入口若存在挂起旧 continuation 先 `CancellationError` 释放 | **✅ 已解决** | 是 (Delegate Continuation 消费置空规范) | 是 (`AuthOAuthStrategiesBranchTests`) | ✅ 已闭环 |
 | **159** | `GitHubAuthStrategy.acquireCredentials` 未强持有 `ASWebAuthenticationSession` 且忽略 `session.start()` 返回值（启动失败时回调永不触发导致 continuation 永久挂死）；另 `Graph3DView+SceneLogic.startFPSMonitor` 未先 `invalidate` 旧 Timer | GitHub OAuth 会话提前释放、启动失败或 3D 图谱重复触发 FPS 监控 | GitHub 登录卡死无响应或 3D 图谱孤儿 Timer 泄露 | **High** | 状态机并发与数据生命周期 | `GitHubAuthStrategy` 实例强持有 `activeSession` 并校验 `guard session.start()` 失败立即抛错；`startFPSMonitor` 补齐 `fpsUpdateTimer?.invalidate()` | **✅ 已解决** | 是 (ASWebAuthenticationSession 持有与启动失败收口) | 是 (`AuthOAuthStrategiesBranchTests`) | ✅ 已闭环 |
 | **160** | `MermaidWebView.generateMermaidHTML` 与 `iOSExportService.exportMindmapToPDF` 存在三处高危 XSS 注入漏洞：① 未转义 `</script>` 闭合标签逃逸；② 启用了 `securityLevel: 'loose'` 允许图表内嵌脚本执行；③ `catch` 回退路径直接将未转义用户输入拼入 `root.innerHTML`；另 `MacMermaidWebView.zoom` 缺少 `pageZoom` 上下界钳位 | 渲染含 `</script>` 或恶意 HTML 标签的外部 Markdown/Mermaid 文档 | WebView 本地 Bundle 上下文触发存储型 XSS 执行任意 JS | **High** | 架构设计与安全/网络健壮性 | 转义 `</` 为 `<\/`、全量收紧为 `securityLevel: 'strict'`、回退路径改用 `document.createElement` + `textContent` 安全 DOM；macOS `pageZoom` 补齐 `[0.5, 5.0]` 钳位 | **✅ 已解决** | 是 (WebView XSS 零 innerHTML 拼接规范) | 是 (`IOSPDFServiceSecurityTests`) | ✅ 已闭环 |
+| **161** | `PluginMarketService.prepareDestinationFolder` 与 `performDownloadRollback` 未对 `plugin.id` 做路径穿越校验，且 `downloadPlugin`/`readmeCandidateURLs` 未校验远程 URL 协议白名单，恶意插件清单中的 `../Documents` 可直接触发 `removeItem` 删穿 `Plugins/` 甚至 `Documents/` 根目录，或借 `file://` 读取本地文件 | 加载含恶意 `plugin.id` 或非 HTTP(S) `downloadURL` 的社区插件清单 | 沙盒内用户数据与 SQLite 数据库面临任意删除风险或本地协议越权访问 | **High** | 架构设计与安全/网络健壮性 | 新增 `isSafePluginID(_:)`、`isAllowedDownloadURL(_:)` 与 `safeDestinationFolderURL(for:fileManager:)` 校验，严格限制目标路径位于 `Plugins/` 子目录且协议仅允许 `http`/`https` | **✅ 已解决** | 是 (沙盒目录边界与下载协议白名单双检) | 是 (`PluginMarketServiceTests`) | ✅ 已闭环 |
+| **162** | `MediaStore.loadMedia`、`deleteMedia` 与 `saveMedia` 对外部传入的 `fileName`/`fileExtension` 零校验，含 `../`、`.`、空串或斜杠的输入可越出 `Attachments/` 目录读取或删除 Vault 根目录核心数据甚至删除整个 `Attachments/` 目录 | 传入恶意或损坏的附件路径/扩展名调用 `MediaStore` | Vault 内任意文件被越权读取或误删，或生成带尾随点的非法文件名 | **High** | 架构设计与安全/网络健壮性 | 新增 `safeAttachmentURL(for:)` 严格校验标准化父目录等于 `attachmentsDirectoryURL`，`saveMedia` 清洗扩展名仅保留字母数字并消除空扩展名尾随点 | **✅ 已解决** | 是 (附件存储路径穿越统一防线) | 是 (`MediaStoreTests`) | ✅ 已闭环 |
+| **163** | `AppBackupService.cleanOldBackups()` 绕过了已有的 `safeBackupFileURL(for:)` 防护直接 `backupDirectory.appendingPathComponent(entry.fileName)` 并执行 `removeItem`，当 `backup_index.json` 混入 `../` 越界路径且备份数超限时可误删备份目录外文件 | 备份索引被篡改并触发超过 `maxBackups` 的自动清理 | 沙盒内其他目录文件被自动清理任务越权删除 | **High** | 架构设计与安全/网络健壮性 | `cleanOldBackups()` 统一改用 `guard let url = safeBackupFileURL(for: entry.fileName) else { continue }`，拦截越界路径删除并安全清理污染索引 | **✅ 已解决** | 是 (备份服务全路径统一安全解析) | 是 (`AppBackupServiceDeepMutationTests`) | ✅ 已闭环 |
+| **164** | `QuickCaptureWidget` 桌面小组件发出的 `zhiyu://voice` 与 `zhiyu://ocr` 深度链接在 `DeepLinkService.handleKnownHost` 中缺失分支导致点击静默失效；同时 `url.host` 未做大小写归一化，大写 Host（如 `ZHIYU://SEARCH`）违反 RFC 3986 匹配失败 | 用户点击桌面小组件的语音/OCR 快捷按钮或打开大写 Host 的 DeepLink | 桌面小组件核心语音/OCR 入口点击无响应 | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | 抽取 `Host`/`QueryKey` 强类型常量，对 `host?.lowercased()` 匹配并将 `voice`/`ocr` 统一路由至 `.ingest` 知识摄取中心 | **✅ 已解决** | 是 (Widget DeepLink 全入口契约对齐) | 是 (`DeepLinkTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**160 项**
+- **收录问题总数**：**164 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：38 项 (23.8%)
-  - 状态机并发与数据生命周期：35 项 (21.9%)
-  - 架构设计与安全/网络健壮性：47 项 (29.4%)
-  - UI/交互与防御性缺陷：16 项 (10.0%)
-  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (15.0%)
+  - 功能缺陷与核心算法/解析器/数据完整性：39 项 (23.8%)
+  - 状态机并发与数据生命周期：35 项 (21.3%)
+  - 架构设计与安全/网络健壮性：50 项 (30.5%)
+  - UI/交互与防御性缺陷：16 项 (9.8%)
+  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (14.6%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：78 项 (48.8%)
-  - **Medium（功能异常/算法边界/性能损耗）**：55 项 (34.4%)
-  - **Low（样式异味/边界校验/门禁规范）**：27 项 (16.9%)
-- **修复闭环率**：**100% (160/160 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：81 项 (49.4%)
+  - **Medium（功能异常/算法边界/性能损耗）**：56 项 (34.1%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (16.5%)
+- **修复闭环率**：**100% (164/164 项已修复闭环)**
 
