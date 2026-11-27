@@ -353,9 +353,10 @@ final class SecurityComponentsSupplementTests: XCTestCase {
         XCTAssertFalse(result, "验签通过但 JSON 解析失败应返回 false")
     }
 
-    /// 测试公钥 + 有效 JSON + 未知分类 key 应跳过该 key（不崩溃，返回 true）
-    func testVerifyAndApplyPatch_UnknownCategoryKey_SkipsAndReturnsTrue() {
+    /// 真实公钥 + 有效 JSON + 未知分类 key 应跳过该 key（不崩溃，返回 true）
+    func testVerifyAndApplyPatch_UnknownCategoryKey_SkipsAndReturnsTrue() throws {
         let manager = DynamicComplianceManager.shared
+        let (privateKey, publicKeyPEM) = try ComplianceRSATestHelper.makeKeyPair()
         let jsonPayload = Data("""
         {
             "configVersion": "v1",
@@ -365,18 +366,19 @@ final class SecurityComponentsSupplementTests: XCTestCase {
             }
         }
         """.utf8)
-        let validSignature = Data("sig".utf8).base64EncodedString()
+        let validSignature = try ComplianceRSATestHelper.sign(jsonPayload, with: privateKey)
         let result = manager.verifyAndApplyPatch(
             payloadData: jsonPayload,
             signatureBase64: validSignature,
-            publicKeyPEM: "VALID_TEST_PUBLIC_KEY"
+            publicKeyPEM: publicKeyPEM
         )
         XCTAssertTrue(result, "未知分类 key 应被跳过，验签+JSON 解析成功应返回 true")
     }
 
-    /// 测试公钥 + 有效 JSON + 空覆盖应返回 true（updateRemoteComplianceConfig 接受空字典）
-    func testVerifyAndApplyPatch_EmptyOverride_ReturnsTrue() {
+    /// 真实公钥 + 有效 JSON + 空覆盖应返回 true（updateRemoteComplianceConfig 接受空字典）
+    func testVerifyAndApplyPatch_EmptyOverride_ReturnsTrue() throws {
         let manager = DynamicComplianceManager.shared
+        let (privateKey, publicKeyPEM) = try ComplianceRSATestHelper.makeKeyPair()
         let jsonPayload = Data("""
         {
             "configVersion": "v1",
@@ -384,11 +386,11 @@ final class SecurityComponentsSupplementTests: XCTestCase {
             "patternOverrides": {}
         }
         """.utf8)
-        let validSignature = Data("sig".utf8).base64EncodedString()
+        let validSignature = try ComplianceRSATestHelper.sign(jsonPayload, with: privateKey)
         let result = manager.verifyAndApplyPatch(
             payloadData: jsonPayload,
             signatureBase64: validSignature,
-            publicKeyPEM: "VALID_TEST_PUBLIC_KEY"
+            publicKeyPEM: publicKeyPEM
         )
         XCTAssertTrue(result, "空覆盖应返回 true")
     }

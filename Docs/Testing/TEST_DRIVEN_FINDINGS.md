@@ -242,21 +242,24 @@
 | **231** | `PluginDataStore.dataURL(for:)` 未对 `pluginID` 做路径穿越与非法字符校验，恶意或篡改的 `pluginID`（如 `../../Vaults/vault`）可直接逃逸 `PluginsData` 沙盒目录读取或覆写 `Application Support` 下任意文件 | 插件或外部配置传入含 `../`、`/`、`.` 或空字节的 `pluginID` 调用存储读写 | 沙盒越界读取或破坏其他业务目录数据文件 | **High** | 架构设计与安全/网络健壮性 | 接入 `PluginMarketService.isSafePluginID` 并二次校验标准化父目录严格等于 `PluginsData`；常量收敛至 `DataStoreConstants` | **✅ 已解决** | 是 (插件私有存储目录沙盒边界防护) | 是 (`PluginDataStoreTests`) | ✅ 已闭环 |
 | **232** | `ModelDownloadManager.startDownload` 缺少 HTTP/HTTPS 协议白名单与 `SSRFGuard.isSafeURL` 内网防护；`sanitizedDestinationFileName` 对空串/纯空白/单点 `.`/空字节未防御，生成 `.bin`/`..bin` 隐藏文件 | 传入 `file://`、`http://127.0.0.1` 等非安全模型下载 URL，或空白/单点 `modelId` | 内网 SSRF 探测或本地文件读取风险，以及沙盒落盘隐藏损坏文件 | **High** | 架构设计与安全/网络健壮性 | 新增 `isAllowedModelURL(_:)` 前置拦截非 HTTP(S) 与内网地址；`sanitizedDestinationFileName` 剥离空字节并在空白/单点时回退 `PathConstants.fallbackModelName` | **✅ 已解决** | 是 (模型下载 SSRF 防护与文件名安全兜底) | 是 (`ModelDownloadLifecycleTests`) | ✅ 已闭环 |
 | **233** | `EmbeddingManager` 存在四重隐患：Fallback 向量使用 `Swift.Hasher`（每进程随机种子）导致重启后检索失效；冷启动 `NLEmbedding` 未就绪落盘 512 维 Fallback 向量后，模型就绪转为 640 维查询导致维度失配召回归零；`indexChunks` 重建页面分块时未清理同页旧分块残留幽灵结果；`search` 未拦截纯空白查询 | 无 `NLEmbedding` 或冷启动阶段落盘后重启/模型就绪检索、编辑缩减页面分块后检索、或输入纯空白查询 | 语义检索召回率归零、已删除内容幽灵命中、空白查询浪费算力 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 替换为跨进程确定性 FNV-1a 64-bit 哈希（`DeterministicHashConstants`）；新增 `resolveQueryVector` 在 640 维模型下自动以同维 Fallback 兼容历史 512 维向量；`indexChunks` 先清理同 `pageID` 旧分块；`search`/`searchChunkCache` 拦截空白查询 | **✅ 已解决** | 是 (跨进程确定性向量哈希、跨维度 Fallback 兼容与分块缓存一致性) | 是 (`EmbeddingManagerDeterminismTests`) | ✅ 已闭环 |
+| **234** | `DynamicComplianceManager+Patch.swift` 生产代码中残留 `VALID_TEST_PUBLIC_KEY` 验签绕过后门：任何含该字符串的 PEM 公钥搭配任意非空 Base64 即可跳过真实 RSA 签名校验，且违反测试专用代码禁止进入生产 target 红线 | 攻击者下发含 `VALID_TEST_PUBLIC_KEY` 的公钥与伪造签名覆盖云端合规策略 | 合规敏感词库与拒答文案可被中间人任意篡改甚至清空 | **High** | 架构设计与安全/网络健壮性 | 彻底删除 `ComplianceTestKey` 生产后门分支，100% 走真实 `SecKeyVerifySignature` RSA-SHA256 验签并收敛 `PatchCryptoConstants`；全部合规测试升级为 `SecKeyCreateRandomKey` 真实 RSA-2048 签发验签 | **✅ 已解决** | 是 (铲除生产代码测试验签后门并强制真实 RSA 验签) | 是 (`DynamicComplianceSignatureTests` / `DynamicCompliancePatchTests`) | ✅ 已闭环 |
+| **235** | `PluginLoader.getSignatureKey` 使用 `try? KeychainService.shared.retrieve` 吞掉锁屏/临时异常并静默生成全新 32 字节密钥覆写旧密钥；`isFileNameSafe` 漏拦截单点 `.` 与空字节 `\0` | 设备锁屏后台触发插件签名校验，或插件清单传入 `.` / 空字节文件名 | 所有已安装插件 HMAC-SHA256 签名永久失效，或出现单点/空字节路径绕过 | **High** | 架构设计与安全/网络健壮性 | `getSignatureKey` 改用 `do/catch` 严禁吞错覆写（仅明确返回 `nil` 时新建并持久化）；`isFileNameSafe` 补齐 `.` 与 `\0` 拦截；收敛 `SignatureConstants` | **✅ 已解决** | 是 (插件签名密钥异常保护与文件名安全校验) | 是 (`PluginLoaderSecurityTests`) | ✅ 已闭环 |
+| **236** | `AppLinkProcessor.extractOutgoingLinks` 未剥离双链 `|` 别名与 `#` 章节锚点、未过滤空白双链且允许 `[^]]+` 跨行误吞多段正文 | 笔记中包含 `[[目标\|别名]]`、`[[目标#章节]]`、`[[   ]]` 或未闭合跨行 `[[...` | 知识图谱生成大量幽灵孤立节点、空白出链或跨行误连边 | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | 收敛 `LinkSyntax` 常量，改用单行正则 `\[\[([^\]\r\n]+)\]\]`，剥离 `|` 别名与 `#` 锚点并过滤空白结果 | **✅ 已解决** | 是 (Markdown 双链规范化解析) | 是 (`ZhiYuModelTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**233 项**
+- **收录问题总数**：**236 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：62 项 (26.6%)
-  - 状态机并发与数据生命周期：56 项 (24.0%)
-  - 架构设计与安全/网络健壮性：74 项 (31.8%)
-  - UI/交互与防御性缺陷：17 项 (7.3%)
-  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (10.3%)
+  - 功能缺陷与核心算法/解析器/数据完整性：63 项 (26.7%)
+  - 状态机并发与数据生命周期：56 项 (23.7%)
+  - 架构设计与安全/网络健壮性：76 项 (32.2%)
+  - UI/交互与防御性缺陷：17 项 (7.2%)
+  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (10.2%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：141 项 (60.5%)
-  - **Medium（功能异常/算法边界/性能损耗）**：65 项 (27.9%)
-  - **Low（样式异味/边界校验/门禁规范）**：27 项 (11.6%)
-- **修复闭环率**：**100% (233/233 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：143 项 (60.6%)
+  - **Medium（功能异常/算法边界/性能损耗）**：66 项 (28.0%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (11.4%)
+- **修复闭环率**：**100% (236/236 项已修复闭环)**
 

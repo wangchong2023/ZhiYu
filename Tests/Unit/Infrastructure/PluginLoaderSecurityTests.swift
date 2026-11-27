@@ -43,11 +43,13 @@ final class PluginLoaderSecurityTests: XCTestCase {
         XCTAssertNil(result, "合法 pluginID 但文件不存在应返回 nil")
     }
 
-    /// 验证 isFileNameSafe 拒绝空串、纯空白及反斜杠路径分隔符
-    func testPluginLoader_isFileNameSafe_rejectsEmptyAndBackslash() {
+    /// 验证 isFileNameSafe 拒绝空串、纯空白、单点 "."、空字节及反斜杠路径分隔符（#235 回归）
+    func testPluginLoader_isFileNameSafe_rejectsEmptyCurrentDirNullByteAndBackslash() {
         let loader = PluginLoader()
         XCTAssertFalse(loader.isFileNameSafe(""), "空文件名应被拒绝")
         XCTAssertFalse(loader.isFileNameSafe("   "), "纯空白文件名应被拒绝")
+        XCTAssertFalse(loader.isFileNameSafe("."), "当前目录标记 '.' 应被拒绝")
+        XCTAssertFalse(loader.isFileNameSafe("icon.png\0.txt"), "含空字节的文件名应被拒绝")
         XCTAssertFalse(loader.isFileNameSafe("..\\secret.png"), "含反斜杠的文件名应被拒绝")
         XCTAssertTrue(loader.isFileNameSafe("icon.png"), "常规文件名应放行")
     }

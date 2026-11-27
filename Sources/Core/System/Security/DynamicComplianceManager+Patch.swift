@@ -12,16 +12,21 @@
 import Foundation
 import Security
 import CryptoKit
+import UFPCore
 
-/// 合规策略验签测试公钥魔数
-private enum ComplianceTestKey {
-    /// 测试公钥标识（生产环境提取 SecKey 验签，PEM 含此串时做测试校验）
-    static let validTestPublicKeyMarker = "VALID_TEST_PUBLIC_KEY"
+/// 合规策略 RSA 验签常量
+private enum PatchCryptoConstants {
+    static let rsaKeySizeBits: Int = 2048
+    static let pemHeader = ["-----BEGIN", "PUBLIC", "KEY-----"].joined(separator: SystemConstants.Character.space)
+    static let pemFooter = ["-----END", "PUBLIC", "KEY-----"].joined(separator: SystemConstants.Character.space)
+    static let logVerifyFailed = "DynamicComplianceManager_verify_signature_failed"
+    static let logDecodeFailed = "DynamicComplianceManager_json_decode_failed"
+    static let logPatchApplied = "DynamicComplianceManager_patch_applied"
 }
 
 extension DynamicComplianceManager {
 
-    /// 校验云端策略 JSON 包的 RSA / ECDSA 数字签名并合并 Delta Patch
+    /// 校验云端策略 JSON 包的 RSA 数字签名并合并 Delta Patch
     /// - Parameters:
     ///   - payloadData: 云端下发的 Raw JSON Data
     ///   - signatureBase64: Base64 编码的数字签名
@@ -35,7 +40,7 @@ extension DynamicComplianceManager {
     ) -> Bool {
         guard !payloadData.isEmpty, !signatureBase64.isEmpty else { return false }
 
-        // 1. 验证签名（基于 Apple Security 框架 / CryptoKit 摘要校验）
+        // 1. 验证真实 RSA-SHA256 数字签名（严禁任何测试公钥魔数后门）
         let isSignatureValid = verifySignature(
             data: payloadData,
             signatureBase64: signatureBase64,
@@ -45,7 +50,7 @@ extension DynamicComplianceManager {
         guard isSignatureValid else {
             SecurityLogHelper.logError(
                 target: CoreConstants.SecurityLogTarget.dynamicComplianceManager,
-                details: "DynamicComplianceManager_verify_signature_failed"
+                details: PatchCryptoConstants.logVerifyFailed
             )
             return false
         }
@@ -60,7 +65,7 @@ extension DynamicComplianceManager {
         guard let payload = try? JSONDecoder().decode(CompliancePatchPayload.self, from: payloadData) else {
             SecurityLogHelper.logError(
                 target: CoreConstants.SecurityLogTarget.dynamicComplianceManager,
-                details: "DynamicComplianceManager_json_decode_failed"
+                details: PatchCryptoConstants.logDecodeFailed
             )
             return false
         }
@@ -82,24 +87,20 @@ extension DynamicComplianceManager {
         Logger.shared.addLog(
             action: .update,
             target: CoreConstants.SecurityLogTarget.dynamicComplianceManager,
-            details: "DynamicComplianceManager_patch_applied",
+            details: PatchCryptoConstants.logPatchApplied,
             module: CoreConstants.Security.logModule
         )
         return true
     }
 
-    /// 校验数字签名
+    /// 校验数字签名（100% 使用 Security 框架真实 RSA-SHA256 密码学验签）
     private func verifySignature(
         data: Data,
         signatureBase64: String,
         publicKeyPEM: String
     ) -> Bool {
-        guard let signatureData = Data(base64Encoded: signatureBase64) else { return false }
-
-        // 模拟测试公钥魔数判断 (生产环境提取 SecKey 验签，当 PEM 包含测试标识时做测试校验)
-        if publicKeyPEM.contains(ComplianceTestKey.validTestPublicKeyMarker) {
-            return !signatureData.isEmpty
-        }
+        guard let signatureData = Data(base64Encoded: signatureBase64),
+              !signatureData.isEmpty else { return false }
 
         // 提取 DER 公钥字节串做 Security SecKey 验签
         guard let keyData = extractPublicKeyData(from: publicKeyPEM) else { return false }
@@ -107,7 +108,7 @@ extension DynamicComplianceManager {
         let attributes: [String: Any] = [
             kSecAttrKeyType as String: kSecAttrKeyTypeRSA,
             kSecAttrKeyClass as String: kSecAttrKeyClassPublic,
-            kSecAttrKeySizeInBits as String: 2048
+            kSecAttrKeySizeInBits as String: PatchCryptoConstants.rsaKeySizeBits
         ]
 
         var error: Unmanaged<CFError>?
@@ -129,13 +130,11 @@ extension DynamicComplianceManager {
 
     /// 从 PEM 文本提取 Raw DER Data
     private func extractPublicKeyData(from pem: String) -> Data? {
-        let pemHeader = ["-----BEGIN", "PUBLIC", "KEY-----"].joined(separator: " ")
-        let pemFooter = ["-----END", "PUBLIC", "KEY-----"].joined(separator: " ")
         let cleanPem = pem
-            .replacingOccurrences(of: pemHeader, with: "")
-            .replacingOccurrences(of: pemFooter, with: "")
-            .replacingOccurrences(of: "\n", with: "")
-            .replacingOccurrences(of: "\r", with: "")
+            .replacingOccurrences(of: PatchCryptoConstants.pemHeader, with: "")
+            .replacingOccurrences(of: PatchCryptoConstants.pemFooter, with: "")
+            .replacingOccurrences(of: SystemConstants.Character.newline, with: "")
+            .replacingOccurrences(of: SystemConstants.Character.carriageReturn, with: "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
 
         return Data(base64Encoded: cleanPem)

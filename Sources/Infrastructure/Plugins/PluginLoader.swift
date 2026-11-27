@@ -24,17 +24,21 @@ final class PluginLoader {
     /// ZIPFoundation 适配层注入（通过 FileArchiverProtocol 间接调用，不直接 import ZIPFoundation）
     @Dependency(\.fileArchiver) private var archiver: any FileArchiverProtocol
 
-    /// 插件签名密钥的 Keychain 存储键（审查修复 HIGH-3：不再硬编码盐值）
-    private static let signatureKeychainKey = "com.zhiyu.plugin.signature_key"
+    private enum SignatureConstants {
+        static let keychainKey = "com.zhiyu.plugin.signature_key"
+        static let keyByteCount = 32
+    }
 
     // MARK: - 文件名安全校验
 
-    /// 校验 fileName 非空且不含路径穿越字符（..、/、\）
+    /// 校验 fileName 非空且不含单点 "."、空字节与路径穿越字符（..、/、\）
     /// - Parameter fileName: 待校验的文件名
     /// - Returns: 校验通过返回 true，为空或含路径穿越返回 false
     internal func isFileNameSafe(_ fileName: String) -> Bool {
         let trimmed = fileName.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return false }
+        guard !trimmed.isEmpty,
+              trimmed != SystemConstants.Character.dot,
+              !trimmed.unicodeScalars.contains(UnicodeScalar(0)) else { return false }
         return !trimmed.contains(PluginConstants.FileNameSecurity.pathTraversalMarker)
             && !trimmed.contains(PluginConstants.FileNameSecurity.pathSeparator)
             && !trimmed.contains(PluginConstants.FileNameSecurity.backslashSeparator)
@@ -42,20 +46,31 @@ final class PluginLoader {
 
     // MARK: - 插件签名校验（VULN-001 修复）
 
-    /// 获取或生成插件签名密钥（审查修复 HIGH-3：密钥存 Keychain，不硬编码在二进制中）
+    /// 获取或生成插件签名密钥（严格区分 Keychain 读取异常与密钥不存在，严禁锁屏/异常时覆写旧密钥）
     /// - Returns: HMAC-SHA256 对称密钥
     private static func getSignatureKey() -> SymmetricKey? {
-        // 尝试从 Keychain 读取
-        if let stored = try? KeychainService.shared.retrieve(key: signatureKeychainKey),
-           let keyData = Data(base64Encoded: stored) {
-            return SymmetricKey(data: keyData)
+        do {
+            if let stored = try KeychainService.shared.retrieve(key: SignatureConstants.keychainKey),
+               let keyData = Data(base64Encoded: stored) {
+                return SymmetricKey(data: keyData)
+            }
+        } catch {
+            // Keychain 临时不可用（如锁屏 errSecInteractionNotAllowed）时直接拒绝，严禁生成新密钥覆写旧密钥
+            Logger.shared.error("[PluginLoader] Keychain unavailable when loading signature key", error: error)
+            return nil
         }
-        // 生成 32 字节随机密钥并存入 Keychain
-        var randomBytes = [UInt8](repeating: 0, count: 32)
+
+        // 仅当 Keychain 明确返回 nil（不存在）时才生成 32 字节随机密钥并持久化
+        var randomBytes = [UInt8](repeating: 0, count: SignatureConstants.keyByteCount)
         let status = SecRandomCopyBytes(kSecRandomDefault, randomBytes.count, &randomBytes)
         guard status == errSecSuccess else { return nil }
         let keyData = Data(randomBytes)
-        try? KeychainService.shared.store(key: signatureKeychainKey, value: keyData.base64EncodedString())
+        do {
+            try KeychainService.shared.store(key: SignatureConstants.keychainKey, value: keyData.base64EncodedString())
+        } catch {
+            Logger.shared.error("[PluginLoader] Failed to persist generated signature key", error: error)
+            return nil
+        }
         return SymmetricKey(data: keyData)
     }
 

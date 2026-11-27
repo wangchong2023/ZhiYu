@@ -48,9 +48,10 @@ final class DynamicCompliancePatchTests: XCTestCase {
         XCTAssertFalse(result, "空签名应拒绝")
     }
 
-    // MARK: - 测试公钥魔数路径（VALID_TEST_PUBLIC_KEY）
+    // MARK: - 真实 RSA-2048 验签路径
 
-    func testVerifyAndApplyPatchTestKeyNonEmptySignatureVerificationPasses() {
+    func testVerifyAndApplyPatchTestKeyNonEmptySignatureVerificationPasses() throws {
+        let (privateKey, publicKeyPEM) = try ComplianceRSATestHelper.makeKeyPair()
         let payload = Data("""
         {
             "configVersion": "2026.08.06-v1",
@@ -58,28 +59,27 @@ final class DynamicCompliancePatchTests: XCTestCase {
             "patternOverrides": {}
         }
         """.utf8)
-        let signature = Data("signature_bytes".utf8).base64EncodedString()
-        let testKey = "-----BEGIN PUBLIC KEY-----\nVALID_TEST_PUBLIC_KEY\n-----END PUBLIC KEY-----"
+        let signature = try ComplianceRSATestHelper.sign(payload, with: privateKey)
 
         let result = manager.verifyAndApplyPatch(
             payloadData: payload,
             signatureBase64: signature,
-            publicKeyPEM: testKey
+            publicKeyPEM: publicKeyPEM
         )
-        XCTAssertTrue(result, "测试公钥 + 非空签名应验签通过")
+        XCTAssertTrue(result, "真实 RSA-2048 公钥 + 合法签名应验签通过")
     }
 
-    func testVerifyAndApplyPatchTestKeyEmptySignatureDataVerificationFails() {
+    func testVerifyAndApplyPatchTestKeyEmptySignatureDataVerificationFails() throws {
+        let (_, publicKeyPEM) = try ComplianceRSATestHelper.makeKeyPair()
         let payload = Data("{\"configVersion\":\"v1\"}".utf8)
         let emptySignature = Data().base64EncodedString() // 空数据的 Base64
-        let testKey = "-----BEGIN PUBLIC KEY-----\nVALID_TEST_PUBLIC_KEY\n-----END PUBLIC KEY-----"
 
         let result = manager.verifyAndApplyPatch(
             payloadData: payload,
             signatureBase64: emptySignature,
-            publicKeyPEM: testKey
+            publicKeyPEM: publicKeyPEM
         )
-        XCTAssertFalse(result, "测试公钥 + 空签名数据（base64 编码的空 Data）应验签失败")
+        XCTAssertFalse(result, "空签名数据应验签失败")
     }
 
     // MARK: - 无效 Base64 签名
@@ -99,36 +99,37 @@ final class DynamicCompliancePatchTests: XCTestCase {
 
     // MARK: - JSON 解码失败
 
-    func testVerifyAndApplyPatchTestKeyInvalidJsonReturnsFalse() {
+    func testVerifyAndApplyPatchTestKeyInvalidJsonReturnsFalse() throws {
+        let (privateKey, publicKeyPEM) = try ComplianceRSATestHelper.makeKeyPair()
         let invalidJson = Data("not a json".utf8)
-        let signature = Data("sig".utf8).base64EncodedString()
-        let testKey = "-----BEGIN PUBLIC KEY-----\nVALID_TEST_PUBLIC_KEY\n-----END PUBLIC KEY-----"
+        let signature = try ComplianceRSATestHelper.sign(invalidJson, with: privateKey)
 
         let result = manager.verifyAndApplyPatch(
             payloadData: invalidJson,
             signatureBase64: signature,
-            publicKeyPEM: testKey
+            publicKeyPEM: publicKeyPEM
         )
         XCTAssertFalse(result, "验签通过但 JSON 非法应返回 false")
     }
 
-    func testVerifyAndApplyPatchJsonMissingRequiredFieldsStillReturnsTrue() {
+    func testVerifyAndApplyPatchJsonMissingRequiredFieldsStillReturnsTrue() throws {
+        let (privateKey, publicKeyPEM) = try ComplianceRSATestHelper.makeKeyPair()
         // CompliancePatchPayload 所有字段都是可选的，缺少字段应解码成功
         let minimalJson = Data("{}".utf8)
-        let signature = Data("sig".utf8).base64EncodedString()
-        let testKey = "-----BEGIN PUBLIC KEY-----\nVALID_TEST_PUBLIC_KEY\n-----END PUBLIC KEY-----"
+        let signature = try ComplianceRSATestHelper.sign(minimalJson, with: privateKey)
 
         let result = manager.verifyAndApplyPatch(
             payloadData: minimalJson,
             signatureBase64: signature,
-            publicKeyPEM: testKey
+            publicKeyPEM: publicKeyPEM
         )
         XCTAssertTrue(result, "空 JSON 对象应解码成功（所有字段可选）并返回 true")
     }
 
     // MARK: - patternOverrides 转换
 
-    func testVerifyAndApplyPatchInvalidCategoryPatternSkipsCategory() {
+    func testVerifyAndApplyPatchInvalidCategoryPatternSkipsCategory() throws {
+        let (privateKey, publicKeyPEM) = try ComplianceRSATestHelper.makeKeyPair()
         let payload = Data("""
         {
             "patternOverrides": {
@@ -137,13 +138,12 @@ final class DynamicCompliancePatchTests: XCTestCase {
             }
         }
         """.utf8)
-        let signature = Data("sig".utf8).base64EncodedString()
-        let testKey = "-----BEGIN PUBLIC KEY-----\nVALID_TEST_PUBLIC_KEY\n-----END PUBLIC KEY-----"
+        let signature = try ComplianceRSATestHelper.sign(payload, with: privateKey)
 
         let result = manager.verifyAndApplyPatch(
             payloadData: payload,
             signatureBase64: signature,
-            publicKeyPEM: testKey
+            publicKeyPEM: publicKeyPEM
         )
         XCTAssertTrue(result, "应成功施加 Patch（无效 category 被跳过）")
 
@@ -153,7 +153,8 @@ final class DynamicCompliancePatchTests: XCTestCase {
 
     // MARK: - textOverrides 应用
 
-    func testVerifyAndApplyPatchTextOverridesAppliedAffectsGetComplianceMessage() {
+    func testVerifyAndApplyPatchTextOverridesAppliedAffectsGetComplianceMessage() throws {
+        let (privateKey, publicKeyPEM) = try ComplianceRSATestHelper.makeKeyPair()
         let payload = Data("""
         {
             "textOverrides": {
@@ -163,13 +164,12 @@ final class DynamicCompliancePatchTests: XCTestCase {
             }
         }
         """.utf8)
-        let signature = Data("sig".utf8).base64EncodedString()
-        let testKey = "-----BEGIN PUBLIC KEY-----\nVALID_TEST_PUBLIC_KEY\n-----END PUBLIC KEY-----"
+        let signature = try ComplianceRSATestHelper.sign(payload, with: privateKey)
 
         _ = manager.verifyAndApplyPatch(
             payloadData: payload,
             signatureBase64: signature,
-            publicKeyPEM: testKey
+            publicKeyPEM: publicKeyPEM
         )
 
         // 注意：getComplianceMessage 依赖系统语言偏好，可能返回自定义文案或 L10n 回退

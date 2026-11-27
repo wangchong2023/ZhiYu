@@ -108,7 +108,19 @@ final class ModelsTests: XCTestCase {
     func testOutgoingLinksEmptyBrackets() {
         let page = KnowledgePage(title: "T", content: "[[]] text [[]]")
         let links = page.outgoingLinks
-        XCTAssertTrue(links.isEmpty || links.contains { $0.isEmpty })
+        XCTAssertTrue(links.isEmpty, "空方括号对不得产出空白链接")
+    }
+
+    /// 缺陷 #236 回归：AppLinkProcessor 必须剥离 | 别名与 # 章节锚点、过滤空白双链并禁止跨行误匹配
+    func testAppLinkProcessor_stripsAliasHeadingRejectsBlankAndMultiline() {
+        let markdown = """
+        参考 [[Swift Concurrency|并发指南]] 与 [[Swift Concurrency#Actor]]，
+        空白 [[   ]] 与 [[ |仅别名]] 应忽略，
+        未闭合 [[第一行
+        第二行]] 不得跨行提取。
+        """
+        let links = AppLinkProcessor.extractOutgoingLinks(from: markdown)
+        XCTAssertEqual(links, ["Swift Concurrency"], "别名与锚点应归一到真实目标页名，且不提取空白或跨行内容")
     }
     
     /// 验证支持空格、中文字符及多字节字符集下的双链提取精准度
