@@ -47,6 +47,10 @@ final class PPTXProcessor {
         static let doubleQuoteEntity = "&quot;"
         static let singleQuote = "'"
         static let singleQuoteEntity = "&apos;"
+        static let xmlMinPrintableScalar: UInt32 = 0x20
+        static let xmlTabScalar: UInt32 = 0x09
+        static let xmlLineFeedScalar: UInt32 = 0x0A
+        static let xmlCarriageReturnScalar: UInt32 = 0x0D
         static let pathInvalidCharacters = CharacterSet(
             charactersIn: SystemConstants.Character.slash
                 + SystemConstants.Character.backslash
@@ -64,9 +68,16 @@ final class PPTXProcessor {
         return cleaned.isEmpty ? XMLConstants.fallbackTitle : cleaned
     }
 
-    /// 转义 OpenXML 文本节点中的保留实体字符，防止生成损坏的 PPTX XML
+    /// 过滤 XML 1.0 禁止的控制字符并转义保留实体，防止 PowerPoint / Keynote 报文件损坏
     internal static func escapeXML(_ text: String) -> String {
-        text
+        let validScalars = text.unicodeScalars.filter { scalar in
+            let v = scalar.value
+            return v >= XMLConstants.xmlMinPrintableScalar
+                || v == XMLConstants.xmlTabScalar
+                || v == XMLConstants.xmlLineFeedScalar
+                || v == XMLConstants.xmlCarriageReturnScalar
+        }
+        return String(String.UnicodeScalarView(validScalars))
             .replacingOccurrences(of: XMLConstants.ampersand, with: XMLConstants.ampersandEntity)
             .replacingOccurrences(of: XMLConstants.lessThan, with: XMLConstants.lessThanEntity)
             .replacingOccurrences(of: XMLConstants.greaterThan, with: XMLConstants.greaterThanEntity)
@@ -88,7 +99,7 @@ final class PPTXProcessor {
         try createDirectoryStructure(at: tempDir)
 
         // 2. 生成静态 XML 文件
-        try generateContentTypes(at: tempDir)
+        try generateContentTypes(at: tempDir, slideCount: slides.count)
         try generateRels(at: tempDir)
         try generatePresentation(at: tempDir, slideCount: slides.count)
         try generatePresentationRels(at: tempDir, slideCount: slides.count)
@@ -133,15 +144,21 @@ final class PPTXProcessor {
         }
     }
 
-    /// 生成 [Content_Types].xml — 声明包内文件类型与 MIME 映射。
-    private func generateContentTypes(at url: URL) throws {
+    /// 生成 [Content_Types].xml — 声明包内文件类型与每张幻灯片的 MIME 映射。
+    private func generateContentTypes(at url: URL, slideCount: Int) throws {
+        var slideOverrides = ""
+        if slideCount > 0 {
+            for i in 1...slideCount {
+                slideOverrides += "\n    <Override PartName=\"/ppt/slides/slide\(i).xml\" ContentType=\"application/vnd.openxmlformats-officedocument.presentationml.slide+xml\"/>"
+            }
+        }
         let xml = """
         <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
         <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
             <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
             <Default Extension="xml" ContentType="application/xml"/>
             <Override PartName="/ppt/presentation.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml"/>
-            <Override PartName="/ppt/theme/theme1.xml" ContentType="application/vnd.openxmlformats-officedocument.theme+xml"/>
+            <Override PartName="/ppt/theme/theme1.xml" ContentType="application/vnd.openxmlformats-officedocument.theme+xml"/>\(slideOverrides)
         </Types>
         """
         try xml.write(to: url.appendingPathComponent("[Content_Types].xml"), atomically: true, encoding: .utf8)

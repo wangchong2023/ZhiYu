@@ -173,4 +173,39 @@ final class LintServiceBatch3Tests: XCTestCase {
             XCTAssertFalse(level.colorName.isEmpty, "健康等级颜色名不应为空")
         }
     }
+
+    // MARK: - 别名链接识别与自引用入度排除（缺陷 #184）
+
+    func testRunLint_recognizesAliasLinksAndExcludesSelfReferenceIncomingCount() async {
+        let targetPage = KnowledgePage(
+            title: "Retrieval-Augmented Generation",
+            pageType: .concept,
+            content: "核心架构说明",
+            aliases: ["RAG"]
+        )
+        let referencingPage = KnowledgePage(
+            title: "AI 工程实践",
+            pageType: .concept,
+            content: "参考 [[RAG]] 架构"
+        )
+        let selfRefPage = KnowledgePage(
+            title: "自引用节点",
+            pageType: .concept,
+            content: "引用自身 [[自引用节点]]"
+        )
+
+        let issues = await service.runLint(pages: [targetPage, referencingPage, selfRefPage], linkService: linkService)
+
+        // 1. [[RAG]] 命中别名，不得被误报为断裂链接
+        let brokenLinks = issues.filter { $0.type == .brokenLink }
+        XCTAssertTrue(brokenLinks.isEmpty, "命中页面别名的双向链接不应被误报为断裂链接")
+
+        // 2. targetPage 因别名被 referencingPage 链接，不应被报为孤岛/孤立页
+        let targetOrphanOrIsland = issues.filter { $0.pageID == targetPage.id && ($0.type == .island || $0.type == .orphan) }
+        XCTAssertTrue(targetOrphanOrIsland.isEmpty, "被别名引用的目标页面不应误报为孤岛或孤立页")
+
+        // 3. selfRefPage 仅自引用自身，入度必须为 0（报为 orphan 而非被自引用掩盖）
+        let selfOrphan = issues.filter { $0.pageID == selfRefPage.id && $0.type == .orphan }
+        XCTAssertEqual(selfOrphan.count, 1, "仅自引用自身的页面入度应为 0，应报告为孤立页面")
+    }
 }

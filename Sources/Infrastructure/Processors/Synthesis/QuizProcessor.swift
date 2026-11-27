@@ -24,6 +24,10 @@ enum QuizProcessor {
         static let optionAIndex = 0
         /// 选项字母 B 对应的索引
         static let optionBIndex = 1
+        /// 大写字母 A 的 ASCII 标量值
+        static let asciiUppercaseA: UInt32 = 65
+        /// 大写字母 Z 的 ASCII 标量值
+        static let asciiUppercaseZ: UInt32 = 90
     }
 
     struct FlexibleQuizShell: Codable {
@@ -103,10 +107,12 @@ enum QuizProcessor {
                     if let i = Int(trimmed) {
                         return (i >= 0 && i < optionCount) ? i : 0
                     }
-                    if trimmed.hasPrefix("A") { return 0 }
-                    if trimmed.hasPrefix("B") { return min(1, optionCount - 1) }
-                    if trimmed.hasPrefix("C") { return min(2, optionCount - 1) }
-                    if trimmed.hasPrefix("D") { return min(3, optionCount - 1) }
+                    if let firstScalar = trimmed.unicodeScalars.first,
+                       firstScalar.value >= AnswerParsing.asciiUppercaseA,
+                       firstScalar.value <= AnswerParsing.asciiUppercaseZ {
+                        let offset = Int(firstScalar.value - AnswerParsing.asciiUppercaseA)
+                        return min(offset, optionCount - 1)
+                    }
                     return 0
                 }
             }

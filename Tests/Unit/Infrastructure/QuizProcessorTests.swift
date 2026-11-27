@@ -178,4 +178,29 @@ final class QuizProcessorTests: XCTestCase {
         let firstQ = model.questions[0]
         XCTAssertEqual(firstQ.options.count, 4, "当大模型仅产生 1 个选项或格式异常时，QuizProcessor 必须自愈补齐至 4 个选项")
     }
+
+    /// 缺陷 #186 回归：支持 5/6 选项题目中的 E/F 字母答案解析而不静默回退至 A
+    func testParseToQuizModel_SupportsFifthAndSixthOptionLetters() throws {
+        // 1. 直接验证 FlexibleAnswer 索引计算（E -> 4, F -> 5）
+        XCTAssertEqual(QuizProcessor.FlexibleQuizShell.FlexibleAnswer.string("E").asIndex(optionCount: 5), 4)
+        XCTAssertEqual(QuizProcessor.FlexibleQuizShell.FlexibleAnswer.string("F").asIndex(optionCount: 6), 5)
+
+        // 2. 端到端验证 parseToQuizModel（含洗牌）后，正确答案文本精确命中第 5 项 "E5"
+        let json = """
+        {
+            "title": "多选项测试",
+            "questions": [
+                {
+                    "id": 1,
+                    "question": "第 5 个选项正确？",
+                    "options": ["A1", "B2", "C3", "D4", "E5"],
+                    "answer": "E"
+                }
+            ]
+        }
+        """
+        let model = try XCTUnwrap(QuizProcessor.parseToQuizModel(json))
+        let question = try XCTUnwrap(model.questions.first)
+        XCTAssertEqual(question.options[question.answer], "E5", "5 选题中字母 E 洗牌后必须指向选项 E5 而非回退至 A1")
+    }
 }

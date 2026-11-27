@@ -68,4 +68,11 @@ final class PPTXProcessorTests: XCTestCase {
         )
         XCTAssertTrue(FileManager.default.fileExists(atPath: outputURL.path))
     }
+
+    /// 缺陷 #185 回归：XML 1.0 非法控制字符（如 NUL/换页符）必须剥离，保留制表与换行
+    func testPPTXProcessor_StripsInvalidXMLControlCharacters() {
+        let dirty = "Hello\u{0000}\u{000C}World\tLine1\nLine2"
+        let cleaned = PPTXProcessor.escapeXML(dirty)
+        XCTAssertEqual(cleaned, "HelloWorld\tLine1\nLine2", "必须剥离 NUL 与 FormFeed 等 XML 1.0 非法控制字符并保留合法空白")
+    }
 }

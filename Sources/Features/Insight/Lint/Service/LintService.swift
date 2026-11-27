@@ -45,12 +45,20 @@ public final class LintService: Sendable {
     func runLint(pages: [KnowledgePage], linkService _: LinkService) async -> [LintIssue] {
         var issues: [LintIssue] = []
 
-        // 1. 性能预优化：构建查找索引 (使用 uniquingKeysWith 避免因重复标题导致的崩溃)
-        let titleMap = Dictionary(pages.map { ($0.title.lowercased(), $0) }, uniquingKeysWith: { first, _ in first })
+        // 1. 性能预优化：构建标题与别名查找索引 (使用 uniquingKeysWith 避免因重复标题导致的崩溃)
+        var titleMap = Dictionary(pages.map { ($0.title.lowercased(), $0) }, uniquingKeysWith: { first, _ in first })
+        for page in pages {
+            for alias in page.aliases {
+                let aliasKey = alias.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+                if !aliasKey.isEmpty && titleMap[aliasKey] == nil {
+                    titleMap[aliasKey] = page
+                }
+            }
+        }
         var incomingLinksCount: [UUID: Int] = [:]
         for page in pages {
             for link in page.outgoingLinks {
-                if let target = titleMap[link.lowercased()] {
+                if let target = titleMap[link.lowercased()], target.id != page.id {
                     incomingLinksCount[target.id, default: 0] += 1
                 }
             }

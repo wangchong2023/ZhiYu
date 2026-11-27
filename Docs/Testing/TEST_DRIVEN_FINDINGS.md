@@ -192,21 +192,24 @@
 | **181** | `ModelReceiptStore` 的 `saveReceipt`/`getReceipt`/`removeReceipt` 直接拼接 `"\(modelId).receipt.json"` 未校验 `modelId`，恶意或损坏的 `../` 标识符可越出 `ModelReceipts/` 目录读写或删除其他文件 | 传入含 `../`/`/`/`\`/空串的 `modelId` 操作收据存储 | 沙盒收据目录外文件面临越权写入或误删风险 | **High** | 架构设计与安全/网络健壮性 | 新增 `safeReceiptURL(for:)` 严格校验合法字符与标准化父目录等于 `receiptsDirectory` | **✅ 已解决** | 是 (沙盒收据路径安全解析范式) | 是 (`StoreKitServiceTests`) | ✅ 已闭环 |
 | **182** | `IngestQueue.enqueue` 通过 `OperationQueue` 后台启动 `Task` 后再 `DispatchQueue.main.async` 登记 `activeTasks`，存在显著登记窗口竞态；且未校验 Vault 切换代数与取消态，导致旧 Vault 摄入回调写穿新 Vault 或 `isProcessing`/`activeTasks` 泄露卡死 | 知识摄入入队后立即切换 Vault 或取消任务 | 旧 Vault 笔记被异步回调写入新 Vault，或队列加载指示器永久卡死 | **High** | 状态机并发与数据生命周期 | 引入单调 `generation` 代数与 `@MainActor` 同步登记 `activeTasks`，回调前双重校验 `!Task.isCancelled && self.generation == capturedGeneration`，取消分支同步清理状态 | **✅ 已解决** | 是 (异步摄入队列代数隔离与零竞态登记) | 是 (`IngestQueueTests`) | ✅ 已闭环 |
 | **183** | `AuthSession.logout()` 登出账号时未清空 `PaymentRetryQueue` 中的待重试支付验证凭证，切换到账号 B 登录后后台重试会携带账号 B 的 `accessToken` 提交账号 A 的苹果收据 | 账号 A 购买验证失败入队后登出并切换账号 B 登录 | 高危跨账号权益错绑：账号 A 的付费订阅被错误激活到账号 B | **High** | 状态机并发与数据生命周期 | `AuthSession.logout()` 异步触发 `PaymentRetryQueue.shared.cancelAllPending()` 立即清空旧账号支付重试队列 | **✅ 已解决** | 是 (登出全量支付队列隔离清理) | 是 (`StoreKitServiceTests`) | ✅ 已闭环 |
+| **184** | `LintService.runLint` 构建查找索引时仅收录 `page.title` 而完全忽略 `page.aliases`，且统计入度未排除 `target.id != page.id` 自引用，导致所有合法 `[[别名]]` 双向链接被误报为高危断裂链接，目标页误报孤岛，且自引用页面入度误判 | 笔记使用 `[[别名]]` 引用目标页，或页面正文自引用自身标题 | 健康巡检大量误报断裂链接与孤岛页面，或漏报自引用孤立页 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 索引合并 `page.aliases`（不覆盖已有主标题），统计入度时排除 `target.id != page.id` | **✅ 已解决** | 是 (知识图谱巡检别名索引与自环排除) | 是 (`LintServiceTests`) | ✅ 已闭环 |
+| **185** | `PPTXProcessor.escapeXML` 未剥离 XML 1.0 禁止的控制字符（如 `\u{0000}`/`\u{000C}`），且 `[Content_Types].xml` 漏声明 `/ppt/slides/slideN.xml` 的 `<Override>` 映射 | 导出含 PDF/OCR 残留控制字符的幻灯片或在严格 OpenXML 客户端打开 | PowerPoint / Keynote 报文件损坏无法打开 | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | `escapeXML` 过滤 XML 1.0 非法控制字符（保留 `\t`/`\n`/`\r`），`generateContentTypes` 动态输出全部幻灯片 `<Override>` 声明 | **✅ 已解决** | 是 (OpenXML 合法字符集与 ContentTypes 规范) | 是 (`PPTXProcessorTests`) | ✅ 已闭环 |
+| **186** | `QuizProcessor.FlexibleAnswer.asIndex` 硬编码仅识别 A/B/C/D 四个字母，面对 5 选 1（E）或 6 选 1（F）测验题目时静默回退到索引 0 | LLM 生成包含 5 个以上选项且正确答案为 E/F 的测验题 | 正确答案被错误判为选项 A，测验评分失真 | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | 基于 ASCII `'A'...'Z'` 标量偏移泛化字母索引计算并安全钳位至 `optionCount - 1` | **✅ 已解决** | 是 (测验选项字母解析泛化) | 是 (`QuizProcessorTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**183 项**
+- **收录问题总数**：**186 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：43 项 (23.5%)
-  - 状态机并发与数据生命周期：46 项 (25.1%)
-  - 架构设计与安全/网络健壮性：53 项 (29.0%)
-  - UI/交互与防御性缺陷：17 项 (9.3%)
-  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (13.1%)
+  - 功能缺陷与核心算法/解析器/数据完整性：46 项 (24.7%)
+  - 状态机并发与数据生命周期：46 项 (24.7%)
+  - 架构设计与安全/网络健壮性：53 项 (28.5%)
+  - UI/交互与防御性缺陷：17 项 (9.1%)
+  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (12.9%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：96 项 (52.5%)
-  - **Medium（功能异常/算法边界/性能损耗）**：60 项 (32.8%)
-  - **Low（样式异味/边界校验/门禁规范）**：27 项 (14.8%)
-- **修复闭环率**：**100% (183/183 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：97 项 (52.2%)
+  - **Medium（功能异常/算法边界/性能损耗）**：62 项 (33.3%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (14.5%)
+- **修复闭环率**：**100% (186/186 项已修复闭环)**
 
