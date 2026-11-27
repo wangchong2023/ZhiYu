@@ -54,7 +54,7 @@ enum WidgetRepository {
     }
 
     static func fetchRecentPages(limit: Int = 3) async -> [WidgetRecentPage] {
-        guard let snapshot = decodeSnapshot() else {
+        guard limit > 0, let snapshot = decodeSnapshot() else {
             return []
         }
         return Array(snapshot.recentPages.prefix(limit))

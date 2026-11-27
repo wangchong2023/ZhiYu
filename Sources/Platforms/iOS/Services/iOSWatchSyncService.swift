@@ -115,9 +115,18 @@ final class iOSWatchSyncService: NSObject, WatchSyncProtocol, WCSessionDelegate 
     /// /// - Parameter total: total
     /// /// - Parameter filename: filename
     /// /// - Parameter data: data
+    private enum AudioChunkLimits {
+        /// 单次手表音频传输允许的最大分片数上限（防御异常包导致内存/存储膨胀）
+        static let maxChunkCount: Int = 1024
+    }
+
     func handleReceivedAudioChunk(transferId: String, index: Int, total: Int, filename: String, data: Data) {
-        guard total > 0, index >= 0, index < total else {
-            Logger.shared.warning("iOSWatchSyncService: 无效音频分片参数 total=\(total) index=\(index)")
+        guard !transferId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+              total > 0,
+              total <= AudioChunkLimits.maxChunkCount,
+              index >= 0,
+              index < total else {
+            Logger.shared.warning("iOSWatchSyncService: 无效音频分片参数 transferId=\(transferId) total=\(total) index=\(index)")
             return
         }
         var assembly = keyStore?.object(forKey: "\(AppConstants.Keys.Storage.iOSAudioAssemblyPrefix)\(transferId)") as? [String: Data] ?? [:]
