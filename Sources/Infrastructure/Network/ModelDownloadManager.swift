@@ -61,16 +61,19 @@ public actor ModelDownloadManager: ModelDownloadCapabilities {
         return SSRFGuard.isSafeURL(url)
     }
 
-    /// 清洗 modelId 中的路径穿越、空字节与非法字符，构造安全非隐藏落盘文件名
+    /// 清洗 modelId 中的路径穿越、控制字符、前导隐藏点号与非法字符，构造安全非隐藏落盘文件名
     internal static func sanitizedDestinationFileName(for modelId: String) -> String {
-        let withoutNull = String(modelId.unicodeScalars.filter { $0 != UnicodeScalar(0) })
-        let trimmed = withoutNull.trimmingCharacters(in: .whitespacesAndNewlines)
-        let cleaned = PathConstants.unsafeModelIdTokens.reduce(trimmed) { partial, token in
+        let disallowed = CharacterSet.controlCharacters.union(.newlines)
+        let withoutControl = String(String.UnicodeScalarView(modelId.unicodeScalars.filter { !disallowed.contains($0) }))
+        let trimmed = withoutControl.trimmingCharacters(in: .whitespacesAndNewlines)
+        var cleaned = PathConstants.unsafeModelIdTokens.reduce(trimmed) { partial, token in
             partial.replacingOccurrences(of: token, with: PathConstants.replacementToken)
         }
-        let safeStem = (cleaned.isEmpty || cleaned == SystemConstants.Character.dot)
-            ? PathConstants.fallbackModelName
-            : cleaned
+        // 剥离所有前导点号，彻底防御 `.secret` 等 Unix 隐藏文件绕过
+        while cleaned.hasPrefix(SystemConstants.Character.dot) {
+            cleaned.removeFirst()
+        }
+        let safeStem = cleaned.isEmpty ? PathConstants.fallbackModelName : cleaned
         return safeStem + PathConstants.binExtension
     }
 
@@ -131,12 +134,16 @@ public actor ModelDownloadManager: ModelDownloadCapabilities {
 
     // MARK: - Capabilities 契约接口实现
 
-    /// 开始下载大模型权重文件（前置校验 HTTP/HTTPS 与 SSRF 内网防护）
+    /// 开始下载大模型权重文件（前置校验 modelId 非空、HTTP/HTTPS 与 SSRF 内网防护）
     public func startDownload(modelId: String, remoteURL: URL) async throws {
+        let trimmedId = modelId.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedId.isEmpty else {
+            throw URLError(.badURL)
+        }
         guard Self.isAllowedModelURL(remoteURL) else {
             throw URLError(.unsupportedURL)
         }
-        try await streaming.startDownload(taskID: modelId, remoteURL: remoteURL)
+        try await streaming.startDownload(taskID: trimmedId, remoteURL: remoteURL)
     }
 
     /// 暂停正在下载的权重任务，捕获断点续传数据 (resumeData)

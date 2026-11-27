@@ -269,21 +269,24 @@
 | **258** | `StoreKitService` 存在三重订阅状态机缺陷：`processVerifiedTransaction` 在校验 `allProductIds.contains(productId)` 前即按 `revocationDate`/`expirationDate` 调用 `downgradeToFree()`，导致无关商品过期/退款误降级当前 Pro 权益；`restorePurchases()` 缺少并发防重入守卫且超时纳秒数为内联魔鬼数字；后台交易后端验证失败未主动入队 `PaymentRetryQueue` | 收到历史/无关商品的过期退款推送、用户双击恢复购买、或续费/家庭共享交易遇网络抖动 | 付费 Pro 用户被误降级为 Free、并发恢复状态踩踏、后台续费到账长时间延迟 | **High** | 状态机并发与数据生命周期 | 抽取 `classifyTransaction` 先校验 `allProductIds` 再判定吊销/过期/有效 Pro；`restorePurchases()` 增加 `guard !isRestoring` 防重入并收敛 `SyncConstants`；验证失败主动入队 `PaymentRetryQueue` | **✅ 已解决** | 是 (StoreKit 商品归属优先判定与恢复购买防重入) | 是 (`StoreKitServiceTests`) | ✅ 已闭环 |
 | **259** | `DeepLinkService` 存在输入边界与容错缺陷：`zhiyu://page?title=` 无长度限制且未剥离 `\r`/`\n`/`\0` 等控制字符（`search?q=` 亦未剥离控制字符）；URL `id` 与 Spotlight `pageID` 未裁剪首尾空白导致合法 UUID 解析失败 | 外部链接传入超长/含控制字符标题，或复制分享链接携带首尾空白/换行 | 超长畸形字符串透传至检索与 UI 层、合法分享链接点击无响应 | **Medium** | 架构设计与安全/网络健壮性 | 新增 `sanitizeTextParameter` 剥离控制字符与换行并统一限制 256 字符上限（`Limits.maxTitleLength`/`maxSearchQueryLength`）；对 URL `id` 与 Spotlight `pageID` 先 trim 首尾空白再解析 UUID | **✅ 已解决** | 是 (DeepLink 外部文本参数清洗截断与 UUID 容错) | 是 (`DeepLinkTests`) | ✅ 已闭环 |
 | **260** | `UndoService` 标注 `@unchecked Sendable` 且订阅 `.vaultWillSwitch`/`.databaseDidSwitch` 通知，但 `undoStack`/`redoStack` 完全无锁保护；后台线程触发切库通知或多线程并发调用时触发数据竞争与后台修改 `@Published` 告警 | 后台线程发送 Vault/DB 切换通知或并发触发快照推入/撤销/重做 | 多线程数据竞争导致内存破坏崩溃与 SwiftUI 后台发布告警 | **High** | 状态机并发与数据生命周期 | 引入 `OSAllocatedUnfairLock<StackState>` 原子保护 `undoStack`/`redoStack` 全部读写操作；`updatePublishedState` 在主线程同步更新、后台线程自动派发回主队列读取最新快照 | **✅ 已解决** | 是 (UndoService 并发锁隔离与主线程状态发布范式) | 是 (`UndoServiceEdgeCaseTests`) | ✅ 已闭环 |
+| **261** | `NetworkClient` 存在跨源劫持与 Header 清洗缺陷：`makeBackendURL(path:)` 直接拼接 `backendBaseURL + path`，当 `path` 为 `@evil.com/steal`、`.evil.com/api` 或 `//evil.com/api` 时会改写目标 `host` 导致 Bearer Token 外泄至第三方服务器；`applyBearerToken` 未剥离控制字符与空白导致畸形或空 `Authorization` 头 | 传入非单 `/` 开头恶意路径或 Keychain 残留含换行/空白的异常 Token | JWT Bearer Token 泄露至外部恶意主机或触发协议级 Header 注入 | **High** | 架构设计与安全/网络健壮性 | 抽取 `buildSafeBackendURL` 强制 `path` 以单 `/` 开头且校验拼接后 `scheme`/`host`/`port` 严格同源；抽取 `sanitizedBearerToken` 剥离控制字符与换行并跳过空串 | **✅ 已解决** | 是 (HTTP 客户端同源 URL 校验与 Bearer Token 清洗) | 是 (`NetworkClientSecurityTests`) | ✅ 已闭环 |
+| **262** | `ModelDownloadManager` 存在落盘文件名清洗绕过与空 ID 缺陷：`sanitizedDestinationFileName` 仅剥离 `\0` 未过滤 `\r`/`\n` 等控制字符且保留前导 `.`（如 `.secret` 生成隐藏文件 `.secret.bin`）；`startDownload` 未拦截空白 `modelId` 导致非法空任务碰撞覆写同一 `model.bin` | 外部模型清单包含 `.secret`、`...`、含控制字符或纯空白 `modelId` | 生成 Unix 隐藏文件或含控制字符文件名、多个空 ID 下载任务撞车覆盖 | **High** | 架构设计与安全/网络健壮性 | `sanitizedDestinationFileName` 过滤全部控制字符与换行并循环剥离前导 `.`；`startDownload` 入口校验 `modelId` trim 后非空，否则抛 `URLError(.badURL)` | **✅ 已解决** | 是 (模型落盘文件名防隐藏/控制字符清洗与非空 ID 守卫) | 是 (`NetworkClientSecurityTests`) | ✅ 已闭环 |
+| **263** | `OAuthService` 存在渠道归一化与昵称回退缺陷：`validateCredential` 与 `resolveAuthRequestInfo` 区分 `identityType` 大小写及首尾空白；纯空白 `nickname`（`"   "`）未回退默认用户名；发往后端的 `credential` / `carrierToken` 未 trim 首尾空白 | OAuth 策略返回大写/带空白渠道名、空昵称或首尾含换行的授权码 | 合法渠道被误拒、用户昵称显示为空白、后端 OAuth 授权码验签失败 | **Medium** | 架构设计与安全/网络健壮性 | 抽取 `normalizedIdentityType` 统一 trim+lowercase；抽取 `resolvedDisplayName` 对纯空白昵称安全回退默认名；`resolveAuthRequestInfo` 对授权码与运营商 Token 先 trim 后发包 | **✅ 已解决** | 是 (OAuth 凭证渠道归一化与展示昵称安全回退) | 是 (`AuthOAuthStrategiesBranchTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**260 项**
+- **收录问题总数**：**263 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：77 项 (29.6%)
-  - 状态机并发与数据生命周期：59 项 (22.7%)
-  - 架构设计与安全/网络健壮性：83 项 (31.9%)
+  - 功能缺陷与核心算法/解析器/数据完整性：77 项 (29.3%)
+  - 状态机并发与数据生命周期：59 项 (22.4%)
+  - 架构设计与安全/网络健壮性：86 项 (32.7%)
   - UI/交互与防御性缺陷：17 项 (6.5%)
-  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (9.2%)
+  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (9.1%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：162 项 (62.3%)
-  - **Medium（功能异常/算法边界/性能损耗）**：71 项 (27.3%)
-  - **Low（样式异味/边界校验/门禁规范）**：27 项 (10.4%)
-- **修复闭环率**：**100% (260/260 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：164 项 (62.4%)
+  - **Medium（功能异常/算法边界/性能损耗）**：72 项 (27.4%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (10.3%)
+- **修复闭环率**：**100% (263/263 项已修复闭环)**
 

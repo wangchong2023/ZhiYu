@@ -79,6 +79,28 @@ final class AuthOAuthStrategiesBranchTests: XCTestCase {
         XCTAssertNotNil(credential.extraInfo?["idToken"])
     }
 
+    // MARK: - 3.5 OAuth 凭证归一化校验与昵称回退（缺陷 #263）
+
+    func testOAuthService_NormalizesIdentityTypeAndFallsBackBlankNickname() {
+        let upperApple = AuthCredential(
+            identityType: " APPLE ",
+            identifier: "uid",
+            credential: " auth_code_123 ",
+            extraInfo: ["nickname": "   \n"]
+        )
+        XCTAssertTrue(AuthService.validateCredential(upperApple), "大小写与首尾空白的渠道标识应归一化放行")
+        XCTAssertEqual(AuthService.resolvedDisplayName(from: upperApple.extraInfo), "ZhiYu_User", "纯空白昵称应回退默认用户名")
+        XCTAssertEqual(AuthService.resolvedDisplayName(from: ["nickname": " Alice "]), "Alice")
+
+        let unconsentedCarrier = AuthCredential(
+            identityType: "CARRIER",
+            identifier: "c1",
+            credential: "",
+            extraInfo: ["carrierToken": "tok_123", "privacyConsent": "false"]
+        )
+        XCTAssertFalse(AuthService.validateCredential(unconsentedCarrier), "未同意隐私协议的运营商凭证必须被拦截")
+    }
+
     // MARK: - 4. OAuth 中台统一登录成功分支
 
     func testLoginUsingStrategy_WithMockBackend_Succeeds() async {

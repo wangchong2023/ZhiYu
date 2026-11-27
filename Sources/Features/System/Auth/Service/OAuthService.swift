@@ -45,9 +45,20 @@ extension AuthService {
         static let unsupportedAuthTypeReason = "OAuth_Unsupported_Auth_Type"
     }
 
+    /// 归一化登录渠道标识（去首尾空白并转小写，防大小写/空白差异导致渠道误判）
+    internal static func normalizedIdentityType(_ raw: String) -> String {
+        raw.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    }
+
+    /// 解析展示昵称：缺失或纯空白时安全回退默认用户名
+    internal static func resolvedDisplayName(from extraInfo: [String: String]?) -> String {
+        let trimmed = extraInfo?[OAuthExtraKey.nickname]?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return trimmed.isEmpty ? OAuthExtraKey.defaultUserName : trimmed
+    }
+
     /// 校验 OAuth / 一键登录凭证完整性，杜绝空凭证或未同意隐私协议穿透至后端
     internal static func validateCredential(_ cred: AuthCredential) -> Bool {
-        switch cred.identityType {
+        switch normalizedIdentityType(cred.identityType) {
         case FeatureConstants.OAuthProvider.apple,
              FeatureConstants.OAuthProvider.wechat,
              FeatureConstants.OAuthProvider.google,
@@ -71,7 +82,7 @@ extension AuthService {
         }
         let info = resolveAuthRequestInfo(cred)
         let response = try await sendOAuthRequest(path: info.path, reqBody: info.body)
-        let name = cred.extraInfo?[OAuthExtraKey.nickname] ?? OAuthExtraKey.defaultUserName
+        let name = Self.resolvedDisplayName(from: cred.extraInfo)
         return await handleSuccessfulLogin(response: response, identity: name)
     }
 
@@ -86,17 +97,21 @@ extension AuthService {
     /// - Parameter cred: 客户端获取的 OAuth/一键登录身份凭证
     /// - Returns: 包含请求路径及请求体数据的结构体
     private func resolveAuthRequestInfo(_ cred: AuthCredential) -> AuthRequestInfo {
-        switch cred.identityType {
+        let trimmedCode = cred.credential.trimmingCharacters(in: .whitespacesAndNewlines)
+        switch Self.normalizedIdentityType(cred.identityType) {
         // 苹果登录
-        case FeatureConstants.OAuthProvider.apple: return AuthRequestInfo(path: APIPaths.oauthApplePath, body: OAuthAppleRequest(code: cred.credential, state: cred.extraInfo?[OAuthExtraKey.state], idToken: cred.extraInfo?[OAuthExtraKey.idToken]))
+        case FeatureConstants.OAuthProvider.apple: return AuthRequestInfo(path: APIPaths.oauthApplePath, body: OAuthAppleRequest(code: trimmedCode, state: cred.extraInfo?[OAuthExtraKey.state], idToken: cred.extraInfo?[OAuthExtraKey.idToken]))
         // 微信登录
-        case FeatureConstants.OAuthProvider.wechat: return AuthRequestInfo(path: APIPaths.oauthWeChatPath, body: OAuthWeChatRequest(code: cred.credential, state: cred.extraInfo?[OAuthExtraKey.state]))
+        case FeatureConstants.OAuthProvider.wechat: return AuthRequestInfo(path: APIPaths.oauthWeChatPath, body: OAuthWeChatRequest(code: trimmedCode, state: cred.extraInfo?[OAuthExtraKey.state]))
         // 谷歌登录
-        case FeatureConstants.OAuthProvider.google: return AuthRequestInfo(path: APIPaths.oauthGooglePath, body: OAuthGoogleRequest(code: cred.credential, state: cred.extraInfo?[OAuthExtraKey.state], idToken: cred.extraInfo?[OAuthExtraKey.idToken] ?? ""))
+        case FeatureConstants.OAuthProvider.google: return AuthRequestInfo(path: APIPaths.oauthGooglePath, body: OAuthGoogleRequest(code: trimmedCode, state: cred.extraInfo?[OAuthExtraKey.state], idToken: cred.extraInfo?[OAuthExtraKey.idToken] ?? ""))
         // GitHub 登录
-        case FeatureConstants.OAuthProvider.github: return AuthRequestInfo(path: APIPaths.oauthGitHubPath, body: OAuthGitHubRequest(code: cred.credential, state: cred.extraInfo?[OAuthExtraKey.state]))
+        case FeatureConstants.OAuthProvider.github: return AuthRequestInfo(path: APIPaths.oauthGitHubPath, body: OAuthGitHubRequest(code: trimmedCode, state: cred.extraInfo?[OAuthExtraKey.state]))
         // 运营商一键免密登录
-        case FeatureConstants.OAuthProvider.carrier: return AuthRequestInfo(path: APIPaths.carrierAuthPath, body: CarrierAuthRequest(carrierToken: cred.extraInfo?[OAuthExtraKey.carrierToken] ?? "", appKey: cred.extraInfo?[OAuthExtraKey.appKey] ?? "", privacyConsent: cred.extraInfo?[OAuthExtraKey.privacyConsent] == SystemConstants.BooleanLiteral.true))
+        case FeatureConstants.OAuthProvider.carrier:
+            let trimmedCarrierToken = cred.extraInfo?[OAuthExtraKey.carrierToken]?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            let trimmedAppKey = cred.extraInfo?[OAuthExtraKey.appKey]?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            return AuthRequestInfo(path: APIPaths.carrierAuthPath, body: CarrierAuthRequest(carrierToken: trimmedCarrierToken, appKey: trimmedAppKey, privacyConsent: cred.extraInfo?[OAuthExtraKey.privacyConsent] == SystemConstants.BooleanLiteral.true))
         default:
             Logger.shared.error("未支持的登录渠道类型: \(cred.identityType)")
             return AuthRequestInfo(path: "", body: "")

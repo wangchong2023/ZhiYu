@@ -177,18 +177,42 @@ public actor NetworkClient {
         }
     }
 
-    /// 构造后端基础 URL：拼接 `AppConfig.backendBaseURL + path`，失败抛 `NetworkError.invalidURL`
-    private func makeBackendURL(path: String) throws -> URL {
-        guard let url = URL(string: AppConfig.backendBaseURL + path) else {
+    /// 构造同源后端 URL：强制 path 以单 `/` 开头且拼接后 scheme/host/port 与基址严格一致，
+    /// 彻底防御 `@evil.com`、`//evil.com` 等 URL 权威段劫持导致的 Bearer Token 外泄。
+    internal static func buildSafeBackendURL(baseURLString: String, path: String) throws -> URL {
+        guard let baseURL = URL(string: baseURLString),
+              let baseScheme = baseURL.scheme?.lowercased(),
+              let baseHost = baseURL.host?.lowercased(),
+              !baseHost.isEmpty,
+              path.hasPrefix(SystemConstants.Character.slash),
+              !path.hasPrefix(SystemConstants.Character.slash + SystemConstants.Character.slash),
+              let url = URL(string: baseURLString + path),
+              url.scheme?.lowercased() == baseScheme,
+              url.host?.lowercased() == baseHost,
+              url.port == baseURL.port else {
             throw NetworkError.invalidURL
         }
         return url
     }
 
-    /// 为 URLRequest 注入 Bearer Token（仅在 requiresAuth=true 且 Keychain 存在 token 时注入）
+    /// 清洗 Bearer Token：剥离换行与控制字符并裁剪空白，空串返回 nil 防止畸形 Authorization 头
+    internal static func sanitizedBearerToken(_ raw: String) -> String? {
+        let disallowed = CharacterSet.controlCharacters.union(.newlines)
+        let cleaned = String(String.UnicodeScalarView(raw.unicodeScalars.filter { !disallowed.contains($0) }))
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return cleaned.isEmpty ? nil : cleaned
+    }
+
+    /// 构造后端基础 URL：拼接 `AppConfig.backendBaseURL + path`，失败抛 `NetworkError.invalidURL`
+    private func makeBackendURL(path: String) throws -> URL {
+        try Self.buildSafeBackendURL(baseURLString: AppConfig.backendBaseURL, path: path)
+    }
+
+    /// 为 URLRequest 注入 Bearer Token（仅在 requiresAuth=true 且 Keychain 存在有效 token 时注入）
     private func applyBearerToken(to request: inout URLRequest, requiresAuth: Bool) {
         guard requiresAuth,
-              let token = try? KeychainService.shared.retrieve(key: AppConstants.Network.jwtTokenKey) else {
+              let rawToken = try? KeychainService.shared.retrieve(key: AppConstants.Network.jwtTokenKey),
+              let token = Self.sanitizedBearerToken(rawToken) else {
             return
         }
         request.addValue(
