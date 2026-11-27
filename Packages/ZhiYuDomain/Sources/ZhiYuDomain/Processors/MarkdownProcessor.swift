@@ -9,6 +9,7 @@
 //  核心职责：文档处理器：Markdown 解析、文本分块、图谱布局、网页抓取。
 //
 import Foundation
+import UFPCore
 
 // MARK: - Markdown 解析器
 
@@ -111,7 +112,12 @@ public final class MarkdownProcessor: Sendable {
     /// - Parameter content: 需要解析的原始 Markdown 文本。
     /// - Returns: 解析完成后的 `BlockType` 物理块数组。
     public func parse(_ content: String) -> [BlockType] {
-        let lines = content.components(separatedBy: ProcessorConstants.Whitespace.newline)
+        // 归一化 CRLF / CR 为 LF，避免 Windows Markdown 行尾残留 `\r` 生成幽灵空段落
+        let crlf = SystemConstants.Character.carriageReturn + ProcessorConstants.Whitespace.newline
+        let normalizedContent = content
+            .replacingOccurrences(of: crlf, with: ProcessorConstants.Whitespace.newline)
+            .replacingOccurrences(of: SystemConstants.Character.carriageReturn, with: ProcessorConstants.Whitespace.newline)
+        let lines = normalizedContent.components(separatedBy: ProcessorConstants.Whitespace.newline)
         var blocks: [BlockType] = []
         var i = 0
 

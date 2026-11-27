@@ -117,14 +117,22 @@ public extension MarkdownProcessor {
         return nil
     }
 
-    /// 尝试解析水平线分割符。
+    /// 尝试解析水平线分割符（遵循 CommonMark：整行仅由 3 个及以上 `-`/`*`/`_` 与空格组成，避免误杀 `***粗斜体***` 段落）。
     /// - Parameter line: 当前待匹配的去空格行。
     /// - Returns: 若匹配成功，返回 `BlockType.horizontalRule`；否则返回 `nil`。
     func parseHorizontalRule(_ line: String) -> BlockType? {
-        if line.hasPrefix(ProcessorConstants.MarkdownSyntax.horizontalRuleDash) || line.hasPrefix(ProcessorConstants.MarkdownSyntax.horizontalRuleAsterisk) || line.hasPrefix(ProcessorConstants.MarkdownSyntax.horizontalRuleUnderscore) {
-            return .horizontalRule
+        let compact = line.filter { $0 != Character(ProcessorConstants.Whitespace.space) }
+        guard compact.count >= ProcessorConstants.MarkdownSyntax.horizontalRuleDash.count,
+              let marker = compact.first else {
+            return nil
         }
-        return nil
+        let isValidMarker = marker == ProcessorConstants.MarkdownSyntax.horizontalRuleDash.first
+            || marker == ProcessorConstants.MarkdownSyntax.horizontalRuleAsterisk.first
+            || marker == ProcessorConstants.MarkdownSyntax.horizontalRuleUnderscore.first
+        guard isValidMarker, compact.allSatisfy({ $0 == marker }) else {
+            return nil
+        }
+        return .horizontalRule
     }
 
     /// 尝试解析任务列表块。
@@ -276,8 +284,8 @@ public extension MarkdownProcessor {
             i += 1
         }
 
-        // 剔除表格的分割对齐行（例如 |---| 或 |:---|）
-        let dataLines = tableLines.filter { !$0.hasPrefix(ProcessorConstants.MarkdownSyntax.tableSeparatorDash) && !$0.hasPrefix(ProcessorConstants.MarkdownSyntax.tableSeparatorDashSpace) }
+        // 剔除所有合法 Markdown 表格对齐分隔行（含 |---|、|:---|、|:---:|、| :---: | 等），防止产生幽灵空数据行
+        let dataLines = tableLines.filter { !isTableSeparatorLine($0) }
         guard !dataLines.isEmpty else { return nil }
 
         // 解析第一行为表头 headers
@@ -289,6 +297,22 @@ public extension MarkdownProcessor {
         }
 
         return (.table(headers: headers, rows: rows), i)
+    }
+
+    /// 判定是否为 Markdown 表格对齐分隔行（如 `|---|`、`|:---|`、`|:---:|`、`| :---: |`）
+    private func isTableSeparatorLine(_ line: String) -> Bool {
+        let dashChar = Character(ProcessorConstants.MarkdownSyntax.dash)
+        let colonChar = Character(ProcessorConstants.MarkdownSyntax.colon)
+        let spaceChar = Character(ProcessorConstants.Whitespace.space)
+        let rawCells = line
+            .split(separator: Character(ProcessorConstants.MarkdownSyntax.tablePipe))
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+        guard !rawCells.isEmpty else { return false }
+        return rawCells.allSatisfy { cell in
+            cell.contains(ProcessorConstants.MarkdownSyntax.dash)
+                && cell.allSatisfy { $0 == dashChar || $0 == colonChar || $0 == spaceChar }
+        }
     }
 
     /// - Parameter line: 包含管线符的 Markdown 原始表格单行字符串。

@@ -80,5 +80,26 @@ final class IOSWatchSyncAudioChunkTests: XCTestCase {
         let pages = await WidgetRepository.fetchRecentPages(limit: -5)
         XCTAssertTrue(pages.isEmpty, "负数 limit 必须安全返回空数组而非触发 prefix 崩溃")
     }
+
+    // MARK: - 缺陷 #254 回归：音频文件名路径穿越清洗与 4MB 总字节预算拦截
+
+    func testSanitizedAudioFilename_stripsTraversalAndControlChars() {
+        XCTAssertEqual(iOSWatchSyncService.sanitizedAudioFilename("../../evil\0.m4a"), "evil_.m4a")
+        XCTAssertEqual(iOSWatchSyncService.sanitizedAudioFilename("..."), "watch_audio.m4a")
+        XCTAssertEqual(iOSWatchSyncService.sanitizedAudioFilename("voice_note.m4a"), "voice_note.m4a")
+    }
+
+    func testHandleReceivedAudioChunk_exceedingByteBudget_rejectedWithoutMerge() {
+        let service = iOSWatchSyncService()
+        let oversizedChunk = Data(repeating: 0xAA, count: 5 * 1024 * 1024)
+        service.handleReceivedAudioChunk(
+            transferId: "oversized-budget",
+            index: 0,
+            total: 1,
+            filename: "../bomb.m4a",
+            data: oversizedChunk
+        )
+        XCTAssertEqual(service.lastReceivedText, "", "超出 4MB 组装预算的分片必须被拒绝不得合并")
+    }
 }
 #endif

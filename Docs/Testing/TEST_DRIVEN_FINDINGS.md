@@ -260,21 +260,24 @@
 | **249** | `LLMClient` 存在三重网络与安全缺陷：`performRequest` 收到 500/502/503/504 带 JSON `{"error":{"message":...}}` 响应体时优先抛出 `.apiError`，导致 `isRetryableError` 判定为不可重试使指数退避重试完全失效；`makeLLMRequest` 未校验 `URLComponents.host`/`query`/`fragment`，允许空 host 或带 `?`/`#` 的非法 `baseURL` 破坏路径拼接；`apiKey` 仅 trim 首尾空白未过滤内部 `\r\n` 存在 HTTP Header CRLF 注入风险 | 网关过载返回带 JSON 的 503、配置含 `?`/`#`/空 host 的 `baseURL`、或粘贴含换行的 API Key | 服务端瞬态 5xx 过载完全不重试直接失败、请求路径拼接损坏、Header CRLF 注入风险 | **High** | 架构设计与安全/网络健壮性 | 抽取 `mapResponseError` 对 401/429 及 500/502/503/504 优先映射为对应可重试错误；`makeLLMRequest` 增加 `URLComponents` host 非空与无 query/fragment 校验；新增 `sanitizedAPIKey` 剥离控制字符与换行；收敛 `ClientConstants` | **✅ 已解决** | 是 (LLM 网关 5xx 重试语义保真与 URL/Header 安全防护) | 是 (`LLMClientSecurityTests`) | ✅ 已闭环 |
 | **250** | `MermaidSanitizer.sanitize`（`ZhiYuDomain`）存在三重语法缺陷：`components(separatedBy: .newlines)` 将 `\r\n` 拆为双空行；仅保留 `mindmap`/`graph`/`flowchart` 声明行而漏保留 `sequenceDiagram`/`classDiagram`/`stateDiagram`/`erDiagram`/`gantt`/`pie`；节点标签转义未处理内部双引号 `"` 且缺少首尾已加引号守卫 | 渲染 Windows CRLF Mermaid、时序图/类图、或节点标签含双引号与特殊符号 | Mermaid 图表渲染语法崩溃或多余空行污染 | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | 入口归一化 `\r\n`/`\r` 为 `\n`；扩展 `preservedDeclarationPrefixes` 覆盖全主流 Mermaid 图表声明；`applyNodeReplacements` 跳过已加引号节点并将内部双引号转义为单引号 | **✅ 已解决** | 是 (Mermaid 多图表声明保护与引号安全转义) | 是 (`MermaidSanitizerEdgeTests`) | ✅ 已闭环 |
 | **251** | `ThinkingProcessor.process`（`ZhiYuDomain`）存在三重思维链提取缺陷：多段 `<think>...</think>` 仅提取第一段却全局删除所有块，导致后续思考过程凭空蒸发；未闭合 `<think>` 硬编码返回 `mainContent: ""` 丢弃标签前已输出的正文；未归一化 `\r\n` 导致 Windows 换行下 `findAnswerDivider` 找不到 `\n\n` 使整段正式回答被吞进思考块 | 多轮分段推理输出多段 `<think>`、流式输出前置正文后进入未闭合 `<think>`、或模型返回 CRLF 换行 | 思考内容静默丢失、流式界面已输出正文闪烁消失、正式回答丢失 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 入口归一化 `\r\n`/`\r` 为 `\n`；`extractEnclosedThinking` 改为收集并拼接全部匹配思考块；`extractUnclosedThinking` 保留标签前的前置正文 | **✅ 已解决** | 是 (多段 CoT 完整聚合、流式前置正文保真与 CRLF 兼容) | 是 (`ThinkingProcessorEdgeTests`) | ✅ 已闭环 |
+| **252** | `MarkdownProcessor`（`ZhiYuDomain`）存在三重块级解析缺陷：`parseHorizontalRule` 仅用 `hasPrefix("***")` / `hasPrefix("___")`，将 `***重点结论***` 等粗斜体段落整段吞成水平分割线；`parseTable` 仅过滤 `\|---` 与 `\| ---`，遇到带冒号对齐分隔行 `\|:---\|` / `\|:---:\|` 时产出幽灵空行 `[]`；`parse` 未归一化 `\r\n` 导致 Windows 换行空行生成幽灵空段落 | 渲染含 `***粗斜体***` 开头段落、带对齐冒号 Markdown 表格或 CRLF 文档 | 整段正文消失变成横线、表格首行出现幽灵空行、CRLF 文档产生异常空段落 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | `parse` 入口归一化 `\r\n`/`\r` 为 `\n`；`parseHorizontalRule` 严格校验整行仅由 ≥3 个同种 `-`/`*`/`_` 与空格组成；`parseTable` 抽取 `isTableSeparatorLine` 统一过滤所有对齐分隔行 | **✅ 已解决** | 是 (CommonMark 水平线严格判定与表格对齐分隔行过滤) | 是 (`MarkdownProcessorBlockEdgeTests`) | ✅ 已闭环 |
+| **253** | `RAGEvaluationService` 存在双重检索标注缺陷：当 LLM 返回的 `relevance_scores` 数组短于 `sources.count` 时，越界项走启发式回退却仍被错误标记为 `"llm-auto"`；`json["relevance_scores"] as? [Int]` 无法兼容浮点/字符串数值且未过滤 JSON 布尔值 | LLM 返回部分源评分或返回 `[2.0, "1"]` 宽容格式 | 检索相关性标注来源审计失真或整组 LLM 标注静默丢失 | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | 抽取 `parseRelevanceScores` 兼容 Int/Double/String 并过滤 Bool/NaN 与钳位 `[0, 2]`；抽取 `makeRelevanceJudgments` 按每条源实际是否命中 LLM 评分精准区分 `"llm-auto"` 与 `"heuristic"`；收敛 `EvalConstants` | **✅ 已解决** | 是 (RAG 相关性标注宽容解析与来源精准审计) | 是 (`RAGEvaluationServiceTests`) | ✅ 已闭环 |
+| **254** | `iOSWatchSyncService.handleReceivedAudioChunk` 存在三重安全与边界隐患：缺少总组装字节预算上限，恶意或异常大分片可塞爆 `UserDefaults`/`KeyStore` 引发系统崩溃；`filename` 未清洗路径穿越（`../`、`/`、`\0`）即广播给下游；`assembly.count == total` 在残留脏索引场景下无法正常触发或清理 | Watch 端发送超大音频分片、畸形文件名（`../../evil\0.m4a`）或同 `transferId` 重复冲突包 | `UserDefaults` 爆仓崩溃、下游文件落盘路径穿越、分片组装永久挂起泄漏 | **High** | 架构设计与安全/网络健壮性 | 收敛 `AudioChunkLimits`（4MB 总组装字节上限），超限立即拒绝并清理残留缓存；新增 `sanitizedAudioFilename` 拦截路径穿越与控制字符；合并条件改为 `assembly.count >= total` 且校验 `0..<total` 完整齐备 | **✅ 已解决** | 是 (手表音频分片字节预算守卫与安全文件名清洗) | 是 (`IOSWatchSyncAudioChunkTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**251 项**
+- **收录问题总数**：**254 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：74 项 (29.5%)
-  - 状态机并发与数据生命周期：56 项 (22.3%)
-  - 架构设计与安全/网络健壮性：80 项 (31.9%)
-  - UI/交互与防御性缺陷：17 项 (6.8%)
-  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (9.6%)
+  - 功能缺陷与核心算法/解析器/数据完整性：76 项 (29.9%)
+  - 状态机并发与数据生命周期：56 项 (22.0%)
+  - 架构设计与安全/网络健壮性：81 项 (31.9%)
+  - UI/交互与防御性缺陷：17 项 (6.7%)
+  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (9.4%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：155 项 (61.8%)
-  - **Medium（功能异常/算法边界/性能损耗）**：69 项 (27.5%)
-  - **Low（样式异味/边界校验/门禁规范）**：27 项 (10.8%)
-- **修复闭环率**：**100% (251/251 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：157 项 (61.8%)
+  - **Medium（功能异常/算法边界/性能损耗）**：70 项 (27.6%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (10.6%)
+- **修复闭环率**：**100% (254/254 项已修复闭环)**
 

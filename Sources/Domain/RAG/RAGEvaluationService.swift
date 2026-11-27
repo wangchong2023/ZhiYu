@@ -28,6 +28,19 @@ struct EvaluationReport: Identifiable {
 
 /// [L2] 领域服务：RAG 质量评估中心
 final class RAGEvaluationService: Sendable {
+    private enum EvalConstants {
+        static let minRelevanceLevel: Int = 0
+        static let mediumRelevanceLevel: Int = 1
+        static let highRelevanceLevel: Int = 2
+        static let rankOffset: Int = 1
+        static let latestFetchLimit: Int = 1
+        static let judgeSourceLLM = "llm-auto"
+        static let judgeSourceHeuristic = "heuristic"
+        static let relevanceScoresKey = "relevance_scores"
+        static let hexByteFormat = "%02x"
+        static let emptyString = ""
+    }
+
     private let llmService: any LLMServiceProtocol
     private let governanceStore: any RAGGovernanceRepository
 
@@ -62,13 +75,70 @@ final class RAGEvaluationService: Sendable {
 
         return EvaluationReport(
             query: query, answer: answer,
-            faithfulness: 0, relevance: 0, precision: 0,
-            hallucinationRate: 0, citationAccuracy: 0,
+            faithfulness: ScoreBounds.minScore, relevance: ScoreBounds.minScore, precision: ScoreBounds.minScore,
+            hallucinationRate: ScoreBounds.minScore, citationAccuracy: ScoreBounds.minScore,
             status: L10n.AI.Eval.Status.error
         )
     }
 
     // MARK: - 检索质量记录
+
+    /// 宽容解析 LLM 返回的 `relevance_scores` 数组（兼容 Int/Double/String，过滤 Bool/NaN，并钳位至 [0, 2]）
+    internal static func parseRelevanceScores(_ raw: Any?) -> [Int]? {
+        guard let rawArray = raw as? [Any], !rawArray.isEmpty else { return nil }
+        var parsed: [Int] = []
+        for item in rawArray {
+            if let number = item as? NSNumber {
+                if CFGetTypeID(number) == CFBooleanGetTypeID() { continue }
+                let value = number.doubleValue
+                guard value.isFinite else { continue }
+                let clamped = max(EvalConstants.minRelevanceLevel, min(EvalConstants.highRelevanceLevel, Int(value.rounded())))
+                parsed.append(clamped)
+            } else if let str = item as? String,
+                      let value = Double(str.trimmingCharacters(in: .whitespacesAndNewlines)),
+                      value.isFinite {
+                let clamped = max(EvalConstants.minRelevanceLevel, min(EvalConstants.highRelevanceLevel, Int(value.rounded())))
+                parsed.append(clamped)
+            }
+        }
+        return parsed.isEmpty ? nil : parsed
+    }
+
+    /// 构造单条相关性标注，精准区分 LLM 自动标注与启发式回退来源
+    internal static func makeRelevanceJudgments(
+        evalID: Int64,
+        query: String,
+        sources: [KnowledgeSource],
+        relevanceScoresJSON: [Int]?
+    ) -> [RelevanceJudgment] {
+        let queryHash = sha256(query)
+        return sources.enumerated().map { idx, src in
+            let level: Int
+            let judgeSource: String
+            if let scores = relevanceScoresJSON, idx < scores.count {
+                level = max(EvalConstants.minRelevanceLevel, min(EvalConstants.highRelevanceLevel, scores[idx]))
+                judgeSource = EvalConstants.judgeSourceLLM
+            } else {
+                // 回退：基于相似度分数的启发式标注
+                if src.score >= RAGEvalConstants.HeuristicRelevance.highThreshold {
+                    level = EvalConstants.highRelevanceLevel
+                } else if src.score >= RAGEvalConstants.HeuristicRelevance.mediumThreshold {
+                    level = EvalConstants.mediumRelevanceLevel
+                } else {
+                    level = EvalConstants.minRelevanceLevel
+                }
+                judgeSource = EvalConstants.judgeSourceHeuristic
+            }
+            return RelevanceJudgment(
+                queryHash: queryHash,
+                query: query,
+                sourceID: src.id.uuidString,
+                relevanceLevel: level,
+                judgeSource: judgeSource,
+                evaluationID: evalID
+            )
+        }
+    }
 
     /// 记录检索快照与 LLM 标注的相关性数据
     private func recordRetrievalQuality(
@@ -77,13 +147,11 @@ final class RAGEvaluationService: Sendable {
         sources: [KnowledgeSource],
         relevanceScoresJSON: [Int]?
     ) async {
-        let queryHash = Self.sha256(query)
-
         // 1. 保存检索快照（Top-N 排序结果）
         let snapshots: [RetrievalSnapshot] = sources.enumerated().map { idx, src in
             RetrievalSnapshot(
                 evaluationID: evalID,
-                rank: idx + 1,
+                rank: idx + EvalConstants.rankOffset,
                 sourceID: src.id.uuidString,
                 pageTitle: src.title,
                 snippet: String(src.snippet.prefix(RAGEvalConstants.snapshotSnippetPrefix)),
@@ -92,24 +160,13 @@ final class RAGEvaluationService: Sendable {
         }
         try? await governanceStore.saveRetrievalSnapshots(snapshots)
 
-        // 2. 保存相关性标注（优先使用 LLM 返回的分数，回退到基于 score 的弱标注）
-        let judgments: [RelevanceJudgment] = sources.enumerated().map { idx, src in
-            let level: Int
-            if let scores = relevanceScoresJSON, idx < scores.count {
-                level = max(0, min(2, scores[idx]))
-            } else {
-                // 回退：基于相似度分数的启发式标注
-                if src.score >= RAGEvalConstants.HeuristicRelevance.highThreshold { level = 2 } else if src.score >= RAGEvalConstants.HeuristicRelevance.mediumThreshold { level = 1 } else { level = 0 }
-            }
-            return RelevanceJudgment(
-                queryHash: queryHash,
-                query: query,
-                sourceID: src.id.uuidString,
-                relevanceLevel: level,
-                judgeSource: relevanceScoresJSON != nil ? "llm-auto" : "heuristic",
-                evaluationID: evalID
-            )
-        }
+        // 2. 保存相关性标注（按每条来源实际命中情况精准记录 judgeSource）
+        let judgments = Self.makeRelevanceJudgments(
+            evalID: evalID,
+            query: query,
+            sources: sources,
+            relevanceScoresJSON: relevanceScoresJSON
+        )
         try? await governanceStore.saveRelevanceJudgments(judgments)
     }
 
@@ -118,7 +175,7 @@ final class RAGEvaluationService: Sendable {
     /// 对查询文本执行 SHA-256 哈希，生成查询指纹用于关联去重。
     private static func sha256(_ text: String) -> String {
         let hash = CryptoKit.SHA256.hash(data: Data(text.utf8))
-        return hash.compactMap { String(format: "%02x", $0) }.joined()
+        return hash.compactMap { String(format: EvalConstants.hexByteFormat, $0) }.joined()
     }
 
     /// 构建含逐源相关性评判的 Prompt
@@ -223,7 +280,7 @@ final class RAGEvaluationService: Sendable {
         try? await governanceStore.saveRAGEvaluation(eval)
         
         // Step 5: 查询最新评估记录获取自增 ID
-        let savedEvals = (try? await governanceStore.fetchRAGEvaluations(limit: 1)) ?? []
+        let savedEvals = (try? await governanceStore.fetchRAGEvaluations(limit: EvalConstants.latestFetchLimit)) ?? []
         let savedEvalID = savedEvals.first.flatMap { $0.id }
 
         // Step 6: 检索快照 + 相关性标注（仅当有 sources 且有有效评估 ID 时）
@@ -232,7 +289,7 @@ final class RAGEvaluationService: Sendable {
                 evalID: evalID,
                 query: query,
                 sources: sources,
-                relevanceScoresJSON: json["relevance_scores"] as? [Int]
+                relevanceScoresJSON: Self.parseRelevanceScores(json[EvalConstants.relevanceScoresKey])
             )
         }
 

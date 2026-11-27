@@ -816,4 +816,33 @@ final class RAGEvaluationServiceTests: XCTestCase {
         XCTAssertTrue(ndcg.isFinite && ndcg <= 1.0, "rank=0 时 NDCG 必须有限且 <= 1.0，实际: \(ndcg)")
         XCTAssertEqual(f1, 0.5, accuracy: 0.001, "1 条满分(1.0) + 1 条零命中(0.0) 的 F1 均值必须为 0.5，不得跳过零命中查询导致虚高为 1.0")
     }
+
+    // MARK: - 缺陷 #253 回归：宽容 relevance_scores 解析与短数组启发式来源精准标注
+
+    func testParseRelevanceScores_supportsDoubleStringFiltersBoolAndClamps() {
+        let raw: [Any] = [2.0, "1", true, 9, -2, "bad"]
+        let parsed = RAGEvaluationService.parseRelevanceScores(raw)
+        XCTAssertEqual(parsed, [2, 1, 2, 0], "应兼容浮点/字符串、跳过 Bool/非法串并钳位至 [0, 2]")
+        XCTAssertNil(RAGEvaluationService.parseRelevanceScores([]))
+    }
+
+    func testMakeRelevanceJudgments_shortLLMArrayMarksFallbackAsHeuristic() {
+        let sources = [
+            KnowledgeSource(pageID: UUID(), title: "S1", snippet: "a", score: 0.9),
+            KnowledgeSource(pageID: UUID(), title: "S2", snippet: "b", score: 0.8),
+            KnowledgeSource(pageID: UUID(), title: "S3", snippet: "c", score: 0.1)
+        ]
+        let judgments = RAGEvaluationService.makeRelevanceJudgments(
+            evalID: 1,
+            query: "测试查询",
+            sources: sources,
+            relevanceScoresJSON: [2]
+        )
+
+        XCTAssertEqual(judgments.count, 3)
+        XCTAssertEqual(judgments[0].judgeSource, "llm-auto")
+        XCTAssertEqual(judgments[0].relevanceLevel, 2)
+        XCTAssertEqual(judgments[1].judgeSource, "heuristic", "LLM 评分数组未覆盖的源必须标记为 heuristic")
+        XCTAssertEqual(judgments[2].judgeSource, "heuristic", "LLM 评分数组未覆盖的源必须标记为 heuristic")
+    }
 }

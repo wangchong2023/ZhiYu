@@ -206,4 +206,46 @@ final class MarkdownProcessorBlockEdgeTests: XCTestCase {
         let blocks = processor.parse("段落1\n\n\n\n\n段落2")
         XCTAssertEqual(blocks.count, 2, "连续空行应被过滤")
     }
+
+    // MARK: - 缺陷 #252 回归：粗斜体段落不误判分割线、带冒号对齐表格无幽灵空行、CRLF 归一化
+
+    func testParse_boldItalicParagraphNotMistakenForHorizontalRule() {
+        let blocks = processor.parse("***重点结论***：性能提升 3 倍\n\n___重要提示___：请备份")
+        XCTAssertEqual(blocks.count, 2)
+        for block in blocks {
+            if case .paragraph = block {
+                // 预期保持段落，绝不被吞成水平分割线
+            } else {
+                XCTFail("以 *** 或 ___ 开头的正文段落不得被误判为水平分割线，实际：\(block)")
+            }
+        }
+    }
+
+    func testParse_tableWithColonAlignmentSeparator_hasNoGhostEmptyRow() {
+        let md = """
+        | 指标 | 数值 | 说明 |
+        |:---|:---:|---:|
+        | QPS | 1200 | 峰值 |
+        """
+        let blocks = processor.parse(md)
+        XCTAssertEqual(blocks.count, 1)
+        if case .table(let headers, let rows) = blocks[0] {
+            XCTAssertEqual(headers, ["指标", "数值", "说明"])
+            XCTAssertEqual(rows.count, 1, "带冒号对齐分隔行不得产出幽灵空数据行")
+            XCTAssertEqual(rows[0], ["QPS", "1200", "峰值"])
+        } else {
+            XCTFail("应解析为 table 块")
+        }
+    }
+
+    func testParse_crlfBlankLines_doNotProduceGhostParagraphs() {
+        let blocks = processor.parse("第一段\r\n\r\n第二段")
+        XCTAssertEqual(blocks.count, 2, "CRLF 空行应被正确跳过")
+        if case .paragraph(let first) = blocks[0], case .paragraph(let second) = blocks[1] {
+            XCTAssertEqual(first, "第一段")
+            XCTAssertEqual(second, "第二段")
+        } else {
+            XCTFail("应解析为两个干净段落")
+        }
+    }
 }

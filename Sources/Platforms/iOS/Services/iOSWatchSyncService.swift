@@ -118,39 +118,74 @@ final class iOSWatchSyncService: NSObject, WatchSyncProtocol, WCSessionDelegate 
     private enum AudioChunkLimits {
         /// 单次手表音频传输允许的最大分片数上限（防御异常包导致内存/存储膨胀）
         static let maxChunkCount: Int = 1024
+        /// 单次手表音频组装总字节上限（4 MB，防止塞爆 UserDefaults / KeyStore 触发系统崩溃）
+        static let maxTotalAssemblyMB: Int = 4
+        static let maxTotalAssemblyBytes: Int = maxTotalAssemblyMB * Int(SystemConstants.bytesPerMB)
+        static let zeroCount: Int = 0
+        static let fallbackAudioFilename = "watch_audio.m4a"
+        static let invalidFilenameChars = CharacterSet(
+            charactersIn: SystemConstants.Character.slash
+                + SystemConstants.Character.backslash
+                + SystemConstants.Character.colon
+        ).union(.newlines).union(.controlCharacters)
+    }
+
+    /// 清洗手表回传音频文件名，先剥离空字节/控制字符再取末级文件名，拦截路径穿越（`../`、`/`、`\`）与单点 `.`
+    internal static func sanitizedAudioFilename(_ raw: String) -> String {
+        let withoutControl = raw
+            .components(separatedBy: CharacterSet.newlines.union(.controlCharacters))
+            .joined(separator: SystemConstants.Character.underscore)
+        let baseName = URL(fileURLWithPath: withoutControl).lastPathComponent
+        let cleaned = baseName
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .components(separatedBy: AudioChunkLimits.invalidFilenameChars)
+            .joined(separator: SystemConstants.Character.underscore)
+            .trimmingCharacters(in: CharacterSet(charactersIn: SystemConstants.Character.dot))
+        return cleaned.isEmpty ? AudioChunkLimits.fallbackAudioFilename : cleaned
     }
 
     func handleReceivedAudioChunk(transferId: String, index: Int, total: Int, filename: String, data: Data) {
         guard !transferId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
-              total > 0,
+              total > AudioChunkLimits.zeroCount,
               total <= AudioChunkLimits.maxChunkCount,
-              index >= 0,
+              index >= AudioChunkLimits.zeroCount,
               index < total else {
             Logger.shared.warning("iOSWatchSyncService: 无效音频分片参数 transferId=\(transferId) total=\(total) index=\(index)")
             return
         }
-        var assembly = keyStore?.object(forKey: "\(AppConstants.Keys.Storage.iOSAudioAssemblyPrefix)\(transferId)") as? [String: Data] ?? [:]
+        let storageKey = "\(AppConstants.Keys.Storage.iOSAudioAssemblyPrefix)\(transferId)"
+        var assembly = keyStore?.object(forKey: storageKey) as? [String: Data] ?? [:]
         assembly["\(index)"] = data
-        
-        if assembly.count == total {
+
+        // 校验总组装字节预算，超限时立即拒绝并清理残留缓存，防止 UserDefaults 爆仓
+        let totalBytes = assembly.values.reduce(AudioChunkLimits.zeroCount) { $0 + $1.count }
+        guard totalBytes <= AudioChunkLimits.maxTotalAssemblyBytes else {
+            keyStore?.removeObject(forKey: storageKey)
+            Logger.shared.warning("iOSWatchSyncService: Audio_assembly_exceeds_budget transferId=\(transferId) bytes=\(totalBytes)")
+            return
+        }
+
+        let safeFilename = Self.sanitizedAudioFilename(filename)
+        if assembly.count >= total {
             var chunks: [Data] = []
-            for i in 0..<total {
+            for i in AudioChunkLimits.zeroCount..<total {
                 if let chunk = assembly["\(i)"] {
                     chunks.append(chunk)
                 } else {
                     Logger.shared.warning("Audio_chunk_missing_at_index: \(i)")
+                    keyStore?.set(assembly, forKey: storageKey)
                     return
                 }
             }
             let mergedData = AudioSplitter.merge(chunks: chunks)
-            
-            keyStore?.removeObject(forKey: "\(AppConstants.Keys.Storage.iOSAudioAssemblyPrefix)\(transferId)")
-            
-            self.lastReceivedText = "audio:\(filename):\(mergedData.count)"
-            NotificationCenter.default.post(name: .didReceiveWatchAudio, object: mergedData, userInfo: ["filename": filename])
-            Logger.shared.info("Audio_transfer_completed_and_merged_successfully: \(filename)")
+
+            keyStore?.removeObject(forKey: storageKey)
+
+            self.lastReceivedText = "audio:\(safeFilename):\(mergedData.count)"
+            NotificationCenter.default.post(name: .didReceiveWatchAudio, object: mergedData, userInfo: ["filename": safeFilename])
+            Logger.shared.info("Audio_transfer_completed_and_merged_successfully: \(safeFilename)")
         } else {
-            keyStore?.set(assembly, forKey: "\(AppConstants.Keys.Storage.iOSAudioAssemblyPrefix)\(transferId)")
+            keyStore?.set(assembly, forKey: storageKey)
         }
     }
     
