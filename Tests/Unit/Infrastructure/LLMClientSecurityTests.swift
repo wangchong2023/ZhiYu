@@ -214,4 +214,44 @@ final class LLMClientSecurityTests: XCTestCase {
             XCTFail("503 必须映射为 LLMError.httpError(503)")
         }
     }
+
+    // MARK: - 缺陷 #249 回归：5xx JSON 响应保持可重试、URL host/query/fragment 校验与 API Key 防 CRLF 注入
+
+    func testMapResponseError_retryable5xxWithJSONBodyRemainsRetryable() throws {
+        let overloadedBody = Data(#"{"error":{"message":"server overloaded"}}"#.utf8)
+        let err503 = try XCTUnwrap(LLMClient.mapResponseError(statusCode: 503, data: overloadedBody))
+        XCTAssertTrue(LLMClient.isRetryableError(err503), "503 带 JSON 错误体时必须保持可重试，不得被 .apiError 吞掉")
+
+        let badReqBody = Data(#"{"error":{"message":"invalid model"}}"#.utf8)
+        let err400 = try XCTUnwrap(LLMClient.mapResponseError(statusCode: 400, data: badReqBody))
+        XCTAssertFalse(LLMClient.isRetryableError(err400), "400 客户端错误不应重试")
+        if case .apiError(let msg) = err400 {
+            XCTAssertEqual(msg, "invalid model")
+        } else {
+            XCTFail("400 带 JSON 错误体应解析为 .apiError")
+        }
+    }
+
+    func testMakeLLMRequest_rejectsMalformedBaseURLAndSanitizesAPIKeyCRLF() throws {
+        let invalidURLs = [
+            "https:///v1",
+            "https://api.example.com/v1?token=1",
+            "https://api.example.com/v1#section"
+        ]
+        for badURL in invalidURLs {
+            let client = LLMClient(baseURL: badURL, apiKey: "sk-test")
+            XCTAssertThrowsError(try client.makeLLMRequest(bodyData: Data("{}".utf8), timeout: 10)) { error in
+                guard case LLMError.invalidURL = error else {
+                    XCTFail("非法 baseURL \(badURL) 应抛出 LLMError.invalidURL，实际：\(error)")
+                    return
+                }
+            }
+        }
+
+        let client = LLMClient(baseURL: "https://api.example.com/v1", apiKey: "sk-abc\r\nX-Injected: evil")
+        let request = try client.makeLLMRequest(bodyData: Data("{}".utf8), timeout: 10)
+        let authHeader = request.value(forHTTPHeaderField: "Authorization") ?? ""
+        XCTAssertFalse(authHeader.contains("\r") || authHeader.contains("\n"), "Authorization Header 绝不能包含 CRLF 注入")
+        XCTAssertEqual(authHeader, "Bearer sk-abcX-Injected: evil")
+    }
 }

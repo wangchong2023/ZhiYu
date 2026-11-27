@@ -112,4 +112,18 @@ final class MermaidSanitizerEdgeTests: XCTestCase {
         // 正则 [^"\]]+ 排除已带引号的节点，应保持原样
         XCTAssertTrue(sanitized.contains("A[\"已带引号:文本\"]"))
     }
+
+    // MARK: - 缺陷 #250 回归：CRLF 归一化、多图表声明保留与内部双引号安全转义
+
+    func testSanitize_crlfAndSequenceDiagramPreserved() {
+        let code = "sequenceDiagram\r\nAlice->>Bob: Hello\r\n"
+        let sanitized = MermaidSanitizer.sanitize(code)
+        XCTAssertEqual(sanitized, "sequenceDiagram\nAlice->>Bob: Hello")
+    }
+
+    func testSanitize_nodeWithNestedQuotesEscapesInnerQuotes() {
+        let code = "graph TD\nA[说明:含(括号)] --> B"
+        let sanitized = MermaidSanitizer.sanitize(code)
+        XCTAssertTrue(sanitized.contains("A[\"说明:含(括号)\"]"))
+    }
 }

@@ -257,21 +257,24 @@
 | **246** | `OOXMLParserBase` 与 `XMLParserLauncher` 未禁用外部实体解析（`shouldResolveExternalEntities` / `externalEntityResolvingPolicy`）且未拦截 `<!DOCTYPE` / `<!ENTITY` 声明与体积上限，存在 XXE 与 Billion Laughs XML Bomb DoS 风险 | 导入恶意构造含 DTD/内部实体递归展开的 `.docx` 或 `.xlsx` 文档 | 解析阶段内存指数级膨胀 OOM 或触发外部实体解析风险 | **High** | 架构设计与安全/网络健壮性 | `OOXMLParserBase.parse()` 统一委托 `XMLParserLauncher.parse`；新增 `isSafeXMLPayload` 限制 32MB 上限并按 ECMA-376 拒绝 `<!DOCTYPE`/`<!ENTITY`，显式关闭 `shouldResolveExternalEntities` 与 `externalEntityResolvingPolicy = .never` | **✅ 已解决** | 是 (OOXML XML 解析器 XXE / DTD Bomb 统一防线) | 是 (`DocxProcessorTests`) | ✅ 已闭环 |
 | **247** | `FrontmatterParser`（`ZhiYuDomain`）存在三重解析缺陷：未剥离 UTF-8 BOM 与归一化 `\r\n` 导致 Windows Markdown 无法识别头部 `---` 且正文空行翻倍；`parseKeyValue` 先剥引号再转 `Double` 导致 `"2026"`/`"true"` 破坏 `String` 解码；`processArrayItemLine` 丢弃所有不含冒号的多行 YAML 标量列表（`- swift`） | 解析 Windows CRLF/BOM Markdown、含引号数字/布尔值、或 Obsidian 多行标量 `tags:` 列表 | Frontmatter 完全失效、字段类型不匹配解码返回 `nil`、多行标签全部丢失 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | `split` 剥离 `\u{FEFF}` 并归一化 `\r\n`/`\r`；新增 `isWrappedInMatchingQuotes` 保留引号字符串并反转义 `\"`/`\\`；补齐 `currentScalarArray` 支持多行标量数组 | **✅ 已解决** | 是 (YAML Frontmatter CRLF/BOM 兼容、类型保真与标量列表支持) | 是 (`FrontmatterParserTests`) | ✅ 已闭环 |
 | **248** | `JSONRepairProcessor.repair`（`ZhiYuAICore`）最外层 JSON 截取存在双重漏洞：流式截断末尾尚无 `}`/`]` 时 `lastIndex` 为 `nil` 导致跳过截取，前导自然语言说明残留搞崩 `PartialJSON`；前导/尾随自然语言中的 `[提示]`/`[附录]` 方括号误触发边界截取破坏合法 JSON | LLM 输出带自然语言前缀的流式截断 JSON 或含 `[注]` 注释的响应 | JSON 自愈完全失败，测验/结构化输出降级失败 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 抽取 `extractOutermostJSONSlice` 与 `findJSONStartIndex`：校验 `[` 后继字符符合 JSON 数组语法，无闭合括号时仍剥离前导自然语言交由 `PartialJSON` 补全，闭合括号按开括号类型精准配对 | **✅ 已解决** | 是 (流式截断 JSON 前导说明剥离与括号防误匹配) | 是 (`JSONRepairProcessorTruncationTests`) | ✅ 已闭环 |
+| **249** | `LLMClient` 存在三重网络与安全缺陷：`performRequest` 收到 500/502/503/504 带 JSON `{"error":{"message":...}}` 响应体时优先抛出 `.apiError`，导致 `isRetryableError` 判定为不可重试使指数退避重试完全失效；`makeLLMRequest` 未校验 `URLComponents.host`/`query`/`fragment`，允许空 host 或带 `?`/`#` 的非法 `baseURL` 破坏路径拼接；`apiKey` 仅 trim 首尾空白未过滤内部 `\r\n` 存在 HTTP Header CRLF 注入风险 | 网关过载返回带 JSON 的 503、配置含 `?`/`#`/空 host 的 `baseURL`、或粘贴含换行的 API Key | 服务端瞬态 5xx 过载完全不重试直接失败、请求路径拼接损坏、Header CRLF 注入风险 | **High** | 架构设计与安全/网络健壮性 | 抽取 `mapResponseError` 对 401/429 及 500/502/503/504 优先映射为对应可重试错误；`makeLLMRequest` 增加 `URLComponents` host 非空与无 query/fragment 校验；新增 `sanitizedAPIKey` 剥离控制字符与换行；收敛 `ClientConstants` | **✅ 已解决** | 是 (LLM 网关 5xx 重试语义保真与 URL/Header 安全防护) | 是 (`LLMClientSecurityTests`) | ✅ 已闭环 |
+| **250** | `MermaidSanitizer.sanitize`（`ZhiYuDomain`）存在三重语法缺陷：`components(separatedBy: .newlines)` 将 `\r\n` 拆为双空行；仅保留 `mindmap`/`graph`/`flowchart` 声明行而漏保留 `sequenceDiagram`/`classDiagram`/`stateDiagram`/`erDiagram`/`gantt`/`pie`；节点标签转义未处理内部双引号 `"` 且缺少首尾已加引号守卫 | 渲染 Windows CRLF Mermaid、时序图/类图、或节点标签含双引号与特殊符号 | Mermaid 图表渲染语法崩溃或多余空行污染 | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | 入口归一化 `\r\n`/`\r` 为 `\n`；扩展 `preservedDeclarationPrefixes` 覆盖全主流 Mermaid 图表声明；`applyNodeReplacements` 跳过已加引号节点并将内部双引号转义为单引号 | **✅ 已解决** | 是 (Mermaid 多图表声明保护与引号安全转义) | 是 (`MermaidSanitizerEdgeTests`) | ✅ 已闭环 |
+| **251** | `ThinkingProcessor.process`（`ZhiYuDomain`）存在三重思维链提取缺陷：多段 `<think>...</think>` 仅提取第一段却全局删除所有块，导致后续思考过程凭空蒸发；未闭合 `<think>` 硬编码返回 `mainContent: ""` 丢弃标签前已输出的正文；未归一化 `\r\n` 导致 Windows 换行下 `findAnswerDivider` 找不到 `\n\n` 使整段正式回答被吞进思考块 | 多轮分段推理输出多段 `<think>`、流式输出前置正文后进入未闭合 `<think>`、或模型返回 CRLF 换行 | 思考内容静默丢失、流式界面已输出正文闪烁消失、正式回答丢失 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 入口归一化 `\r\n`/`\r` 为 `\n`；`extractEnclosedThinking` 改为收集并拼接全部匹配思考块；`extractUnclosedThinking` 保留标签前的前置正文 | **✅ 已解决** | 是 (多段 CoT 完整聚合、流式前置正文保真与 CRLF 兼容) | 是 (`ThinkingProcessorEdgeTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**248 项**
+- **收录问题总数**：**251 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：72 项 (29.0%)
-  - 状态机并发与数据生命周期：56 项 (22.6%)
-  - 架构设计与安全/网络健壮性：79 项 (31.9%)
-  - UI/交互与防御性缺陷：17 项 (6.9%)
-  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (9.7%)
+  - 功能缺陷与核心算法/解析器/数据完整性：74 项 (29.5%)
+  - 状态机并发与数据生命周期：56 项 (22.3%)
+  - 架构设计与安全/网络健壮性：80 项 (31.9%)
+  - UI/交互与防御性缺陷：17 项 (6.8%)
+  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (9.6%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：153 项 (61.7%)
-  - **Medium（功能异常/算法边界/性能损耗）**：68 项 (27.4%)
-  - **Low（样式异味/边界校验/门禁规范）**：27 项 (10.9%)
-- **修复闭环率**：**100% (248/248 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：155 项 (61.8%)
+  - **Medium（功能异常/算法边界/性能损耗）**：69 项 (27.5%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (10.8%)
+- **修复闭环率**：**100% (251/251 项已修复闭环)**
 

@@ -189,4 +189,29 @@ final class ThinkingProcessorEdgeTests: XCTestCase {
         let r2 = ThinkingProcessor.Result(thinkingContent: "a", mainContent: "b")
         XCTAssertNotEqual(r1, r2)
     }
+
+    // MARK: - 缺陷 #251 回归：多段思考块聚合、未闭合前置正文保留与 CRLF 分隔兼容
+
+    func testProcess_multipleThinkBlocks_collectsAllWithoutDroppingLaterBlocks() {
+        let raw = "<think>第一段思考</think>中间正文<think>第二段思考</think>最终结论"
+        let result = ThinkingProcessor.process(raw)
+        XCTAssertTrue(result.thinkingContent?.contains("第一段思考") == true)
+        XCTAssertTrue(result.thinkingContent?.contains("第二段思考") == true, "多段 <think> 块不得丢弃后续思考过程")
+        XCTAssertTrue(result.mainContent.contains("中间正文"))
+        XCTAssertTrue(result.mainContent.contains("最终结论"))
+    }
+
+    func testProcess_unclosedThinkTagWithLeadingMain_preservesLeadingMain() {
+        let raw = "前置回答内容\n<think>正在继续深入推理..."
+        let result = ThinkingProcessor.process(raw)
+        XCTAssertEqual(result.thinkingContent, "正在继续深入推理...")
+        XCTAssertEqual(result.mainContent, "前置回答内容", "未闭合 <think> 之前已输出的正文不得被清空")
+    }
+
+    func testProcess_crlfPrefixThinking_splitsThinkingAndMain() {
+        let raw = "Thinking: first step\r\n\r\nFinal answer."
+        let result = ThinkingProcessor.process(raw)
+        XCTAssertEqual(result.thinkingContent, "first step")
+        XCTAssertEqual(result.mainContent, "Final answer.")
+    }
 }

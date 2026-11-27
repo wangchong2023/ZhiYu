@@ -38,6 +38,26 @@ final class LLMClient: LLMClientProtocol, Sendable {
     private static let defaultTimeout: TimeInterval = 30
     private static let streamingTimeout: TimeInterval = 30
 
+    private enum ClientConstants {
+        static let retryAttemptDecrement: Int = 1
+        static let badGatewayStatusCode: Int = 502
+        static let serviceUnavailableStatusCode: Int = 503
+        static let gatewayTimeoutStatusCode: Int = 504
+        /// 可触发指数退避重试的 5xx 服务端状态码集合
+        static let retryableServerStatusCodes: Set<Int> = [
+            UFPCore.SystemConstants.HTTPStatusCode.internalServerError,
+            badGatewayStatusCode,
+            serviceUnavailableStatusCode,
+            gatewayTimeoutStatusCode
+        ]
+        static let chatCompletionsPath = "/chat/completions"
+        static let httpMethodPost = "POST"
+        static let bearerPrefix = "Bearer "
+        static let errorField = "error"
+        static let messageField = "message"
+        static let emptyString = ""
+    }
+
     // MARK: - Initialization
 
     /// 初始化 LLM 客户端
@@ -69,7 +89,7 @@ final class LLMClient: LLMClientProtocol, Sendable {
     func sendRequest(body: [String: Any]) async throws -> [String: Any] {
         let bodyData = try JSONSerialization.data(withJSONObject: body)
         return try await RetryTask.execute(
-            maxRetries: LLMConstants.Retry.maxAttempts - 1,
+            maxRetries: LLMConstants.Retry.maxAttempts - ClientConstants.retryAttemptDecrement,
             initialDelay: LLMConstants.Retry.initialDelaySeconds,
             multiplier: LLMConstants.Retry.backoffMultiplier,
             shouldRetry: { error in Self.isRetryableError(error) },
@@ -89,16 +109,8 @@ final class LLMClient: LLMClientProtocol, Sendable {
             throw LLMError.invalidResponse
         }
 
-        if httpResponse.statusCode == UFPCore.SystemConstants.HTTPStatusCode.unauthorized { throw LLMError.unauthorized }
-        if httpResponse.statusCode == UFPCore.SystemConstants.HTTPStatusCode.rateLimited { throw LLMError.rateLimited }
-
-        guard httpResponse.statusCode == UFPCore.SystemConstants.HTTPStatusCode.ok else {
-            if let errorBody = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-               let error = errorBody["error"] as? [String: Any],
-               let message = error["message"] as? String {
-                throw LLMError.apiError(message)
-            }
-            throw LLMError.httpError(httpResponse.statusCode)
+        if let responseError = Self.mapResponseError(statusCode: httpResponse.statusCode, data: data) {
+            throw responseError
         }
 
         guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
@@ -108,13 +120,38 @@ final class LLMClient: LLMClientProtocol, Sendable {
         return json
     }
 
+    /// 将非 200 响应映射为精准业务错误：401/429 与 5xx 可重试状态码优先映射为对应可识别错误，
+    /// 防止网关返回的 500/502/503/504 JSON 错误体被包成 `.apiError` 导致重试机制失效。
+    internal static func mapResponseError(statusCode: Int, data: Data) -> LLMError? {
+        if statusCode == UFPCore.SystemConstants.HTTPStatusCode.ok {
+            return nil
+        }
+        if statusCode == UFPCore.SystemConstants.HTTPStatusCode.unauthorized {
+            return .unauthorized
+        }
+        if statusCode == UFPCore.SystemConstants.HTTPStatusCode.rateLimited {
+            return .rateLimited
+        }
+        if ClientConstants.retryableServerStatusCodes.contains(statusCode) {
+            return .httpError(statusCode)
+        }
+        if let errorBody = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+           let error = errorBody[ClientConstants.errorField] as? [String: Any],
+           let message = error[ClientConstants.messageField] as? String {
+            return .apiError(message)
+        }
+        return .httpError(statusCode)
+    }
+
     /// 判断错误是否可重试。
     /// 可重试场景：限流（429）、服务端临时错误（5xx）、网络层断连/超时。
-    private static func isRetryableError(_ error: Error) -> Bool {
+    internal static func isRetryableError(_ error: Error) -> Bool {
         if let llmError = error as? LLMError {
             switch llmError {
-            case .rateLimited, .httpError(500), .httpError(502), .httpError(503), .httpError(504):
+            case .rateLimited:
                 return true
+            case .httpError(let code):
+                return ClientConstants.retryableServerStatusCodes.contains(code)
             default:
                 return false
             }
@@ -167,13 +204,21 @@ final class LLMClient: LLMClientProtocol, Sendable {
 
     // MARK: - 辅助方法
 
-    /// 构造 LLM API 请求 URLRequest（含 HTTPS 强制校验与 loopback 豁免）
+    /// 清洗 API Key 中的换行与控制字符，防御 HTTP Header CRLF 注入
+    internal static func sanitizedAPIKey(_ rawKey: String) -> String {
+        rawKey
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .components(separatedBy: CharacterSet.newlines.union(.controlCharacters))
+            .joined(separator: ClientConstants.emptyString)
+    }
+
+    /// 构造 LLM API 请求 URLRequest（含 HTTPS 强制校验、host/query/fragment 校验与 loopback 豁免）
     /// - Parameters:
     ///   - bodyData: 请求体数据
     ///   - timeout: 超时时间
     /// - Returns: 配置完成的 URLRequest
-    /// - Throws: `LLMError.invalidURL` 当 URL 非法或非 HTTPS（且非 loopback）
-    private func makeLLMRequest(bodyData: Data, timeout: TimeInterval) throws -> URLRequest {
+    /// - Throws: `LLMError.invalidURL` 当 URL 非法、缺少 host、含非法 query/fragment 或非 HTTPS（且非 loopback）
+    internal func makeLLMRequest(bodyData: Data, timeout: TimeInterval) throws -> URLRequest {
         // VULN-013 修复 + 审查修复 MED-1: 强制 HTTPS，但对 loopback 地址豁免
         // 本地回环不经过网络，无明文泄露风险，支持本地 LLM 开发（如 Ollama/llama.cpp）
         let lowerURL = normalizedBaseURL.lowercased()
@@ -182,15 +227,19 @@ final class LLMClient: LLMClientProtocol, Sendable {
         guard isHTTPS || isLoopback else {
             throw LLMError.invalidURL
         }
-        guard let url = URL(string: "\(normalizedBaseURL)/chat/completions") else {
+        guard let components = URLComponents(string: normalizedBaseURL),
+              let host = components.host, !host.isEmpty,
+              components.query == nil,
+              components.fragment == nil,
+              let url = URL(string: "\(normalizedBaseURL)\(ClientConstants.chatCompletionsPath)") else {
             throw LLMError.invalidURL
         }
 
-        let cleanAPIKey = apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
+        let cleanAPIKey = Self.sanitizedAPIKey(apiKey)
         var request = URLRequest(url: url)
-        request.httpMethod = "POST"
+        request.httpMethod = ClientConstants.httpMethodPost
         request.setValue(SystemConstants.ContentType.applicationJSON, forHTTPHeaderField: SystemConstants.HTTPHeader.contentType)
-        request.setValue("Bearer \(cleanAPIKey)", forHTTPHeaderField: SystemConstants.HTTPHeader.authorization)
+        request.setValue("\(ClientConstants.bearerPrefix)\(cleanAPIKey)", forHTTPHeaderField: SystemConstants.HTTPHeader.authorization)
         request.timeoutInterval = timeout
         request.httpBody = bodyData
         return request

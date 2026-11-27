@@ -9,20 +9,44 @@
 //  核心职责：Mermaid 语法状态机清洗器（按 mermaid.js 开源规范移植）。
 //
 import Foundation
+import UFPCore
 
 /// Mermaid 语法状态机清洗器
 public enum MermaidSanitizer {
+
+    private enum Constants {
+        static let fullMatchGroup: Int = 0
+        static let nodeIDCaptureGroup: Int = 1
+        static let labelCaptureGroup: Int = 2
+        static let crlf = SystemConstants.Character.carriageReturn + SystemConstants.Character.newline
+        static let preservedDeclarationPrefixes: [String] = [
+            ProcessorConstants.MarkdownSyntax.hash,
+            ProcessorConstants.MarkdownSyntax.codeFence,
+            ProcessorConstants.MermaidSyntax.graph,
+            ProcessorConstants.MermaidSyntax.flowchart,
+            "sequenceDiagram",
+            "classDiagram",
+            "stateDiagram",
+            "erDiagram",
+            "gantt",
+            "pie"
+        ]
+    }
 
     /// 使用状态机清洗与修复 Mermaid 节点的语法
     /// - Parameter code: 原始 Mermaid 代码
     /// - Returns: 经转义与结构纠错后的 Mermaid 代码
     public static func sanitize(_ code: String) -> String {
-        let lines = code.components(separatedBy: .newlines)
+        let normalizedCode = code
+            .replacingOccurrences(of: Constants.crlf, with: ProcessorConstants.Whitespace.newline)
+            .replacingOccurrences(of: SystemConstants.Character.carriageReturn, with: ProcessorConstants.Whitespace.newline)
+        let lines = normalizedCode.components(separatedBy: ProcessorConstants.Whitespace.newline)
         var sanitizedLines: [String] = []
 
         LineIterationHelpers.iterateTrimmedLines(lines) { trimmed, line in
-            // 保留标题、关键字、结构声明
-            if trimmed.hasPrefix(ProcessorConstants.MarkdownSyntax.hash) || trimmed.hasPrefix(ProcessorConstants.MarkdownSyntax.codeFence) || trimmed == ProcessorConstants.MermaidSyntax.mindmap || trimmed.hasPrefix(ProcessorConstants.MermaidSyntax.graph) || trimmed.hasPrefix(ProcessorConstants.MermaidSyntax.flowchart) {
+            // 保留标题、关键字、图表类型结构声明
+            if trimmed == ProcessorConstants.MermaidSyntax.mindmap
+                || Constants.preservedDeclarationPrefixes.contains(where: { trimmed.hasPrefix($0) }) {
                 sanitizedLines.append(line)
                 return
             }
@@ -54,15 +78,25 @@ public enum MermaidSanitizer {
         guard let regex else { return }
         let matches = regex.matches(in: text, range: NSRange(text.startIndex..., in: text))
         for match in matches.reversed() {
-            guard let idRange = Range(match.range(at: 1), in: text),
-                  let labelRange = Range(match.range(at: 2), in: text),
-                  let fullRange = Range(match.range(at: 0), in: text) else { continue }
+            guard let idRange = Range(match.range(at: Constants.nodeIDCaptureGroup), in: text),
+                  let labelRange = Range(match.range(at: Constants.labelCaptureGroup), in: text),
+                  let fullRange = Range(match.range(at: Constants.fullMatchGroup), in: text) else { continue }
 
             let nodeID = String(text[idRange])
             let labelText = String(text[labelRange]).trimmingCharacters(in: .whitespaces)
 
-            if labelText.contains(where: { ProcessorConstants.Synthesis.mermaidSpecialChars.contains($0) }) {
-                let replacement = "\(nodeID)\(ProcessorConstants.Synthesis.mermaidQuotedNodeOpen)\(labelText)\(ProcessorConstants.Synthesis.mermaidQuotedNodeClose)"
+            // 已被首尾双引号包裹的节点不重复转义
+            let isAlreadyQuoted = labelText.hasPrefix(SystemConstants.Character.doubleQuote)
+                && labelText.hasSuffix(SystemConstants.Character.doubleQuote)
+            guard !isAlreadyQuoted else { continue }
+
+            let containsQuote = labelText.contains(SystemConstants.Character.doubleQuote)
+            if containsQuote || labelText.contains(where: { ProcessorConstants.Synthesis.mermaidSpecialChars.contains($0) }) {
+                let safeLabel = labelText.replacingOccurrences(
+                    of: SystemConstants.Character.doubleQuote,
+                    with: SystemConstants.Character.singleQuote
+                )
+                let replacement = "\(nodeID)\(ProcessorConstants.Synthesis.mermaidQuotedNodeOpen)\(safeLabel)\(ProcessorConstants.Synthesis.mermaidQuotedNodeClose)"
                 text.replaceSubrange(fullRange, with: replacement)
             }
         }

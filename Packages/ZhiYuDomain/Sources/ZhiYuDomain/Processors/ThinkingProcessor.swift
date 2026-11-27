@@ -10,9 +10,18 @@
 //
 
 import Foundation
+import UFPCore
 
 /// 针对大模型思考过程（Reasoning / Thinking）的提取与拆分工具
 public enum ThinkingProcessor {
+
+    private enum Constants {
+        static let fullMatchGroup: Int = 0
+        static let enclosedCaptureGroup: Int = 1
+        static let unclosedCaptureGroup: Int = 2
+        static let emptyString = ""
+        static let crlf = SystemConstants.Character.carriageReturn + SystemConstants.Character.newline
+    }
 
     /// 思考提取结果
     public struct Result: Equatable, Sendable {
@@ -31,9 +40,13 @@ public enum ThinkingProcessor {
     /// - Parameter rawText: 原始回答字符串
     /// - Returns: Result (包含 thinkingContent 和 mainContent)
     public static func process(_ rawText: String) -> Result {
-        let text = rawText.trimmingCharacters(in: .whitespacesAndNewlines)
+        // 归一化 CRLF / CR 为 LF，确保 `\n\n` 段落分隔符与多行正则在 Windows 换行下同样生效
+        let text = rawText
+            .replacingOccurrences(of: Constants.crlf, with: ProcessorConstants.Whitespace.newline)
+            .replacingOccurrences(of: SystemConstants.Character.carriageReturn, with: ProcessorConstants.Whitespace.newline)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else {
-            return Result(thinkingContent: nil, mainContent: "")
+            return Result(thinkingContent: nil, mainContent: Constants.emptyString)
         }
 
         if let res = extractEnclosedThinking(text) {
@@ -51,40 +64,43 @@ public enum ThinkingProcessor {
     // MARK: - 私有解析辅助函数
 
     private static func extractEnclosedThinking(_ text: String) -> Result? {
+        let fullRange = NSRange(text.startIndex..<text.endIndex, in: text)
         for pattern in ProcessorConstants.Thinking.enclosedPatterns {
-            if let (regex, match) = matchFirstCaptureGroup(pattern: pattern, options: [.caseInsensitive, .dotMatchesLineSeparators], text: text, captureGroup: 1) {
-                let thinking = String(text[match]).trimmingCharacters(in: .whitespacesAndNewlines)
-                let range = NSRange(text.startIndex..<text.endIndex, in: text)
-                let remaining = regex.stringByReplacingMatches(in: text, options: [], range: range, withTemplate: "")
-                    .trimmingCharacters(in: .whitespacesAndNewlines)
-                return Result(thinkingContent: thinking.isEmpty ? nil : thinking, mainContent: remaining)
+            guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive, .dotMatchesLineSeparators]) else {
+                continue
             }
+            let matches = regex.matches(in: text, options: [], range: fullRange)
+            guard !matches.isEmpty else { continue }
+
+            // 收集全部闭合思考块并拼接，防止多段 `<think>` 场景下后续思考内容被静默删除丢失
+            let thinkingParts = matches.compactMap { match -> String? in
+                guard let captureRange = Range(match.range(at: Constants.enclosedCaptureGroup), in: text) else { return nil }
+                let segment = String(text[captureRange]).trimmingCharacters(in: .whitespacesAndNewlines)
+                return segment.isEmpty ? nil : segment
+            }
+            let combinedThinking = thinkingParts.joined(separator: ProcessorConstants.Whitespace.doubleNewline)
+            let remaining = regex.stringByReplacingMatches(in: text, options: [], range: fullRange, withTemplate: Constants.emptyString)
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            return Result(thinkingContent: combinedThinking.isEmpty ? nil : combinedThinking, mainContent: remaining)
         }
         return nil
     }
 
     private static func extractUnclosedThinking(_ text: String) -> Result? {
+        let fullRange = NSRange(text.startIndex..<text.endIndex, in: text)
         for pattern in ProcessorConstants.Thinking.unclosedPatterns {
-            if let (_, match) = matchFirstCaptureGroup(pattern: pattern, options: [.caseInsensitive, .dotMatchesLineSeparators], text: text, captureGroup: 2) {
-                let content = String(text[match]).trimmingCharacters(in: .whitespacesAndNewlines)
-                return Result(thinkingContent: content.isEmpty ? nil : content, mainContent: "")
+            guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive, .dotMatchesLineSeparators, .anchorsMatchLines]),
+                  let match = regex.firstMatch(in: text, options: [], range: fullRange),
+                  let captureRange = Range(match.range(at: Constants.unclosedCaptureGroup), in: text),
+                  let matchRange = Range(match.range(at: Constants.fullMatchGroup), in: text) else {
+                continue
             }
+            let content = String(text[captureRange]).trimmingCharacters(in: .whitespacesAndNewlines)
+            // 保留未闭合 `<think>` 之前已输出的前置正文，避免流式输出中途闪烁丢失
+            let leadingMain = String(text[..<matchRange.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+            return Result(thinkingContent: content.isEmpty ? nil : content, mainContent: leadingMain)
         }
         return nil
-    }
-
-    /// 共享的正则匹配辅助：构建正则并返回首个匹配的指定捕获组 Range，消除 extractEnclosed/extractUnclosed 间的 regex 样板重复。
-    private static func matchFirstCaptureGroup(
-        pattern: String,
-        options: NSRegularExpression.Options,
-        text: String,
-        captureGroup: Int
-    ) -> (NSRegularExpression, Range<String.Index>)? {
-        guard let regex = try? NSRegularExpression(pattern: pattern, options: options) else { return nil }
-        let range = NSRange(text.startIndex..<text.endIndex, in: text)
-        guard let match = regex.firstMatch(in: text, options: [], range: range),
-              let captureRange = Range(match.range(at: captureGroup), in: text) else { return nil }
-        return (regex, captureRange)
     }
 
     private static func extractPrefixThinking(_ text: String) -> Result? {
