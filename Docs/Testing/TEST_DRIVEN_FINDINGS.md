@@ -142,21 +142,25 @@
 | **131** | `CollaborationService.applyRemotePage` 未校验远端 `updatedTs.isFinite` 与非空 `title`，异常对端发送 `NaN`/`Infinity` 时间戳或纯空白标题会覆盖本地页面或永久阻塞后续同步 | 对端同步数据包缺少数值有限性与标题非空校验 | 本地正常页面标题被清空，或 `updatedAt` 污染后后续更新全部失效 | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | 在 `applyRemotePage` 入口补齐 `updatedTs.isFinite` 与 `!title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty` 守卫 | **✅ 已解决** | 是 (协作同步反序列化边界校验) | 是 (`CollaborationServiceTests`) | ✅ 已闭环 |
 | **132** | `PluginSandboxGateway.auditFetch` 存在两处高危安全绕过：危险 Header 拦截使用大小写敏感 `Set.contains(key)`（传 `authorization`/`cOoKiE`/`x-api-key` 100% 绕过）；且未校验 `requestURL.scheme` 为 `http`/`https`（传 `file://allowed.com/...` 或 `ftp://allowed.com/...` 放行） | HTTP Header 大小写不敏感特性被忽略；URL 校验缺失协议白名单 | 恶意插件可绕过黑名单注入凭证 Header 或发起非 HTTP 危险协议请求 | **High** | 架构设计与安全/网络健壮性 | `PluginConstants.NetworkSecurity` 新增 `allowedSchemes` 与 `blockedHeadersLowercased`，`auditFetch` 强制校验协议白名单与大小写不敏感 Header 拦截 | **✅ 已解决** | 是 (插件网关大小写与协议白名单审计) | 是 (`PluginSandboxGatewaySecurityTests`) | ✅ 已闭环 |
 | **133** | `PluginLoader.persistPluginAssets` 未对 `manifest.id`、`iconFile`、`locale`、`filename` 做路径穿越校验，恶意插件声明 `iconFile: "../secret.png"` 等可越权读取/覆写目标目录文件；且 `isFileNameSafe` 漏拦截空串与反斜杠 `\`，`copyPluginAsset` 未防同路径自删与源不存在误删旧目标 | 资源持久化阶段缺少与读取阶段一致的路径安全守卫 | 恶意插件包可利用路径穿越读取或破坏宿主沙盒文件 | **High** | 架构设计与安全/网络健壮性 | `isFileNameSafe` 升级为拦截空串/空白/`..`/`/`/`\`；`persistPluginAssets` 对 `manifest.id`/`iconFile`/`locale`/`filename` 全量校验；`copyPluginAsset` 增加同路径与源存在前置守卫 | **✅ 已解决** | 是 (插件资源路径穿越全链路防御) | 是 (`PluginLoaderSecurityTests`) | ✅ 已闭环 |
+| **134** | `ZIPFoundationArchiver.extractContents` 存在三处 Zip Slip 安全缺口：未拦截 `entry.type == .symlink` 符号链接逃逸；仅按 `/` 分割路径漏检 Windows 反斜杠 `..\..\`；标准化前缀校验缺少尾随 `/` 边界，存在 `/tmp/extract_evil` 绕过 `/tmp/extract` 的兄弟目录前缀欺骗漏洞 | 恶意 ZIP 归档包含 symlink、反斜杠穿越或兄弟目录前缀路径 | 恶意压缩包可写穿解压目标目录，破坏宿主沙盒文件 | **High** | 架构设计与安全/网络健壮性 | 抽取 `safeDestinationURL(for:in:)` 统一规范化反斜杠、强制带 `/` 边界前缀校验，并在解压循环中跳过 `entry.type == .symlink` | **✅ 已解决** | 是 (归档解压路径与符号链接防御) | 是 (`ZIPFoundationArchiverExtractionTests`) | ✅ 已闭环 |
+| **135** | `XlsxProcessorProxy.extractText` 映射共享字符串索引时仅校验 `index < sharedStrings.count` 而漏检 `index >= 0`，畸形 XLSX 传入负数索引（如 `-1`）直接触发 Swift 数组负索引致命崩溃；且遍历 `archive` 字典顺序不确定导致多工作表内容顺序随机漂移 | 畸形/恶意 XLSX 工作表包含负数共享字符串索引或多 sheet 解压 | 导入特定 Excel 文件直接导致 App 闪退，或多表文本顺序不稳定 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 改为 `sharedStrings.indices.contains(index)` 同时校验上下界，并按 `archive.sorted(by: { $0.key < $1.key })` 确定顺序遍历工作表 | **✅ 已解决** | 是 (解析器数组索引双向边界校验) | 是 (`DocumentExtractionServiceDeepTests`) | ✅ 已闭环 |
+| **136** | `ImageExtractor` 存在两处缺陷：`downloadImage` 每次新建 `URLSession(configuration:)` 未调用 `finishTasksAndInvalidate()` 造成永久内存与连接句柄泄露；`resolveURL` 对 `/` 开头根相对路径调用 `appendingPathComponent` 会把 `?w=800` 中的 `?` 错误编码为 `%3F` 导致带查询参数的 CDN 图片全部 404 | 网页抓取含图片页面或带 query 参数的根相对图片路径（如 `/_next/image?url=...`） | 持续内存/FD 泄露，带参数的网页图片 OCR 全部失败 | **High** | 状态机并发与数据生命周期 | `downloadImage` 增加 `defer { session.finishTasksAndInvalidate() }`；`resolveURL` 根相对路径改用 `URL(string: src, relativeTo: base)?.absoluteURL` 原生解析 | **✅ 已解决** | 是 (临时 URLSession 生命周期收口规范) | 是 (`ImageExtractorParsingTests`) | ✅ 已闭环 |
+| **137** | `ContentModerationEngine.matchesAny` 剥离正则修饰符构造 AC 自动机词表时误将 `|` 分隔符一并删除且未清掉 `(?i)` 整体，导致 `components(separatedBy: "|")` 切分出单条拼接废词，AC 自动机 100% 永远无法命中 | 正则清洗表达式包含 `\|` 导致提前清除分隔符 | AC 自动机完全失效，每次合规检测均白构建无用自动机并退化为全正则扫描 | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | 抽取 `extractPlainKeywords(from:)` 仅剥离 `(?i)`/`(?:`/`(`/`)`/`^`/`$` 而保留 `|`，恢复 AC 自动机快速精确匹配 | **✅ 已解决** | 是 (正则转纯文本词表边界校验) | 是 (`ContentModerationEngineTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**133 项**
+- **收录问题总数**：**137 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：34 项 (25.6%)
-  - 状态机并发与数据生命周期：25 项 (18.8%)
-  - 架构设计与安全/网络健壮性：36 项 (27.1%)
-  - UI/交互与防御性缺陷：15 项 (11.3%)
-  - 代码坏味道与去魔鬼化/DRY 治理：23 项 (17.3%)
+  - 功能缺陷与核心算法/解析器/数据完整性：36 项 (26.3%)
+  - 状态机并发与数据生命周期：26 项 (19.0%)
+  - 架构设计与安全/网络健壮性：37 项 (27.0%)
+  - UI/交互与防御性缺陷：15 项 (10.9%)
+  - 代码坏味道与去魔鬼化/DRY 治理：23 项 (16.8%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：61 项 (45.9%)
-  - **Medium（功能异常/算法边界/性能损耗）**：46 项 (34.6%)
-  - **Low（样式异味/边界校验/门禁规范）**：26 项 (19.5%)
-- **修复闭环率**：**100% (133/133 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：64 项 (46.7%)
+  - **Medium（功能异常/算法边界/性能损耗）**：47 项 (34.3%)
+  - **Low（样式异味/边界校验/门禁规范）**：26 项 (19.0%)
+- **修复闭环率**：**100% (137/137 项已修复闭环)**
 

@@ -64,5 +64,24 @@ final class ZIPFoundationArchiverExtractionTests: XCTestCase {
         let extractedFile = extractedSourceDir.appendingPathComponent("normal.txt")
         XCTAssertTrue(FileManager.default.fileExists(atPath: extractedFile.path), "解压后应存在 source/normal.txt")
     }
+
+    /// 验证 safeDestinationURL 拒绝 Windows 反斜杠路径穿越与兄弟目录前缀欺骗
+    func testSafeDestinationURL_blocksBackslashTraversalAndSiblingPrefixSpoofing() {
+        let destRoot = URL(fileURLWithPath: "/tmp/extract")
+        XCTAssertNil(
+            ZIPFoundationArchiver.safeDestinationURL(for: "..\\..\\evil.txt", in: destRoot),
+            "Windows 反斜杠路径穿越必须被拦截"
+        )
+        XCTAssertNil(
+            ZIPFoundationArchiver.safeDestinationURL(for: "../extract_evil/pwn.txt", in: destRoot),
+            "兄弟目录前缀欺骗 (/tmp/extract_evil) 必须被拦截"
+        )
+        XCTAssertNil(
+            ZIPFoundationArchiver.safeDestinationURL(for: "C:\\Windows\\system32\\evil.dll", in: destRoot),
+            "Windows 盘符绝对路径必须被拦截"
+        )
+        let safe = ZIPFoundationArchiver.safeDestinationURL(for: "nested/file..name.txt", in: destRoot)
+        XCTAssertEqual(safe?.standardizedFileURL.path, "/tmp/extract/nested/file..name.txt")
+    }
 }
 #endif

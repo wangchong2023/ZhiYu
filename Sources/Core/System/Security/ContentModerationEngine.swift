@@ -94,11 +94,29 @@ public final class ContentModerationEngine: Sendable {
         throw PromptComplianceError.contentViolatesPolicy(category)
     }
 
+    private enum RegexStripConstants {
+        /// 剥离正则修饰符与分组锚点但保留 `|` 分隔符，确保 AC 自动机词表正确切分
+        static let nonAlternationSyntaxPattern = #"\(\?[imsxU-]+\)|\(\?:|\(|\)|\^|\$"#
+        static let alternationSeparator = "|"
+        static let emptyReplacement = ""
+    }
+
+    /// 从正则敏感词表达式中提取纯文本词表，用于构建 Aho-Corasick 自动机
+    internal static func extractPlainKeywords(from patterns: [String]) -> [String] {
+        patterns.map { pat in
+            pat.replacingOccurrences(
+                of: RegexStripConstants.nonAlternationSyntaxPattern,
+                with: RegexStripConstants.emptyReplacement,
+                options: .regularExpression
+            )
+        }
+        .flatMap { $0.components(separatedBy: RegexStripConstants.alternationSeparator) }
+        .filter { !$0.isEmpty }
+    }
+
     private func matchesAny(_ sanitizedText: String, rawText: String, patterns: [String]) -> Bool {
         // 提取纯文本敏感词表构造 AC 自动机快速匹配
-        let plainKeywords = patterns.map { pat in
-            pat.replacingOccurrences(of: #"(?i)(?:\?:|\(|\)|\||\^|\$)"#, with: "", options: .regularExpression)
-        }.flatMap { $0.components(separatedBy: "|") }.filter { !$0.isEmpty }
+        let plainKeywords = Self.extractPlainKeywords(from: patterns)
 
         let acEngine = AhoCorasickEngine(patterns: plainKeywords)
         if acEngine.containsAny(in: sanitizedText) || acEngine.containsAny(in: rawText) {

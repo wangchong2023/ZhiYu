@@ -117,4 +117,16 @@ final class ImageExtractorParsingTests: XCTestCase {
         XCTAssertEqual(urls.count, 1)
         XCTAssertEqual(urls.first?.absoluteString, "https://example.com/single.jpg")
     }
+
+    func testParseImageURLsPreservesQueryParametersOnRootRelativePath() {
+        let html = #"<img src="/_next/image?url=%2Fhero.png&w=800&q=75">"#
+        let baseURL = URL(string: "https://example.com/articles/post-1")
+        let urls = extractor.parseImageURLs(from: html, baseURL: baseURL)
+        XCTAssertEqual(urls.count, 1)
+        XCTAssertEqual(
+            urls.first?.absoluteString,
+            "https://example.com/_next/image?url=%2Fhero.png&w=800&q=75",
+            "根相对路径上的 query 参数 '?' 必须完整保留，不得被错误编码为 '%3F'"
+        )
+    }
 }

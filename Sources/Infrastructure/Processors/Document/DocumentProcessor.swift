@@ -129,16 +129,16 @@ struct XlsxProcessorProxy: DocumentProcessor {
 
         var allText: [String] = []
 
-        // Step 2: 遍历提取每个子工作表中的文字，映射共享字符串索引
-        for (path, data) in archive {
+        // Step 2: 按确定顺序遍历提取每个子工作表中的文字，映射共享字符串索引
+        for (path, data) in archive.sorted(by: { $0.key < $1.key }) {
             if path.hasPrefix(ProcessorConstants.OOXML.excelWorksheetPrefix) && path.hasSuffix(ProcessorConstants.OOXML.xmlExtension) {
                 let parser = ExcelProcessor(xmlData: data)
                 if parser.parse() {
-                    // 解析共享字符串指针，映射回真实字符
+                    // 解析共享字符串指针，映射回真实字符（同时校验非负与上界防越界崩溃）
                     for value in parser.values {
                         if value.hasPrefix(ProcessorConstants.OOXML.sharedStringIndexOpen) && value.hasSuffix(ProcessorConstants.OOXML.sharedStringIndexClose),
                            let index = Int(value.dropFirst().dropLast()),
-                           index < sharedStrings.count {
+                           sharedStrings.indices.contains(index) {
                             allText.append(sharedStrings[index])
                         } else if !value.isEmpty && !value.hasPrefix(ProcessorConstants.OOXML.sharedStringIndexOpen) {
                             allText.append(value)

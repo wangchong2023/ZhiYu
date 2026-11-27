@@ -442,6 +442,39 @@ final class DocumentExtractionServiceDeepTests: XCTestCase {
         let error = ProcessorError.fileNotFound
         XCTAssertNotNil(error)
     }
+
+    /// 验证畸形 XLSX 包含负数共享字符串索引时安全跳过而不触发数组负索引越界崩溃
+    func testExtractTextFromXlsxWithNegativeSharedStringIndexDoesNotCrash() async throws {
+        let fm = FileManager.default
+        let tempDir = fm.temporaryDirectory.appendingPathComponent("XlsxNegIdx_\(UUID().uuidString)")
+        let xlDir = tempDir.appendingPathComponent("xl")
+        let worksheetsDir = xlDir.appendingPathComponent("worksheets")
+        try fm.createDirectory(at: worksheetsDir, withIntermediateDirectories: true)
+        defer { try? fm.removeItem(at: tempDir) }
+
+        let sharedStringsXML = """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <sst><si><t>SafeCellText</t></si></sst>
+        """
+        let sheetXML = """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <worksheet><sheetData><row>
+            <c t="s"><v>-1</v></c>
+            <c t="s"><v>0</v></c>
+            <c t="s"><v>999</v></c>
+        </row></sheetData></worksheet>
+        """
+        try sharedStringsXML.write(to: xlDir.appendingPathComponent("sharedStrings.xml"), atomically: true, encoding: .utf8)
+        try sheetXML.write(to: worksheetsDir.appendingPathComponent("sheet1.xml"), atomically: true, encoding: .utf8)
+
+        let xlsxURL = tempDir.appendingPathComponent("malformed.xlsx")
+        let archiver = ZIPFoundationArchiver()
+        // 将 xl 目录打包进 xlsx 根路径
+        try await archiver.zip(directory: xlDir, to: xlsxURL)
+
+        let extracted = try await service.extractText(from: xlsxURL)
+        XCTAssertEqual(extracted, "SafeCellText", "负数与越界共享字符串索引必须安全跳过，仅保留合法单元格文本")
+    }
 }
 
 // MARK: - ChatLLMService UITesting Mock 路径测试

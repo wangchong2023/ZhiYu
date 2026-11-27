@@ -17,12 +17,14 @@ public enum PlatformConstants {
 
     // MARK: - PDF 服务
 
-    /// PDF 文件管理安全约束
+    /// PDF/归档文件管理安全约束
     public enum PDFSecurity {
         /// 路径穿越检测的非法字符
         public static let pathTraversalMarker: String = ".."
-        /// 路径分隔符
+        /// 正斜杠路径分隔符
         public static let pathSeparator: String = "/"
+        /// 反斜杠路径分隔符
+        public static let backslashSeparator: String = "\\"
     }
 
     // MARK: - Spotlight 索引

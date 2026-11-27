@@ -86,4 +86,11 @@ final class ContentModerationEngineTests: XCTestCase {
             XCTAssertTrue(errorMsg.contains("动态提示：测试敏感政治词中和阻断"), "应当支持 RemoteConfig 动态覆盖合规告示文本，got: \(errorMsg)")
         }
     }
+
+    /// 5. 测试 AC 自动机词表提取：剥离 (?i)/(?: 等正则语法时必须保留 `|` 分隔符以正确拆词
+    func testExtractPlainKeywords_preservesAlternationAndStripsRegexModifiers() {
+        let patterns = [#"(?i)(?:颠覆政权|暴乱|反动宣言|煽动仇恨)"#]
+        let keywords = ContentModerationEngine.extractPlainKeywords(from: patterns)
+        XCTAssertEqual(keywords, ["颠覆政权", "暴乱", "反动宣言", "煽动仇恨"], "AC 自动机词表应准确拆分为独立敏感词，而非拼接废词")
+    }
 }

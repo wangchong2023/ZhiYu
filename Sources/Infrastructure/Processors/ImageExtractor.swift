@@ -137,6 +137,7 @@ struct ImageExtractor: Sendable {
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForResource = AppConstants.Keys.ImportLimits.imageDownloadTimeoutSeconds
         let session = URLSession(configuration: config)
+        defer { session.finishTasksAndInvalidate() }
         do {
             let (data, _) = try await session.data(from: url)
             return data
@@ -162,9 +163,8 @@ struct ImageExtractor: Sendable {
             return URL(string: "\(ProcessorConstants.WebScraper.httpsPrefix)\(src)")
         }
         if src.hasPrefix(ProcessorConstants.MarkdownSyntax.slash), let base = baseURL {
-            var components = URLComponents(url: base, resolvingAgainstBaseURL: true)
-            components?.path = ""
-            return components?.url?.appendingPathComponent(String(src.dropFirst()))
+            // 原生相对解析，保留 query string（?w=800）与 fragment，避免 appendingPathComponent 将 '?' 编码为 '%3F'
+            return URL(string: src, relativeTo: base)?.absoluteURL
         }
         if let base = baseURL {
             return URL(string: src, relativeTo: base)?.absoluteURL

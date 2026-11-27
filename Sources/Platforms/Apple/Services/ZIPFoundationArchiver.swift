@@ -22,9 +22,48 @@ final class ZIPFoundationArchiver: FileArchiverProtocol, Sendable {
         try FileManager.default.zipItem(at: sourceDir, to: destinationURL)
     }
 
-    // MARK: - 解压（含路径穿越防护 VULN-014）
+    // MARK: - 解压（含路径穿越防护 VULN-014 / #134）
 
-    /// 将 ZIP 归档文件解压到指定目录，内置路径穿越攻击防护
+    /// 校验并解析单个 ZIP entry 的安全落盘路径，防御路径穿越、反斜杠穿越与兄弟目录前缀欺骗
+    internal static func safeDestinationURL(for entryPath: String, in destinationURL: URL) -> URL? {
+        guard !entryPath.isEmpty else {
+            Logger.shared.warning("ZIP_Skipped_EmptyPath_Entry")
+            return nil
+        }
+        // 统一将 Windows 反斜杠转换为正斜杠后再校验，防 ..\..\ 绕过
+        let normalizedPath = entryPath.replacingOccurrences(
+            of: PlatformConstants.PDFSecurity.backslashSeparator,
+            with: PlatformConstants.PDFSecurity.pathSeparator
+        )
+        // 1. 拒绝绝对路径（Unix / 和 Windows 盘符 C:\）
+        guard !normalizedPath.hasPrefix(PlatformConstants.PDFSecurity.pathSeparator),
+              !entryPath.matchesRegex(#"^[A-Za-z]:[\\/]"#) else {
+            Logger.shared.warning("ZIP_Skipped_AbsolutePath_Entry: \(entryPath)")
+            return nil
+        }
+        // 2. 拒绝 ".." 路径穿越——按路径组件检查，避免误拒含 ".." 的合法文件名
+        let pathComponents = normalizedPath.split(separator: "/").map(String.init)
+        guard !pathComponents.contains(PlatformConstants.PDFSecurity.pathTraversalMarker) else {
+            Logger.shared.warning("ZIP_Skipped_PathTraversal_Entry: \(entryPath)")
+            return nil
+        }
+
+        let destRoot = destinationURL.standardizedFileURL.path
+        let destPrefix = destRoot.hasSuffix(PlatformConstants.PDFSecurity.pathSeparator)
+            ? destRoot
+            : destRoot + PlatformConstants.PDFSecurity.pathSeparator
+        let destURL = destinationURL.appendingPathComponent(normalizedPath)
+        let resolvedPath = destURL.standardizedFileURL.path
+
+        // 3. 强制带目录分隔符边界校验，防御 /tmp/extract_evil 绕过 /tmp/extract 前缀欺骗
+        guard resolvedPath == destRoot || resolvedPath.hasPrefix(destPrefix) else {
+            Logger.shared.warning("ZIP_Skipped_OutsideDest_Entry: \(entryPath)")
+            return nil
+        }
+        return destURL
+    }
+
+    /// 将 ZIP 归档文件解压到指定目录，内置路径穿越与符号链接逃逸防护
     func extractContents(from archiveURL: URL, to destinationURL: URL) throws {
         let archive: Archive
         do {
@@ -33,36 +72,13 @@ final class ZIPFoundationArchiver: FileArchiverProtocol, Sendable {
             throw FileArchiverError.extractionFailed(reason: "Cannot open archive: \(error)")
         }
 
-        let destStandardized = destinationURL.standardizedFileURL.path
-
         for entry in archive {
-            let entryPath = entry.path
-
-            // 1. 拒绝 ".." 路径穿越——按路径组件检查，避免误拒含 ".." 的合法文件名
-            // Bug #43 修复：从子串匹配改为路径组件检查
-            let pathComponents = entryPath.split(separator: "/").map(String.init)
-            guard !pathComponents.contains(PlatformConstants.PDFSecurity.pathTraversalMarker) else {
-                // Bug #45 修复：恶意 entry 跳过时记录 warning 日志
-                Logger.shared.warning("ZIP_Skipped_PathTraversal_Entry: \(entryPath)")
+            // 拒绝符号链接 entry，防止恶意归档通过 symlink 写穿目标沙盒目录
+            guard entry.type != .symlink else {
+                Logger.shared.warning("ZIP_Skipped_Symlink_Entry: \(entry.path)")
                 continue
             }
-            // 2. 拒绝绝对路径（Unix / 和 Windows 盘符 C:\）
-            guard !entryPath.hasPrefix("/"),
-                  !entryPath.matchesRegex(#"^[A-Za-z]:[\\/]"#) else {
-                Logger.shared.warning("ZIP_Skipped_AbsolutePath_Entry: \(entryPath)")
-                continue
-            }
-            // 3. 拒绝空路径
-            guard !entryPath.isEmpty else {
-                Logger.shared.warning("ZIP_Skipped_EmptyPath_Entry")
-                continue
-            }
-
-            let destURL = destinationURL.appendingPathComponent(entryPath)
-
-            // 4. 确保 destURL 标准化后仍在目标目录内
-            guard destURL.standardizedFileURL.path.hasPrefix(destStandardized) else {
-                Logger.shared.warning("ZIP_Skipped_OutsideDest_Entry: \(entryPath)")
+            guard let destURL = Self.safeDestinationURL(for: entry.path, in: destinationURL) else {
                 continue
             }
 
