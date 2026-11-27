@@ -77,6 +77,55 @@ final class KnowledgePageDeleteMarkDirtyTests: XCTestCase {
             "删除页面是数据变更，应与 create/update/rename 一致标记备份脏位 (缺陷 #84)"
         )
     }
+
+    // MARK: - 缺陷 #240 回归：UTF-16 Emoji 偏移安全、已有双链保护与空白重命名早退
+
+    @MainActor
+    func testWrapPlainOccurrences_withLeadingEmoji_doesNotCrashOrCorruptIndices() {
+        let content = "🚀👨‍👩‍👧‍👦🇨🇳 深入理解 Swift 并发模型，再谈 swift 内存安全。"
+        let wrapped = KnowledgePageManager.wrapPlainOccurrences(
+            in: content,
+            target: "Swift",
+            open: "[[",
+            close: "]]"
+        )
+
+        XCTAssertEqual(wrapped, "🚀👨‍👩‍👧‍👦🇨🇳 深入理解 [[Swift]] 并发模型，再谈 [[swift]] 内存安全。")
+    }
+
+    @MainActor
+    func testWrapPlainOccurrences_skipsExistingWikiLinksWithAliasOrAnchor() {
+        let content = "已有 [[Swift|语言]]、[[Swift#并发]] 和 [[Other|Swift]]，但纯文本 Swift 需要包裹。"
+        let wrapped = KnowledgePageManager.wrapPlainOccurrences(
+            in: content,
+            target: "Swift",
+            open: "[[",
+            close: "]]"
+        )
+
+        XCTAssertEqual(
+            wrapped,
+            "已有 [[Swift|语言]]、[[Swift#并发]] 和 [[Other|Swift]]，但纯文本 [[Swift]] 需要包裹。"
+        )
+    }
+
+    @MainActor
+    func testRenamePage_blankTitle_skipsWriteAndBackupDirty() async throws {
+        setupFullMockEnvironment()
+        let tempDir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ZhiYuRenameTest-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: tempDir) }
+
+        ServiceContainer.shared.register(BackupService(baseDirectory: tempDir), for: BackupService.self)
+        let manager = KnowledgePageManager()
+        let page = KnowledgePage(title: "原标题", pageType: .concept, content: "正文")
+
+        try await manager.renamePage(page, to: "   \n ", currentPages: [page])
+
+        let dirtyFlag = tempDir.appendingPathComponent(".knowledge-management_dirty")
+        XCTAssertFalse(FileManager.default.fileExists(atPath: dirtyFlag.path), "空白重命名应早退，不应标记备份脏位")
+    }
 }
 
 // MARK: - 测试用 Processor

@@ -248,21 +248,24 @@
 | **237** | `SecurityManager.getOrGenerateKey` 使用 `try? KeychainService.shared.retrieve` 吞掉锁屏/权限异常（如 `errSecInteractionNotAllowed`），误将异常视作密钥缺失并生成新密钥覆写 Keychain 且污染 `cachedPassphrase`；`verifyIntegrity` 使用普通 `==` 比对 HMAC 摘要且含硬编码状态码 `404` | 设备锁屏后台触发 SQLCipher 口令或 HMAC 盐读取，或针对 HMAC 校验发起时序侧信道探测 | 已加密本地数据库或历史文件完整性签名永久失效，且锁屏临时假密码常驻内存导致解锁后仍持续解密失败 | **High** | 架构设计与安全/网络健壮性 | 抽取 `resolveKeyMaterial` 显式区分 `nil` 与异常：读取抛错时严禁 `store` 覆写且返回 `shouldCache = false` 不污染内存缓存；新增 `constantTimeEquals` 恒定时间比对 HMAC；`404`/`-` 收敛至 `SystemConstants` | **✅ 已解决** | 是 (主密钥 Keychain 锁屏异常保护与恒定时间签名比对) | 是 (`SecurityManagerTests`) | ✅ 已闭环 |
 | **238** | `KnowledgeIngestPipeline` 存在三重缺陷：子块 `startIndex` 直接使用相对父块的局部偏移未叠加 `pChunk.startIndex`，导致第 2+ 个父块下所有子块引用高亮跳回文首；`performConcurrentProcessing` 在 `withTaskGroup` 中吞掉 `CancellationError` 返回空数组；未拦截纯空白内容白白触发 LLM 与索引 | 摄入超 1000 字符多段长文进行子块引用溯源、中途取消摄入任务、或提交纯空格/换行内容 | RAG 引用定位全部错位、取消摄入时可能以残缺分块覆写有效索引、纯空白笔记浪费 LLM 算力 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 子块偏移修正为 `pChunk.startIndex + cChunk.startIndex`；改用 `withThrowingTaskGroup` 显式传播 `CancellationError`；入口拦截纯空白内容；反向 Q&A 清洗首尾空白并继承 `anchorPath`；收敛 `PipelineConstants` | **✅ 已解决** | 是 (RAG 父子分块全局偏移对齐与取消异常传播) | 是 (`KnowledgeIngestPipelineEdgeTests`) | ✅ 已闭环 |
 | **239** | `LinkService` 存在四重边界缺陷：`prepareRename` 仅做 `[[OldTitle]]` 死板字面替换，漏改 `[[OldTitle\|别名]]` / `[[OldTitle#章节]]` 与自引用且未拦截空白新标题；`search` 未 trim 首尾空白；`allTags` 允许纯 `#`/空白污染标签榜且单页重复标签重复计数；`sortedIDsByScore` 同分排序非确定 | 重命名包含别名/锚点引用的页面、传入空白标题/搜索词、或页面含 `#`/重复标签 | 页面重命名后全库带别名/锚点双链断链、空标题损坏数据、标签榜出现空项、RRF 同分结果随机抖动 | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | 抽取 `replacingWikiLinks` 精准保留 `#锚点` 与 `\|别名` 并拦截空白/无变更重命名；`search`/`hybridSearchWithDiagnostics` 统一 trim 并跳过纯空白向量检索；`allTags` 清洗空项并按页去重；`sortedIDsByScore` 增加 `uuidString` 保底排序；收敛 `Constants` | **✅ 已解决** | 是 (Wiki 双链重命名语义保真与检索/标签规范化) | 是 (`LinkServiceTests`) | ✅ 已闭环 |
+| **240** | `KnowledgePageManager` 存在三重严重缺陷：`wrapPlainOccurrences` 将 `NSRegularExpression` 返回的 UTF-16 `NSRange` 偏移直接传给 Swift `String.index(_:offsetBy:)` 导致含 Emoji/复合字符正文索引错位甚至运行时越界闪退，且负向断言无法排除 `[[Target\|别名]]`/`[[Other\|Target]]` 造成嵌套破坏；`renamePage` 缺失撤销栈与空白改动早退；`updatePage` 连续保存并发 RAG 同步无取消互斥易乱序覆写 | 对含 Emoji 或已有带别名/锚点双链的正文应用潜在链接建议、传入空白重命名、或快速连续保存页面 | 应用潜在链接直接闪退或破坏双链语法、重命名无法撤销、快速编辑后旧版内容晚到覆写向量索引 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | `wrapPlainOccurrences` 改用 `Range(match.range, in:)` 并先扫描已有 `[[...]]` 区间跳过重叠；`renamePage` 增加 `modifiedPages.isEmpty` 早退与 `undoService?.pushSnapshot`；`updatePage` 按 `pageID` 追踪并取消旧 `activeRAGSyncTasks`；常量收敛至 `KnowledgeLogSpec` | **✅ 已解决** | 是 (UTF-16 安全索引转换、双链区间排重与页面级异步任务取消) | 是 (`KnowledgePageManagerTests`) | ✅ 已闭环 |
+| **241** | `PromptSecurityGuard.sanitize` 存在双重越狱绕过隐患：未剥离零宽不可见字符（`\u{200B}`/`\u{FEFF}` 等），攻击者插入零宽字符可同时绕过定界符中和与 OWASP 注入检测；漏拦 XML 金沙箱闭合标签（`</context_sandbox>`）与 Llama-3/Mistral 定界符（`<\|begin_of_text\|>`、`[INST]`、`<<SYS>>` 等） | 攻击者在 Prompt 中注入 `<\u{200B}\|im_start\|>`、`ig\u{200B}nore previous instructions` 或 `</context_sandbox>` | 绕过 Prompt 防护直接逃逸 XML 金沙箱或劫持系统角色指令 | **High** | 架构设计与安全/网络健壮性 | 在 `sanitize` 首步剥离零宽/不可见控制字符；收敛 `GuardConstants` 补齐 XML 沙箱标签与 Llama-3/Mistral 定界符，扩展 `neutralizeToken` 同步中和 ASCII `[`、`]`、`/` | **✅ 已解决** | 是 (零宽混淆清洗与 XML 金沙箱标签中和) | 是 (`PromptSecurityGuardTests`) | ✅ 已闭环 |
+| **242** | `TextChunkerProcessor.split`（`ZhiYuDomain`）存在三重分块缺陷：`components(separatedBy: .newlines)` 将 Windows `\r\n` 拆成双换行导致行距翻倍与 `startIndex` 持续漂移；`line.hasPrefix("#")` 将正文行首 `#Swift`/`#待办` 标签误判为 Markdown 标题强行拆块并污染 `breadcrumbPath`；无换行超长单行直接跳过 `chunkSize` 限制撑爆向量上下文窗口 | 导入 Windows CRLF Markdown、包含行首 `#标签` 的笔记、或超长无换行单段文本 | 分块偏移漂移、面包屑路径被标签污染、超长单行触发向量模型截断或报错 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 入口归一化 `\r\n`/`\r` 为 `\n`；新增 `isMarkdownHeading` 严格遵循 CommonMark ATX 规范（1~6 个 `#` 后接空白符）；新增 `appendOversizedLineSlices` 对超长无换行单行按 `safeChunkSize` 与重叠窗口滑窗切分 | **✅ 已解决** | 是 (CommonMark 标题识别、CRLF 归一化与超长单行滑窗切分) | 是 (`TextChunkerDeepEdgeTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**239 项**
+- **收录问题总数**：**242 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：65 项 (27.2%)
-  - 状态机并发与数据生命周期：56 项 (23.4%)
-  - 架构设计与安全/网络健壮性：77 项 (32.2%)
-  - UI/交互与防御性缺陷：17 项 (7.1%)
-  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (10.0%)
+  - 功能缺陷与核心算法/解析器/数据完整性：67 项 (27.7%)
+  - 状态机并发与数据生命周期：56 项 (23.1%)
+  - 架构设计与安全/网络健壮性：78 项 (32.2%)
+  - UI/交互与防御性缺陷：17 项 (7.0%)
+  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (9.9%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：145 项 (60.7%)
-  - **Medium（功能异常/算法边界/性能损耗）**：67 项 (28.0%)
-  - **Low（样式异味/边界校验/门禁规范）**：27 项 (11.3%)
-- **修复闭环率**：**100% (239/239 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：148 项 (61.2%)
+  - **Medium（功能异常/算法边界/性能损耗）**：67 项 (27.7%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (11.2%)
+- **修复闭环率**：**100% (242/242 项已修复闭环)**
 

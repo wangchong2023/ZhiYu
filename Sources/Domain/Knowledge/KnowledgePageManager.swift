@@ -29,6 +29,16 @@ private enum KnowledgeLogSpec {
     static let linkToConnector = " link to"
     /// 重构建议类型：重命名
     static let refactorTypeRename = "rename"
+    /// 默认系统处理器来源标签
+    static let systemPluginLabel = "System"
+    /// 插件事件：页面保存
+    static let eventOnPageSave = "onPageSave"
+    /// 插件事件：页面删除
+    static let eventOnPageDelete = "onPageDelete"
+    /// 已有单行双链区间匹配正则，用于跳过已在双链内的文本
+    static let existingWikiLinkPattern = #"\[\[[^\]\r\n]+\]\]"#
+    static let zeroCount: Int = 0
+    static let singleIncrement: Int = 1
 }
 
 @MainActor
@@ -45,6 +55,9 @@ public final class KnowledgePageManager {
     @ObservationIgnored @Dependency(\.llmService) private var llmService: any LLMServiceProtocol
     @ObservationIgnored @Dependency(\.embeddingProvider) private var embeddingProvider: any EmbeddingProvider
     @ObservationIgnored @Dependency(\.pluginRegistry) private var pluginRegistry
+
+    /// 按页面 ID 追踪进行中的增量 RAG 同步任务，连续编辑保存时先取消旧任务防止乱序覆写索引
+    private var activeRAGSyncTasks: [UUID: Task<Void, Never>] = [:]
 
     // MARK: - 动态处理器 (Phase 3)
     
@@ -64,7 +77,7 @@ public final class KnowledgePageManager {
     public func registerProcessor(_ processor: any KnowledgePageProcessor, pluginID: String? = nil) {
         if !processors.contains(where: { $0.processor.id == processor.id }) {
             processors.append(RegisteredProcessor(processor: processor, pluginID: pluginID))
-            logger.debug(" [KnowledgePageManager] : \(processor.name) (Plugin: \(pluginID ?? "System"))")
+            logger.debug(" [KnowledgePageManager] : \(processor.name) (Plugin: \(pluginID ?? KnowledgeLogSpec.systemPluginLabel))")
         }
     }
     
@@ -138,8 +151,8 @@ public final class KnowledgePageManager {
 
         backupService.markDirty()
         
-        let totalLinks = (try? await pageStore.fetchAllPages())?.reduce(0) { $0 + $1.outgoingLinks.count } ?? 0
-        AppEventBus.shared.publish(.pageCreated(id: page.id, title: page.title, nodeCount: currentPages.count + 1, linkCount: totalLinks))
+        let totalLinks = (try? await pageStore.fetchAllPages())?.reduce(KnowledgeLogSpec.zeroCount) { $0 + $1.outgoingLinks.count } ?? KnowledgeLogSpec.zeroCount
+        AppEventBus.shared.publish(.pageCreated(id: page.id, title: page.title, nodeCount: currentPages.count + KnowledgeLogSpec.singleIncrement, linkCount: totalLinks))
 
         return page
     }
@@ -154,21 +167,30 @@ public final class KnowledgePageManager {
         try await pageStore.updatePage(processedPage)
         backupService.markDirty()
         
-        let totalLinks = currentPages.reduce(0) { $0 + $1.outgoingLinks.count }
+        let totalLinks = currentPages.reduce(KnowledgeLogSpec.zeroCount) { $0 + $1.outgoingLinks.count }
         AppEventBus.shared.publish(.pageUpdated(id: processedPage.id, nodeCount: currentPages.count, linkCount: totalLinks))
         
-        // 增量同步 RAG 向量：编辑保存后，把新内容跑一次 Ingest Pipeline，确保 RAG 库内容实时一致
+        // 增量同步 RAG 向量：编辑保存后，先取消同页旧同步任务，再跑新内容的 Ingest Pipeline，防止乱序覆写
         let llm = self.llmService
         let embedding = self.embeddingProvider
-        Task { [weak self] in
+        let pageID = processedPage.id
+        activeRAGSyncTasks[pageID]?.cancel()
+        activeRAGSyncTasks[pageID] = Task { [weak self] in
+            defer {
+                if self?.activeRAGSyncTasks[pageID]?.isCancelled == false {
+                    self?.activeRAGSyncTasks.removeValue(forKey: pageID)
+                }
+            }
             do {
                 _ = try await KnowledgeIngestPipeline.shared.process(
                     content: processedPage.content,
-                    pageID: processedPage.id,
+                    pageID: pageID,
                     llm: llm,
                     embeddingProvider: embedding
                 )
                 self?.logger.info("[RAG Sync] Successfully synced increment embedding for page: \(processedPage.title)")
+            } catch is CancellationError {
+                return
             } catch {
                 self?.logger.error("[RAG Sync] Failed to sync increment embedding for page: \(processedPage.title), error: \(error)")
             }
@@ -178,29 +200,33 @@ public final class KnowledgePageManager {
     /// 保存页面 (含插件事件触发)
     public func savePage(_ page: KnowledgePage, currentPages: [KnowledgePage]) async throws {
         try await updatePage(page, currentPages: currentPages)
-        pluginRegistry.emitEvent("onPageSave", data: page.id.uuidString)
+        pluginRegistry.emitEvent(KnowledgeLogSpec.eventOnPageSave, data: page.id.uuidString)
     }
 
     /// 删除页面
     public func deletePage(_ page: KnowledgePage, currentPages: [KnowledgePage]) async throws {
+        activeRAGSyncTasks.removeValue(forKey: page.id)?.cancel()
         undoService?.pushSnapshot(currentPages)
         try await pageStore.deletePage(page)
         // 缺陷 #84 修复：删除也是数据变更，与 create/update/rename 一致标记备份脏位，
         // 否则备份/崩溃恢复系统不感知删除这一变更
         backupService.markDirty()
         AppEventBus.shared.publish(.pageDeleted(id: page.id))
-        pluginRegistry.emitEvent("onPageDelete", data: page.id.uuidString)
+        pluginRegistry.emitEvent(KnowledgeLogSpec.eventOnPageDelete, data: page.id.uuidString)
     }
 
     /// 重命名页面 (处理双向链接)
     public func renamePage(_ page: KnowledgePage, to newTitle: String, currentPages: [KnowledgePage]) async throws {
         let oldTitle = page.title
         let modifiedPages = await linkService.prepareRename(page: page, to: newTitle, in: currentPages)
+        guard !modifiedPages.isEmpty else { return }
 
+        undoService?.pushSnapshot(currentPages)
         try await pageStore.performBatchWrite { db in
             for p in modifiedPages { try p.save(db) }
         }
-        logger.addLog(action: .update, target: newTitle, details: KnowledgeLogSpec.renamedFromPrefix + " \(oldTitle)", module: KnowledgeLogSpec.module)
+        let resolvedNewTitle = modifiedPages.first?.title ?? newTitle
+        logger.addLog(action: .update, target: resolvedNewTitle, details: KnowledgeLogSpec.renamedFromPrefix + " \(oldTitle)", module: KnowledgeLogSpec.module)
         backupService.markDirty()
     }
 
@@ -249,40 +275,50 @@ public final class KnowledgePageManager {
         }
     }
 
-    /// 将文本中未被双链包裹的目标标题出现位置包裹为双链，跳过已处于 `[[...]]` 内的匹配，避免重复嵌套。
+    /// 将文本中未被双链包裹的目标标题出现位置包裹为双链，跳过已处于 `[[...]]`（含别名/锚点）内的匹配，
+    /// 并使用 `Range(nsRange, in:)` 避免含 Emoji/多字节 UTF-16 字符时的索引越界崩溃。
     /// - Parameters:
     ///   - content: 原始正文
     ///   - target: 待链接化的标题（大小写不敏感）
     ///   - open: 双链左括号
     ///   - close: 双链右括号
     /// - Returns: 处理后的正文；若无合法匹配则原样返回
-    private static func wrapPlainOccurrences(
+    internal static func wrapPlainOccurrences(
         in content: String,
         target: String,
         open: String,
         close: String
     ) -> String {
-        guard !target.isEmpty else { return content }
+        let trimmedTarget = target.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedTarget.isEmpty else { return content }
 
-        let escaped = NSRegularExpression.escapedPattern(for: target)
-        // 匹配目标标题，前置与后置不能是双链括号，避免命中已有 [[...]] 内部
-        let pattern = "(?<!\\[\\[)" + escaped + "(?!\\]\\])"
-        guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]) else {
+        let escaped = NSRegularExpression.escapedPattern(for: trimmedTarget)
+        guard let targetRegex = try? NSRegularExpression(pattern: escaped, options: [.caseInsensitive]) else {
             return content
         }
 
         let nsContent = content as NSString
-        let matches = regex.matches(in: content, range: NSRange(location: 0, length: nsContent.length))
+        let fullRange = NSRange(location: KnowledgeLogSpec.zeroCount, length: nsContent.length)
+        let matches = targetRegex.matches(in: content, range: fullRange)
         guard !matches.isEmpty else { return content }
 
+        // 先收集正文中所有已有 [[...]] 区间，禁止在已有双链（如 [[Target|别名]] 或 [[Other|Target]]）内部重复嵌套
+        let existingLinkRanges: [NSRange]
+        if let linkRegex = try? NSRegularExpression(pattern: KnowledgeLogSpec.existingWikiLinkPattern) {
+            existingLinkRanges = linkRegex.matches(in: content, range: fullRange).map(\.range)
+        } else {
+            existingLinkRanges = []
+        }
+
         var result = content
-        // 从后向前替换，避免索引偏移
+        // 从后向前使用安全的 UTF-16 -> Swift Range 转换替换，彻底规避 Emoji 越界闪退
         for match in matches.reversed() {
-            guard match.range.location != NSNotFound, match.range.location + match.range.length <= nsContent.length else { continue }
-            let startIdx = result.index(result.startIndex, offsetBy: match.range.location)
-            let endIdx = result.index(startIdx, offsetBy: match.range.length)
-            let plain = String(result[startIdx..<endIdx])
-            result.replaceSubrange(startIdx..<endIdx, with: open + plain + close)
+            let overlapsExistingLink = existingLinkRanges.contains {
+                NSIntersectionRange(match.range, $0).length > KnowledgeLogSpec.zeroCount
+            }
+            guard !overlapsExistingLink, let swiftRange = Range(match.range, in: result) else { continue }
+            let plain = String(result[swiftRange])
+            result.replaceSubrange(swiftRange, with: open + plain + close)
         }
         return result
     }

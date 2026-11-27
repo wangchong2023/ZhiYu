@@ -65,6 +65,10 @@ public struct TextChunkerProcessor: Sendable {
 
     private static let defaultChunkSize: Int = 1000
     private static let defaultChunkOverlap: Int = 200
+    private static let minSafeChunkSize: Int = 1
+    private static let maxHeadingLevel: Int = 6
+    private static let zeroCount: Int = 0
+    private static let levelDecrement: Int = 1
     private static let defaultSeparators: [String] = [
         "\n# ", "\n## ", "\n### ", "\n#### ",
         "\n\n", "\n", ". ", ". ", " ", ""
@@ -72,6 +76,9 @@ public struct TextChunkerProcessor: Sendable {
     private static let hash: String = SystemConstants.Character.hash
     private static let codeFence: String = "```"
     private static let newline: String = SystemConstants.Character.newline
+    private static let crlf: String = SystemConstants.Character.carriageReturn + SystemConstants.Character.newline
+    private static let carriageReturn: String = SystemConstants.Character.carriageReturn
+    private static let emptyString: String = ""
 
     /// 拆分
     /// - Parameter text: text
@@ -79,17 +86,25 @@ public struct TextChunkerProcessor: Sendable {
     /// - Returns: 列表
     public func split(text: String, config: Config = TextChunkerProcessor.default) -> [Chunk] {
         guard !text.isEmpty else { return [] }
-        let lines = text.components(separatedBy: .newlines)
+        let safeChunkSize = max(Self.minSafeChunkSize, config.chunkSize)
+        // 归一化 CRLF / CR 为 LF，避免 Windows 文本行距翻倍与 startIndex 漂移
+        let normalizedText = text
+            .replacingOccurrences(of: Self.crlf, with: Self.newline)
+            .replacingOccurrences(of: Self.carriageReturn, with: Self.newline)
+        let lines = normalizedText.components(separatedBy: Self.newline)
         var state = ChunkingState()
 
         for line in lines {
             let shouldTurnOffCodeBlock = updateCodeBlockState(line: line, state: &state)
-            if !state.isInCodeBlock && line.hasPrefix(Self.hash) {
-                flushCurrentChunk(lines: lines, state: &state, text: text)
+            if !state.isInCodeBlock && isMarkdownHeading(line) {
+                flushCurrentChunk(lines: lines, state: &state, text: normalizedText)
                 updateHeaderTracking(line: line, state: &state)
             }
             let lineWithNewline = line + Self.newline
-            if (state.currentChunkText.count + lineWithNewline.count) > config.chunkSize && !state.isInCodeBlock {
+            if !state.isInCodeBlock && line.count > safeChunkSize {
+                flushCurrentChunk(lines: lines, state: &state, text: normalizedText)
+                appendOversizedLineSlices(lineWithNewline, safeChunkSize: safeChunkSize, overlap: config.chunkOverlap, state: &state)
+            } else if (state.currentChunkText.count + lineWithNewline.count) > safeChunkSize && !state.isInCodeBlock {
                 flushChunkOnOverflow(lineWithNewline: lineWithNewline, config: config, state: &state)
             } else {
                 state.currentChunkText += lineWithNewline
@@ -104,6 +119,47 @@ public struct TextChunkerProcessor: Sendable {
             state.appendChunk(text: trimmedLast)
         }
         return state.chunks
+    }
+
+    /// 校验是否为合法 CommonMark ATX 标题（1~6 个 `#` 后紧跟空白符且标题文本非空），避免将 `#标签` 误判为章节标题
+    private func isMarkdownHeading(_ line: String) -> Bool {
+        let hashChar = Swift.Character(Self.hash)
+        let level = line.prefix(while: { $0 == hashChar }).count
+        guard level >= Self.minSafeChunkSize && level <= Self.maxHeadingLevel else { return false }
+        let remainder = line.dropFirst(level)
+        guard let firstAfterHashes = remainder.first,
+              firstAfterHashes == Swift.Character(SystemConstants.Character.space)
+                || firstAfterHashes == Swift.Character(SystemConstants.Character.tab) else {
+            return false
+        }
+        return !remainder.trimmingCharacters(in: .whitespaces).isEmpty
+    }
+
+    /// 将超过 `safeChunkSize` 的无换行长行按安全步长滑窗切分，防止单行撑爆向量模型上下文上限
+    private func appendOversizedLineSlices(
+        _ lineWithNewline: String,
+        safeChunkSize: Int,
+        overlap: Int,
+        state: inout ChunkingState
+    ) {
+        let effectiveOverlap = max(Self.zeroCount, min(overlap, safeChunkSize - Self.levelDecrement))
+        let step = max(Self.minSafeChunkSize, safeChunkSize - effectiveOverlap)
+        let chars = Array(lineWithNewline)
+        var cursor = Self.zeroCount
+        let lineBaseOffset = state.currentStartIndex
+
+        while cursor < chars.count {
+            let end = min(cursor + safeChunkSize, chars.count)
+            let slice = String(chars[cursor..<end]).trimmingCharacters(in: .whitespacesAndNewlines)
+            if !slice.isEmpty {
+                state.currentStartIndex = lineBaseOffset + cursor
+                state.appendChunk(text: slice)
+            }
+            if end >= chars.count { break }
+            cursor += step
+        }
+        state.currentStartIndex = lineBaseOffset + chars.count
+        state.currentChunkText = Self.emptyString
     }
 
     /// 分块器运行时状态，维护当前分块文本、标题路径、面包屑栈等扫描上下文。
