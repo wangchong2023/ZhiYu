@@ -218,21 +218,24 @@
 | **207** | `FileImportFileStore.saveData` 未清洗 `ext` 扩展名（允许 `../../evil` 路径穿越与空扩展名尾随点），且 `saveData`/`copyFile` 仅以秒级时间戳命名，同秒内批量导入会直接覆写丢文件；`getRecordsDir` 未清洗 `vaultID`/`englishName` | 同一秒内连续导入多个文件或传入含路径穿越符的扩展名 | 批量导入原件静默覆写永久丢失，或存在目录穿越写入风险 | **High** | 架构设计与安全/网络健壮性 | `saveData` 与 `getRecordsDir` 全量接入 `sanitizeComponent`；`saveData` 与 `copyFile` 均追加 8 位短 UUID 后缀确保同秒唯一落盘 | **✅ 已解决** | 是 (导入原件唯一命名与路径清洗规范) | 是 (`FileImportFileStoreTests`) | ✅ 已闭环 |
 | **208** | `RAGGovernanceSQLiteStore+Metrics` 中 `calculateMRR`/`calculateNDCG` 未对 `snap.rank <= 0` 做下界守卫（触发除零产出 `Infinity`/`NaN`），且 `calculateF1Score` 在 0 命中（`denominator == 0`）时返回 `nil` 跳过该查询而非 `0.0` | 快照含异常 `rank <= 0`，或 RAG 评估集中存在 0 命中的失败查询 | MRR/NDCG 报表被 `Inf`/`NaN` 污染，或 F1 指标因剔除全部失败查询而严重虚高失真 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | `rank` 统一钳位 `max(1, snap.rank)`、`rel` 钳位 `max(0, rel)`；`calculateF1Score` 在 `denominator == 0` 时返回 `0.0` 计入均值 | **✅ 已解决** | 是 (RAG 指标防除零与零命中统计一致性) | 是 (`RAGEvaluationServiceTests`) | ✅ 已闭环 |
 | **209** | `JSONRepairProcessor.repair` 直接对 `SwiftJSONSanitizer` 结果执行全局 `.replacingOccurrences(of: ",}", with: "}")`，不区分 JSON 字符串字面量上下文，会篡改字符串值中的 `,}`（如代码片段/公式） | LLM 输出 JSON 且字符串值内含 `,}`（如 `{"code": "let obj = {a: 1,}"}`） | 用户代码片段或文本内容被静默篡改破坏 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 替换为字符串感知状态机 `removeTrailingObjectCommas`，仅在字符串字面量之外删除 `,` + 可选空白 + `}` | **✅ 已解决** | 是 (JSON 自愈器字符串感知尾逗号移除) | 是 (`JSONRepairProcessorBasicTests`) | ✅ 已闭环 |
+| **210** | `KnowledgePageRepository.search` 未拦截空/纯空白查询且 LIKE 后备分支直接拼接 `"%\(query)%"` 未转义 `%`/`_`/`\`；同时 `fetchRecentlyUpdated(limit:)` 未拦截 `limit <= 0`（SQLite `LIMIT -1` 扫全表） | 用户搜索空白词、`%`/`_` 字符或传入非正数 limit | 空白或通配符查询触发全表泄露返回整个知识库，或负数 limit 返回全表 | **High** | 架构设计与安全/网络健壮性 | 接入 `SQLQuerySanitizer.isValidQuery` 与 `makeLikePattern` + `escape: SystemConstants.Character.backslash`；`fetchRecentlyUpdated` 补齐 `guard limit > 0` | **✅ 已解决** | 是 (SQL LIKE 通配符安全转义与查询边界守卫) | 是 (`KnowledgePageRepositoryUpsertTests`) | ✅ 已闭环 |
+| **211** | `User.init(from:)` 与 `TokenManager.normalizedUUID(from:)` 重复使用 `%012x`（32 位格式符）转换后端 64 位 `Int64` `userId`，导致 64 位雪花 ID 截断高 32 位产生不同用户 UUID 碰撞，超 48 位或负数 ID 回退随机 UUID | 后端返回 64 位雪花算法 `userId` 或大整型用户 ID | 不同用户碰撞成同一本地身份 UUID，或每次登录用户 ID 随机变化 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 抽成唯一 SSOT `User.deterministicUUID(from:)`，使用 `UInt64(bitPattern:)` 无损编码高 16 位与低 48 位进 UUID 后两段，消除重复并向后兼容小 ID | **✅ 已解决** | 是 (64 位用户 ID 无损 UUID 规范化 SSOT) | 是 (`TokenManagerDeepTests`) | ✅ 已闭环 |
+| **212** | `ZIPFoundationArchiver.extractContents` 缺少 Zip Bomb 解压容量预算上限与单归档最大条目数限制，恶意高压缩比 ZIP 可写满磁盘或耗尽 I/O | 导入恶意构造的 Zip Bomb 或超多条目 ZIP 归档 | 磁盘空间瞬间耗尽或应用 I/O 卡死 | **High** | 架构设计与安全/网络健壮性 | 新增 `ArchiverLimits` 与 `validateExtractionBudget`（256MB 总容量上限、5000 条目上限与防溢出加法）并清除裸路径分隔符/正则字面量 | **✅ 已解决** | 是 (ZIPFoundation 解压容量预算与 Zip Bomb 防护) | 是 (`ZIPFoundationArchiverTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**209 项**
+- **收录问题总数**：**212 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：59 项 (28.2%)
-  - 状态机并发与数据生命周期：50 项 (23.9%)
-  - 架构设计与安全/网络健壮性：59 项 (28.2%)
-  - UI/交互与防御性缺陷：17 项 (8.1%)
-  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (11.5%)
+  - 功能缺陷与核心算法/解析器/数据完整性：60 项 (28.3%)
+  - 状态机并发与数据生命周期：50 项 (23.6%)
+  - 架构设计与安全/网络健壮性：61 项 (28.8%)
+  - UI/交互与防御性缺陷：17 项 (8.0%)
+  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (11.3%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：118 项 (56.5%)
-  - **Medium（功能异常/算法边界/性能损耗）**：64 项 (30.6%)
-  - **Low（样式异味/边界校验/门禁规范）**：27 项 (12.9%)
-- **修复闭环率**：**100% (209/209 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：121 项 (57.1%)
+  - **Medium（功能异常/算法边界/性能损耗）**：64 项 (30.2%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (12.7%)
+- **修复闭环率**：**100% (212/212 项已修复闭环)**
 

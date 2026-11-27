@@ -209,6 +209,22 @@ public struct User: Codable, Identifiable, Sendable {
         )
     }
 
+    // MARK: - 确定性 64 位 userId → UUID 规范化（SSOT）
+
+    /// 将后端 Int64 用户 ID（含 64 位雪花 ID 与负数位模式）无损映射为确定性 UUID，
+    /// 避免 `%012x` 截断高 32 位导致不同用户碰撞或超出 12 位回退随机 UUID。
+    public static func deterministicUUID(from userId: Int64) -> UUID {
+        var bytes: uuid_t = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+        let bigEndian = UInt64(bitPattern: userId).bigEndian
+        withUnsafeBytes(of: bigEndian) { source in
+            withUnsafeMutableBytes(of: &bytes) { destination in
+                let offset = MemoryLayout<UInt64>.size
+                destination[offset..<(offset + source.count)].copyBytes(from: source)
+            }
+        }
+        return UUID(uuid: bytes)
+    }
+
     // MARK: - Codable 适配后端 UserProfileResp
     
     private enum CodingKeys: String, CodingKey {
@@ -231,8 +247,7 @@ public struct User: Codable, Identifiable, Sendable {
         
         // 解析 ID (后端返回的是 Long 的 userId)
         if let idLong = try? container.decode(Int64.self, forKey: .id) {
-            let uuidString = String(format: "00000000-0000-0000-0000-%012x", idLong)
-            self.id = UUID(uuidString: uuidString) ?? UUID()
+            self.id = Self.deterministicUUID(from: idLong)
         } else if let idString = try? container.decode(String.self, forKey: .id), let parsedId = UUID(uuidString: idString) {
             self.id = parsedId
         } else {

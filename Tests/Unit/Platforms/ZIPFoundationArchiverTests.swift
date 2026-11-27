@@ -175,4 +175,42 @@ final class ZIPFoundationArchiverTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: destZip.path),
                       "协议转型后压缩应成功")
     }
+
+    // MARK: - 缺陷 #212 回归：Zip Bomb 解压预算（条目数上限、累计字节上限与防溢出）
+
+    func testValidateExtractionBudget_enforcesEntryCountByteLimitAndOverflow() throws {
+        let validTotal = try ZIPFoundationArchiver.validateExtractionBudget(
+            entryCount: 1,
+            totalBytes: 0,
+            nextEntryBytes: 1024
+        )
+        XCTAssertEqual(validTotal, 1024)
+
+        XCTAssertThrowsError(
+            try ZIPFoundationArchiver.validateExtractionBudget(
+                entryCount: 5001,
+                totalBytes: 0,
+                nextEntryBytes: 1
+            ),
+            "超出最大条目数预算必须抛错拦截"
+        )
+
+        XCTAssertThrowsError(
+            try ZIPFoundationArchiver.validateExtractionBudget(
+                entryCount: 2,
+                totalBytes: 256 * 1024 * 1024,
+                nextEntryBytes: 1
+            ),
+            "超出累计解压字节上限必须抛错拦截 Zip Bomb"
+        )
+
+        XCTAssertThrowsError(
+            try ZIPFoundationArchiver.validateExtractionBudget(
+                entryCount: 2,
+                totalBytes: UInt64.max - 10,
+                nextEntryBytes: 100
+            ),
+            "字节数累加溢出必须抛错拦截"
+        )
+    }
 }

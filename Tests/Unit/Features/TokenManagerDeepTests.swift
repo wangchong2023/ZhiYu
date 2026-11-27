@@ -1003,4 +1003,29 @@ final class TokenManagerDeepTests: XCTestCase {
         XCTAssertEqual(AuthService.shared.currentUser?.email, newEmail, "应更新为新 email")
         XCTAssertEqual(AuthService.shared.currentUser?.phone, newPhone, "应更新为新 phone")
     }
+
+    // MARK: - 缺陷 #211 回归：64 位雪花 userId 无损映射确定性 UUID，杜绝高 32 位截断碰撞
+
+    func testDeterministicUUID_preservesFull64BitSnowflakeIDWithoutCollision() {
+        let smallID: Int64 = 10001
+        XCTAssertEqual(
+            User.deterministicUUID(from: smallID).uuidString.lowercased(),
+            "00000000-0000-0000-0000-000000002711",
+            "小 ID 必须保持完全向后兼容"
+        )
+
+        // 两个高 32 位不同但低 32 位相同的 64 位雪花 ID，原 %012x 会截断高 32 位导致碰撞
+        let snowflakeA: Int64 = (Int64(1) << 40) | 42
+        let snowflakeB: Int64 = (Int64(2) << 40) | 42
+        let uuidA1 = User.deterministicUUID(from: snowflakeA)
+        let uuidA2 = User.deterministicUUID(from: snowflakeA)
+        let uuidB = User.deterministicUUID(from: snowflakeB)
+
+        XCTAssertEqual(uuidA1, uuidA2, "同一 64 位 userId 多次映射必须稳定一致")
+        XCTAssertNotEqual(uuidA1, uuidB, "高 32 位不同的 64 位雪花 ID 绝不能碰撞成同一 UUID")
+
+        // 超过 48 位的大 Int64（如 Int64.max）与负数位模式也必须确定性稳定，不回退随机 UUID
+        XCTAssertEqual(User.deterministicUUID(from: Int64.max), User.deterministicUUID(from: Int64.max))
+        XCTAssertEqual(User.deterministicUUID(from: -1), User.deterministicUUID(from: -1))
+    }
 }

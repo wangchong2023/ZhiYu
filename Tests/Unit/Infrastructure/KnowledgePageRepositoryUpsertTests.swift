@@ -308,4 +308,23 @@ final class KnowledgePageUpsertTests: XCTestCase {
         XCTAssertEqual(fetched?.content, "")
         XCTAssertTrue(fetched?.tags.isEmpty ?? false)
     }
+
+    // MARK: - 缺陷 #210 回归：空白搜索、LIKE 通配符转义与非正数 limit 防护
+
+    func testSearch_blankQueryAndLikeWildcardsDoNotLeakAllPages() async throws {
+        try await repository.save(KnowledgePage(title: "NormalNote", content: "普通笔记内容"))
+        try await repository.save(KnowledgePage(title: "Discount", content: "完成度 100% 达标"))
+
+        let blankResults = try await repository.search(query: "   ")
+        XCTAssertTrue(blankResults.isEmpty, "纯空白搜索不得触发 LIKE %% 全表泄露")
+
+        let percentResults = try await repository.search(query: "%")
+        XCTAssertEqual(percentResults.count, 1, "搜索 % 应仅命中真实含 % 的页面，不得通配匹配全部页面")
+        XCTAssertEqual(percentResults.first?.title, "Discount")
+
+        let negativeLimit = try await repository.fetchRecentlyUpdated(limit: -1)
+        XCTAssertTrue(negativeLimit.isEmpty, "负数 limit 不得触发 SQLite LIMIT -1 扫全表")
+        let zeroLimit = try await repository.fetchRecentlyUpdated(limit: 0)
+        XCTAssertTrue(zeroLimit.isEmpty)
+    }
 }

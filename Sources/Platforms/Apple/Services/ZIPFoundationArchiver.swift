@@ -11,10 +11,19 @@
 //           由 iOSPlatformRegistrar 注册，适用于 iOS + Mac Catalyst 平台。
 //
 import Foundation
+import UFPCore
 import ZIPFoundation
 
 /// ZIPFoundation 归档适配层（适用于 iOS 和 Mac Catalyst）
 final class ZIPFoundationArchiver: FileArchiverProtocol, Sendable {
+
+    private enum ArchiverLimits {
+        static let maxTotalExtractedMB: UInt64 = 256
+        static let maxTotalExtractedBytes: UInt64 = maxTotalExtractedMB * UInt64(SystemConstants.bytesPerMB)
+        static let maxEntryCount: Int = 5000
+        static let windowsDrivePattern: String = #"^[A-Za-z]:[\\/]"#
+        static let budgetExceededReason: String = "ZIP_Extraction_Budget_Exceeded"
+    }
 
     // MARK: - 压缩
 
@@ -37,12 +46,12 @@ final class ZIPFoundationArchiver: FileArchiverProtocol, Sendable {
         )
         // 1. 拒绝绝对路径（Unix / 和 Windows 盘符 C:\）
         guard !normalizedPath.hasPrefix(PlatformConstants.PDFSecurity.pathSeparator),
-              !entryPath.matchesRegex(#"^[A-Za-z]:[\\/]"#) else {
+              !entryPath.matchesRegex(ArchiverLimits.windowsDrivePattern) else {
             Logger.shared.warning("ZIP_Skipped_AbsolutePath_Entry: \(entryPath)")
             return nil
         }
         // 2. 拒绝 ".." 路径穿越——按路径组件检查，避免误拒含 ".." 的合法文件名
-        let pathComponents = normalizedPath.split(separator: "/").map(String.init)
+        let pathComponents = normalizedPath.split(separator: Character(PlatformConstants.PDFSecurity.pathSeparator)).map(String.init)
         guard !pathComponents.contains(PlatformConstants.PDFSecurity.pathTraversalMarker) else {
             Logger.shared.warning("ZIP_Skipped_PathTraversal_Entry: \(entryPath)")
             return nil
@@ -63,7 +72,23 @@ final class ZIPFoundationArchiver: FileArchiverProtocol, Sendable {
         return destURL
     }
 
-    /// 将 ZIP 归档文件解压到指定目录，内置路径穿越与符号链接逃逸防护
+    /// 校验解压预算（条目数上限与累计解压字节上限，含防溢出加法），防御 Zip Bomb 耗尽磁盘或 I/O
+    internal static func validateExtractionBudget(
+        entryCount: Int,
+        totalBytes: UInt64,
+        nextEntryBytes: UInt64
+    ) throws -> UInt64 {
+        guard entryCount <= ArchiverLimits.maxEntryCount else {
+            throw FileArchiverError.extractionFailed(reason: ArchiverLimits.budgetExceededReason)
+        }
+        let (updatedTotal, overflow) = totalBytes.addingReportingOverflow(nextEntryBytes)
+        guard !overflow, updatedTotal <= ArchiverLimits.maxTotalExtractedBytes else {
+            throw FileArchiverError.extractionFailed(reason: ArchiverLimits.budgetExceededReason)
+        }
+        return updatedTotal
+    }
+
+    /// 将 ZIP 归档文件解压到指定目录，内置路径穿越、符号链接逃逸与 Zip Bomb 容量预算防护
     func extractContents(from archiveURL: URL, to destinationURL: URL) throws {
         let archive: Archive
         do {
@@ -71,6 +96,9 @@ final class ZIPFoundationArchiver: FileArchiverProtocol, Sendable {
         } catch {
             throw FileArchiverError.extractionFailed(reason: "Cannot open archive: \(error)")
         }
+
+        var processedEntries = 0
+        var totalExtractedBytes: UInt64 = 0
 
         for entry in archive {
             // 拒绝符号链接 entry，防止恶意归档通过 symlink 写穿目标沙盒目录
@@ -81,6 +109,13 @@ final class ZIPFoundationArchiver: FileArchiverProtocol, Sendable {
             guard let destURL = Self.safeDestinationURL(for: entry.path, in: destinationURL) else {
                 continue
             }
+
+            processedEntries += 1
+            totalExtractedBytes = try Self.validateExtractionBudget(
+                entryCount: processedEntries,
+                totalBytes: totalExtractedBytes,
+                nextEntryBytes: entry.uncompressedSize
+            )
 
             // 确保父目录存在（处理 ZIP 内目录结构）
             try? FileManager.default.createDirectory(

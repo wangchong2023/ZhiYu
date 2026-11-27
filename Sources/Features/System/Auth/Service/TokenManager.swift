@@ -22,8 +22,7 @@ extension AuthService {
     /// - Parameter userId: 后端返回的 Int64 用户 ID
     /// - Returns: 规范化后的 UUID（失败时回退随机 UUID）
     private static func normalizedUUID(from userId: Int64) -> UUID {
-        let uuidString = String(format: "00000000-0000-0000-0000-%012x", userId)
-        return UUID(uuidString: uuidString) ?? UUID()
+        User.deterministicUUID(from: userId)
     }
 
     // MARK: - 自动登录恢复

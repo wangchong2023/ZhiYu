@@ -9,6 +9,7 @@
 //  核心职责：持久化引擎：GRDB/SQLite 仓库、同步、加密、数据库管理。
 //
 import Foundation
+import UFPCore
 @preconcurrency import UFPStorage
 
 // MARK: - 核心存储 (KnowledgePageRepository)
@@ -117,10 +118,11 @@ final class KnowledgePageRepository: KnowledgeRepository, DatabaseWriterProvider
     }
 
     /// 拉取RecentlyUpdated
-    /// - Parameter limit: limit
+    /// - Parameter limit: limit（非正数时直接返回空数组，防止 SQLite `LIMIT -1` 扫全表）
     /// - Returns: 列表
     func fetchRecentlyUpdated(limit: Int) async throws -> [KnowledgePage] {
-        try await fetchPagesOrdered { request in
+        guard limit > 0 else { return [] }
+        return try await fetchPagesOrdered { request in
             request.order(KnowledgePage.Columns.updatedAt.desc).limit(limit)
         }
     }
@@ -145,13 +147,15 @@ final class KnowledgePageRepository: KnowledgeRepository, DatabaseWriterProvider
     /// - Parameter query: 搜索关键词，支持中英文及中英混合
     /// - Returns: 按相关度排序的页面列表
     func search(query: String) async throws -> [KnowledgePage] {
+        guard SQLQuerySanitizer.isValidQuery(query) else { return [] }
+        let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
         let writer = try await dbWriter
         return try await writer.read { db in
             // 阶段一：FTS5 全文搜索（对英文及带空格的中文分词友好）
             // 注意：加密后的私密内容无法通过 FTS5 全文搜索，但标题仍可被搜索到
-            if let pattern = FTS5Pattern(matchingAnyTokenIn: query) {
+            if let pattern = FTS5Pattern(matchingAnyTokenIn: trimmedQuery) {
                 let ftsResults = try KnowledgePage
-                    .joining(required: KnowledgePage.contentSnapshot.filter(Column("pages_fts").match(pattern)))
+                    .joining(required: KnowledgePage.contentSnapshot.filter(Column(AppConstants.Storage.Tables.pagesFTS).match(pattern)))
                     .order(sql: StorageConstants.SQL.rank)
                     .fetchAll(db)
                 if !ftsResults.isEmpty {
@@ -159,13 +163,12 @@ final class KnowledgePageRepository: KnowledgeRepository, DatabaseWriterProvider
                 }
             }
 
-            // 阶段二：CJK LIKE 后备检索
-            // 当 FTS5 分词器无法切分连续 CJK 字符流时（如「神经网络」嵌入长句中），
-            // 自动降级到 LIKE 模糊匹配，保证中文内容的可检索性
-            let likePattern = "%\(query)%"
+            // 阶段二：CJK LIKE 后备检索（转义 % / _ / \ 通配符，防止全表扫描穿透与误匹配）
+            let likePattern = SQLQuerySanitizer.makeLikePattern(trimmedQuery)
+            let escapeToken = SystemConstants.Character.backslash
             let rawPages = try KnowledgePage.filter(
-                KnowledgePage.Columns.title.like(likePattern) ||
-                KnowledgePage.Columns.content.like(likePattern)
+                KnowledgePage.Columns.title.like(likePattern, escape: escapeToken) ||
+                KnowledgePage.Columns.content.like(likePattern, escape: escapeToken)
             ).order(KnowledgePage.Columns.updatedAt.desc).fetchAll(db)
             return self.decryptPages(rawPages)
         }
