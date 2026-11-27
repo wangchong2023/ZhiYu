@@ -32,6 +32,8 @@ public final class GitHubAuthStrategy: NSObject, AuthStrategy {
     // 从 AppConfig.json 读取 GitHub OAuth Client ID
     private let clientId: String
     private let callbackScheme = AppConstants.Network.oauthCallbackScheme // 需与 URL Types 保持一致
+    /// 强持有正在进行的认证会话，避免提前释放导致授权弹窗中断或 continuation 永不返回
+    private var activeSession: ASWebAuthenticationSession?
 
     public override init() {
         clientId = AppConfig.gitHubOAuthClientId
@@ -62,7 +64,12 @@ public final class GitHubAuthStrategy: NSObject, AuthStrategy {
                 return
             }
             
-            let session = ASWebAuthenticationSession(url: url, callbackURLScheme: callbackScheme) { callbackURL, error in
+            let session = ASWebAuthenticationSession(url: url, callbackURLScheme: callbackScheme) { [weak self] callbackURL, error in
+                guard let self else {
+                    continuation.resume(throwing: CancellationError())
+                    return
+                }
+                self.activeSession = nil
                 if let error = error {
                     continuation.resume(throwing: error)
                     return
@@ -94,7 +101,12 @@ public final class GitHubAuthStrategy: NSObject, AuthStrategy {
             
             session.presentationContextProvider = self
             session.prefersEphemeralWebBrowserSession = false
-            session.start()
+            self.activeSession = session
+            guard session.start() else {
+                self.activeSession = nil
+                resumeAuthError(continuation, code: GitHubAuthConfig.authFailedCode, description: L10n.Auth.authFailed)
+                return
+            }
         }
     }
 

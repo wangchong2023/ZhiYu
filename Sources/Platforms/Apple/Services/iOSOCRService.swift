@@ -10,6 +10,7 @@
 //
 #if canImport(Vision)
 import Foundation
+import os
 import Vision
 
 /// iOS/macOS OCR 处理实现
@@ -23,14 +24,24 @@ final class iOSOCRService: OCRServiceProtocol {
         }
 
         return try await withCheckedThrowingContinuation { continuation in
+            // 原子一次性守卫：防御 Vision completionHandler 与 handler.perform catch 双路径同时 resume 导致崩溃
+            let resumedLock = OSAllocatedUnfairLock(initialState: false)
+            let tryClaimResume: @Sendable () -> Bool = {
+                resumedLock.withLock { resumed in
+                    guard !resumed else { return false }
+                    resumed = true
+                    return true
+                }
+            }
+
             let request = VNRecognizeTextRequest { request, error in
                 if let error = error {
-                    continuation.resume(throwing: error)
+                    if tryClaimResume() { continuation.resume(throwing: error) }
                     return
                 }
 
                 guard let observations = request.results as? [VNRecognizedTextObservation] else {
-                    continuation.resume(throwing: OCRError.noResults)
+                    if tryClaimResume() { continuation.resume(throwing: OCRError.noResults) }
                     return
                 }
 
@@ -38,7 +49,7 @@ final class iOSOCRService: OCRServiceProtocol {
                     observation.topCandidates(1).first?.string
                 }.joined(separator: "\n")
 
-                continuation.resume(returning: text)
+                if tryClaimResume() { continuation.resume(returning: text) }
             }
 
             // Support Chinese + English + Japanese + Korean
@@ -50,7 +61,7 @@ final class iOSOCRService: OCRServiceProtocol {
             do {
                 try handler.perform([request])
             } catch {
-                continuation.resume(throwing: error)
+                if tryClaimResume() { continuation.resume(throwing: error) }
             }
         }
     }

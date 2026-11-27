@@ -36,10 +36,20 @@ public final class AppleAuthStrategy: NSObject, AuthStrategy {
     
     // MARK: - 核心操作方法
     
+    /// 一次性取出并清空 continuation，防止 Delegate 重复回调引发双重 resume 崩溃
+    private func consumeContinuation() -> CheckedContinuation<AuthCredential, Error>? {
+        let active = continuation
+        continuation = nil
+        return active
+    }
+
     /// 物理调起 Apple 原生登录控制器，启动 FaceID/TouchID 鉴权流程
     /// - Returns: 标准化登录凭证
     /// - Throws: 用户取消授权、获取令牌失败等 NSError
     public func acquireCredentials() async throws -> AuthCredential {
+        if let pending = consumeContinuation() {
+            pending.resume(throwing: CancellationError())
+        }
         return try await withCheckedThrowingContinuation { continuation in
             self.continuation = continuation
             
@@ -70,7 +80,7 @@ extension AppleAuthStrategy: ASAuthorizationControllerDelegate {
               let tokenData = credential.identityToken,
               let tokenString = String(data: tokenData, encoding: .utf8) else {
             let error = AppError.auth(domain: AppleAuthErrorSpec.domain, code: AppleAuthErrorSpec.tokenExtractFailedCode, description: L10n.Auth.appleTokenExtractFailed)
-            continuation?.resume(throwing: error)
+            consumeContinuation()?.resume(throwing: error)
             return
         }
         
@@ -92,7 +102,7 @@ extension AppleAuthStrategy: ASAuthorizationControllerDelegate {
             credential: tokenString,
             extraInfo: extra
         )
-        continuation?.resume(returning: authCred)
+        consumeContinuation()?.resume(returning: authCred)
     }
     
     /// 授权失败或用户主动取消回调
@@ -100,7 +110,7 @@ extension AppleAuthStrategy: ASAuthorizationControllerDelegate {
         controller: ASAuthorizationController,
         didCompleteWithError error: Error
     ) {
-        continuation?.resume(throwing: error)
+        consumeContinuation()?.resume(throwing: error)
     }
 }
 

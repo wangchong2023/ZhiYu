@@ -214,6 +214,7 @@ extension Graph3DView {
     }
 
     func startFPSMonitor() {
+        fpsUpdateTimer?.invalidate()
         fpsUpdateTimer = Timer.scheduledTimer(withTimeInterval: GraphConstants.ThreeD.fpsUpdateInterval, repeats: true) { _ in
             Task { @MainActor in
                 updateFPSFromScene()

@@ -165,21 +165,24 @@
 | **154** | 全仓生产代码最后 1 处 `swiftlint:disable:next force_unwrapping`（`MarkdownProcessor.swift:240`）以及 `LabAudioRecorder.updateMeterTick` 未判空调用 `levels.removeFirst()`、`SettingsView` 返回按钮未防双击重入 `detailPath.removeLast()` | 异常状态或快速双击触发强制解包或空数组移除 | 潜在运行时空数组越界或强制解包闪退 | **Low** | 代码坏味道与去魔鬼化/DRY 治理 | `MarkdownProcessor` 改用 `earliestMatch.map(...) ?? true` 实现全仓生产代码 0 `force_unwrapping`；`LabAudioRecorder` 与 `SettingsView` 补齐 `!isEmpty` 守卫 | **✅ 已解决** | 是 (全仓 0 强制解包与安全集合移除) | 是 (`ZhiYuDomain` 170/170 单测 + 全仓扫描 0 残余) | ✅ 已闭环 |
 | **155** | `iOSSpeechService.transcribeFile` 在 `withCheckedThrowingContinuation` 内直接调用 `continuation.resume`，未加一次性原子锁保护；Apple `SFSpeechRecognitionTask` 在 `isFinal` 后若再回调尾随错误（如 `kAFAssistantErrorDomain`）会触发第二次 resume 导致 `SWIFT TASK CONTINUATION MISUSE` 致命崩溃 | 离线音频转写完成或取消时 Speech 框架多次触发回调闭包 | 触发 Swift 并发运行时致命崩溃闪退 | **High** | 状态机并发与数据生命周期 | 引入 `OSAllocatedUnfairLock(initialState: false)` 保护一次性 `shouldResume()` 守卫，严格保证 continuation 最多 resume 一次 | **✅ 已解决** | 是 (回调转 Continuation 一次性锁规范) | 是 (`IOSSpeechServiceTests`) | ✅ 已闭环 |
 | **156** | `PerformanceDashboardView`（`.onAppear` 未先 `invalidate` 旧 10s Timer）与 `SourceDetailBodyView`（播放按钮未先 `invalidate` 旧 0.1s 高频 Timer 且缺少 `.onDisappear` 释放）存在 Timer 泄露隐患 | 多次切换页面或在音频播放中途退出详情页 | 孤儿重复 Timer 永久驻留 RunLoop 造成内存与 CPU 泄露 | **Medium** | 状态机并发与数据生命周期 | 创建新 Timer 前统一先 `invalidate()`，并在 `SourceDetailBodyView` 补齐 `.onDisappear` 释放定时器 | **✅ 已解决** | 是 (SwiftUI Timer 生命周期成对释放规范) | 是 (`make ios` 编译 + 静态审计闭环) | ✅ 已闭环 |
+| **157** | `iOSOCRService.recognizeText` 在 `withCheckedThrowingContinuation` 内同时从 `VNRecognizeTextRequest` 回调与 `handler.perform` 的 `catch` 分支调用 `continuation.resume`，缺少一次性原子锁保护，Vision 失败双路径回调时直接触发 `SWIFT TASK CONTINUATION MISUSE` 致命崩溃 | Vision OCR 请求失败同时触发 completionHandler 与抛出 perform 异常 | OCR 识别异常时 App 直接闪退 | **High** | 状态机并发与数据生命周期 | 引入 `OSAllocatedUnfairLock(initialState: false)` 保护一次性 `tryClaimResume()` 守卫，彻底杜绝双重 resume | **✅ 已解决** | 是 (Vision 回调转 Continuation 原子守卫) | 是 (`IOSOCRServiceTests`) | ✅ 已闭环 |
+| **158** | `AppleAuthStrategy` 在 delegate 回调 `continuation?.resume` 后未将 `self.continuation = nil` 置空，重复回调会引发双重 resume 崩溃，且再次调用 `acquireCredentials` 会覆盖泄露旧 continuation | Apple 登录 delegate 重复回调或连续触发登录 | 登录流程触发 Continuation 崩溃或协程永久挂起 | **High** | 状态机并发与数据生命周期 | 新增 `consumeContinuation()` 原子取出并置空，入口若存在挂起旧 continuation 先 `CancellationError` 释放 | **✅ 已解决** | 是 (Delegate Continuation 消费置空规范) | 是 (`AuthOAuthStrategiesBranchTests`) | ✅ 已闭环 |
+| **159** | `GitHubAuthStrategy.acquireCredentials` 未强持有 `ASWebAuthenticationSession` 且忽略 `session.start()` 返回值（启动失败时回调永不触发导致 continuation 永久挂死）；另 `Graph3DView+SceneLogic.startFPSMonitor` 未先 `invalidate` 旧 Timer | GitHub OAuth 会话提前释放、启动失败或 3D 图谱重复触发 FPS 监控 | GitHub 登录卡死无响应或 3D 图谱孤儿 Timer 泄露 | **High** | 状态机并发与数据生命周期 | `GitHubAuthStrategy` 实例强持有 `activeSession` 并校验 `guard session.start()` 失败立即抛错；`startFPSMonitor` 补齐 `fpsUpdateTimer?.invalidate()` | **✅ 已解决** | 是 (ASWebAuthenticationSession 持有与启动失败收口) | 是 (`AuthOAuthStrategiesBranchTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**156 项**
+- **收录问题总数**：**159 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：38 项 (24.4%)
-  - 状态机并发与数据生命周期：32 项 (20.5%)
-  - 架构设计与安全/网络健壮性：46 项 (29.5%)
-  - UI/交互与防御性缺陷：16 项 (10.3%)
-  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (15.4%)
+  - 功能缺陷与核心算法/解析器/数据完整性：38 项 (23.9%)
+  - 状态机并发与数据生命周期：35 项 (22.0%)
+  - 架构设计与安全/网络健壮性：46 项 (28.9%)
+  - UI/交互与防御性缺陷：16 项 (10.1%)
+  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (15.1%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：74 项 (47.4%)
-  - **Medium（功能异常/算法边界/性能损耗）**：55 项 (35.3%)
-  - **Low（样式异味/边界校验/门禁规范）**：27 项 (17.3%)
-- **修复闭环率**：**100% (156/156 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：77 项 (48.4%)
+  - **Medium（功能异常/算法边界/性能损耗）**：55 项 (34.6%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (17.0%)
+- **修复闭环率**：**100% (159/159 项已修复闭环)**
 
