@@ -27,6 +27,10 @@ internal enum StreamingDownloadConstants {
     /// HTTP 2xx 成功状态码上界
     static let httpSuccessStatusMax: Int = 299
     /// HTTP 2xx 成功状态码区间
+    /// 断点续传与落盘文件名清洗常量
+    static let fallbackTaskStem = "task"
+    static let unsafeTaskIDTokens = ["..", "/", "\\", ":"]
+    static let replacementToken = "_"
     static let httpSuccessStatusRange: ClosedRange<Int> = httpSuccessStatusMin...httpSuccessStatusMax
 }
 
@@ -53,7 +57,7 @@ public actor StreamingDownloadManager {
 
     private struct SpeedTrackerState {
         let lastBytes: Int64
-        let lastTime: Date
+        let lastUptime: TimeInterval
         let currentSpeed: Double
     }
 
@@ -136,9 +140,27 @@ public actor StreamingDownloadManager {
         self.destinationResolver = destinationURL
     }
 
-    /// 获取断点恢复数据（resumeData）在断点续传目录下的物理存储 URL
+    /// 清洗 taskID 中的路径穿越、控制字符与前导隐藏点号，构造安全的沙盒文件主干名
+    internal static func sanitizedTaskFileNameStem(for taskID: String) -> String {
+        let disallowed = CharacterSet.controlCharacters.union(.newlines)
+        let withoutControl = String(String.UnicodeScalarView(taskID.unicodeScalars.filter { !disallowed.contains($0) }))
+        var trimmed = withoutControl.trimmingCharacters(in: .whitespacesAndNewlines)
+        while trimmed.hasPrefix(SystemConstants.Character.dot) {
+            trimmed.removeFirst()
+        }
+        var cleaned = StreamingDownloadConstants.unsafeTaskIDTokens.reduce(trimmed) { partial, token in
+            partial.replacingOccurrences(of: token, with: StreamingDownloadConstants.replacementToken)
+        }
+        while cleaned.hasPrefix(SystemConstants.Character.dot) {
+            cleaned.removeFirst()
+        }
+        return cleaned.isEmpty ? StreamingDownloadConstants.fallbackTaskStem : cleaned
+    }
+
+    /// 获取断点恢复数据（resumeData）在断点续传目录下的物理存储 URL（清洗 taskID 防路径穿越）
     private func resumeDataURL(for taskID: String) -> URL {
-        resumeDataDirectory().appendingPathComponent("\(taskID).resume")
+        let safeStem = Self.sanitizedTaskFileNameStem(for: taskID)
+        return resumeDataDirectory().appendingPathComponent("\(safeStem).resume")
     }
 
     /// 获取任务文件的目标存储 URL（由注入的 destinationResolver 解析）
@@ -167,10 +189,10 @@ public actor StreamingDownloadManager {
     ///   - taskID: 通用任务标识
     ///   - remoteURL: 远程文件 URL
     public func startDownload(taskID: String, remoteURL: URL) async throws {
-        // 1. 如果已经存在下载任务，直接拦截
+        // 1. 如果已经存在进行中或已完成的下载任务，直接拦截（含 .pending 防首包前双击重入）
         if let state = states[taskID] {
             switch state {
-            case .downloading, .verifying, .completed:
+            case .pending, .downloading, .verifying, .completed:
                 return
             default:
                 break
@@ -294,20 +316,23 @@ public actor StreamingDownloadManager {
         // 将已写字节约束在 [0, expected]，进度百分比 clamp 到 [0,1]，避免 UI 显示 >100%
         let clampedWritten = min(max(totalBytesWritten, 0), totalBytesExpectedToWrite)
         let progress = Double(clampedWritten) / Double(totalBytesExpectedToWrite)
-        let now = Date()
+        let nowUptime = ProcessInfo.processInfo.systemUptime
 
         var calculatedSpeed: Double = 0
         if let tracker = speedTrackers[taskID] {
-            let timeDiff = now.timeIntervalSince(tracker.lastTime)
+            let timeDiff = nowUptime - tracker.lastUptime
             if timeDiff >= StreamingDownloadConstants.speedSampleIntervalSeconds {
                 let bytesDiff = Double(clampedWritten - tracker.lastBytes)
                 calculatedSpeed = max(0, bytesDiff / timeDiff)
-                speedTrackers[taskID] = SpeedTrackerState(lastBytes: clampedWritten, lastTime: now, currentSpeed: calculatedSpeed)
+                speedTrackers[taskID] = SpeedTrackerState(lastBytes: clampedWritten, lastUptime: nowUptime, currentSpeed: calculatedSpeed)
+            } else if timeDiff < 0 {
+                // 防御极端异常时钟倒退：重置采样基线
+                speedTrackers[taskID] = SpeedTrackerState(lastBytes: clampedWritten, lastUptime: nowUptime, currentSpeed: 0)
             } else {
                 calculatedSpeed = tracker.currentSpeed
             }
         } else {
-            speedTrackers[taskID] = SpeedTrackerState(lastBytes: clampedWritten, lastTime: now, currentSpeed: 0)
+            speedTrackers[taskID] = SpeedTrackerState(lastBytes: clampedWritten, lastUptime: nowUptime, currentSpeed: 0)
         }
 
         updateState(

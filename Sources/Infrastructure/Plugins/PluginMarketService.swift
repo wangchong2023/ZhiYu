@@ -174,8 +174,9 @@ final class PluginMarketService: ObservableObject {
         self.registry = registry
     }
 
-    /// 从云端抓取插件元数据并更新可用的插件列表
+    /// 从云端抓取插件元数据并更新可用的插件列表（含并发防重入守卫）
     func fetchPlugins() async {
+        guard !isLoading else { return }
         await MainActor.run {
             self.isLoading = true
             self.errorMessage = nil
@@ -284,16 +285,17 @@ final class PluginMarketService: ObservableObject {
         return false
     }
 
-    /// 校验插件 ID 不含路径穿越字符或目录分隔符，防止沙盒目录越界读/写/删
+    /// 校验插件 ID 不含路径穿越字符、隐藏点号前缀或目录分隔符，防止沙盒目录越界读/写/删
     internal nonisolated static func isSafePluginID(_ pluginID: String) -> Bool {
         let trimmed = pluginID.trimmingCharacters(in: .whitespacesAndNewlines)
         let doubleDot = SystemConstants.Character.dot + SystemConstants.Character.dot
         guard !trimmed.isEmpty,
               trimmed == pluginID,
-              trimmed != SystemConstants.Character.dot,
+              !trimmed.hasPrefix(SystemConstants.Character.dot),
               !trimmed.contains(doubleDot),
               !trimmed.contains(SystemConstants.Character.slash),
               !trimmed.contains(SystemConstants.Character.backslash),
+              !trimmed.contains(SystemConstants.Character.colon),
               trimmed.unicodeScalars.allSatisfy({ !CharacterSet.controlCharacters.contains($0) }) else {
             return false
         }
@@ -306,6 +308,7 @@ final class PluginMarketService: ObservableObject {
         static let iconPNGFileName = "icon.png"
         static let readmeMDFileName = "README.md"
         static let readmeZhHansMDFileName = "README.zh-Hans.md"
+        static let languageSeparator = "-"
     }
 
     /// 校验远程下载链接协议严格属于 HTTP/HTTPS 白名单且通过 SSRF 内网地址防护
@@ -486,8 +489,11 @@ final class PluginMarketService: ObservableObject {
         } else if preferredLanguage.hasPrefix(PluginConstants.LanguagePrefix.en) {
             urlsToTry.append(base.appendingPathComponent("\(pluginID)_en.md"))
         } else {
-            let cleanLang = preferredLanguage.components(separatedBy: "-").first ?? preferredLanguage
-            urlsToTry.append(base.appendingPathComponent("\(pluginID)_\(cleanLang).md"))
+            let rawLang = preferredLanguage.components(separatedBy: MarketFileConstants.languageSeparator).first ?? preferredLanguage
+            let cleanLang = String(rawLang.filter { $0.isASCII && ($0.isLetter || $0.isNumber) })
+            if !cleanLang.isEmpty {
+                urlsToTry.append(base.appendingPathComponent("\(pluginID)_\(cleanLang).md"))
+            }
         }
         
         if !preferredLanguage.hasPrefix(PluginConstants.LanguagePrefix.en) {

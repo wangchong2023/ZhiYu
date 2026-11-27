@@ -613,6 +613,37 @@ final class StreamingDownloadTests: XCTestCase {
         XCTAssertTrue(hasDownloading, "A 终止后 B 应仍能收到 downloading 更新；实际收到: \(received)")
     }
 
+    // MARK: - 缺陷 #264 回归：taskID 路径清洗与 .pending 防重入
+
+    func testSanitizedTaskFileNameStemBlocksTraversalAndHiddenFiles() {
+        let traversed = StreamingDownloadManager.sanitizedTaskFileNameStem(for: "../../etc/passwd")
+        XCTAssertFalse(traversed.contains(".."))
+        XCTAssertFalse(traversed.contains("/"))
+
+        let hidden = StreamingDownloadManager.sanitizedTaskFileNameStem(for: ".secret\r\n")
+        XCTAssertFalse(hidden.hasPrefix("."))
+        XCTAssertEqual(hidden, "secret")
+
+        XCTAssertEqual(StreamingDownloadManager.sanitizedTaskFileNameStem(for: "   ... "), "task")
+    }
+
+    func testStartDownloadRejectsReentryWhilePending() async throws {
+        let manager = makeManager()
+        let taskID = "pending-reentry-guard"
+        let url = try XCTUnwrap(URL(string: "https://example.com/model.bin"))
+
+        await manager.updateState(for: taskID, to: .pending)
+        try await manager.startDownload(taskID: taskID, remoteURL: url)
+
+        let stream = await manager.observeDownloadState(for: taskID)
+        let current = await firstState(from: stream)
+        if case .pending = current {
+            // 预期保持 pending 且未覆盖新建重复任务
+        } else {
+            XCTFail("处于 .pending 状态时重复 startDownload 应被拦截，实际状态: \(String(describing: current))")
+        }
+    }
+
     // MARK: - 辅助：等待 detached 任务完成
 
     /// 判断是否为稳定终态（completed/failed/cancelled）。

@@ -272,21 +272,24 @@
 | **261** | `NetworkClient` 存在跨源劫持与 Header 清洗缺陷：`makeBackendURL(path:)` 直接拼接 `backendBaseURL + path`，当 `path` 为 `@evil.com/steal`、`.evil.com/api` 或 `//evil.com/api` 时会改写目标 `host` 导致 Bearer Token 外泄至第三方服务器；`applyBearerToken` 未剥离控制字符与空白导致畸形或空 `Authorization` 头 | 传入非单 `/` 开头恶意路径或 Keychain 残留含换行/空白的异常 Token | JWT Bearer Token 泄露至外部恶意主机或触发协议级 Header 注入 | **High** | 架构设计与安全/网络健壮性 | 抽取 `buildSafeBackendURL` 强制 `path` 以单 `/` 开头且校验拼接后 `scheme`/`host`/`port` 严格同源；抽取 `sanitizedBearerToken` 剥离控制字符与换行并跳过空串 | **✅ 已解决** | 是 (HTTP 客户端同源 URL 校验与 Bearer Token 清洗) | 是 (`NetworkClientSecurityTests`) | ✅ 已闭环 |
 | **262** | `ModelDownloadManager` 存在落盘文件名清洗绕过与空 ID 缺陷：`sanitizedDestinationFileName` 仅剥离 `\0` 未过滤 `\r`/`\n` 等控制字符且保留前导 `.`（如 `.secret` 生成隐藏文件 `.secret.bin`）；`startDownload` 未拦截空白 `modelId` 导致非法空任务碰撞覆写同一 `model.bin` | 外部模型清单包含 `.secret`、`...`、含控制字符或纯空白 `modelId` | 生成 Unix 隐藏文件或含控制字符文件名、多个空 ID 下载任务撞车覆盖 | **High** | 架构设计与安全/网络健壮性 | `sanitizedDestinationFileName` 过滤全部控制字符与换行并循环剥离前导 `.`；`startDownload` 入口校验 `modelId` trim 后非空，否则抛 `URLError(.badURL)` | **✅ 已解决** | 是 (模型落盘文件名防隐藏/控制字符清洗与非空 ID 守卫) | 是 (`NetworkClientSecurityTests`) | ✅ 已闭环 |
 | **263** | `OAuthService` 存在渠道归一化与昵称回退缺陷：`validateCredential` 与 `resolveAuthRequestInfo` 区分 `identityType` 大小写及首尾空白；纯空白 `nickname`（`"   "`）未回退默认用户名；发往后端的 `credential` / `carrierToken` 未 trim 首尾空白 | OAuth 策略返回大写/带空白渠道名、空昵称或首尾含换行的授权码 | 合法渠道被误拒、用户昵称显示为空白、后端 OAuth 授权码验签失败 | **Medium** | 架构设计与安全/网络健壮性 | 抽取 `normalizedIdentityType` 统一 trim+lowercase；抽取 `resolvedDisplayName` 对纯空白昵称安全回退默认名；`resolveAuthRequestInfo` 对授权码与运营商 Token 先 trim 后发包 | **✅ 已解决** | 是 (OAuth 凭证渠道归一化与展示昵称安全回退) | 是 (`AuthOAuthStrategiesBranchTests`) | ✅ 已闭环 |
+| **264** | `StreamingDownloadManager`（`UFPStorage`）存在三重安全与并发缺陷：`resumeDataURL(for:)` 直接拼接未清洗的 `taskID`，含 `../`/`/`/`\0` 时触发断点文件目录穿越；`startDownload` 未拦截 `.pending` 状态，首包前双击下载会覆写 `activeTasks` 产生孤儿后台任务；`updateProgress` 速率采样使用墙上时钟 `Date()`，时钟回拨会导致实时速度采样长期卡死 | 传入畸形 `taskID`、首包到达前重复触发下载、或下载中设备发生时钟回拨 | 断点文件目录越界读写/删除、双倍带宽消耗与孤儿任务泄漏、下载速度显示假死 | **High** | 架构设计与安全/网络健壮性 | 新增 `sanitizedTaskFileNameStem` 剥离控制字符/穿越串/前导 `.` 用于断点文件落盘；`startDownload` 将 `.pending` 纳入防重入拦截；`SpeedTrackerState` 改用单调时钟 `systemUptime` 并防御负时间差 | **✅ 已解决** | 是 (通用下载器 taskID 清洗、pending 防重入与单调时钟速率采样) | 是 (`StreamingDownloadTests`) | ✅ 已闭环 |
+| **265** | `PluginMarketService` 存在三重安全与状态机缺陷：`isSafePluginID` 放行前导点号（`.hidden`）与冒号 `:`；`readmeCandidateURLs` 未清洗 `preferredLanguage` 导致恶意语言标识（`../../etc`）注入 URL 路径穿越；`fetchPlugins()` 缺少 `guard !isLoading` 防并发重入守卫 | 恶意插件 ID 以 `.` 开头、异常 Locale 传入路径穿越片段、或连续下拉刷新插件市场 | 创建隐藏插件目录、构造越界 README 请求 URL、并发拉取互相覆写列表状态 | **High** | 架构设计与安全/网络健壮性 | `isSafePluginID` 拦截前导 `.` 与 `:`；`readmeCandidateURLs` 对语言码仅保留 ASCII 字母数字；`fetchPlugins()` 入口增加 `guard !isLoading` 防重入 | **✅ 已解决** | 是 (插件市场 ID 防隐藏、语言码清洗与拉取防重入) | 是 (`PluginMarketServiceTests`) | ✅ 已闭环 |
+| **266** | `ChatCoordinator` 存在空流污染与导出重入缺陷：`runStreamTask` 收到纯空白流式响应仍落盘并追加空助手气泡污染对话历史；`exportChat()` 缺少 `guard !isExporting` 防并发重入守卫 | 模型返回空流/纯空白帧，或用户在导出 PDF 期间连续双击导出按钮 | 聊天界面出现空白 AI 气泡并污染后续上下文、重复并发触发 WebView PDF 导出状态踩踏 | **Medium** | 状态机并发与数据生命周期 | `runStreamTask` 仅在流式正文 trim 非空时才落盘追加助手消息与触发追问预测；`exportChat()` 增加 `guard !isExporting` 防重入与 `defer` 状态复位 | **✅ 已解决** | 是 (流式空气泡过滤与导出动作防重入) | 是 (`ChatCoordinatorTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**263 项**
+- **收录问题总数**：**266 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：77 项 (29.3%)
-  - 状态机并发与数据生命周期：59 项 (22.4%)
-  - 架构设计与安全/网络健壮性：86 项 (32.7%)
-  - UI/交互与防御性缺陷：17 项 (6.5%)
-  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (9.1%)
+  - 功能缺陷与核心算法/解析器/数据完整性：77 项 (28.9%)
+  - 状态机并发与数据生命周期：60 项 (22.6%)
+  - 架构设计与安全/网络健壮性：88 项 (33.1%)
+  - UI/交互与防御性缺陷：17 项 (6.4%)
+  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (9.0%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：164 项 (62.4%)
-  - **Medium（功能异常/算法边界/性能损耗）**：72 项 (27.4%)
-  - **Low（样式异味/边界校验/门禁规范）**：27 项 (10.3%)
-- **修复闭环率**：**100% (263/263 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：166 项 (62.4%)
+  - **Medium（功能异常/算法边界/性能损耗）**：73 项 (27.4%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (10.2%)
+- **修复闭环率**：**100% (266/266 项已修复闭环)**
 

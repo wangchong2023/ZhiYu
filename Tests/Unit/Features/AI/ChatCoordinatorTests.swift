@@ -183,4 +183,18 @@ final class ChatCoordinatorTests: XCTestCase {
         XCTAssertFalse(coordinator.isSelectionMode, "清空历史后必须重置多选模式")
         XCTAssertTrue(coordinator.selectedMessageIDs.isEmpty, "清空历史后已选消息集合必须清空")
     }
+
+    // MARK: - 缺陷 #266 回归：exportChat 防重入守卫
+
+    func testExportChat_ReentryGuardSkipsWhenAlreadyExporting() async {
+        coordinator.chatHistory = [ChatMessage(role: .user, content: "Hello")]
+        coordinator.isExporting = true
+        coordinator.exportURL = nil
+
+        await coordinator.exportChat()
+
+        XCTAssertTrue(coordinator.isExporting, "被拦截的重复导出调用不得误重置 isExporting")
+        XCTAssertNil(coordinator.exportURL, "被拦截的重复导出调用不得覆盖 exportURL")
+        coordinator.isExporting = false
+    }
 }

@@ -719,4 +719,35 @@ final class PluginMarketServiceTests: XCTestCase {
         XCTAssertFalse(reentryResult, "正在下载其他插件时应拒绝并发重入")
         service.downloadingPluginID = nil
     }
+
+    // MARK: - 缺陷 #265 回归：隐藏目录 ID、语言路径穿越与 fetchPlugins 防重入
+
+    func testSecurityGuards_BlockHiddenPluginIDLanguageTraversalAndFetchReentry() async {
+        XCTAssertFalse(PluginMarketService.isSafePluginID(".hidden"), "前导点号隐藏目录 ID 必须被拦截")
+        XCTAssertFalse(PluginMarketService.isSafePluginID("bad:id"), "含冒号 ID 必须被拦截")
+        XCTAssertTrue(PluginMarketService.isSafePluginID("com.zhiyu.valid-plugin"))
+
+        let urls = service.readmeCandidateURLs(
+            forID: "demo",
+            downloadURLString: "https://example.com/plugins/demo",
+            preferredLanguages: ["../../etc/passwd"]
+        )
+        for url in urls {
+            XCTAssertFalse(url.absoluteString.contains(".."), "README 候选 URL 不得包含路径穿越: \(url.absoluteString)")
+        }
+
+        // fetchPlugins 防重入：isLoading == true 时立即早退，不触发网络请求
+        var requestTriggered = false
+        PluginMarketMockURLProtocol.requestHandler = { request in
+            requestTriggered = true
+            guard let response = HTTPURLResponse(url: request.url ?? URL(fileURLWithPath: "/"), statusCode: 200, httpVersion: nil, headerFields: nil) else {
+                throw URLError(.badServerResponse)
+            }
+            return (response, Data("[]".utf8))
+        }
+        service.isLoading = true
+        await service.fetchPlugins()
+        XCTAssertFalse(requestTriggered, "isLoading 为 true 时 fetchPlugins 必须防重入跳过网络请求")
+        service.isLoading = false
+    }
 }

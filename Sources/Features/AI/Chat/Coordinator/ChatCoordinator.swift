@@ -139,16 +139,9 @@ final class ChatCoordinator {
                 }
             }
             
-            // 只有在未被取消且仍处于同一历史代次的情况下才保存结果并异步预测问题
+            // 只有在未被取消、处于同一代次且流式内容非空时才保存助手回复，防止空流污染对话历史
             if !Task.isCancelled && self.historyGeneration == generation {
-                self.chatService.saveAssistantMessage(self.streamingContent)
-                self.chatHistory.append(ChatMessage(role: .assistant, content: self.streamingContent))
-                
-                // 异步启动预测用户后续问题的任务，不阻塞本次响应完成
-                Task { [weak self] in
-                    guard let self = self else { return }
-                    await self.generatePredictedQuestions(pages: pages)
-                }
+                self.finalizeStreamResponse(pages: pages)
             }
             // 成功结束（含未取消分支）：复位为 idle
             if self.historyGeneration == generation {
@@ -173,6 +166,18 @@ final class ChatCoordinator {
         if self.historyGeneration == generation {
             self.streamingContent = ""
             self.currentStreamTask = nil
+        }
+    }
+
+    /// 落盘非空流式助手回复并异步触发后续追问预测
+    private func finalizeStreamResponse(pages: [KnowledgePage]) {
+        let finalContent = streamingContent
+        guard !finalContent.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        chatService.saveAssistantMessage(finalContent)
+        chatHistory.append(ChatMessage(role: .assistant, content: finalContent))
+        Task { [weak self] in
+            guard let self else { return }
+            await self.generatePredictedQuestions(pages: pages)
         }
     }
 
@@ -227,8 +232,9 @@ final class ChatCoordinator {
         selectedMessageIDs.removeAll()
     }
 
-    /// 导出Chat
+    /// 导出Chat（含并发防重入守卫）
     func exportChat() async {
+        guard !isExporting else { return }
         let history = isSelectionMode && !selectedMessageIDs.isEmpty ?
             chatHistory.filter { selectedMessageIDs.contains($0.id) } :
             chatHistory
@@ -236,6 +242,7 @@ final class ChatCoordinator {
         guard !history.isEmpty else { return }
         
         isExporting = true
+        defer { isExporting = false }
         do {
             let md: String = history.map { msg in
                 let role = msg.role == .user ? L10n.Chat.exportRoleUser : L10n.Chat.exportRoleAI
@@ -247,7 +254,6 @@ final class ChatCoordinator {
         } catch {
             status = .failure(error.localizedDescription)
         }
-        isExporting = false
     }
 
     /// 切换SelectionMode
