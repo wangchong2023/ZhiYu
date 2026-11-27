@@ -173,21 +173,24 @@
 | **162** | `MediaStore.loadMedia`、`deleteMedia` 与 `saveMedia` 对外部传入的 `fileName`/`fileExtension` 零校验，含 `../`、`.`、空串或斜杠的输入可越出 `Attachments/` 目录读取或删除 Vault 根目录核心数据甚至删除整个 `Attachments/` 目录 | 传入恶意或损坏的附件路径/扩展名调用 `MediaStore` | Vault 内任意文件被越权读取或误删，或生成带尾随点的非法文件名 | **High** | 架构设计与安全/网络健壮性 | 新增 `safeAttachmentURL(for:)` 严格校验标准化父目录等于 `attachmentsDirectoryURL`，`saveMedia` 清洗扩展名仅保留字母数字并消除空扩展名尾随点 | **✅ 已解决** | 是 (附件存储路径穿越统一防线) | 是 (`MediaStoreTests`) | ✅ 已闭环 |
 | **163** | `AppBackupService.cleanOldBackups()` 绕过了已有的 `safeBackupFileURL(for:)` 防护直接 `backupDirectory.appendingPathComponent(entry.fileName)` 并执行 `removeItem`，当 `backup_index.json` 混入 `../` 越界路径且备份数超限时可误删备份目录外文件 | 备份索引被篡改并触发超过 `maxBackups` 的自动清理 | 沙盒内其他目录文件被自动清理任务越权删除 | **High** | 架构设计与安全/网络健壮性 | `cleanOldBackups()` 统一改用 `guard let url = safeBackupFileURL(for: entry.fileName) else { continue }`，拦截越界路径删除并安全清理污染索引 | **✅ 已解决** | 是 (备份服务全路径统一安全解析) | 是 (`AppBackupServiceDeepMutationTests`) | ✅ 已闭环 |
 | **164** | `QuickCaptureWidget` 桌面小组件发出的 `zhiyu://voice` 与 `zhiyu://ocr` 深度链接在 `DeepLinkService.handleKnownHost` 中缺失分支导致点击静默失效；同时 `url.host` 未做大小写归一化，大写 Host（如 `ZHIYU://SEARCH`）违反 RFC 3986 匹配失败 | 用户点击桌面小组件的语音/OCR 快捷按钮或打开大写 Host 的 DeepLink | 桌面小组件核心语音/OCR 入口点击无响应 | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | 抽取 `Host`/`QueryKey` 强类型常量，对 `host?.lowercased()` 匹配并将 `voice`/`ocr` 统一路由至 `.ingest` 知识摄取中心 | **✅ 已解决** | 是 (Widget DeepLink 全入口契约对齐) | 是 (`DeepLinkTests`) | ✅ 已闭环 |
+| **165** | `PluginRuntime.removePluginFilesFromDisk` 未校验 `pluginID` 路径穿越风险，且使用宽泛子串 `name.contains(idSlug)` 清理磁盘残留，卸载短 ID 插件（如 `toc`/`ai`）时会把所有名称含该子串的无辜插件全部物理删除 | 卸载短 ID 插件或传入含 `../` 的 `pluginID` | 其他已安装插件被连带物理误删或沙盒外文件越权删除 | **High** | 架构设计与安全/网络健壮性 | 接入 `PluginMarketService.isSafePluginID` 路径边界守卫，并抽取 `shouldRemovePluginFile` 改为完整 ID / 精确短名 / 规范点号后缀匹配，彻底移除宽泛子串 `contains` | **✅ 已解决** | 是 (插件卸载磁盘精确匹配与路径边界规范) | 是 (`PluginRuntimeTests`) | ✅ 已闭环 |
+| **166** | `KeychainService.store(key:value:)` 采用先 `delete` 后 `SecItemAdd` 的两步写入，多线程并发写入同一键时在 delete 与 add 间隙会触发 `errSecDuplicateItem (-25299)` 导致写入失败 | 多线程并发刷新凭据或冷启动并发初始化数据库口令/盐值 | 合法凭据保存失败并抛出 `KeychainError.storeFailed(-25299)` | **High** | 状态机并发与数据生命周期 | 当 `SecItemAdd` 返回 `errSecDuplicateItem` 时自动原子降级调用 `SecItemUpdate` 覆盖写入（保留 `kSecAttrAccessibleWhenUnlockedThisDeviceOnly`） | **✅ 已解决** | 是 (Keychain Add-or-Update 并发安全范式) | 是 (`KeychainServiceTests`) | ✅ 已闭环 |
+| **167** | `PromptTemplateEngine.fetchRemotePrompt` 直接使用外部 `url` 发起 `URLSession.data(for:)`，未校验 `http`/`https` 协议白名单也未通过 `SSRFGuard.isSafeURL` 检查，存在 `file://` 本地读取与内网 SSRF 探测风险 | Skill 配置含 `file://` 或内网/环回/云元数据地址的 `remotePromptURLString` | 触发本地协议访问或内网 SSRF 探测 | **High** | 架构设计与安全/网络健壮性 | 新增 `isSafeRemotePromptURL(_:)` 强制校验 `http`/`https` 白名单并接入 `SSRFGuard.isSafeURL`，不合规 URL 记录警告并平滑降级本地模板 | **✅ 已解决** | 是 (远程资源拉取统一 SSRF 与协议白名单守卫) | 是 (`PromptTemplateEngineTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**164 项**
+- **收录问题总数**：**167 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：39 项 (23.8%)
-  - 状态机并发与数据生命周期：35 项 (21.3%)
-  - 架构设计与安全/网络健壮性：50 项 (30.5%)
-  - UI/交互与防御性缺陷：16 项 (9.8%)
-  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (14.6%)
+  - 功能缺陷与核心算法/解析器/数据完整性：39 项 (23.4%)
+  - 状态机并发与数据生命周期：36 项 (21.6%)
+  - 架构设计与安全/网络健壮性：52 项 (31.1%)
+  - UI/交互与防御性缺陷：16 项 (9.6%)
+  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (14.4%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：81 项 (49.4%)
-  - **Medium（功能异常/算法边界/性能损耗）**：56 项 (34.1%)
-  - **Low（样式异味/边界校验/门禁规范）**：27 项 (16.5%)
-- **修复闭环率**：**100% (164/164 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：84 项 (50.3%)
+  - **Medium（功能异常/算法边界/性能损耗）**：56 项 (33.5%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (16.2%)
+- **修复闭环率**：**100% (167/167 项已修复闭环)**
 

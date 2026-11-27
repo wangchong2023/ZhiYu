@@ -113,9 +113,25 @@ public actor PromptTemplateEngine: PromptTemplateEngineCapabilities {
         return cachedContent
     }
     
+    /// 允许拉取远程 Prompt 的 URL 协议白名单
+    private static let allowedRemoteSchemes: Set<String> = ["http", "https"]
+
+    /// 校验远程 Prompt URL 协议合法且不指向内网/环回地址（防 SSRF 与 file:// 本地文件读取）
+    internal nonisolated static func isSafeRemotePromptURL(_ url: URL) -> Bool {
+        guard let scheme = url.scheme?.lowercased(),
+              allowedRemoteSchemes.contains(scheme) else {
+            return false
+        }
+        return SSRFGuard.isSafeURL(url)
+    }
+
     /// 发起静默网络请求拉取远程 Prompt，校验 SHA256 并写入缓存
     /// - Returns: 远程内容（校验通过时），nil 表示拉取失败或校验不通过（降级到本地模板）
     private func fetchRemotePrompt(url: URL, skill: AgentSkill, cachedFileURL: URL) async -> String? {
+        guard Self.isSafeRemotePromptURL(url) else {
+            Logger.shared.warning("[PromptTemplateEngine] \(skill.skillId): 远程 Prompt URL 未通过协议/SSRF 安全校验，降级到本地模板")
+            return nil
+        }
         do {
             var request = URLRequest(url: url)
             request.timeoutInterval = PromptConstants.PromptTemplate.remoteFetchTimeout

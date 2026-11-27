@@ -301,20 +301,45 @@ final class PluginRuntime {
 
     // MARK: - 磁盘清理
 
+    /// 判断磁盘上的插件文件名（不含扩展名）是否严格归属于待卸载插件 ID。
+    /// 绝不使用宽泛子串 `contains`，防止卸载短 ID 插件（如 `toc`）误删 `toc-generator` 等其他无关插件。
+    internal nonisolated static func shouldRemovePluginFile(
+        fileNameWithoutExtension name: String,
+        pluginID: String
+    ) -> Bool {
+        guard !name.isEmpty, PluginMarketService.isSafePluginID(pluginID) else {
+            return false
+        }
+        if name == pluginID {
+            return true
+        }
+        let idSlug = pluginID.replacingOccurrences(of: PluginConstants.PluginID.officialPrefix, with: "")
+        if !idSlug.isEmpty && name == idSlug {
+            return true
+        }
+        let dottedSuffix = SystemConstants.Character.dot + name
+        return pluginID.hasSuffix(dottedSuffix)
+    }
+
     /// 删除插件在磁盘上的 .zyplugin 和 .js 文件
     private func removePluginFilesFromDisk(pluginID: String) {
+        guard PluginMarketService.isSafePluginID(pluginID) else {
+            Logger.shared.warning("[PluginRegistry] 非法插件 ID，拒绝执行磁盘清理: \(pluginID)")
+            return
+        }
         let fileManager = FileManager.default
         guard let pluginsDir = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first?
-            .appendingPathComponent("Plugins") else { return }
+            .appendingPathComponent("Plugins").standardizedFileURL else { return }
 
-        // 匹配策略：pluginID 或 ID 的部分匹配文件名
+        // 匹配策略：严格位于 Plugins 目录内的 pluginID.zyplugin / pluginID.js
         let patterns = [
             "\(pluginID).zyplugin",
             "\(pluginID).js"
         ]
 
         for pattern in patterns {
-            let fileURL = pluginsDir.appendingPathComponent(pattern)
+            let fileURL = pluginsDir.appendingPathComponent(pattern).standardizedFileURL
+            guard fileURL.deletingLastPathComponent().path == pluginsDir.path else { continue }
             if fileManager.fileExists(atPath: fileURL.path) {
                 do {
                     try fileManager.removeItem(at: fileURL)
@@ -325,17 +350,12 @@ final class PluginRuntime {
             }
         }
 
-        // 模糊匹配与自适应后缀匹配：清理可能由简短 ID（如 "toc-generator"）命名落地的物理目录或文件，
-        // 以及包含规范 ID 核心 Slug 片段的任何残留，防止应用重启时扫描器自动重新加载。
+        // 精确短名与规范后缀匹配：仅清理严格归属目标插件的物理文件或目录，避免误删其他无关插件
         do {
             let files = try fileManager.contentsOfDirectory(at: pluginsDir, includingPropertiesForKeys: nil)
-            let idSlug = pluginID.replacingOccurrences(of: PluginConstants.PluginID.officialPrefix, with: "")
             for file in files {
                 let name = file.deletingPathExtension().lastPathComponent
-                // 1. 完全一致
-                // 2. 包含核心 ID 片段 (idSlug)
-                // 3. 规范注册 ID 以物理文件名后缀结尾 (例如 "com.zhiyu.plugin.local.toc-generator" 匹配 "toc-generator" 目录)
-                if name == pluginID || name.contains(idSlug) || pluginID.hasSuffix("." + name) {
+                if Self.shouldRemovePluginFile(fileNameWithoutExtension: name, pluginID: pluginID) {
                     try? fileManager.removeItem(at: file)
                     Logger.shared.info("[PluginRegistry] 成功物理清理磁盘残留: \(file.lastPathComponent)")
                 }

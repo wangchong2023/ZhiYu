@@ -287,6 +287,25 @@ final class PluginRuntimeTests: XCTestCase {
     func testCurrentHostVersion_is2_0_0() {
         XCTAssertEqual(runtime.currentHostVersion, "2.0.0")
     }
+
+    // MARK: - 磁盘清理精确匹配与路径安全（缺陷 #165）
+
+    func testShouldRemovePluginFile_BlocksCollateralDeletionAndPathTraversal() {
+        // 1. 合法精确匹配（完整 ID、去除 officialPrefix 后的短名、规范点号后缀）
+        XCTAssertTrue(PluginRuntime.shouldRemovePluginFile(fileNameWithoutExtension: "toc-generator", pluginID: "com.zhiyu.plugin.toc-generator"))
+        XCTAssertTrue(PluginRuntime.shouldRemovePluginFile(fileNameWithoutExtension: "toc-generator", pluginID: "com.zhiyu.plugin.local.toc-generator"))
+        XCTAssertTrue(PluginRuntime.shouldRemovePluginFile(fileNameWithoutExtension: "com.zhiyu.plugin.toc", pluginID: "com.zhiyu.plugin.toc"))
+
+        // 2. 卸载短 ID 插件绝不能通过子串 contains 误删其他无关插件
+        XCTAssertFalse(PluginRuntime.shouldRemovePluginFile(fileNameWithoutExtension: "toc-generator", pluginID: "com.zhiyu.plugin.toc"))
+        XCTAssertFalse(PluginRuntime.shouldRemovePluginFile(fileNameWithoutExtension: "ai-summarizer", pluginID: "ai"))
+        XCTAssertFalse(PluginRuntime.shouldRemovePluginFile(fileNameWithoutExtension: "auto-toc-pro", pluginID: "toc"))
+
+        // 3. 拦截空文件名与路径穿越 pluginID
+        XCTAssertFalse(PluginRuntime.shouldRemovePluginFile(fileNameWithoutExtension: "", pluginID: "com.zhiyu.plugin.toc"))
+        XCTAssertFalse(PluginRuntime.shouldRemovePluginFile(fileNameWithoutExtension: "evil", pluginID: "../evil"))
+        XCTAssertFalse(PluginRuntime.shouldRemovePluginFile(fileNameWithoutExtension: "a", pluginID: "com.zhiyu.plugin."))
+    }
 }
 
 // MARK: - Mock 类

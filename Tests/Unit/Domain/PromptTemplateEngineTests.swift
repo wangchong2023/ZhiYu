@@ -174,4 +174,35 @@ final class PromptTemplateEngineTests: XCTestCase {
         
         XCTAssertEqual(rendered, "本地兜底保活：容灾测试", "当网络完全挂毁且无本地缓存时，系统必须平滑兜底，绝对不抛异常或崩溃。")
     }
+
+    /// 场景 E（缺陷 #167）：远程 Prompt URL 为 file:// 或内网 SSRF 地址时必须拦截并降级到本地模板
+    func testRenderPromptBlocksFileSchemeAndPrivateIPSSRF() async throws {
+        let dangerousURLs = [
+            "file:///etc/passwd",
+            "http://127.0.0.1:8080/secret.md",
+            "http://169.254.169.254/latest/meta-data/",
+            "http://localhost/admin",
+            "ftp://example.com/prompt.md"
+        ]
+        for raw in dangerousURLs {
+            let url = try XCTUnwrap(URL(string: raw))
+            XCTAssertFalse(PromptTemplateEngine.isSafeRemotePromptURL(url), "应拦截危险远程 Prompt URL: \(raw)")
+        }
+
+        let safeURL = try XCTUnwrap(URL(string: "https://cdn.zhiyu.ai/prompts/safe.md"))
+        XCTAssertTrue(PromptTemplateEngine.isSafeRemotePromptURL(safeURL))
+
+        // 验证即使 MockURLProtocol 配置了响应数据，file:// 与内网 URL 也不会触发网络请求，直接降级本地模板
+        MockURLProtocol.mockData = Data("SHOULD_NOT_BE_FETCHED".utf8)
+        let skill = AgentSkill(
+            skillId: "ssrf_guard_skill",
+            displayName: "SSRF 防护测试",
+            description: "SSRF guard",
+            systemPromptTemplate: "安全本地模板：{{query}}",
+            remotePromptURLString: "http://127.0.0.1:9000/internal.md",
+            version: "1.0.0"
+        )
+        let rendered = await promptEngine.renderPrompt(for: skill, with: ["query": "ok"])
+        XCTAssertEqual(rendered, "安全本地模板：ok", "内网 SSRF 地址必须被拦截并降级本地模板")
+    }
 }

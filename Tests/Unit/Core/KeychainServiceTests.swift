@@ -140,4 +140,23 @@ final class KeychainServiceTests: XCTestCase {
         let retrieved = try service.retrieve(key: "batch6b_nonexistent_\(UUID().uuidString)")
         XCTAssertNil(retrieved)
     }
+
+    // MARK: - 并发覆盖写入稳定性（缺陷 #166）
+
+    func testConcurrentStoreSameKeySucceedsWithoutDuplicateItemFailure() async throws {
+        let key = "concurrent_store_\(UUID().uuidString)"
+        defer { try? service.delete(key: key) }
+
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            for idx in 0..<12 {
+                group.addTask { [service] in
+                    try service?.store(key: key, value: "val_\(idx)")
+                }
+            }
+            try await group.waitForAll()
+        }
+
+        let finalValue = try service.retrieve(key: key)
+        XCTAssertNotNil(finalValue, "并发写入同一 Key 后应保留有效值且不因 errSecDuplicateItem 报错")
+    }
 }

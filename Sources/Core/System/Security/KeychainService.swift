@@ -57,14 +57,18 @@ class KeychainService: @unchecked Sendable {
         // 先删除旧项
         try? delete(key: key)
 
+        let baseQuery = KeychainQueryHelper.baseQuery(serviceName: serviceName, key: key)
         let extra: [String: Any] = [
             kSecValueData as String: data,
             // VULN-012 修复：改用 WhenUnlockedThisDeviceOnly，禁止 iCloud/itunes 备份提取
             kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlockedThisDeviceOnly
         ]
-        let query = KeychainQueryHelper.baseQuery(serviceName: serviceName, key: key)
-            .merging(extra) { _, new in new }
-        let status = SecItemAdd(query as CFDictionary, nil)
+        let query = baseQuery.merging(extra) { _, new in new }
+        var status = SecItemAdd(query as CFDictionary, nil)
+        // 并发写入场景下若另一线程恰好在 delete 与 add 之间完成了插入，原子降级为 SecItemUpdate 覆盖更新
+        if status == errSecDuplicateItem {
+            status = SecItemUpdate(baseQuery as CFDictionary, extra as CFDictionary)
+        }
         // 无签名本地调试/测试宿主缺失 keychain-access-groups entitlement 时，
         // 避免回退到传统登录钥匙串触发反复弹窗，改用本地隔离回退存储。
         if status == errSecMissingEntitlement {
