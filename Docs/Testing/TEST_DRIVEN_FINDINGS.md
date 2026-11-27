@@ -230,21 +230,24 @@
 | **219** | `PIIMasker` 使用 `\b` 词边界匹配手机号与身份证号，在中文语境紧贴汉字时（如「手机号13812345678请保存」）ICU 将汉字视为 `\w` 导致 `\b` 失效漏脱敏；同时漏脱敏连字符/空格分组信用卡号、Gemini/GitHub PAT 与 JWT | 用户输入含中文紧贴手机号/身份证、分组卡号或云平台密钥的文本触发日志或外发 LLM | 真实手机号、身份证号、信用卡与云密钥明文泄露至日志或外部 AI 服务 | **High** | 架构设计与安全/网络健壮性 | 将规则收敛至 `PIIPattern` 常量枚举，改用数字负向边界 `(?<!\d)`/`(?!\d)` 与 `(?<![\dA-Za-z])` 修复中文紧贴绕过，并补齐分组卡号、Gemini `AIza`、GitHub PAT 与 JWT 脱敏 | **✅ 已解决** | 是 (中文语境 PII 脱敏边界与多云密钥防护) | 是 (`PIIMaskerTests`) | ✅ 已闭环 |
 | **220** | `DeepLinkService` 存在三重缺陷：`handleURL` 在校验 Scheme 前先扣减 `IntentRateLimiter` 配额导致外部无关 URL 可耗尽限流桶；`handleSpotlightActivity` 未兼容系统原生 `CSSearchableItemActionType`/`CSSearchableItemActivityIdentifier` 导致真机 Spotlight 点击跳转失效；`search` 参数未做 trim 与最大长度截断 | 外部恶意/无关 URL 洪泛、用户从系统 Spotlight 点击笔记卡片、或传入超长 `q` 查询 | 合法深度链接被限流误拒、系统 Spotlight 搜索结果无法跳转、超长查询灌入搜索导致卡顿 | **High** | 架构设计与安全/网络健壮性 | 先校验 Scheme 再扣减限流配额；`handleSpotlightActivity` 兼容 CoreSpotlight 原生活动类型与标识符；`search` 参数 trim 并截断至 `Limits.maxSearchQueryLength`（256 字符） | **✅ 已解决** | 是 (DeepLink 限流防护与 CoreSpotlight 原生跳转兼容) | 是 (`DeepLinkTests`) | ✅ 已闭环 |
 | **221** | `SecureEnclaveCryptoService.getOrCreateHardwarePrivateKey` 使用 `try? KeychainService.shared.retrieve` 吞掉 Keychain 异常，在锁屏后台（`errSecInteractionNotAllowed`）误判为密钥不存在而静默生成新硬件私钥覆写旧 Token | 设备锁屏后台触发加解密或 Keychain 临时不可用 | 原硬件私钥 Token 被覆盖，用户全部已加密的 API Key 与敏感令牌永久无法解密 | **High** | 架构设计与安全/网络健壮性 | 抽取 `resolveKeyMaterial(loadExisting:createAndPersist:)` 严格传播 Keychain 异常，仅明确返回 `nil` 时才新建密钥；将路径与 32 字节常量收敛至 `CryptoConstants` | **✅ 已解决** | 是 (硬件密钥读取异常严禁静默覆盖) | 是 (`SecureEnclaveCryptoSupplementTests`) | ✅ 已闭环 |
+| **222** | `WebScraperProcessor` 存在三重缺陷：`fetchUTF8Content` 跟随 HTTP 重定向后未复检最终落点 URL 导致 SSRF 302 绕过且无响应体大小上限；`DumbExtractorHandler.extractFromHTML` 剥离 `<script>` 区分大小写漏过 `<SCRIPT>`；`cleanHTMLTags` 依赖随机字典遍历顺序会导致 `&amp;lt;` 双重解码且未解码 `<title>` 实体 | 目标链接 302 重定向到内网元数据服务、返回超大流、或网页含大写 `<SCRIPT>` / `&amp;lt;` | 攻击者绕过初始 SSRF 检查探测内网或诱发 OOM，正文残留脚本或标题显示 `&amp;` 乱码 | **High** | 架构设计与安全/网络健壮性 | 新增 `validateScrapedResponse` 复检最终落点 `SSRFGuard.isSafeURL` 并限制单次响应 10MB；`<script>` 替换启用 `.caseInsensitive`；`cleanHTMLTags` 固定 `&amp;` 末位解码并同步清洗 `<title>` | **✅ 已解决** | 是 (网页抓取重定向 SSRF 复检与确定性 HTML 实体解码) | 是 (`WebScraperProcessorEdgeTests`) | ✅ 已闭环 |
+| **223** | `MultipeerCollaborationProvider` 客户端 `joinRoom` 连接在 `.failed`/`.cancelled` 时未从 `connections` 移除也未通知 `providerDidDisconnectPeer`，且 `handleNewConnection` 在 `.ready` 前提前加入连接池导致向未就绪/僵尸连接广播，同时残留多处协议魔鬼字符串与数字 | 多端协作对端断网、退出房间或握手失败后继续广播同步消息 | 僵尸连接永久残留、反复触发广播发送错误、或重复上报断连事件 | **High** | 状态机并发与数据生命周期 | 抽取幂等 `removeConnectionIfPresent(_:peerID:)` 在 `.failed`/`.cancelled` 统一清理连接并仅通知一次断连，入站连接延迟至 `.ready` 入池；全部协议键与缓冲区大小收敛至 `PlatformConstants.NetworkCollaboration` | **✅ 已解决** | 是 (P2P 协作连接生命周期幂等清理) | 是 (`IOSCollaborationAndWatchSyncDeepTests`) | ✅ 已闭环 |
+| **224** | `OAuthService.sendAuthRequestToBackend` 未校验第三方授权码非空、运营商一键登录 `carrierToken` 与 `privacyConsent` 完整性及渠道合法性，空白凭证仍穿透至后端且残留多处硬编码字典键与错误文案 | OAuth SDK 异常返回空授权码、用户未勾选运营商隐私协议或传入未知渠道 | 无效认证请求穿透到后端鉴权接口并产生模糊错误 | **Medium** | 架构设计与安全/网络健壮性 | 新增 `OAuthExtraKey` 强类型常量枚举与 `validateCredential(_:)` 前置守卫，空凭证/未同意隐私协议/未知渠道直接拦截抛错 | **✅ 已解决** | 是 (OAuth 多渠道凭证前置完整性校验) | 是 (`AuthLoginOAuthDeepTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**221 项**
+- **收录问题总数**：**224 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：60 项 (27.1%)
-  - 状态机并发与数据生命周期：52 项 (23.5%)
-  - 架构设计与安全/网络健壮性：68 项 (30.8%)
-  - UI/交互与防御性缺陷：17 项 (7.7%)
-  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (10.9%)
+  - 功能缺陷与核心算法/解析器/数据完整性：60 项 (26.8%)
+  - 状态机并发与数据生命周期：53 项 (23.7%)
+  - 架构设计与安全/网络健壮性：70 项 (31.3%)
+  - UI/交互与防御性缺陷：17 项 (7.6%)
+  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (10.7%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：130 项 (58.8%)
-  - **Medium（功能异常/算法边界/性能损耗）**：64 项 (29.0%)
-  - **Low（样式异味/边界校验/门禁规范）**：27 项 (12.2%)
-- **修复闭环率**：**100% (221/221 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：132 项 (58.9%)
+  - **Medium（功能异常/算法边界/性能损耗）**：65 项 (29.0%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (12.1%)
+- **修复闭环率**：**100% (224/224 项已修复闭环)**
 

@@ -277,4 +277,36 @@ final class WebScraperProcessorEdgeTests: XCTestCase {
         XCTAssertFalse(extracted.markdown.contains("window.__STATE__"), "多行 <script> 代码必须被彻底剥离")
         XCTAssertFalse(extracted.markdown.contains("secret-css"), "多行 <style> 样式必须被彻底剥离")
     }
+
+    // MARK: - 缺陷 #222 回归：重定向 SSRF 拦截、超大响应拦截、大写 <SCRIPT> 与确定性实体解码
+
+    func testValidateScrapedResponse_blocksSSRFRedirectAndOversizedBody() throws {
+        let internalURL = try XCTUnwrap(URL(string: "http://169.254.169.254/latest/meta-data/"))
+        let ssrfResponse = try XCTUnwrap(HTTPURLResponse(url: internalURL, statusCode: 200, httpVersion: nil, headerFields: nil))
+        XCTAssertThrowsError(try DumbExtractorHandler.validateScrapedResponse(ssrfResponse, dataByteCount: 128))
+
+        let publicURL = try XCTUnwrap(URL(string: "https://example.com/article"))
+        let publicResponse = try XCTUnwrap(HTTPURLResponse(url: publicURL, statusCode: 200, httpVersion: nil, headerFields: nil))
+        XCTAssertThrowsError(
+            try DumbExtractorHandler.validateScrapedResponse(
+                publicResponse,
+                dataByteCount: WebScraperResponseLimits.maxResponseBytes + 1
+            )
+        )
+        XCTAssertNoThrow(try DumbExtractorHandler.validateScrapedResponse(publicResponse, dataByteCount: 1024))
+    }
+
+    func testExtractFromHTML_stripsUppercaseScriptAndAvoidsDoubleEntityDecode() {
+        let html = """
+        <html><head><title>Tom &amp; Jerry</title></head>
+        <body><article>
+            <SCRIPT>alert('upper');</SCRIPT>
+            <p>转义测试：&amp;lt;script&amp;gt;</p>
+        </article></body></html>
+        """
+        let extracted = DumbExtractorHandler.extractFromHTML(html)
+        XCTAssertEqual(extracted.title, "Tom & Jerry", "标题中的 &amp; 应正确解码")
+        XCTAssertFalse(extracted.markdown.contains("alert('upper')"), "大写 <SCRIPT> 块必须被剥离")
+        XCTAssertTrue(extracted.markdown.contains("&lt;script&gt;"), "&amp;lt; 不得被双重解码成原始 <script>")
+    }
 }

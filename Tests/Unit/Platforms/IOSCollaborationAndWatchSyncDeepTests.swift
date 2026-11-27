@@ -57,6 +57,29 @@ final class IOSCollaborationAndWatchSyncDeepTests: XCTestCase {
         XCTAssertNotNil(provider)
     }
 
+    /// 缺陷 #223 回归：客户端 joinRoom 连接断开后必须从活跃连接移除且只通知一次断连
+    func testMultipeerCollaborationProvider_DisconnectRemovesZombieConnectionIdempotently() {
+        let provider = MultipeerCollaborationProvider()
+        let delegate = MockCollaborationProviderDelegate()
+        provider.delegate = delegate
+
+        let endpoint = NWEndpoint.service(name: "Host|12345678", type: "_km-collab._tcp", domain: "local.", interface: nil)
+        let connection = NWConnection(to: endpoint, using: .tcp)
+
+        provider.handleConnectionStateChange(connection, state: .ready, roomID: "Host|12345678")
+        XCTAssertEqual(provider.activeConnectionCount, 1)
+        XCTAssertEqual(MultipeerCollaborationProvider.parseDisplayName(from: "Host|12345678"), "Host")
+
+        provider.handleConnectionStateChange(connection, state: .failed(.posix(.ECONNRESET)), roomID: "Host|12345678")
+        XCTAssertEqual(provider.activeConnectionCount, 0, "断开后僵尸连接必须从活跃列表移除")
+        XCTAssertEqual(delegate.didDisconnectPeerCallCount, 1, "应上报一次断连回调")
+        XCTAssertEqual(delegate.lastDisconnectedPeerId, "Host|12345678")
+
+        // 紧接着再收到 .cancelled 不得重复触发断连回调
+        provider.handleConnectionStateChange(connection, state: .cancelled, roomID: "Host|12345678")
+        XCTAssertEqual(delegate.didDisconnectPeerCallCount, 1, "重复断连状态迁移必须幂等")
+    }
+
     // MARK: - 2. iOSWatchSyncService 状态机与音频分片拼装测试
 
     #if os(iOS) && !os(watchOS)

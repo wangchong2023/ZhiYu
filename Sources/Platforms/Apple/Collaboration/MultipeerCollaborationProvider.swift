@@ -27,7 +27,17 @@ final class MultipeerCollaborationProvider: CollaborationProviderProtocol {
     /// 构造带唯一后缀的 PeerID（`userName|uuid前8位`）
     private func makePeerID(userName: String) -> String {
         let suffix = String(UUID().uuidString.prefix(PlatformConstants.NetworkCollaboration.peerIDSuffixLength))
-        return "\(userName)|\(suffix)"
+        return "\(userName)\(PlatformConstants.NetworkCollaboration.peerIDSeparator)\(suffix)"
+    }
+
+    /// 当前已就绪的活跃连接数（供状态校验与单测验证）
+    internal var activeConnectionCount: Int {
+        connections.count
+    }
+
+    /// 从 PeerID 提取展示名（去除后缀分隔符）
+    internal static func parseDisplayName(from peerID: String) -> String {
+        peerID.split(separator: PlatformConstants.NetworkCollaboration.peerIDSeparator, maxSplits: 1).first.map(String.init) ?? peerID
     }
 
     /// 构造 P2P TCP 参数（消除 startHosting / startBrowsing 重复的 NWParameters 配置）
@@ -55,8 +65,8 @@ final class MultipeerCollaborationProvider: CollaborationProviderProtocol {
                 type: "_\(serviceType)._tcp",
                 domain: nil,
                 txtRecord: NWTXTRecord([
-                    "room": roomName,
-                    "owner": userName
+                    PlatformConstants.NetworkCollaboration.txtRoomKey: roomName,
+                    PlatformConstants.NetworkCollaboration.txtOwnerKey: userName
                 ])
             )
             listener.newConnectionHandler = { [weak self] connection in
@@ -160,6 +170,15 @@ final class MultipeerCollaborationProvider: CollaborationProviderProtocol {
 
     // MARK: - Private Handlers
 
+    /// 幂等移除断开的连接并在确曾活跃时通知 delegate 一次，防止僵尸连接泄漏与重复断连通知
+    internal func removeConnectionIfPresent(_ connection: NWConnection, peerID: String) {
+        guard let index = connections.firstIndex(where: { $0 === connection }) else { return }
+        connections.remove(at: index)
+        if !peerID.isEmpty {
+            delegate?.providerDidDisconnectPeer(id: peerID)
+        }
+    }
+
     private func handleNewConnection(_ connection: NWConnection) {
         connection.stateUpdateHandler = { [weak self] state in
             runOnMainSync {
@@ -167,28 +186,25 @@ final class MultipeerCollaborationProvider: CollaborationProviderProtocol {
             }
         }
         connection.start(queue: .main)
-        connections.append(connection)
     }
 
-    private func handleIncomingConnectionState(_ connection: NWConnection, state: NWConnection.State) {
+    internal func handleIncomingConnectionState(_ connection: NWConnection, state: NWConnection.State) {
         switch state {
         case .ready:
+            if !connections.contains(where: { $0 === connection }) {
+                connections.append(connection)
+            }
             let peerID = extractPeerID(from: connection.endpoint) ?? UUID().uuidString
             notifyPeerConnected(peerID: peerID, connection: connection)
         case .failed, .cancelled:
-            if let index = connections.firstIndex(where: { $0 === connection }) {
-                connections.remove(at: index)
-            }
             let peerID = extractPeerID(from: connection.endpoint) ?? ""
-            if !peerID.isEmpty {
-                delegate?.providerDidDisconnectPeer(id: peerID)
-            }
+            removeConnectionIfPresent(connection, peerID: peerID)
         default:
             break
         }
     }
 
-    private func handleConnectionStateChange(_ connection: NWConnection, state: NWConnection.State, roomID: String) {
+    internal func handleConnectionStateChange(_ connection: NWConnection, state: NWConnection.State, roomID: String) {
         switch state {
         case .ready:
             if !connections.contains(where: { $0 === connection }) {
@@ -198,9 +214,11 @@ final class MultipeerCollaborationProvider: CollaborationProviderProtocol {
             notifyPeerConnected(peerID: roomID, connection: connection)
         case .failed:
             pendingJoinConnection = nil
+            removeConnectionIfPresent(connection, peerID: roomID)
             delegate?.providerDidEncounterError(L10n.Collaboration.Status.disconnected)
         case .cancelled:
             pendingJoinConnection = nil
+            removeConnectionIfPresent(connection, peerID: roomID)
         default:
             if state == .preparing {
                 delegate?.providerDidUpdateStatus(L10n.Collaboration.Status.connecting)
@@ -212,8 +230,8 @@ final class MultipeerCollaborationProvider: CollaborationProviderProtocol {
         for result in results {
             switch result.metadata {
             case .bonjour(let record):
-                let roomName = record["room"] ?? L10n.Collaboration.defaultRoom
-                let owner = record["owner"] ?? "Unknown"
+                let roomName = record[PlatformConstants.NetworkCollaboration.txtRoomKey] ?? L10n.Collaboration.defaultRoom
+                let owner = record[PlatformConstants.NetworkCollaboration.txtOwnerKey] ?? PlatformConstants.NetworkCollaboration.unknownOwner
                 let endpoint = result.endpoint
                 let id = extractPeerID(from: endpoint) ?? UUID().uuidString
                 let room = DiscoveredRoom(
@@ -239,7 +257,10 @@ final class MultipeerCollaborationProvider: CollaborationProviderProtocol {
     }
 
     private func receiveData(from connection: NWConnection) {
-        connection.receive(minimumIncompleteLength: 1, maximumLength: 65536) { [weak self] data, _, isComplete, error in
+        connection.receive(
+            minimumIncompleteLength: PlatformConstants.NetworkCollaboration.minReceiveLength,
+            maximumLength: PlatformConstants.NetworkCollaboration.maxReceiveLength
+        ) { [weak self] data, _, isComplete, error in
             runOnMainSync {
                 if let data, !data.isEmpty {
                     let peerID = self?.extractPeerID(from: connection.endpoint) ?? ""
@@ -267,7 +288,7 @@ final class MultipeerCollaborationProvider: CollaborationProviderProtocol {
 
     /// 通知 delegate 新 peer 已连接，并开始接收数据（消除 handleIncomingConnectionState / handleConnectionStateChange 重复）
     private func notifyPeerConnected(peerID: String, connection: NWConnection) {
-        let displayName = peerID.split(separator: "|", maxSplits: 1).first.map(String.init) ?? peerID
+        let displayName = Self.parseDisplayName(from: peerID)
         let user = CollabUser(id: peerID, displayName: displayName, deviceName: "", joinedAt: Date())
         delegate?.providerDidConnectPeer(user)
         receiveData(from: connection)

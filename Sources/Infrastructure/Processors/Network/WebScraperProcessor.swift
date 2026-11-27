@@ -231,14 +231,14 @@ struct DumbExtractorHandler: WebScraperHandler {
     /// - Parameter html: 原始 HTML 字符串
     /// - Returns: (markdown文本, 标题)
     static func extractFromHTML(_ html: String) -> (markdown: String, title: String) {
-        // Step 1: 提取 <title>
+        // Step 1: 提取 <title> 并清洗 HTML 实体与嵌套标签
         let titleRegex = try? NSRegularExpression(pattern: ProcessorConstants.HTMLRegex.titleTag, options: [.caseInsensitive, .dotMatchesLineSeparators])
         var title = ""
 
         if let regex = titleRegex,
            let match = regex.firstMatch(in: html, options: [], range: NSRange(html.startIndex..., in: html)) {
             if let titleRange = Range(match.range(at: 1), in: html) {
-                title = String(html[titleRange]).trimmingCharacters(in: .whitespacesAndNewlines)
+                title = cleanHTMLTags(String(html[titleRange]))
             }
         }
 
@@ -255,9 +255,17 @@ struct DumbExtractorHandler: WebScraperHandler {
             contentToParse = String(html[mainRange])
         }
 
-        // Step 3: 去除 <script> 和 <style> 标签
-        contentToParse = contentToParse.replacingOccurrences(of: ProcessorConstants.SanitizationRegex.scriptBlock, with: "", options: .regularExpression)
-        contentToParse = contentToParse.replacingOccurrences(of: ProcessorConstants.SanitizationRegex.styleBlockCaseInsensitive, with: "", options: .regularExpression)
+        // Step 3: 去除 <script> 和 <style> 标签（不区分大小写，防止大写 <SCRIPT> 逃逸）
+        contentToParse = contentToParse.replacingOccurrences(
+            of: ProcessorConstants.SanitizationRegex.scriptBlock,
+            with: "",
+            options: [.regularExpression, .caseInsensitive]
+        )
+        contentToParse = contentToParse.replacingOccurrences(
+            of: ProcessorConstants.SanitizationRegex.styleBlockCaseInsensitive,
+            with: "",
+            options: [.regularExpression, .caseInsensitive]
+        )
 
         // Step 4: 提取所有 <p> 段落并清洗 HTML 标签
         let pRegex = try? NSRegularExpression(pattern: ProcessorConstants.HTMLRegex.paragraphTag, options: [.caseInsensitive, .dotMatchesLineSeparators])
@@ -286,11 +294,18 @@ struct DumbExtractorHandler: WebScraperHandler {
         return (markdown, title)
     }
 
-    /// 清洗 HTML 标签与字符实体：去除所有尖括号标签，解码 &quot; / &amp; / &lt; 等 HTML 实体。
+    private enum HTMLEntityOrder {
+        static let ampersandEntity = "&amp;"
+    }
+
+    /// 清洗 HTML 标签与字符实体：去除所有尖括号标签，按确定性顺序解码 HTML 实体（&amp; 最后解码，防止 &amp;lt; 双重解码）。
     static func cleanHTMLTags(_ text: String) -> String {
         var clean = text.replacingOccurrences(of: ProcessorConstants.SanitizationRegex.allTags, with: "", options: .regularExpression)
-        for (entity, char) in ProcessorConstants.HTMLEntity.decodeMap {
+        for (entity, char) in ProcessorConstants.HTMLEntity.decodeMap where entity != HTMLEntityOrder.ampersandEntity {
             clean = clean.replacingOccurrences(of: entity, with: char)
+        }
+        if let ampChar = ProcessorConstants.HTMLEntity.decodeMap[HTMLEntityOrder.ampersandEntity] {
+            clean = clean.replacingOccurrences(of: HTMLEntityOrder.ampersandEntity, with: ampChar)
         }
         return clean.trimmingCharacters(in: .whitespacesAndNewlines)
     }

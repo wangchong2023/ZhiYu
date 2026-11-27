@@ -236,4 +236,41 @@ final class AuthLoginOAuthDeepTests: XCTestCase {
         XCTAssertTrue(success, "WeChat 登录应成功")
         XCTAssertTrue(AuthService.shared.isAuthenticated, "应已登录")
     }
+
+    // MARK: - 缺陷 #224 回归：空凭证、未同意隐私协议或未知渠道不得穿透发往后端
+
+    func testOAuthValidateCredential_blocksBlankUnknownAndUnconsentedCarrier() async {
+        var requestCount = 0
+        TestMockURLProtocol.requestHandler = { request in
+            requestCount += 1
+            guard let url = request.url,
+                  let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: nil) else {
+                throw URLError(.badURL)
+            }
+            return (response, Data())
+        }
+
+        let blankApple = AuthCredential(identityType: FeatureConstants.OAuthProvider.apple, identifier: "", credential: "   ", extraInfo: nil)
+        let unconsentedCarrier = AuthCredential(
+            identityType: FeatureConstants.OAuthProvider.carrier,
+            identifier: "",
+            credential: "",
+            extraInfo: ["carrierToken": "tok_123", "privacyConsent": "false"]
+        )
+        let unknownProvider = AuthCredential(identityType: "unknown_provider", identifier: "", credential: "code_123", extraInfo: nil)
+
+        XCTAssertFalse(AuthService.validateCredential(blankApple))
+        XCTAssertFalse(AuthService.validateCredential(unconsentedCarrier))
+        XCTAssertFalse(AuthService.validateCredential(unknownProvider))
+
+        for invalid in [blankApple, unconsentedCarrier, unknownProvider] {
+            do {
+                _ = try await AuthService.shared.sendAuthRequestToBackend(invalid)
+                XCTFail("无效凭证应直接被前置拦截抛错")
+            } catch {
+                // 预期拦截
+            }
+        }
+        XCTAssertEqual(requestCount, 0, "无效 OAuth 凭证绝不得向后端发起任何网络请求")
+    }
 }

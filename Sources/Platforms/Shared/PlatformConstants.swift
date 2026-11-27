@@ -65,6 +65,18 @@ public enum PlatformConstants {
         public static let serviceType: String = "km-collab"
         /// 连接建立超时秒数
         public static let connectionTimeoutSeconds: TimeInterval = 10
+        /// TXT Record 房间名键
+        public static let txtRoomKey: String = "room"
+        /// TXT Record 房主键
+        public static let txtOwnerKey: String = "owner"
+        /// 未知房主兜底标识
+        public static let unknownOwner: String = "Unknown"
+        /// PeerID 分隔字符
+        public static let peerIDSeparator: Character = "|"
+        /// 单次接收最小字节数
+        public static let minReceiveLength: Int = 1
+        /// 单次接收最大字节数（64 KB）
+        public static let maxReceiveLength: Int = 65536
     }
 
     // MARK: - Reminder 服务

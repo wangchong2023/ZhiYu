@@ -11,29 +11,51 @@
 import Foundation
 import UFPCore
 
+// MARK: - WebScraper 响应安全限制常量
+
+internal enum WebScraperResponseLimits {
+    /// 单次网页抓取最大响应容量（MB）
+    static let maxResponseMB: Int = 10
+    /// 单次网页抓取最大响应字节数（10 MB），防止恶意超大流触发 OOM
+    static let maxResponseBytes: Int = maxResponseMB * Int(SystemConstants.bytesPerMB)
+}
+
 // MARK: - WebScraper 责任链公共辅助
 
 extension WebScraperHandler {
 
-    /// 执行 HTTP 请求并校验响应状态码与 UTF-8 解码
+    /// 校验 HTTP 响应的重定向落点 SSRF 安全性与响应体大小上限
+    internal static func validateScrapedResponse(_ response: URLResponse, dataByteCount: Int) throws -> HTTPURLResponse {
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw WebScraperProcessor.ScraperError.parsingFailed
+        }
+        if let finalURL = httpResponse.url, !SSRFGuard.isSafeURL(finalURL) {
+            Logger.shared.warning("[WebScraper] SSRF redirect blocked: \(finalURL.host ?? ProcessorConstants.Module.webScraper)")
+            throw WebScraperProcessor.ScraperError.invalidURL
+        }
+        guard dataByteCount <= WebScraperResponseLimits.maxResponseBytes else {
+            throw WebScraperProcessor.ScraperError.parsingFailed
+        }
+        return httpResponse
+    }
+
+    /// 执行 HTTP 请求并校验响应状态码、重定向落点 SSRF 安全性与 UTF-8 解码
     /// - Parameters:
     ///   - request: 已配置的 URLRequest
     ///   - requireStatusCodeOk: 是否要求 HTTP 200，否则抛出 parsingFailed
     /// - Returns: 解码后的 UTF-8 字符串内容
-    /// - Throws: 网络错误或 ScraperError.parsingFailed
+    /// - Throws: 网络错误或 ScraperError.parsingFailed / invalidURL
     func fetchUTF8Content(for request: URLRequest, requireStatusCodeOk: Bool = true) async throws -> String {
         let (data, response) = try await URLSession.shared.data(for: request)
+        let httpResponse = try Self.validateScrapedResponse(response, dataByteCount: data.count)
+
         if requireStatusCodeOk {
-            guard let httpResponse = response as? HTTPURLResponse,
-                  httpResponse.statusCode == SystemConstants.HTTPStatusCode.ok,
+            guard httpResponse.statusCode == SystemConstants.HTTPStatusCode.ok,
                   let content = String(data: data, encoding: .utf8) else {
                 throw WebScraperProcessor.ScraperError.parsingFailed
             }
             return content
         } else {
-            guard let httpResponse = response as? HTTPURLResponse else {
-                throw WebScraperProcessor.ScraperError.parsingFailed
-            }
             let restrictedCodes = ProcessorConstants.WebScraper.restrictedStatusCodes
             if restrictedCodes.contains(httpResponse.statusCode) {
                 Logger.shared.warning(L10n.Ingest.Status.webscraperPaywallDetected(httpResponse.statusCode))
