@@ -138,4 +138,17 @@ final class JSONExtractorTests: XCTestCase {
         let dict = JSONExtractor.extractJSONDictionary(from: text)
         XCTAssertEqual(dict["items"] as? [Int], [1, 2, 3])
     }
+
+    // MARK: - 缺陷 #205 回归：字符串外反斜杠与前置伪花括号占位符容错
+
+    /// 验证字符串外反斜杠不干扰后续引号配对，且 extractJSONDictionary 能跳过前置说明文字中的 `{占位符}`
+    func testExtractJSONDictionarySkipsLeadingPlaceholderBracesAndBackslashOutsideString() {
+        let noisy = #"请按 {schema} 格式输出（注意 \ 转义）：{"status": "ok", "score": 99}"#
+        let dict = JSONExtractor.extractJSONDictionary(from: noisy)
+        XCTAssertEqual(dict["status"] as? String, "ok", "应跳过非法 {schema} 占位符并提取后续合法 JSON 字典")
+        XCTAssertEqual(dict["score"] as? Int, 99)
+
+        let backslashOutsideString = #"{\ "a": "x}y"}"#
+        XCTAssertEqual(JSONExtractor.extractFirstJSONObject(from: backslashOutsideString), backslashOutsideString)
+    }
 }

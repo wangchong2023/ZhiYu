@@ -188,4 +188,30 @@ final class LLMClientSecurityTests: XCTestCase {
             }
         }
     }
+
+    // MARK: - 缺陷 #206 回归：多斜杠/空白 URL 规范化与流式状态码精确映射
+
+    func testNormalizedBaseURL_trimsWhitespaceAndMultipleTrailingSlashes() {
+        let client = LLMClient(baseURL: "  https://api.example.com/v1///  ", apiKey: "sk-test")
+        XCTAssertEqual(client.normalizedBaseURL, "https://api.example.com/v1")
+    }
+
+    func testMapHTTPStatusError_mapsUnauthorizedAndRateLimitedConsistently() {
+        XCTAssertNil(LLMClient.mapHTTPStatusError(statusCode: 200))
+        if case .unauthorized = LLMClient.mapHTTPStatusError(statusCode: 401) {
+            // 预期行为
+        } else {
+            XCTFail("401 必须映射为 LLMError.unauthorized")
+        }
+        if case .rateLimited = LLMClient.mapHTTPStatusError(statusCode: 429) {
+            // 预期行为
+        } else {
+            XCTFail("429 必须映射为 LLMError.rateLimited")
+        }
+        if case .httpError(503) = LLMClient.mapHTTPStatusError(statusCode: 503) {
+            // 预期行为
+        } else {
+            XCTFail("503 必须映射为 LLMError.httpError(503)")
+        }
+    }
 }

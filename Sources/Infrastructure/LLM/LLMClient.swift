@@ -51,9 +51,13 @@ final class LLMClient: LLMClientProtocol, Sendable {
 
     // MARK: - Private Methods
 
-    /// 规范化基础 URL：去除尾部斜杠以确保路径拼接一致性。
-    private var normalizedBaseURL: String {
-        baseURL.hasSuffix("/") ? String(baseURL.dropLast()) : baseURL
+    /// 规范化基础 URL：修剪首尾空白并去除所有尾部斜杠，确保路径拼接与协议校验一致。
+    internal var normalizedBaseURL: String {
+        var trimmed = baseURL.trimmingCharacters(in: .whitespacesAndNewlines)
+        while trimmed.hasSuffix(SystemConstants.Character.slash) {
+            trimmed.removeLast()
+        }
+        return trimmed
     }
 
     // MARK: - Standard Request
@@ -137,12 +141,28 @@ final class LLMClient: LLMClientProtocol, Sendable {
 
         let (bytes, response) = try await URLSession.shared.bytes(for: request)
 
-        guard let httpResponse = response as? HTTPURLResponse,
-              httpResponse.statusCode == UFPCore.SystemConstants.HTTPStatusCode.ok else {
-            throw LLMError.httpError((response as? HTTPURLResponse)?.statusCode ?? -1)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw LLMError.invalidResponse
+        }
+        if let mappedError = Self.mapHTTPStatusError(statusCode: httpResponse.statusCode) {
+            throw mappedError
         }
 
         return bytes
+    }
+
+    /// 将非 200 HTTP 状态码映射为精准业务错误（与非流式路径一致：401 -> unauthorized, 429 -> rateLimited）
+    internal static func mapHTTPStatusError(statusCode: Int) -> LLMError? {
+        if statusCode == UFPCore.SystemConstants.HTTPStatusCode.ok {
+            return nil
+        }
+        if statusCode == UFPCore.SystemConstants.HTTPStatusCode.unauthorized {
+            return .unauthorized
+        }
+        if statusCode == UFPCore.SystemConstants.HTTPStatusCode.rateLimited {
+            return .rateLimited
+        }
+        return .httpError(statusCode)
     }
 
     // MARK: - 辅助方法

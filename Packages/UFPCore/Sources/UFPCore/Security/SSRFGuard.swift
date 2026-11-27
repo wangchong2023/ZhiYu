@@ -27,13 +27,13 @@ public struct SSRFGuard: Sendable {
     /// - Note: 本方法为基础防护，不防御 DNS rebinding（TOCTOU）攻击。
     ///         若威胁模型包含 DNS rebinding，需在调用方解析 DNS 后锁定 IP。
     public static func isSafeURL(_ url: URL) -> Bool {
-        guard let host = url.host?.lowercased() else { return false }
+        guard let host = normalizedHost(from: url) else { return false }
 
-        // 1. 拒绝环回地址（IPv4 字符串精确匹配 + IPv6 归一化字节级检测）
+        // 1. 拒绝环回地址与危险 IPv6（含 ::、::1、IPv4-mapped、fc00::/7、fe80::/10）
         if host == NetworkConstants.Loopback.localhost || host == NetworkConstants.Loopback.loopbackIPv4 {
             return false
         }
-        if isIPv6Loopback(host) {
+        if isIPv6Loopback(host) || isUnsafeIPv6(host) {
             return false
         }
 
@@ -71,6 +71,15 @@ public struct SSRFGuard: Sendable {
 
     // MARK: - IP 格式判断
 
+    /// 提取并规范化 URL 主机名（转小写并剥离 FQDN 尾随点号）
+    private static func normalizedHost(from url: URL) -> String? {
+        guard var host = url.host?.lowercased() else { return nil }
+        while host.hasSuffix(SystemConstants.Character.dot) {
+            host.removeLast()
+        }
+        return host.isEmpty ? nil : host
+    }
+
     /// 判断 host 是否为 IPv6 格式（含冒号或被方括号包裹）
     static func isIPv6Format(_ host: String) -> Bool {
         // 方括号包裹的 IPv6，如 [::1]
@@ -105,6 +114,42 @@ public struct SSRFGuard: Sendable {
                 return false
             }
             return bytes[NetworkConstants.IPv6PrivateRange.lastByteIndex] == NetworkConstants.IPv6PrivateRange.loopbackMarker
+        }
+    }
+
+    /// 字节级检测危险 IPv6 地址：未指定地址 (::)、IPv4-mapped 私有/环回/链路本地地址 (::ffff:a.b.c.d)、
+    /// Unique Local (fc00::/7) 与 Link-Local (fe80::/10)
+    static func isUnsafeIPv6(_ host: String) -> Bool {
+        let cleaned = host.replacingOccurrences(of: "[", with: "")
+            .replacingOccurrences(of: "]", with: "")
+        var address = in6_addr()
+        let result = cleaned.withCString { ptr in
+            inet_pton(AF_INET6, ptr, &address)
+        }
+        guard result == 1 else { return false }
+        return withUnsafeBytes(of: address) { bytes in
+            guard bytes.count == NetworkConstants.IPv6PrivateRange.totalBytes else { return false }
+            // 1. 全零未指定地址 (::)
+            if bytes.allSatisfy({ $0 == 0 }) {
+                return true
+            }
+            // 2. IPv4-mapped IPv6 (::ffff:0:0/96) → 提取末 4 字节委托 IPAddressUtility.isPrivateIPv4
+            let isZeroPrefix = (0..<NetworkConstants.IPv6PrivateRange.v4MappedZeroPrefixCount).allSatisfy { bytes[$0] == 0 }
+            if isZeroPrefix,
+               bytes[NetworkConstants.IPv6PrivateRange.v4MappedIndex1] == NetworkConstants.IPv6PrivateRange.v4MappedMarker,
+               bytes[NetworkConstants.IPv6PrivateRange.v4MappedIndex2] == NetworkConstants.IPv6PrivateRange.v4MappedMarker {
+                let mappedIPv4 = "\(bytes[NetworkConstants.IPv6PrivateRange.v4MappedOctetIndex0]).\(bytes[NetworkConstants.IPv6PrivateRange.v4MappedOctetIndex1]).\(bytes[NetworkConstants.IPv6PrivateRange.v4MappedOctetIndex2]).\(bytes[NetworkConstants.IPv6PrivateRange.v4MappedOctetIndex3])"
+                return IPAddressUtility.isPrivateIPv4(mappedIPv4)
+            }
+            // 3. Unique Local (fc00::/7) 与 Link-Local (fe80::/10) 字节级精确判断
+            if (bytes[0] & NetworkConstants.IPv6PrivateRange.uniqueLocalMask) == NetworkConstants.IPv6PrivateRange.uniqueLocalExpected {
+                return true
+            }
+            if bytes[0] == NetworkConstants.IPv6PrivateRange.linkLocalFirstByte,
+               (bytes[1] & NetworkConstants.IPv6PrivateRange.linkLocalSecondByteMask) == NetworkConstants.IPv6PrivateRange.linkLocalSecondByteExpected {
+                return true
+            }
+            return false
         }
     }
 

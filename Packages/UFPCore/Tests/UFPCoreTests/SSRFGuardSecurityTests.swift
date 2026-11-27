@@ -155,4 +155,30 @@ final class SSRFGuardSecurityTests: XCTestCase {
             XCTAssertFalse(SSRFGuard.isSafeURL(url), "DNS Rebinding 后缀 \(suffix) 必须被拦截")
         }
     }
+
+    // MARK: - 缺陷 #204 回归：IPv4-mapped IPv6、未指定地址 :: 与 FQDN 尾随点绕过拦截
+
+    func testIsSafeURL_ipv4MappedIPv6UnspecifiedAndTrailingDot_rejects() {
+        let bypassURLs = [
+            "http://[::ffff:127.0.0.1]/admin",
+            "http://[::ffff:7f00:1]/admin",
+            "http://[::ffff:169.254.169.254]/latest/meta-data/",
+            "http://[::ffff:10.0.0.1]/internal",
+            "http://[::]/",
+            "http://[0:0:0:0:0:0:0:0]/",
+            "http://localhost./api",
+            "http://server.local./status"
+        ]
+        for urlStr in bypassURLs {
+            guard let url = URL(string: urlStr) else {
+                XCTFail("测试 URL 构造失败: \(urlStr)")
+                continue
+            }
+            XCTAssertFalse(SSRFGuard.isSafeURL(url), "SSRF 绕过地址必须被拦截: \(urlStr)")
+        }
+
+        // 公网 IPv4-mapped IPv6（如 1.1.1.1）与公网 FQDN 尾点（example.com.）应正常放行
+        XCTAssertTrue(SSRFGuard.isSafeURL(URL(string: "https://[::ffff:1.1.1.1]/")!))
+        XCTAssertTrue(SSRFGuard.isSafeURL(URL(string: "https://example.com./")!))
+    }
 }

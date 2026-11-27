@@ -212,21 +212,24 @@
 | **201** | `TaskCenter` 未订阅 `.vaultWillSwitch` 广播导致切换知识库后旧 Vault 任务列表与页面 ID 残留；同时 `trimExcessTasks()` 仅检查 `tasks.last` 是否运行中，若最旧任务卡在 `.running` 会直接 `break` 导致中间大量已完成历史任务永远无法裁剪 | 切换知识库，或最旧任务处于运行态时持续新增/完成后续任务 | 任务中心泄露旧库任务与无效页面链接，或历史任务列表无限膨胀 | **High** | 状态机并发与数据生命周期 | 订阅 `.vaultWillSwitch` 立即 `reset()`；`trimExcessTasks()` 改为 `lastIndex(where: { !isRunningStatus($0.status) })` 跳过运行中任务继续裁剪历史项 | **✅ 已解决** | 是 (任务中心跨库隔离与非阻塞容量裁剪) | 是 (`TaskCenterCapacityTests`) | ✅ 已闭环 |
 | **202** | `TagBubbleRatioCalculator.calculate` 使用 `Int` 减法 `maxVal - minVal` 在极值跨度（`Int.min` ~ `Int.max`）下触发整数溢出崩溃，且未对非法 `defaultRatio`（负数/`>1`/`NaN`）执行 `[0.0, 1.0]` 钳位 | 传入极值计数数组或越界/非有限 `defaultRatio` | 整数溢出崩溃或产出负数/`NaN` 气泡缩放比例导致视图布局异常 | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | 改用 `Double` 差值消除整数溢出，并对 `defaultRatio` 执行有限性校验与 `[0.0, 1.0]` 钳位 | **✅ 已解决** | 是 (数值归一化防溢出与参数钳位) | 是 (`KnowledgeDashboardDeepTests`) | ✅ 已闭环 |
 | **203** | `KnowledgeInsightService` 的每日/每周洞察缓存键仅含日期与语言而未按 Vault 隔离，且 `generateWeeklyInsight` 未校验空库状态，导致切换知识库后直接复用并展示旧库的 AI 周报缓存 | 在多知识库间切换并进入洞察仪表盘（尤其切至新/空知识库） | 跨库串显其他知识库的周报摘要与统计数据，造成隐私串库与数据失真 | **High** | 状态机并发与数据生命周期 | 缓存键拼入当前活跃 Vault 标识（`buildDailyCacheKey` / `buildWeeklyCacheKey`）；空库不再复用 `totalNewPages > 0` 的旧周报缓存 | **✅ 已解决** | 是 (多 Vault 洞察缓存域隔离规范) | 是 (`KnowledgeInsightServiceTests`) | ✅ 已闭环 |
+| **204** | `SSRFGuard.isSafeURL` 未拦截 IPv4-mapped IPv6（如 `[::ffff:127.0.0.1]`、`[::ffff:169.254.169.254]`）、IPv6 未指定地址 `[::]` 以及带 FQDN 尾随点的本地域名（`localhost.`、`server.local.`） | 攻击者使用 IPv4-mapped IPv6、未指定地址 `[::]` 或 FQDN 尾点构造恶意 URL | 绕过 SSRF 防线访问本机环回服务、内网或云元数据端点 | **High** | 架构设计与安全/网络健壮性 | 入口剥离尾随点号；新增 `isUnsafeIPv6` 基于 `inet_pton` 字节级拦截 `::`、IPv4-mapped 私有/环回/链路本地段及 `fc00::/7`、`fe80::/10` | **✅ 已解决** | 是 (SSRF 全栈 IPv6/FQDN 字节级防护) | 是 (`SSRFGuardSecurityTests`) | ✅ 已闭环 |
+| **205** | `JSONExtractor.extractFirstJSONObject` 在引号外遇到反斜杠也会触发 `escape = true` 导致 `inString` 状态机翻转错乱；同时 `extractJSONDictionary` 遇到前置说明文字中的 `{占位符}` 即直接解析失败返回空字典 | LLM 响应含前置 `{schema}` 占位符或字符串外反斜杠 | 后续合法 JSON 对象无法被提取，导致结构化响应解析失败 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 将反斜杠转义严格限定在 `inString` 内部；`extractJSONDictionary` 循环扫描后续 `{...}` 候选块直到成功解析出合法 JSON 字典 | **✅ 已解决** | 是 (JSON 提取器状态机与多候选容错) | 是 (`JSONExtractorTests`) | ✅ 已闭环 |
+| **206** | `LLMClient.sendStreamingRequest` 将 401/429 统统抛为通用 `.httpError(code)` 而非 `.unauthorized`/`.rateLimited`；且 `normalizedBaseURL` 未修剪空白且仅去除单个尾部斜杠 | 流式对话触发密钥失效(401)/限流(429)，或用户输入带前后空格/多斜杠的 BaseURL | 上层无法触发重新配置密钥或限流提示，或合法 BaseURL 误报 `invalidURL` | **High** | 架构设计与安全/网络健壮性 | 抽取 `mapHTTPStatusError(statusCode:)` 统一流式 401/429 业务错误映射；`normalizedBaseURL` 修剪首尾空白并剥离全部尾部斜杠 | **✅ 已解决** | 是 (LLM 流式与非流式错误码及 URL 规范化对齐) | 是 (`LLMClientSecurityTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**203 项**
+- **收录问题总数**：**206 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：56 项 (27.6%)
-  - 状态机并发与数据生命周期：50 项 (24.6%)
-  - 架构设计与安全/网络健壮性：56 项 (27.6%)
-  - UI/交互与防御性缺陷：17 项 (8.4%)
-  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (11.8%)
+  - 功能缺陷与核心算法/解析器/数据完整性：57 项 (27.7%)
+  - 状态机并发与数据生命周期：50 项 (24.3%)
+  - 架构设计与安全/网络健壮性：58 项 (28.2%)
+  - UI/交互与防御性缺陷：17 项 (8.3%)
+  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (11.7%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：112 项 (55.2%)
-  - **Medium（功能异常/算法边界/性能损耗）**：64 项 (31.5%)
-  - **Low（样式异味/边界校验/门禁规范）**：27 项 (13.3%)
-- **修复闭环率**：**100% (203/203 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：115 项 (55.8%)
+  - **Medium（功能异常/算法边界/性能损耗）**：64 项 (31.1%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (13.1%)
+- **修复闭环率**：**100% (206/206 项已修复闭环)**
 
