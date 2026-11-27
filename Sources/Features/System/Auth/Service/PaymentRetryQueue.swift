@@ -64,17 +64,24 @@ actor PaymentRetryQueue {
     ///   - transactionId: StoreKit 交易 ID（后端幂等去重）
     ///   - orderNo: 预建订单号（可选）
     func enqueue(productId: String, receiptData: String, transactionId: String, orderNo: String? = nil) {
-        pending[transactionId] = PendingVerify(
-            productId: productId,
-            receiptData: receiptData,
-            transactionId: transactionId,
+        let trimmedTx = transactionId.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedProduct = productId.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedReceipt = receiptData.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedTx.isEmpty, !trimmedProduct.isEmpty, !trimmedReceipt.isEmpty else {
+            Logger.shared.warning("[PaymentRetryQueue] 拒绝入队空交易或空凭证记录")
+            return
+        }
+        pending[trimmedTx] = PendingVerify(
+            productId: trimmedProduct,
+            receiptData: trimmedReceipt,
+            transactionId: trimmedTx,
             orderNo: orderNo,
             attemptCount: 0,
             lastAttemptAt: nil
         )
         persist()
         scheduleNextAttempt()
-        Logger.shared.info("[PaymentRetryQueue] 支付验证失败已入队待重试 transactionId=\(transactionId)")
+        Logger.shared.info("[PaymentRetryQueue] 支付验证失败已入队待重试 transactionId=\(trimmedTx)")
     }
 
     /// 启动重试调度（App 启动时调用，用于恢复上次未完成的重试）
@@ -95,10 +102,12 @@ actor PaymentRetryQueue {
             do {
                 try await Task.sleep(for: .seconds(delay))
             } catch {
+                // 取消时必须同步清理 scheduledTask，防止僵尸非 nil 锁死后续所有入队与重启调度
+                await self?.clearScheduledTask(reschedule: false)
                 return
             }
             await self?.performRetry(transactionId: transactionId)
-            await self?.clearScheduledTask()
+            await self?.clearScheduledTask(reschedule: true)
         }
     }
 
@@ -109,9 +118,21 @@ actor PaymentRetryQueue {
             .min { ($0.value.lastAttemptAt ?? .distantPast) < ($1.value.lastAttemptAt ?? .distantPast) }
     }
 
-    private func backoffDelay(for attemptCount: Int) -> TimeInterval {
-        let index = min(attemptCount, backoffSeconds.count - 1)
+    internal func backoffDelay(for attemptCount: Int) -> TimeInterval {
+        guard !backoffSeconds.isEmpty else { return 0 }
+        let index = max(0, min(attemptCount, backoffSeconds.count - 1))
         return backoffSeconds[index]
+    }
+
+    /// 当前待重试条目数量
+    internal var pendingCount: Int { pending.count }
+
+    /// 取消当前调度并清空全部待重试队列（用于登出或重置支付状态）
+    func cancelAllPending() {
+        scheduledTask?.cancel()
+        scheduledTask = nil
+        pending.removeAll()
+        persist()
     }
 
     // MARK: - 重试执行
@@ -148,15 +169,14 @@ actor PaymentRetryQueue {
                 Logger.shared.error("[PaymentRetryQueue] 支付验证重试达到上限，放弃 transactionId=\(transactionId)")
             } else {
                 Logger.shared.warning("[PaymentRetryQueue] 支付验证重试失败（第 \(item.attemptCount)/\(maxAttempts) 次），稍后继续重试")
-                scheduleNextAttempt()
             }
         }
     }
 
-    /// 清空当前调度 Task，并在队列仍有待重试项时继续调度
-    private func clearScheduledTask() {
+    /// 清空当前调度 Task，并在需要且队列仍有待重试项时继续调度
+    private func clearScheduledTask(reschedule: Bool = true) {
         scheduledTask = nil
-        if pending.contains(where: { $0.value.attemptCount < maxAttempts }) {
+        if reschedule, pending.contains(where: { $0.value.attemptCount < maxAttempts }) {
             scheduleNextAttempt()
         }
     }

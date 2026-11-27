@@ -42,7 +42,9 @@ actor LinkService {
     func backlinks(for pageID: UUID, in pages: [KnowledgePage]) -> [KnowledgePage] {
         guard let page = pages.first(where: { $0.id == pageID }) else { return [] }
         return pages.filter { p in
-            p.relatedPageIDs.contains(pageID) ||
+            // 排除页面自身，防止自引用 [[本页标题]] 产生循环反向链接
+            guard p.id != pageID else { return false }
+            return p.relatedPageIDs.contains(pageID) ||
             p.outgoingLinks.contains(where: { link in
                 link.lowercased() == page.title.lowercased() ||
                 page.aliases.contains(where: { $0.lowercased() == link.lowercased() })

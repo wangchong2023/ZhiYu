@@ -41,6 +41,8 @@ final class MultipeerCollaborationProvider: CollaborationProviderProtocol {
     /// - Parameter roomName: roomName
     /// - Parameter userName: userName
     func startHosting(roomName: String, userName: String) {
+        listener?.cancel()
+        listener = nil
         let peerID = makePeerID(userName: userName)
         self.myPeerID = peerID
 
@@ -75,6 +77,8 @@ final class MultipeerCollaborationProvider: CollaborationProviderProtocol {
     /// 启动Browsing
     /// - Parameter userName: userName
     func startBrowsing(userName: String) {
+        browser?.cancel()
+        browser = nil
         let peerID = makePeerID(userName: userName)
         self.myPeerID = peerID
 
@@ -105,6 +109,8 @@ final class MultipeerCollaborationProvider: CollaborationProviderProtocol {
     /// - Parameter room: room
     func joinRoom(_ room: DiscoveredRoom) {
         guard let endpoint = room.platformPeer as? NWEndpoint else { return }
+        pendingJoinConnection?.cancel()
+        pendingJoinConnection = nil
         let roomID = room.id
 
         let parameters = makePeerToPeerParameters()
@@ -142,10 +148,10 @@ final class MultipeerCollaborationProvider: CollaborationProviderProtocol {
             return
         }
         for connection in connections {
-            connection.send(content: data, completion: .contentProcessed { error in
+            connection.send(content: data, completion: .contentProcessed { [weak self] error in
                 if let error {
                     runOnMainSync {
-                        self.delegate?.providerDidEncounterError(error.localizedDescription)
+                        self?.delegate?.providerDidEncounterError(error.localizedDescription)
                     }
                 }
             })

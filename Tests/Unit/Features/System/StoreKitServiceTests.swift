@@ -69,4 +69,25 @@ final class StoreKitServiceTests: XCTestCase {
     // MARK: - restorePurchases
     // 注：restorePurchases 调用 StoreKit.AppStore.sync()，在模拟器无沙盒账号时会挂起超时。
     // 此测试在 CI 模拟器环境不可靠，跳过。真实环境验证依赖沙盒账号配置。
+
+    // MARK: - PaymentRetryQueue 边界防护（缺陷 #178）
+
+    func testPaymentRetryQueueGuardsNegativeAttemptAndBlankEnqueue() async {
+        let queue = PaymentRetryQueue.shared
+        await queue.cancelAllPending()
+
+        // 1. 负数 attemptCount 不得触发数组负索引越界崩溃，钳位至首档退避
+        let negDelay = await queue.backoffDelay(for: -5)
+        let firstDelay = await queue.backoffDelay(for: 0)
+        XCTAssertEqual(negDelay, firstDelay, "负数 attemptCount 应安全钳位至 0 档退避")
+
+        // 2. 空交易 ID / 空商品 ID / 空凭证必须被拒绝入队
+        await queue.enqueue(productId: "pro.monthly", receiptData: "receipt", transactionId: "   ")
+        await queue.enqueue(productId: "", receiptData: "receipt", transactionId: "tx-1")
+        await queue.enqueue(productId: "pro.monthly", receiptData: " ", transactionId: "tx-2")
+        let count = await queue.pendingCount
+        XCTAssertEqual(count, 0, "空交易或空凭证记录不得入队")
+
+        await queue.cancelAllPending()
+    }
 }

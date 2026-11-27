@@ -186,21 +186,24 @@
 | **175** | `LLMContextBuilder.buildRelevantContext` 未对纯空白 `query` 做前置拦截（导致对空白生成随机向量误召回无关笔记），且当 `reranker.rerank` 将所有低相关候选剪枝为空后仍继续拼接空标题上下文 | 传入纯空白查询或重排阶段全部候选未达阈值被剪枝 | 浪费上下文 Token 并向 LLM 注入无关随机片段或空模板 | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | 抽取 `emptyContextResult` 复用，对空白 `query` 与重排空结果立即早退返回无数据上下文 | **✅ 已解决** | 是 (RAG 检索前后置空值早退守卫) | 是 (`LLMContextBuilderEdgeCaseTests`) | ✅ 已闭环 |
 | **176** | `SearchStore` 未订阅 `.vaultWillSwitch` 通知，从 Vault A 切换到 Vault B 后搜索框残留旧关键词、旧 `searchResults`（含私密笔记标题与内容）与 `lastSearchDiagnostic`，且防抖中的 `searchTask` 未取消 | 在 Vault A 执行搜索后切换至 Vault B | 跨 Vault 搜索结果与私密笔记标题泄露 | **High** | 状态机并发与数据生命周期 | `SearchStore.init()` 订阅 `.vaultWillSwitch` 通知并立即调用 `clearAll()` 取消防抖任务与清空结果 | **✅ 已解决** | 是 (多 Vault 全局 Store 切换清理) | 是 (`SearchStoreTests`) | ✅ 已闭环 |
 | **177** | `SynthesisStore` 未订阅 `.vaultWillSwitch` 通知，在 Vault A 中合成失败或生成中的 `synthesisStates` 状态在切换到 Vault B 后持续残留 | 在 Vault A 触发合成错误或生成态后切换至 Vault B | 新笔记本实验室界面错误展示旧笔记本的报错/加载状态 | **Medium** | 状态机并发与数据生命周期 | `SynthesisStore.init()` 订阅 `.vaultWillSwitch` 调用 `resetTransientStatesForVaultSwitch()` 将所有类型状态复位为 `.idle` | **✅ 已解决** | 是 (多 Vault 切换瞬态状态复位) | 是 (`SynthesisStoreTests`) | ✅ 已闭环 |
+| **178** | `PaymentRetryQueue` 存在三处并发与边界缺陷：① `scheduleNextAttempt()` 睡眠被取消时未清空 `scheduledTask` 导致僵尸非 `nil` 永久锁死后续重试；② `backoffDelay(for:)` 仅做上界 `min` 未做下界 `max(0, ...)`，持久化数据异常出现负 `attemptCount` 时数组越界闪退；③ `enqueue` 未拦截空白 `transactionId`/`productId`/`receiptData` | 支付重试调度被取消、持久化文件损坏或传入空交易参数 | 支付验证重试队列永久停摆或触发数组越界崩溃 | **High** | 状态机并发与数据生命周期 | 取消分支先执行 `clearScheduledTask(reschedule: false)`，`backoffDelay` 补齐 `max(0, ...)` 下界钳位，`enqueue` 增加三字段非空校验 | **✅ 已解决** | 是 (Actor 调度 Task 取消清理与数组上下界钳位) | 是 (`StoreKitServiceTests`) | ✅ 已闭环 |
+| **179** | `MultipeerCollaborationProvider` 重复调用 `startHosting`/`startBrowsing`/`joinRoom` 时未先取消旧的 `NWListener`/`NWBrowser`/`NWConnection` 导致端口与扫描会话永久泄露，且 `broadcast` 完成回调强捕获 `self` | 局域网协同重复开启主机/扫描/加入房间或断开广播 | 端口占用、重复 Bonjour 广播与回调强引用泄露 | **High** | 状态机并发与数据生命周期 | 三个入口启动前先 `cancel()` 并置空旧句柄，`broadcast` 回调改为 `[weak self]` | **✅ 已解决** | 是 (Network Framework 句柄替换前先取消规范) | 是 (`MultipeerCollaborationSessionTests`) | ✅ 已闭环 |
+| **180** | `LinkService.backlinks(for:in:)` 未排除 `p.id == pageID` 页面自身，当笔记正文自引用 `[[本页标题]]` 或 `relatedPageIDs` 含自身时返回循环反向链接 | 笔记内包含指向自身标题的双向链接 | 反向链接面板展示当前页面自身导致循环跳转 | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | 过滤逻辑前置 `guard p.id != pageID else { return false }` 排除自引用 | **✅ 已解决** | 是 (图/双向链接查询自环排除规范) | 是 (`LinkServiceEdgeCaseTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**177 项**
+- **收录问题总数**：**180 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：42 项 (23.7%)
-  - 状态机并发与数据生命周期：42 项 (23.7%)
-  - 架构设计与安全/网络健壮性：52 项 (29.4%)
-  - UI/交互与防御性缺陷：17 项 (9.6%)
-  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (13.6%)
+  - 功能缺陷与核心算法/解析器/数据完整性：43 项 (23.9%)
+  - 状态机并发与数据生命周期：44 项 (24.4%)
+  - 架构设计与安全/网络健壮性：52 项 (28.9%)
+  - UI/交互与防御性缺陷：17 项 (9.4%)
+  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (13.3%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：91 项 (51.4%)
-  - **Medium（功能异常/算法边界/性能损耗）**：59 项 (33.3%)
-  - **Low（样式异味/边界校验/门禁规范）**：27 项 (15.3%)
-- **修复闭环率**：**100% (177/177 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：93 项 (51.7%)
+  - **Medium（功能异常/算法边界/性能损耗）**：60 项 (33.3%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (15.0%)
+- **修复闭环率**：**100% (180/180 项已修复闭环)**
 

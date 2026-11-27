@@ -69,4 +69,25 @@ final class LinkServiceEdgeCasesTests: XCTestCase {
         let sharedTagCount = tags.filter { $0.tag == "shared" }.count
         XCTAssertEqual(sharedTagCount, 1, "shared tag should appear only once in allTags")
     }
+
+    // MARK: - 自引用反向链接防循环（缺陷 #180）
+
+    func testBacklinksExcludesSelfReferencingPage() async {
+        let selfPageID = UUID()
+        let selfPage = KnowledgePage(
+            id: selfPageID,
+            title: "递归概念",
+            pageType: .concept,
+            content: "参考 [[递归概念]]",
+            relatedPageIDs: [selfPageID]
+        )
+        let otherPage = KnowledgePage(
+            title: "外部引用页",
+            pageType: .concept,
+            content: "引用了 [[递归概念]]"
+        )
+
+        let links = await linkService.backlinks(for: selfPageID, in: [selfPage, otherPage])
+        XCTAssertEqual(links.map(\.title), ["外部引用页"], "backlinks 必须排除页面自身，避免自引用循环跳转")
+    }
 }
