@@ -78,4 +78,25 @@ final class IngestServiceConceptLinkingTests: XCTestCase {
         let result = IngestService.linkConceptsSafely(content: content, concepts: concepts)
         XCTAssertEqual(result, "We use [[Vision Transformer]] and [[Transformer]] in deep learning.")
     }
+
+    // MARK: - 6. 缺陷 #273 回归：纯空白概念/目录过滤防污染
+
+    func testLinkConceptsSafely_IgnoresWhitespaceOnlyConceptsAndRegularFileFilterExcludesDirectories() throws {
+        let content = "Hello world\nNext line"
+        let linked = IngestService.linkConceptsSafely(content: content, concepts: [" ", "\n\t", ""])
+        XCTAssertEqual(linked, content, "纯空白概念不得触发 [[ ]] 注入污染")
+
+        let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent("ingest_filter_\(UUID().uuidString)", isDirectory: true)
+        let subDir = tempDir.appendingPathComponent("SubFolder", isDirectory: true)
+        let fileA = tempDir.appendingPathComponent("noteA.md")
+        let fileB = subDir.appendingPathComponent("noteB.txt")
+        try FileManager.default.createDirectory(at: subDir, withIntermediateDirectories: true)
+        try Data("a".utf8).write(to: fileA)
+        try Data("b".utf8).write(to: fileB)
+        defer { try? FileManager.default.removeItem(at: tempDir) }
+
+        let resolved = IngestService.regularFileURLs(in: tempDir) ?? []
+        XCTAssertEqual(resolved.count, 2, "regularFileURLs 必须排除子目录条目，仅返回常规文件")
+        XCTAssertFalse(resolved.contains(where: { $0.lastPathComponent == "SubFolder" }))
+    }
 }

@@ -41,15 +41,24 @@ public final class LintService: Sendable {
     /// Threshold (in days) after which an active page is considered stale.
     private static let stalePageThresholdDays = 30
 
+    /// 归一化链接或标题查找键（去首尾空白并转小写）
+    private static func normalizedKey(_ raw: String) -> String {
+        raw.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    }
+
     /// Run all lint checks and return the list of issues found.
     func runLint(pages: [KnowledgePage], linkService _: LinkService) async -> [LintIssue] {
         var issues: [LintIssue] = []
 
-        // 1. 性能预优化：构建标题与别名查找索引 (使用 uniquingKeysWith 避免因重复标题导致的崩溃)
-        var titleMap = Dictionary(pages.map { ($0.title.lowercased(), $0) }, uniquingKeysWith: { first, _ in first })
+        // 1. 性能预优化：构建标题与别名查找索引 (使用 uniquingKeysWith 避免因重复标题导致的崩溃，跳过空白键)
+        let titlePairs = pages.compactMap { page -> (String, KnowledgePage)? in
+            let key = Self.normalizedKey(page.title)
+            return key.isEmpty ? nil : (key, page)
+        }
+        var titleMap = Dictionary(titlePairs, uniquingKeysWith: { first, _ in first })
         for page in pages {
             for alias in page.aliases {
-                let aliasKey = alias.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+                let aliasKey = Self.normalizedKey(alias)
                 if !aliasKey.isEmpty && titleMap[aliasKey] == nil {
                     titleMap[aliasKey] = page
                 }
@@ -58,7 +67,8 @@ public final class LintService: Sendable {
         var incomingLinksCount: [UUID: Int] = [:]
         for page in pages {
             for link in page.outgoingLinks {
-                if let target = titleMap[link.lowercased()], target.id != page.id {
+                let linkKey = Self.normalizedKey(link)
+                if !linkKey.isEmpty, let target = titleMap[linkKey], target.id != page.id {
                     incomingLinksCount[target.id, default: 0] += 1
                 }
             }
@@ -104,38 +114,49 @@ public final class LintService: Sendable {
         return issues
     }
 
-    /// 检查循环引用 (A -> B -> A)
+    /// 检查循环引用 (A -> B -> A，支持别名与归一化标题反向匹配)
     private func checkCircularReferences(pages: [KnowledgePage], titleMap: [String: KnowledgePage]) -> [LintIssue] {
         var issues: [LintIssue] = []
         // Bug #127 修复：用 Set 去重，避免同一环被报告两次
         var reportedPairs: Set<String> = []
         for pageA in pages {
             for linkTitle in pageA.outgoingLinks {
-                if let pageB = titleMap[linkTitle.lowercased()], pageB.id != pageA.id {
-                    if pageB.outgoingLinks.contains(where: { $0.lowercased() == pageA.title.lowercased() }) {
-                        // 按 id 排序生成唯一 key，避免 A→B 和 B→A 重复
-                        let pairKey = [pageA.id.uuidString, pageB.id.uuidString].sorted().joined()
-                        guard !reportedPairs.contains(pairKey) else { continue }
-                        reportedPairs.insert(pairKey)
-                        issues.append(LintIssue(
-                            severity: .info,
-                            type: .cycle,
-                            pageID: pageA.id,
-                            message: String(format: L10n.Lint.cycleMessage, pageA.title, pageB.title),
-                            suggestion: L10n.Lint.cycleSuggestion
-                        ))
-                    }
+                let linkKey = Self.normalizedKey(linkTitle)
+                guard !linkKey.isEmpty,
+                      let pageB = titleMap[linkKey],
+                      pageB.id != pageA.id else { continue }
+                let linksBackToA = pageB.outgoingLinks.contains { reverseLink in
+                    let reverseKey = Self.normalizedKey(reverseLink)
+                    return !reverseKey.isEmpty && titleMap[reverseKey]?.id == pageA.id
+                }
+                if linksBackToA {
+                    // 按 id 排序生成唯一 key，避免 A→B 和 B→A 重复
+                    let pairKey = [pageA.id.uuidString, pageB.id.uuidString].sorted().joined()
+                    guard !reportedPairs.contains(pairKey) else { continue }
+                    reportedPairs.insert(pairKey)
+                    issues.append(LintIssue(
+                        severity: .info,
+                        type: .cycle,
+                        pageID: pageA.id,
+                        message: String(format: L10n.Lint.cycleMessage, pageA.title, pageB.title),
+                        suggestion: L10n.Lint.cycleSuggestion
+                    ))
                 }
             }
         }
         return issues
     }
 
-    /// 检查断裂链接
+    /// 检查断裂链接（忽略纯空白链接，并对同页指向相同缺失目标的大小写等价断链去重）
     private func checkBrokenLinks(pages: [KnowledgePage], titleMap: [String: KnowledgePage]) -> [LintIssue] {
         var issues: [LintIssue] = []
         for page in pages {
-            for link in page.outgoingLinks where titleMap[link.lowercased()] == nil {
+            var seenTargets: Set<String> = []
+            for link in page.outgoingLinks {
+                let linkKey = Self.normalizedKey(link)
+                guard !linkKey.isEmpty,
+                      titleMap[linkKey] == nil,
+                      seenTargets.insert(linkKey).inserted else { continue }
                 issues.append(LintIssue(
                     severity: .error,
                     type: .brokenLink,
@@ -179,12 +200,13 @@ public final class LintService: Sendable {
         return issues
     }
 
-    /// 检查重名的页面
+    /// 检查重名的页面（归一化首尾空白并跳过空白未命名草稿）
     private func checkDuplicateTitles(pages: [KnowledgePage]) -> [LintIssue] {
         var issues: [LintIssue] = []
         var titleGroups: [String: [KnowledgePage]] = [:]
         for page in pages {
-            let key = page.title.lowercased()
+            let key = Self.normalizedKey(page.title)
+            guard !key.isEmpty else { continue }
             titleGroups[key, default: []].append(page)
         }
 

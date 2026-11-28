@@ -28,41 +28,66 @@ final class LabAudioRecorder: NSObject, ObservableObject, AVAudioRecorderDelegat
 
     private var audioRecorder: AVAudioRecorder?
     private var meterTimer: Timer?
-    private var startTime: Date?
+    private var startUptime: TimeInterval?
+    /// 异步激活音频会话/创建录音器期间的防重入锁与代际令牌，防止连击并发启动或中途取消后后台偷跑
+    private var isPreparingRecording: Bool = false
+    private var recordingGeneration: UInt64 = 0
 
     private override init() {
         super.init()
     }
 
-    /// 录音时长格式化字符串
-    var durationFormatted: String {
-        let mins = Int(recordingDuration) / FeatureConstants.LabMultimodal.secondsPerMinute
-        let secs = Int(recordingDuration) % FeatureConstants.LabMultimodal.secondsPerMinute
-        let ms = Int((recordingDuration.truncatingRemainder(dividingBy: 1.0)) * FeatureConstants.LabMultimodal.decisecondMultiplier)
+    /// 格式化录音时长（对负数或非有限时长安全钳位为 `00:00.0`，防止时钟异常产生负号错位）
+    internal static func formatDuration(_ duration: TimeInterval) -> String {
+        let clamped = (duration.isFinite && duration > 0) ? duration : 0
+        let mins = Int(clamped) / FeatureConstants.LabMultimodal.secondsPerMinute
+        let secs = Int(clamped) % FeatureConstants.LabMultimodal.secondsPerMinute
+        let ms = Int((clamped.truncatingRemainder(dividingBy: 1.0)) * FeatureConstants.LabMultimodal.decisecondMultiplier)
         return String(format: "%02d:%02d.%d", mins, secs, ms)
     }
 
-    /// 启动麦克风录音
+    /// 录音时长格式化字符串
+    var durationFormatted: String {
+        Self.formatDuration(recordingDuration)
+    }
+
+    /// 启动麦克风录音（带异步准备期防重入与代际取消校验）
     func startRecording() async {
-        guard !isRecording else { return }
+        guard !isRecording && !isPreparingRecording else { return }
+        isPreparingRecording = true
+        recordingGeneration &+= 1
+        let capturedGeneration = recordingGeneration
+        defer { isPreparingRecording = false }
 
         guard await AppAudioSessionBridge.requestAndActivateRecordSession() else {
-            hasPermission = false
+            if recordingGeneration == capturedGeneration {
+                hasPermission = false
+            }
             return
         }
+        guard recordingGeneration == capturedGeneration else { return }
         hasPermission = true
 
         let tempDir = FileManager.default.temporaryDirectory
         let fileURL = tempDir.appendingPathComponent("lab_recording_\(UUID().uuidString).wav")
         if let recorder = await setupAudioRecorderAsync(fileURL: fileURL) {
+            guard recordingGeneration == capturedGeneration else {
+                // 等待初始化期间已调用 stopRecording，立即停止刚创建的孤儿录音器并清理临时文件
+                recorder.stop()
+                try? FileManager.default.removeItem(at: fileURL)
+                AppAudioSessionBridge.deactivateRecordSession()
+                return
+            }
             recorder.delegate = self
             self.audioRecorder = recorder
+        } else if recordingGeneration != capturedGeneration {
+            return
         }
 
         isRecording = true
         recordedFileURL = fileURL
         recordingDuration = 0.0
-        startTime = Date()
+        startUptime = ProcessInfo.processInfo.systemUptime
         startMeterTimer()
     }
 
@@ -125,16 +150,18 @@ final class LabAudioRecorder: NSObject, ObservableObject, AVAudioRecorderDelegat
         levels.append(currentLevel)
         normalizedPowerLevels = levels
 
-        if let start = startTime {
-            recordingDuration = Date().timeIntervalSince(start)
+        if let start = startUptime {
+            recordingDuration = max(0, ProcessInfo.processInfo.systemUptime - start)
         }
     }
 
     /// 停止录音并返回音频文件 URL
     func stopRecording() -> URL? {
+        recordingGeneration &+= 1
         guard isRecording else { return recordedFileURL }
         meterTimer?.invalidate()
         meterTimer = nil
+        startUptime = nil
 
         let activeRecorder = audioRecorder
         self.audioRecorder = nil

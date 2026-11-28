@@ -199,4 +199,12 @@ final class ModelLabMultimodalTests: XCTestCase {
         XCTAssertEqual(recorder.normalizedPowerLevels.count, FeatureConstants.ModelLabSimulation.waveformBarCount)
         XCTAssertEqual(recorder.durationFormatted, "00:00.0")
     }
+
+    @MainActor
+    func testAudioRecorderDurationFormattingClampsNegativeAndNonFiniteValues() {
+        XCTAssertEqual(LabAudioRecorder.formatDuration(-12.5), "00:00.0", "负时长必须钳位为 00:00.0")
+        XCTAssertEqual(LabAudioRecorder.formatDuration(.nan), "00:00.0", "NaN 时长必须钳位为 00:00.0")
+        XCTAssertEqual(LabAudioRecorder.formatDuration(.infinity), "00:00.0", "Infinity 时长必须钳位为 00:00.0")
+        XCTAssertEqual(LabAudioRecorder.formatDuration(65.4), "01:05.4")
+    }
 }

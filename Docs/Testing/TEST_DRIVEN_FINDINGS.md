@@ -281,21 +281,24 @@
 | **270** | `PromptTemplateEngine` 存在二次模板注入与缓存路径清洗缺口：`parse(template:with:)` 采用多轮字典循环 `replacingOccurrences`，用户输入值含 `{{otherKey}}` 会被二次展开泄露内部变量且顺序非确定；`sanitizeFilename`/`sanitizeVersion` 未剥离控制字符、冒号与前导 `.` | 模板变量字典包含多键且某用户输入值含 `{{...}}` 占位符，或 skillId/version 含控制字符/前导点 | 跨槽位二次模板注入泄露敏感变量、缓存文件出现控制字符或隐藏文件 | **High** | 架构设计与安全/网络健壮性 | 重构 `parse` 为正则 `\{\{([^{}]+)\}\}` 单次扫描插值（Single-Pass）；`sanitizeFilename`/`sanitizeVersion` 过滤控制字符/换行/冒号与前导 `.` 并提供空串兜底 | **✅ 已解决** | 是 (模板引擎单次扫描防二次注入与缓存路径清洗) | 是 (`PromptTemplateEngineTests`) | ✅ 已闭环 |
 | **271** | `EmbeddingManager` 存在损坏浮点向量污染与切库缓存回写竞态：`decodeFloatVector` 未校验 `allSatisfy(\.isFinite)` 允许 `NaN`/`Infinity` 损坏向量进入缓存污染余弦相似度排序；`loadInitialCache` 缺少代次守卫，切库触发 `clearCache()` 后挂起的旧库查询结果仍会回写污染新 Vault 向量缓存 | 磁盘向量数据损坏含 `NaN`/`Infinity`，或冷启动/重载期间快速切换 Vault | 语义检索相似度变 `NaN` 排序错乱、跨 Vault 向量缓存泄露 | **High** | 状态机并发与数据生命周期 | `decodeFloatVector` 增加 `vector.allSatisfy(\.isFinite)` 守卫拒绝损坏向量；引入 `cacheGeneration` 代次计数并在 `clearCache()` 递增、`loadInitialCache` 恢复点校验代次一致 | **✅ 已解决** | 是 (向量反序列化有限性校验与切库缓存代次隔离) | 是 (`EmbeddingManagerCrashResistanceTests`) | ✅ 已闭环 |
 | **272** | `AISynthesisService` 存在取消语义被吞与孤立 `TaskCenter` 割裂：`generateQuiz`/`generateInfographic`/`executeSynthesisPipeline` 使用 `try?` 静默吞掉 `CancellationError`，导致任务取消后仍走本地降级返回伪成功结果；`init` 私有创建孤立 `TaskCenter` 实例而非复用 `@Dependency(\.taskCenter)`，导致 `synthesize` 进度无法在全局任务中心显示且冗余订阅全局通知 | 合成任务执行中被用户取消或切库取消，或触发 `synthesize` 统一入口更新进度 | 取消的合成任务仍返回降级伪结果违背结构化并发语义、全局任务中心状态割裂与多余订阅 | **High** | 状态机并发与数据生命周期 | 抽取 `generateAllowingFallback` 显式检测并重抛 `CancellationError`（仅对真实非取消异常降级）；移除 `init` 私有 `TaskCenter`，改为通过 `@Dependency(\.taskCenter)` 对齐全局任务中心 | **✅ 已解决** | 是 (合成管道 CancellationError 显式传播与全局 TaskCenter 对齐) | 是 (`AISynthesisServicePureLogicTests`) | ✅ 已闭环 |
+| **273** | `IngestService` 存在四重边界与并发缺陷：`ingestFolder` 目录枚举未过滤子目录导致把文件夹当作文件摄入并污染进度分母，且取消时仍把任务标记为 `.completed`、空目录仍创建幽灵任务；`ingestDocument` 放行纯空白文档；`extractConcepts`/`linkConceptsSafely` 未拦截纯空白标题（`[[   ]]` 污染） | 批量导入嵌套子目录、取消导入任务、导入纯空白文件或含空白标题页面 | 目录被误当文件、任务状态虚标完成、空文档与 `[[   ]]` 垃圾双链污染知识库 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 抽取 `regularFileURLs(in:)` 严格过滤常规文件并早退空目录；`withTaskGroup` 校验 `Task.isCancelled` 改调 `failTask`；`ingestDocument` 与概念链接过滤纯空白文本与概念 | **✅ 已解决** | 是 (文件夹枚举正则过滤、取消状态保真与空白概念拦截) | 是 (`IngestServiceConceptLinkingTests`) | ✅ 已闭环 |
+| **274** | `LintService` 存在四重图谱巡检边界缺陷：`checkBrokenLinks` 未对同页等价缺失目标去重且对纯空白链接误报断链；`checkCircularReferences` 未识别通过页面别名（`aliases`）构成的循环引用；`titleMap`/`checkDuplicateTitles` 未归一化标题与链接首尾空白并会将空白未命名草稿误判为重名页面 | 同一页多次引用大小写差异缺失链接、存在 `[[别名]]` 双向循环、或存在多篇未命名草稿 | 重复报错刷屏、漏报别名循环引用、`[[ 标题 ]]` 误报断链与空白草稿误报重名 | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | 抽取 `normalizedKey` 统一 trim+lowercase 归一化；`checkBrokenLinks` 按页内集合去重并跳过空白；`checkCircularReferences` 通过 `titleMap` 匹配含别名的回链；`checkDuplicateTitles` 跳过空白标题 | **✅ 已解决** | 是 (知识库巡检归一化键、同页断链去重与别名成环识别) | 是 (`LintServiceTests`) | ✅ 已闭环 |
+| **275** | `LabAudioRecorder` 存在异步准备期并发竞态与墙上时钟倒退缺陷：`startRecording` 在 `requestAndActivateRecordSession` 与 `setupAudioRecorderAsync` 两次 `await` 挂起期间 `isRecording` 仍为 `false`，连击触发双录音器并存，且中途 `stopRecording` 无法阻断异步回调后台偷跑；计量使用 `Date()` 在时钟回拨时产生负时长与负号错位格式 | 权限弹窗等待或录音初始化期间双击录音/点停止，或录音中发生系统时钟回拨 | 幽灵后台录音器泄漏、连击覆盖文件崩溃、界面显示 `-01:-05.-3` 异常时长 | **High** | 状态机并发与数据生命周期 | 增加 `isPreparingRecording` 防重入锁与 `recordingGeneration` 代际令牌，过时回调自动销毁孤儿录音器；计时改用单调递增 `systemUptime` 并新增 `formatDuration` 钳位负数与 NaN/Infinity | **✅ 已解决** | 是 (异步硬件初始化代际守卫与单调时钟录音计时) | 是 (`ModelLabMultimodalTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**272 项**
+- **收录问题总数**：**275 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：77 项 (28.3%)
-  - 状态机并发与数据生命周期：64 项 (23.5%)
-  - 架构设计与安全/网络健壮性：90 项 (33.1%)
-  - UI/交互与防御性缺陷：17 项 (6.3%)
-  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (8.8%)
+  - 功能缺陷与核心算法/解析器/数据完整性：79 项 (28.7%)
+  - 状态机并发与数据生命周期：65 项 (23.6%)
+  - 架构设计与安全/网络健壮性：90 项 (32.7%)
+  - UI/交互与防御性缺陷：17 项 (6.2%)
+  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (8.7%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：171 项 (62.9%)
-  - **Medium（功能异常/算法边界/性能损耗）**：74 项 (27.2%)
-  - **Low（样式异味/边界校验/门禁规范）**：27 项 (9.9%)
-- **修复闭环率**：**100% (272/272 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：173 项 (62.9%)
+  - **Medium（功能异常/算法边界/性能损耗）**：75 项 (27.3%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (9.8%)
+- **修复闭环率**：**100% (275/275 项已修复闭环)**
 

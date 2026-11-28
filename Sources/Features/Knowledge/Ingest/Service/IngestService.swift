@@ -176,9 +176,10 @@ actor IngestService: IngestServiceProtocol {
         return page
     }
 
-    /// 安全地将文本中的概念匹配替换为双链（Bug #58 修复：保护已有双链、Markdown 链接与代码块）
+    /// 安全地将文本中的概念匹配替换为双链（Bug #58 修复：保护已有双链、Markdown 链接与代码块，并过滤纯空白概念）
     static func linkConceptsSafely(content: String, concepts: [String]) -> String {
-        guard !concepts.isEmpty else { return content }
+        let validConcepts = concepts.filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+        guard !validConcepts.isEmpty else { return content }
 
         // 1. 保护已有双链、Markdown 链接和代码块
         var protectedMap: [String: String] = [:]
@@ -207,7 +208,7 @@ actor IngestService: IngestServiceProtocol {
         }
 
         // 2. 按 concept 长度降序匹配并替换为双链占位符
-        let sortedConcepts = concepts.sorted { $0.count > $1.count }
+        let sortedConcepts = validConcepts.sorted { $0.count > $1.count }
         var placeholderMap: [String: String] = [:]
         var placeholderIndex = 0
         for concept in sortedConcepts {
@@ -276,9 +277,13 @@ actor IngestService: IngestServiceProtocol {
     /// - Returns: 识别到的现有知识标题字符串列表
     func extractConcepts(from content: String, pages: [KnowledgePage]) -> [String] {
         var found: [String] = []
-        // Bug #122 修复：跳过空标题页面，避免 contains("") 永真导致内容污染
-        for page in pages where !page.title.isEmpty && content.lowercased().contains(page.title.lowercased()) {
+        // 跳过空或纯空白标题页面，避免误匹配空格并造成 [[   ]] 污染
+        let lowerContent = content.lowercased()
+        for page in pages {
+            let trimmedTitle = page.title.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmedTitle.isEmpty && lowerContent.contains(page.title.lowercased()) {
                 found.append(page.title)
+            }
         }
         return found
     }
@@ -304,11 +309,30 @@ actor IngestService: IngestServiceProtocol {
 
         do {
             let text = try await docExtractor.extractText(from: url)
-            if text.isEmpty { return nil }
+            if text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return nil }
             return try await ingestRawContent(title: extractedTitle, content: text, type: type, forceDeepScan: forceDeepScan, pageStore: pageStore)
         } catch {
             Logger.shared.error("Failed to" + " extract text" + " from document" + " \(url.path):" + " \(error)", error: error)
             return nil
+        }
+    }
+
+    /// 过滤目录中的常规文件 URL（排除子目录条目，防止把目录当作文档摄入并拉高进度分母）
+    nonisolated internal static func regularFileURLs(in directoryURL: URL) -> [URL]? {
+        guard let enumerator = FileManager.default.enumerator(
+            at: directoryURL,
+            includingPropertiesForKeys: [.isRegularFileKey],
+            options: [.skipsHiddenFiles]
+        ) else {
+            return nil
+        }
+        return enumerator.compactMap { item -> URL? in
+            guard let fileURL = item as? URL,
+                  let values = try? fileURL.resourceValues(forKeys: [.isRegularFileKey]),
+                  values.isRegularFile == true else {
+                return nil
+            }
+            return fileURL
         }
     }
 
@@ -324,21 +348,17 @@ actor IngestService: IngestServiceProtocol {
         pageStore: any AnyPageStore
     ) async -> [KnowledgePage] {
 
-        guard let enumerator = FileManager.default.enumerator(
-            at: url,
-            includingPropertiesForKeys: [.isRegularFileKey],
-            options: [.skipsHiddenFiles]
-        ) else {
+        guard let enumeratorArray = Self.regularFileURLs(in: url) else {
             Logger.shared.warning(FeatureConstants.LogDetails.failedTo + FeatureConstants.LogDetails.enumerateFolder + " \(url.path)")
             return []
         }
+        guard !enumeratorArray.isEmpty else { return [] }
 
         let isLowPowerMode = ProcessInfo.processInfo.isLowPowerModeEnabled
         if isLowPowerMode {
             Logger.shared.info(L10n.Ingest.ecoIndexingLowPower)
         }
 
-        let enumeratorArray = enumerator.compactMap { $0 as? URL }
         let totalCount = enumeratorArray.count
         
         // 接入 TaskCenter (由 TaskCenter 统一触发灵动岛)
@@ -351,19 +371,12 @@ actor IngestService: IngestServiceProtocol {
         return await withTaskGroup(of: (KnowledgePage?, String).self) { group in
             for fileURL in enumeratorArray {
                 group.addTask { [self, pageStore, type] in
-                    // 智适应节流：低功耗模式下每个文件处理后强制休息，释放 CPU
-                    if isLowPowerMode {
-                        let lowPowerCooldownNs: UInt64 = 200_000_000
-                        try? await Task.sleep(nanoseconds: lowPowerCooldownNs)
-                    }
-
-                    let page = await self.ingestDocument(at: fileURL, type: type, pageStore: pageStore)
-                    if page != nil {
-                        await MainActor.run {
-                            LocalAnalyticsService.shared.trackEvent(FeatureConstants.AnalyticsKey.documentIngested, properties: [FeatureConstants.AnalyticsKey.format: fileURL.pathExtension])
-                        }
-                    }
-                    return (page, fileURL.lastPathComponent)
+                    await self.processFolderFile(
+                        fileURL,
+                        type: type,
+                        pageStore: pageStore,
+                        isLowPowerMode: isLowPowerMode
+                    )
                 }
             }
 
@@ -380,11 +393,42 @@ actor IngestService: IngestServiceProtocol {
                 await taskCenter.updateLatestStatus(status)
             }
             
-            // Bug #130 修复：确保 completeTask 在异常路径也执行
-            await taskCenter.completeTask(id: taskID)
+            if Task.isCancelled {
+                await taskCenter.failTask(id: taskID, error: CancellationError().localizedDescription)
+            } else {
+                // Bug #130 修复：确保完整执行完毕后标记完成
+                await taskCenter.completeTask(id: taskID)
+            }
             
             return results
         }
+    }
+
+    /// 文件夹批量导入中的单文件摄取辅助（带取消校验与低功耗节流）
+    private func processFolderFile(
+        _ fileURL: URL,
+        type: PageType,
+        pageStore: any AnyPageStore,
+        isLowPowerMode: Bool
+    ) async -> (KnowledgePage?, String) {
+        let filename = fileURL.lastPathComponent
+        guard !Task.isCancelled else { return (nil, filename) }
+        if isLowPowerMode {
+            let lowPowerCooldownNs: UInt64 = 200_000_000
+            try? await Task.sleep(nanoseconds: lowPowerCooldownNs)
+        }
+        guard !Task.isCancelled else { return (nil, filename) }
+
+        let page = await ingestDocument(at: fileURL, type: type, pageStore: pageStore)
+        if page != nil {
+            await MainActor.run {
+                LocalAnalyticsService.shared.trackEvent(
+                    FeatureConstants.AnalyticsKey.documentIngested,
+                    properties: [FeatureConstants.AnalyticsKey.format: fileURL.pathExtension]
+                )
+            }
+        }
+        return (page, filename)
     }
 }
 

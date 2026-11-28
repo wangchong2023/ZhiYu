@@ -208,4 +208,33 @@ final class LintServiceBatch3Tests: XCTestCase {
         let selfOrphan = issues.filter { $0.pageID == selfRefPage.id && $0.type == .orphan }
         XCTAssertEqual(selfOrphan.count, 1, "仅自引用自身的页面入度应为 0，应报告为孤立页面")
     }
+
+    // MARK: - 断链去重、别名循环识别与重名空白跳过（缺陷 #274）
+
+    func testRunLint_deduplicatesBrokenLinksAndDetectsAliasCycle() async {
+        let pageA = KnowledgePage(
+            title: "Knowledge Graph",
+            pageType: .concept,
+            content: "Link to [[Concept B]], [[MissingTarget]], [[missingtarget]], and [[   ]]",
+            aliases: ["KG"]
+        )
+        let pageB = KnowledgePage(
+            title: "Concept B",
+            pageType: .concept,
+            content: "Back to alias [[KG]]"
+        )
+        let blankUntitled = KnowledgePage(title: "   ", pageType: .concept, content: "Draft 1")
+        let blankUntitled2 = KnowledgePage(title: "\n", pageType: .concept, content: "Draft 2")
+
+        let issues = await service.runLint(pages: [pageA, pageB, blankUntitled, blankUntitled2], linkService: linkService)
+
+        let brokenLinks = issues.filter { $0.type == .brokenLink && $0.pageID == pageA.id }
+        XCTAssertEqual(brokenLinks.count, 1, "同页指向相同缺失目标的大小写等价断链应去重且跳过纯空白链接")
+
+        let cycleIssues = issues.filter { $0.type == .cycle }
+        XCTAssertEqual(cycleIssues.count, 1, "通过别名的双向引用 (A→B→KG) 必须识别为循环引用")
+
+        let duplicateIssues = issues.filter { $0.type == .generic }
+        XCTAssertTrue(duplicateIssues.isEmpty, "纯空白未命名草稿不得互判为重名页面")
+    }
 }
