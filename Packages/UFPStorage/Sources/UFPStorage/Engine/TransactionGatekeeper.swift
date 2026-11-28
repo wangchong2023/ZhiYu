@@ -40,8 +40,21 @@ public actor TransactionGatekeeper {
     /// 当前活跃事务计数（仅供测试观察，不依赖绝对值）。
     public private(set) var activeCount: Int = 0
 
-    /// 是否正在排空（Vault 热切换中）。
-    public internal(set) var draining: Bool = false
+    /// 当前活跃排空调用计数（支持并发重入 drain()，防止先退出的 drain 提前清除正在排空的门禁状态）。
+    private var activeDrainCount: Int = 0
+
+    /// 测试覆写排空标志（仅用于测试注入）。
+    private var manualDrainingOverride: Bool = false
+
+    /// 是否正在排空（Vault 热切换中或测试注入中）。
+    public var draining: Bool {
+        activeDrainCount > 0 || manualDrainingOverride
+    }
+
+    /// 供测试模块设置手动排空覆盖状态。
+    package func setManualDraining(_ value: Bool) {
+        manualDrainingOverride = value
+    }
 
     /// 排空完成时的延续回调队列，用于唤醒等待中的 `drain()`。
     private var drainWaiters: [DrainWaiter] = []
@@ -76,15 +89,20 @@ public actor TransactionGatekeeper {
     /// - Parameter maxWaitTime: 最大等待时间，超时后强制返回（调用方决定是否强制关闭连接）。
     /// - Returns: 是否在超时前成功排空所有事务。
     public func drain(maxWaitTime: Duration = .milliseconds(TransactionGatekeeper.defaultDrainTimeoutMs)) async -> Bool {
-        draining = true
+        activeDrainCount += 1
+        defer {
+            activeDrainCount = max(0, activeDrainCount - 1)
+        }
         let deadline = ContinuousClock().now.advanced(by: maxWaitTime)
 
         // 等待所有活跃事务完成
         while activeCount > 0 {
+            if Task.isCancelled {
+                return false
+            }
             let now = ContinuousClock().now
             if now >= deadline {
                 // 超时，返回 false（调用方决定是否强制关闭）
-                draining = false
                 return false
             }
             // 等待 release() 唤醒或超时
@@ -101,14 +119,14 @@ public actor TransactionGatekeeper {
             }
         }
 
-        draining = false
         return true
     }
 
     /// 重置状态（仅测试使用）。
     public func reset() {
         activeCount = 0
-        draining = false
+        activeDrainCount = 0
+        manualDrainingOverride = false
         resumeAllDrainWaiters()
     }
 

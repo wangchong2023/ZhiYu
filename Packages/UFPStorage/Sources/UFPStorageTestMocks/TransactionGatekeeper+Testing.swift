@@ -5,7 +5,7 @@
 extension TransactionGatekeeper {
     /// 设置排空状态（仅测试使用）。
     public func setDrainingForTesting(_ value: Bool) {
-        draining = value
+        setManualDraining(value)
     }
 
 }

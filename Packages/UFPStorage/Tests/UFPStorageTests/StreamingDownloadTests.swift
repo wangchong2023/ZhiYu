@@ -644,6 +644,33 @@ final class StreamingDownloadTests: XCTestCase {
         }
     }
 
+    // MARK: - 缺陷 #279 回归：Delegate 弱引用打破 URLSession 强引用环
+
+    func testSessionDelegateDoesNotRetainManagerAfterInvalidate() async {
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: dir) }
+
+        weak var weakManager: StreamingDownloadManager?
+        do {
+            let manager = StreamingDownloadManager(
+                configuration: .ephemeral,
+                resumeDataDirectory: { dir },
+                destinationURL: { taskID in dir.appendingPathComponent("\(taskID).bin") }
+            )
+            weakManager = manager
+            let bound = await manager.hasSessionDelegate
+            XCTAssertTrue(bound, "使用默认 Delegate 桥接时 URLSession 应已绑定 delegate")
+            await manager.invalidateSession()
+        }
+
+        // 等待 URLSession 异步完成 invalidate 回调并释放 delegate
+        for _ in 0..<20 where weakManager != nil {
+            try? await Task.sleep(for: .milliseconds(25))
+        }
+        XCTAssertNil(weakManager, "invalidateSession 后 StreamingDownloadDelegateHelper 不应强持有 StreamingDownloadManager 导致内存泄漏")
+    }
+
     // MARK: - 辅助：等待 detached 任务完成
 
     /// 判断是否为稳定终态（completed/failed/cancelled）。

@@ -287,21 +287,24 @@
 | **276** | `SSRFGuard` 与 `IPAddressUtility`（`UFPCore`）存在 IPv6 SSRF 绕过与缩写溢出走私漏洞：`http://[::1%25lo0]` / `[fe80::1%25en0]` 等带 Zone ID 的 URL 导致 `inet_pton` 返回 `0` 直接放行；未拦截 IPv4 兼容 `::a.b.c.d` 与 NAT64 `64:ff9b::/96` 内嵌私有 IP；`isPrivateIPv4` 漏检 `224.0.0.0/4` 组播/广播段；`combineOctets` 对 2/3 段缩写未校验尾段位宽上限 | 构造带 `%zone` 后缀的 IPv6 地址、NAT64 隧道 `64:ff9b::127.0.0.1`、`::169.254.169.254` 或 `224.0.0.1`/`255.255.255.255` | 攻击者利用 Zone ID 或 NAT64/IPv4-compatible 绕过 SSRF 防火墙探测本机与内网 | **High** | 架构设计与安全/网络健壮性 | 新增 `stripIPv6BracketsAndZone` 剥离 `%zone`；统一 `isDangerousIPv6Bytes` 拦截 IPv4 兼容与 NAT64 内嵌私有地址；补充 `multicastOrReservedStartOctet` (224) 与 `combineOctets` 位宽上限校验 | **✅ 已解决** | 是 (IPv6 Zone ID 剥离、NAT64 穿透防护与 IPv4 位宽校验) | 是 (`SSRFGuardSecurityTests`) | ✅ 已闭环 |
 | **277** | `LocalAnalyticsService` 存在未捕获 ObjC 崩溃与并发 JSON 撕裂风险：`trackEvent` 直接把任意 `[String: Any]` 传入 `JSONSerialization.data`，若含 `Date`/`URL`/`UUID`/`Double.nan` 会抛出未捕获 ObjC `NSInvalidArgumentException` 直接闪退；`saveEventToFile` 使用并发 `DispatchQueue.global` + 非原子写导致丢事件与 JSON 损坏且文件无上限膨胀 | 埋点属性附带 `Date`/`URL`/`Double.nan` 或高频并发埋点 | 应用直接触发底层 `NSException` 闪退、埋点日志文件损坏与磁盘无限膨胀 | **High** | 稳定性与并发安全 | 新增 `sanitizeJSONObject` 递归转换日期/链接/UUID/非有限浮点并加 `JSONSerialization.isValidJSONObject` 守卫；迁移至专用串行 `ioQueue` + `.atomicWrite` 并限制最大保留 1000 条记录 | **✅ 已解决** | 是 (JSON 属性安全清洗与串行原子埋点落盘范式) | 是 (`LocalAnalyticsServiceTests`) | ✅ 已闭环 |
 | **278** | `Router` 与 `AuthSession` 存在状态残留漏洞：`AuthSession.update(user:)` 在直接切换不同账号或置空 `nil`（非经过 `logout`）时未清空 `PaymentRetryQueue`，存在跨账号错绑收据风险；`Router.dismissSheet()` 遗漏 Profile/Plan/Plugins/About/CommandPalette 6 个面板状态；`syncTab(for:)` 遗漏 `.sources` 与 `.healthCheck` 映射 | 直接替换登录态用户、触发全局 `dismissSheet()`、或切换至 `.sources`/`.healthCheck` | 跨账号支付收据串号绑定、关闭弹窗指令失效、主 Tab 选中态不同步 | **Medium** | 状态机并发与数据生命周期 | `AuthSession.update` 检测账号清空或变更时同步取消待重试支付队列；`Router.dismissSheet` 完整复位所有弹出面板与命令面板；补全 `syncTab` 对 `.sources`/`.healthCheck` 映射 | **✅ 已解决** | 是 (跨账号切换支付队列隔离与路由状态完整复位) | 是 (`RouterNavigationPathStressTests`) | ✅ 已闭环 |
+| **279** | `StreamingDownloadDelegateHelper`（`UFPStorage`）违反自身弱引用注释强持有 `StreamingDownloadManager`（`private let manager`），与 `StreamingDownloadManager.session`（`URLSession` 强持 delegate）形成三元强引用环，且缺少 session 显式失效清理方法导致下载管理器与后台会话永久内存泄漏 | 创建并销毁绑定 `StreamingDownloadDelegateHelper` 的 `StreamingDownloadManager` 实例 | 已完成或取消的下载器与底层 `URLSession` 实例永久驻留内存无法释放，长期运行引发内存泄漏 | **High** | 状态机并发与数据生命周期 | 将 `StreamingDownloadDelegateHelper.manager` 改为 `private weak var manager: StreamingDownloadManager?` 并在回调中安全解包；在 `StreamingDownloadManager` 新增 `invalidateSession()` 显式释放会话 | **✅ 已解决** | 是 (URLSession Delegate 弱引用破环范式) | 是 (`StreamingDownloadTests`) | ✅ 已闭环 |
+| **280** | `TransactionGatekeeper.drain()`（`UFPStorage`）使用单一布尔 `draining` 标识排空状态，并发重入时先超时或先退出的 `drain()` 会提前把 `draining` 清零，导致仍在等待排空的另一次 `drain()` 期间新事务通过 `acquire()` 逃逸进入；且循环未检测 `Task.isCancelled` | 多路热切换或维护任务并发调用 `drain()` 且其中一路超时时间较短，或排空 Task 被取消 | 事务门禁在活跃事务未排空前提前失效，破坏数据库热切换隔离并引发并发写入冲突 | **High** | 状态机并发与数据生命周期 | 引入 `activeDrainCount` 计数器与 `defer` 退出递减，仅当所有并发 `drain()` 全部退出后才解除 `draining`；循环内增加 `Task.isCancelled` 早退 | **✅ 已解决** | 是 (并发重入排空门禁引用计数保护) | 是 (`StorageGuardTests`) | ✅ 已闭环 |
+| **281** | `KeychainService.store(key:value:)` 先无条件执行 `try? delete(key:)` 再执行 `SecItemAdd`，非原子更新导致写入失败（如锁屏 `errSecInteractionNotAllowed`）时原凭据已被永久销毁，且并发覆盖读时存在 `nil` 空窗期 | 更新已有 Token/密钥时发生并发读取或底层 Keychain 写入失败 | 登录态凭据意外永久丢失或并发校验读取到 `nil` 触发误登出 | **High** | 架构设计与安全/网络健壮性 | 移除前置破坏性 `try? delete(key:)`，直接走 `SecItemAdd` + `errSecDuplicateItem` 降级 `SecItemUpdate` 原子覆盖路径 | **✅ 已解决** | 是 (Keychain 凭据原子覆写保护) | 是 (`KeychainServiceTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**278 项**
+- **收录问题总数**：**281 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：79 项 (28.4%)
-  - 状态机并发与数据生命周期：67 项 (24.1%)
-  - 架构设计与安全/网络健壮性：91 项 (32.7%)
-  - UI/交互与防御性缺陷：17 项 (6.1%)
-  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (8.6%)
+  - 功能缺陷与核心算法/解析器/数据完整性：79 项 (28.1%)
+  - 状态机并发与数据生命周期：69 项 (24.6%)
+  - 架构设计与安全/网络健壮性：92 项 (32.7%)
+  - UI/交互与防御性缺陷：17 项 (6.0%)
+  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (8.5%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：175 项 (62.9%)
-  - **Medium（功能异常/算法边界/性能损耗）**：76 项 (27.3%)
-  - **Low（样式异味/边界校验/门禁规范）**：27 项 (9.7%)
-- **修复闭环率**：**100% (278/278 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：178 项 (63.3%)
+  - **Medium（功能异常/算法边界/性能损耗）**：76 项 (27.0%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (9.6%)
+- **修复闭环率**：**100% (281/281 项已修复闭环)**
 

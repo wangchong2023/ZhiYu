@@ -54,9 +54,8 @@ class KeychainService: @unchecked Sendable {
         guard let data = value.data(using: .utf8) else {
             throw KeychainError.encodingFailed
         }
-        // 先删除旧项
-        try? delete(key: key)
 
+        // 不预先 delete 旧项，避免后续写入失败时永久丢失原有凭据；依赖 SecItemAdd + errSecDuplicateItem 原子覆盖
         let baseQuery = KeychainQueryHelper.baseQuery(serviceName: serviceName, key: key)
         let extra: [String: Any] = [
             kSecValueData as String: data,

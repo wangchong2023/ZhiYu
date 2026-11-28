@@ -141,4 +141,39 @@ final class StorageGuardTests: XCTestCase {
         let drained = await gatekeeper.drain(maxWaitTime: .milliseconds(100))
         XCTAssertTrue(drained, "reset 后 drain 应立即成功")
     }
+
+    // MARK: - 4. 缺陷 #280 回归：并发重入 drain 计数保护
+
+    func testConcurrentDrain_OneTimeoutDoesNotClearDrainingWhileAnotherIsActive() async throws {
+        let gatekeeper = TransactionGatekeeper()
+        try await gatekeeper.acquire()
+
+        let longDrainTask = Task {
+            await gatekeeper.drain(maxWaitTime: .milliseconds(800))
+        }
+        let shortDrainTask = Task {
+            await gatekeeper.drain(maxWaitTime: .milliseconds(60))
+        }
+
+        // 短超时排空退出后，长排空仍在等待，draining 必须保持 true
+        let shortResult = await shortDrainTask.value
+        XCTAssertFalse(shortResult, "短超时 drain 应返回 false")
+
+        let stillDraining = await gatekeeper.draining
+        XCTAssertTrue(stillDraining, "仍有活跃 drain 等待时，先超时的 drain 不得提前清除 draining 状态")
+
+        do {
+            try await gatekeeper.acquire()
+            XCTFail("另一路 drain 仍未完成时，新事务 acquire 必须继续被拒绝")
+        } catch {
+            XCTAssertEqual(error as? DatabaseError, .draining)
+        }
+
+        await gatekeeper.release()
+        let longResult = await longDrainTask.value
+        XCTAssertTrue(longResult, "事务释放后长排空应成功返回 true")
+
+        let finalDraining = await gatekeeper.draining
+        XCTAssertFalse(finalDraining, "所有 drain 完成后 draining 应复位为 false")
+    }
 }

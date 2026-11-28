@@ -11,15 +11,25 @@
 //
 
 import Foundation
+import os
+
+private struct WeakDownloadManagerBox {
+    weak var value: StreamingDownloadManager?
+}
 
 /// URLSession 代理协助类。负责无声桥接后台系统通知至 Actor。
+/// 通过 `OSAllocatedUnfairLock` 持有弱引用盒子，既打破强引用环又满足 Swift 6 严格并发 `Sendable` 要求。
 internal final class StreamingDownloadDelegateHelper: NSObject, URLSessionDownloadDelegate, Sendable {
 
-    /// 持有弱引用的 Actor 控制器
-    private let manager: StreamingDownloadManager
+    /// 弱引用盒子锁（打破 URLSession -> Delegate -> Manager 强引用环，且保持不可变 Sendable）
+    private let managerLock: OSAllocatedUnfairLock<WeakDownloadManagerBox>
+
+    private var manager: StreamingDownloadManager? {
+        managerLock.withLock { $0.value }
+    }
 
     init(manager: StreamingDownloadManager) {
-        self.manager = manager
+        self.managerLock = OSAllocatedUnfairLock(uncheckedState: WeakDownloadManagerBox(value: manager))
         super.init()
     }
 
@@ -31,7 +41,7 @@ internal final class StreamingDownloadDelegateHelper: NSObject, URLSessionDownlo
         totalBytesWritten: Int64,
         totalBytesExpectedToWrite: Int64
     ) {
-        guard let taskID = downloadTask.taskDescription, totalBytesExpectedToWrite > 0 else { return }
+        guard let manager, let taskID = downloadTask.taskDescription, totalBytesExpectedToWrite > 0 else { return }
 
         // 拦截 4xx/5xx 错误响应体进度上报，防止将错误页的几十字节覆盖为模型真实文件大小
         if let httpResponse = downloadTask.response as? HTTPURLResponse,
@@ -50,7 +60,7 @@ internal final class StreamingDownloadDelegateHelper: NSObject, URLSessionDownlo
         downloadTask: URLSessionDownloadTask,
         didFinishDownloadingTo location: URL
     ) {
-        guard let taskID = downloadTask.taskDescription else { return }
+        guard let manager, let taskID = downloadTask.taskDescription else { return }
 
         // 严格校验 HTTP 状态码，拦截 404/500 等异常请求，防止将错误页面保存
         if let httpResponse = downloadTask.response as? HTTPURLResponse,
@@ -86,7 +96,7 @@ internal final class StreamingDownloadDelegateHelper: NSObject, URLSessionDownlo
         task: URLSessionTask,
         didCompleteWithError error: Error?
     ) {
-        guard let taskDescription = task.taskDescription else { return }
+        guard let manager, let taskDescription = task.taskDescription else { return }
 
         if let error = error {
             let nsError = error as NSError

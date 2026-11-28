@@ -406,6 +406,11 @@ public actor StreamingDownloadManager {
         session.delegate != nil
     }
 
+    /// 显式释放底层 URLSession（用于取消遗留任务并断开系统会话持有的 delegate 引用）。
+    public func invalidateSession() {
+        session.invalidateAndCancel()
+    }
+
     /// 获取指定任务的 SHA256 校验和
     public func getChecksum(for taskID: String) -> String? {
         return sha256Checksums[taskID]

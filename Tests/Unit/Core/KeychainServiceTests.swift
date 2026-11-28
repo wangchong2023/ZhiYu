@@ -159,4 +159,31 @@ final class KeychainServiceTests: XCTestCase {
         let finalValue = try service.retrieve(key: key)
         XCTAssertNotNil(finalValue, "并发写入同一 Key 后应保留有效值且不因 errSecDuplicateItem 报错")
     }
+
+    // MARK: - 缺陷 #281 回归：原子覆盖写入不先删除旧凭据
+
+    func testOverwriteExistingKeyNeverLeavesNilWindowDuringConcurrentReads() async throws {
+        let key = "atomic_overwrite_\(UUID().uuidString)"
+        defer { try? service.delete(key: key) }
+
+        try service.store(key: key, value: "initial_token")
+
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            group.addTask { [service] in
+                for idx in 1...20 {
+                    try service?.store(key: key, value: "token_\(idx)")
+                }
+            }
+            group.addTask { [service] in
+                for _ in 0..<40 {
+                    let value = try service?.retrieve(key: key)
+                    XCTAssertNotNil(value, "原子覆盖更新期间绝不应出现先删后写导致的 nil 空窗期")
+                }
+            }
+            try await group.waitForAll()
+        }
+
+        let finalValue = try service.retrieve(key: key)
+        XCTAssertEqual(finalValue, "token_20", "所有覆盖写入完成后应保留最新值")
+    }
 }
