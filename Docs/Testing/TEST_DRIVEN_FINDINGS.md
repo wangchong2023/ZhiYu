@@ -278,21 +278,24 @@
 | **267** | `TaskCenter` 存在三重生命周期缺陷：`updateTask` 仅在 `.completed` 裁剪历史任务，批量 `.failed` 终态不触发 `trimExcessTasks()` 导致任务堆积；`addIngestSubLog` 未校验任务活跃态，迟到日志污染已完结历史任务；`removeTask`/`reset` 未结束活跃任务的 LiveActivity 导致灵动岛僵尸残留 | 后台任务批量失败、迟到摄取日志到达、或任务运行中被删除/切库重置 | 失败任务长期超限堆积、历史记录日志串扰、锁屏/灵动岛实时活动残留卡死 | **Medium** | 状态机并发与数据生命周期 | `updateTask` 在 `.completed`/`.failed` 双终态触发 `trimExcessTasks()`；`addIngestSubLog` 仅匹配活跃态（`.pending`/`.running`）Ingeest 任务；`removeTask`/`reset` 同步结束活跃 LiveActivity | **✅ 已解决** | 是 (任务中心双终态容量裁剪、活跃日志过滤与灵动岛清理) | 是 (`TaskCenterTests`) | ✅ 已闭环 |
 | **268** | `GlobalPromptRegistry.buildPrompt` 采用 `for (k, v) in variables` 多轮循环 `replacingOccurrences`，存在二次模板注入漏洞与 Swift 字典随机遍历非确定性：当用户输入变量值包含 `{{otherKey}}` 时会被后续迭代二次展开，造成内部变量泄露或跨槽位注入 | 变量字典包含多个键且某个用户输入值含 `{{...}}` 占位符 | 内部上下文/敏感变量被用户输入意外二次展开泄露，且结果随哈希盐随机漂移 | **High** | 架构设计与安全/网络健壮性 | 重构 `buildPrompt` 为基于正则 `\{\{([^{}]+)\}\}` 的单次扫描插值（Single-Pass），替换后的文本不再被二次扫描，彻底根除二次模板注入并保证 100% 确定性 | **✅ 已解决** | 是 (Prompt 模板单次扫描防二次注入范式) | 是 (`GlobalPromptRegistrySupplementTests`) | ✅ 已闭环 |
 | **269** | `SynthesisStore` 存在导出文件名清洗遗漏与清库代次竞态：`exportSynthesisDocument` 仅替换 `/` 与 `:`，未过滤 `..`/`\`/控制字符与前导 `.`；`clearAll()` 未递增 `vaultGeneration`，清空数据期间进行中的异步合成任务完成后会幽灵回写污染空库 | 合成文档重命名为 `../../evil`/`.secret` 后导出，或在生成期间执行全局清空数据 | 导出路径穿越/生成隐藏文件、清空数据后残留幽灵合成文档 | **High** | 状态机并发与数据生命周期 | 新增 `sanitizedExportFileName` 剥离控制字符/换行/穿越串与前导 `.`；`clearAll()` 同步递增 `vaultGeneration` 阻断过期异步任务落盘 | **✅ 已解决** | 是 (合成导出文件名安全清洗与清库代次隔离) | 是 (`SynthesisStoreTests`) | ✅ 已闭环 |
+| **270** | `PromptTemplateEngine` 存在二次模板注入与缓存路径清洗缺口：`parse(template:with:)` 采用多轮字典循环 `replacingOccurrences`，用户输入值含 `{{otherKey}}` 会被二次展开泄露内部变量且顺序非确定；`sanitizeFilename`/`sanitizeVersion` 未剥离控制字符、冒号与前导 `.` | 模板变量字典包含多键且某用户输入值含 `{{...}}` 占位符，或 skillId/version 含控制字符/前导点 | 跨槽位二次模板注入泄露敏感变量、缓存文件出现控制字符或隐藏文件 | **High** | 架构设计与安全/网络健壮性 | 重构 `parse` 为正则 `\{\{([^{}]+)\}\}` 单次扫描插值（Single-Pass）；`sanitizeFilename`/`sanitizeVersion` 过滤控制字符/换行/冒号与前导 `.` 并提供空串兜底 | **✅ 已解决** | 是 (模板引擎单次扫描防二次注入与缓存路径清洗) | 是 (`PromptTemplateEngineTests`) | ✅ 已闭环 |
+| **271** | `EmbeddingManager` 存在损坏浮点向量污染与切库缓存回写竞态：`decodeFloatVector` 未校验 `allSatisfy(\.isFinite)` 允许 `NaN`/`Infinity` 损坏向量进入缓存污染余弦相似度排序；`loadInitialCache` 缺少代次守卫，切库触发 `clearCache()` 后挂起的旧库查询结果仍会回写污染新 Vault 向量缓存 | 磁盘向量数据损坏含 `NaN`/`Infinity`，或冷启动/重载期间快速切换 Vault | 语义检索相似度变 `NaN` 排序错乱、跨 Vault 向量缓存泄露 | **High** | 状态机并发与数据生命周期 | `decodeFloatVector` 增加 `vector.allSatisfy(\.isFinite)` 守卫拒绝损坏向量；引入 `cacheGeneration` 代次计数并在 `clearCache()` 递增、`loadInitialCache` 恢复点校验代次一致 | **✅ 已解决** | 是 (向量反序列化有限性校验与切库缓存代次隔离) | 是 (`EmbeddingManagerCrashResistanceTests`) | ✅ 已闭环 |
+| **272** | `AISynthesisService` 存在取消语义被吞与孤立 `TaskCenter` 割裂：`generateQuiz`/`generateInfographic`/`executeSynthesisPipeline` 使用 `try?` 静默吞掉 `CancellationError`，导致任务取消后仍走本地降级返回伪成功结果；`init` 私有创建孤立 `TaskCenter` 实例而非复用 `@Dependency(\.taskCenter)`，导致 `synthesize` 进度无法在全局任务中心显示且冗余订阅全局通知 | 合成任务执行中被用户取消或切库取消，或触发 `synthesize` 统一入口更新进度 | 取消的合成任务仍返回降级伪结果违背结构化并发语义、全局任务中心状态割裂与多余订阅 | **High** | 状态机并发与数据生命周期 | 抽取 `generateAllowingFallback` 显式检测并重抛 `CancellationError`（仅对真实非取消异常降级）；移除 `init` 私有 `TaskCenter`，改为通过 `@Dependency(\.taskCenter)` 对齐全局任务中心 | **✅ 已解决** | 是 (合成管道 CancellationError 显式传播与全局 TaskCenter 对齐) | 是 (`AISynthesisServicePureLogicTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**269 项**
+- **收录问题总数**：**272 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：77 项 (28.6%)
-  - 状态机并发与数据生命周期：62 项 (23.0%)
-  - 架构设计与安全/网络健壮性：89 项 (33.1%)
+  - 功能缺陷与核心算法/解析器/数据完整性：77 项 (28.3%)
+  - 状态机并发与数据生命周期：64 项 (23.5%)
+  - 架构设计与安全/网络健壮性：90 项 (33.1%)
   - UI/交互与防御性缺陷：17 项 (6.3%)
-  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (8.9%)
+  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (8.8%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：168 项 (62.5%)
-  - **Medium（功能异常/算法边界/性能损耗）**：74 项 (27.5%)
-  - **Low（样式异味/边界校验/门禁规范）**：27 项 (10.0%)
-- **修复闭环率**：**100% (269/269 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：171 项 (62.9%)
+  - **Medium（功能异常/算法边界/性能损耗）**：74 项 (27.2%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (9.9%)
+- **修复闭环率**：**100% (272/272 项已修复闭环)**
 

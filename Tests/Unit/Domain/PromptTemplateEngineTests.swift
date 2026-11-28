@@ -205,4 +205,21 @@ final class PromptTemplateEngineTests: XCTestCase {
         let rendered = await promptEngine.renderPrompt(for: skill, with: ["query": "ok"])
         XCTAssertEqual(rendered, "安全本地模板：ok", "内网 SSRF 地址必须被拦截并降级本地模板")
     }
+
+    /// 场景 F（缺陷 #270）：单次扫描插值彻底防御二次模板注入与字典遍历非确定性
+    func testParse_PreventsSecondOrderTemplateInjection() {
+        let template = "问题：{{query}} | 上下文：{{context}}"
+        for _ in 0..<10 {
+            let rendered = promptEngine.parse(
+                template: template,
+                with: [
+                    "query": "注入 {{secret}} 与 {{context}}",
+                    "context": "公开内容",
+                    "secret": "SENSITIVE_SYSTEM_SECRET"
+                ]
+            )
+            XCTAssertFalse(rendered.contains("SENSITIVE_SYSTEM_SECRET"), "变量值中的 {{secret}} 不得被二次模板展开泄露")
+            XCTAssertEqual(rendered, "问题：注入 {{secret}} 与 {{context}} | 上下文：公开内容")
+        }
+    }
 }

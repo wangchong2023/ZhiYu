@@ -18,9 +18,9 @@ actor AISynthesisService: AISynthesisServiceProtocol {
     nonisolated static let shared = AISynthesisService()
 
     @Dependency(\.logger) private var logger: any LoggerProtocol
+    @Dependency(\.taskCenter) private var taskCenter
     private var llm: any LLMServiceProtocol
     @ObservationIgnored private let promptService: PromptService
-    @ObservationIgnored private let taskCenter: TaskCenter
 
     /// 动态解析最新的 LLMService 实例，防止持有失效句柄
     private var currentLLM: any LLMServiceProtocol {
@@ -42,7 +42,6 @@ actor AISynthesisService: AISynthesisServiceProtocol {
             self.llm = runOnMainSync { LLMService.shared }
         }
         self.promptService = promptService ?? PromptService(defaults: .standard)
-        self.taskCenter = runOnMainSync { TaskCenter(activityService: ActivityService.shared) }
     }
 
     /// 输入截断保护：超长内容统一截断至 PromptConstants.TokenLimits.maxSynthesisInputLength
@@ -96,7 +95,7 @@ actor AISynthesisService: AISynthesisServiceProtocol {
         let quizTitle = L10n.AI.Prompt.Quiz.defaultTitle
 
         let systemPrompt = L10n.AI.Prompt.System.quiz(quizTitle)
-        let rawResult = (try? await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)) ?? ""
+        let rawResult = try await generateAllowingFallback(prompt: prompt, systemPrompt: systemPrompt)
 
         // 使用专用的 QuizProcessor 进行解析与格式转换
         if QuizProcessor.canDecodeAsQuizModel(rawResult) {
@@ -116,8 +115,8 @@ actor AISynthesisService: AISynthesisServiceProtocol {
 
     /// 生成信息图表 (Mermaid)
     func generateInfographic(content: String) async throws -> String {
-        let rawResult = try? await currentLLM.generate(prompt: buildPrompt(promptService.infographicPrompt, content: content), systemPrompt: L10n.AI.Prompt.System.infographic)
-        return await formatOrFallbackInfographic(rawResult: rawResult ?? "", content: content)
+        let rawResult = try await generateAllowingFallback(prompt: buildPrompt(promptService.infographicPrompt, content: content), systemPrompt: L10n.AI.Prompt.System.infographic)
+        return await formatOrFallbackInfographic(rawResult: rawResult, content: content)
     }
 
     /// 生成Report
@@ -145,7 +144,7 @@ actor AISynthesisService: AISynthesisServiceProtocol {
     /// 统一执行合成管道（消除 generatePresentation/generateReport/expandKnowledge 重复的 buildPrompt + executeSynthesisPipeline 链）
     private func runSynthesisPipeline(content: String, basePrompt: String, systemPrompt: String, fallback: String) async throws -> String {
         let prompt = buildPrompt(basePrompt, content: content)
-        return await executeSynthesisPipeline(
+        return try await executeSynthesisPipeline(
             prompt: prompt,
             systemPrompt: systemPrompt,
             fallback: { _ in fallback }
@@ -173,12 +172,27 @@ actor AISynthesisService: AISynthesisServiceProtocol {
         return formatted
     }
 
+    /// 调用底层 LLM 并在非取消错误时返回空串触发本地降级；显式传播 CancellationError 防取消语义被吞
+    private func generateAllowingFallback(prompt: String, systemPrompt: String) async throws -> String {
+        try Task.checkCancellation()
+        do {
+            return try await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)
+        } catch is CancellationError {
+            throw CancellationError()
+        } catch {
+            if Task.isCancelled {
+                throw CancellationError()
+            }
+            return ""
+        }
+    }
+
     private func executeSynthesisPipeline(
         prompt: String,
         systemPrompt: String,
         fallback: (String) -> String
-    ) async -> String {
-        let rawResult = (try? await currentLLM.generate(prompt: prompt, systemPrompt: systemPrompt)) ?? ""
+    ) async throws -> String {
+        let rawResult = try await generateAllowingFallback(prompt: prompt, systemPrompt: systemPrompt)
         let cleaned = SynthesisProcessor.cleanMarkdown(rawResult)
         if cleaned.utf8.count >= AppConstants.ExportLimits.minValidSynthesisTextBytes {
             return cleaned
@@ -291,8 +305,9 @@ actor AISynthesisService: AISynthesisServiceProtocol {
     }
 
     private func updateStatus(_ text: String) {
+        let center = taskCenter
         Task { @MainActor in
-            taskCenter.updateLatestStatus(text)
+            center.updateLatestStatus(text)
         }
     }
 }

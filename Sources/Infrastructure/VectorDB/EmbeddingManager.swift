@@ -29,6 +29,8 @@ public actor EmbeddingManager: EmbeddingProvider {
     private var chunkVectorCache: [String: [Float]] = [:]
     /// 内存缓存：分块元数据
     private var chunkMetadata: [String: PageChunk] = [:]
+    /// 缓存代次计数器（每次 clearCache 递增，防止切库前挂起的旧异步加载/索引回写污染新 Vault 缓存）
+    private var cacheGeneration: UInt64 = 0
 
     /// 跨进程绝对确定性 FNV-1a 64-bit 哈希常量（替代进程级随机种子的 Swift.Hasher）
     private enum DeterministicHashConstants {
@@ -81,19 +83,22 @@ public actor EmbeddingManager: EmbeddingProvider {
 
     // MARK: - 核心同步逻辑
 
-    /// 异步加载初始缓存
+    /// 异步加载初始缓存（带代次守卫，防止 Vault 切换后旧库查询结果回写污染新库缓存）
     public func loadInitialCache() async {
+        let capturedGeneration = cacheGeneration
         do {
             let embeddings = try await repository.fetchAllEmbeddings()
+            guard cacheGeneration == capturedGeneration else { return }
             for emb in embeddings {
                 vectorCache[emb.key] = emb.value
             }
             
             // 加载所有已入库的分块元数据（分块级向量在冷启动时不预加载）
             let chunks = try await repository.fetchAllChunksWithEmbeddings()
+            guard cacheGeneration == capturedGeneration else { return }
             for chunk in chunks {
                 chunkMetadata[chunk.id] = chunk
-                // 如果分块包含序列化的嵌入数据，安全反序列化到缓存（防止非对齐或截断字节触发崩溃）
+                // 如果分块包含序列化的嵌入数据，安全反序列化到缓存（防止非对齐/截断/NaN 字节污染）
                 if let data = chunk.embedding, let vector = Self.decodeFloatVector(from: data) {
                     chunkVectorCache[chunk.id] = vector
                 }
@@ -250,8 +255,9 @@ public actor EmbeddingManager: EmbeddingProvider {
         return generated
     }
 
-    /// 物理清空内存向量缓存（供 Vault 切换/退出时立即隔离旧笔记本数据）
+    /// 物理清空内存向量缓存（供 Vault 切换/退出时立即隔离旧笔记本数据，并递增代次阻断旧异步回写）
     public func clearCache() {
+        cacheGeneration &+= 1
         vectorCache.removeAll()
         chunkVectorCache.removeAll()
         chunkMetadata.removeAll()
@@ -289,7 +295,7 @@ public actor EmbeddingManager: EmbeddingProvider {
         return Self.deterministicFallbackVector(for: text)
     }
 
-    /// 安全反序列化二进制向量，避免非对齐 raw pointer 或截断字节触发 bindMemory 致命崩溃
+    /// 安全反序列化二进制向量，避免非对齐/截断字节触发崩溃，并拦截含 NaN/Infinity 的损坏向量
     internal static func decodeFloatVector(from data: Data) -> [Float]? {
         let stride = MemoryLayout<Float>.stride
         guard !data.isEmpty, data.count % stride == 0 else { return nil }
@@ -297,6 +303,7 @@ public actor EmbeddingManager: EmbeddingProvider {
         _ = vector.withUnsafeMutableBytes { destination in
             data.copyBytes(to: destination)
         }
+        guard vector.allSatisfy(\.isFinite) else { return nil }
         return vector
     }
 

@@ -17,13 +17,22 @@ import UFPCore
 /// 动态提示词解析引擎，使用 Actor 隔离保证并发安全
 public actor PromptTemplateEngine: PromptTemplateEngineCapabilities {
 
-    /// 文件名安全清理：需移除的路径分隔符与路径遍历字符集
+    /// 模板插值与路径清洗常量
+    private enum TemplateSyntax {
+        /// 单次扫描占位符正则：`{{key}}`（防二次模板注入与字典遍历非确定性）
+        static let placeholderPattern = #"\{\{([^{}]+)\}\}"#
+        static let keyCaptureGroupIndex = 1
+        static let fallbackFilename = "prompt"
+        static let fallbackVersion = "0"
+    }
+
+    /// 文件名安全清理：需移除的路径分隔符、冒号、点号与控制字符集
     private static let pathInvalidCharacters = CharacterSet(
         charactersIn: SystemConstants.Character.slash
             + SystemConstants.Character.backslash
             + SystemConstants.Character.dot
-            + SystemConstants.Character.dot
-    )
+            + SystemConstants.Character.colon
+    ).union(.controlCharacters).union(.newlines)
 
     /// 网络请求 Session，用于拉取远程外部提示词 Markdown 文本
     private let session: URLSession
@@ -47,20 +56,39 @@ public actor PromptTemplateEngine: PromptTemplateEngineCapabilities {
     
     // MARK: - PromptTemplateEngineCapabilities
     
-    /// 解析并插值替换系统提示词模板中的变量 (非隔离同步方法，无需等待，提供极速响应)
+    /// 解析并插值替换系统提示词模板中的变量 (单次正则扫描，防二次模板注入与非确定性遍历)
     /// - Parameters:
     ///   - template: 提示词模板内容
     ///   - variables: 参数字典
     /// - Returns: 插值后的提示词
     nonisolated public func parse(template: String, with variables: [String: String]) -> String {
-        var result = template
-        
-        // 遍历变量字典，将 {{key}} 替换为 value
-        for (key, value) in variables {
-            let placeholder = "{{\(key)}}"
-            result = result.replacingOccurrences(of: placeholder, with: value)
+        guard !variables.isEmpty,
+              let regex = try? NSRegularExpression(pattern: TemplateSyntax.placeholderPattern, options: []) else {
+            return template
         }
-        
+        let fullNSRange = NSRange(template.startIndex..<template.endIndex, in: template)
+        let matches = regex.matches(in: template, options: [], range: fullNSRange)
+        guard !matches.isEmpty else { return template }
+
+        var result = ""
+        result.reserveCapacity(template.count)
+        var cursor = template.startIndex
+
+        for match in matches {
+            guard let fullRange = Range(match.range, in: template),
+                  let keyRange = Range(match.range(at: TemplateSyntax.keyCaptureGroupIndex), in: template) else {
+                continue
+            }
+            result.append(contentsOf: template[cursor..<fullRange.lowerBound])
+            let key = String(template[keyRange])
+            if let value = variables[key] {
+                result.append(value)
+            } else {
+                result.append(contentsOf: template[fullRange])
+            }
+            cursor = fullRange.upperBound
+        }
+        result.append(contentsOf: template[cursor..<template.endIndex])
         return result
     }
     
@@ -186,26 +214,35 @@ public actor PromptTemplateEngine: PromptTemplateEngineCapabilities {
         }
     }
     
-    /// 对文件名进行安全清理，移除路径分隔符和路径遍历字符
+    /// 对文件名进行安全清理，移除路径分隔符、控制字符与路径遍历字符
     /// - Parameter filename: 原始文件名（可能含 `/`、`\`、`..` 等危险字符）
-    /// - Returns: 清理后的安全文件名（仅保留字母、数字、下划线、连字符）
+    /// - Returns: 清理后的安全文件名
     private nonisolated func sanitizeFilename(_ filename: String) -> String {
         let invalidCharacters = Self.pathInvalidCharacters
-        return filename
+        let cleaned = filename
             .components(separatedBy: invalidCharacters)
             .joined(separator: SystemConstants.Character.underscore)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return cleaned.isEmpty ? TemplateSyntax.fallbackFilename : cleaned
     }
 
-    /// 对版本号执行路径穿越清理：移除 `/`、`\` 与 `..`，同时保留合法单点号（如 `1.0.0`）
+    /// 对版本号执行路径穿越与控制字符清理：移除 `/`、`\`、`:`、`..` 与前导 `.`，保留合法单点号（如 `1.0.0`）
     private nonisolated func sanitizeVersion(_ version: String) -> String {
+        let disallowed = CharacterSet.controlCharacters.union(.newlines)
+        let withoutControl = String(String.UnicodeScalarView(version.unicodeScalars.filter { !disallowed.contains($0) }))
         let doubleDot = SystemConstants.Character.dot + SystemConstants.Character.dot
-        var cleaned = version
+        var cleaned = withoutControl
+            .trimmingCharacters(in: .whitespacesAndNewlines)
             .replacingOccurrences(of: SystemConstants.Character.slash, with: SystemConstants.Character.underscore)
             .replacingOccurrences(of: SystemConstants.Character.backslash, with: SystemConstants.Character.underscore)
+            .replacingOccurrences(of: SystemConstants.Character.colon, with: SystemConstants.Character.underscore)
         while cleaned.contains(doubleDot) {
             cleaned = cleaned.replacingOccurrences(of: doubleDot, with: SystemConstants.Character.underscore)
         }
-        return cleaned
+        while cleaned.hasPrefix(SystemConstants.Character.dot) {
+            cleaned.removeFirst()
+        }
+        return cleaned.isEmpty ? TemplateSyntax.fallbackVersion : cleaned
     }
 
     /// 计算字符串的 SHA256 十六进制哈希值，用于远程 Prompt 完整性校验

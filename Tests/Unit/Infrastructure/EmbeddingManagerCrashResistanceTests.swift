@@ -82,4 +82,19 @@ final class EmbeddingManagerCrashResistanceTests: XCTestCase {
         let leakedChunks = await manager.multiQuerySearch(query: "Vault A 私密分块", topK: 5)
         XCTAssertTrue(leakedChunks.isEmpty, "收到 .vaultWillSwitch 后不得继续召回旧 Vault 的内存分块")
     }
+
+    /// 缺陷 #271 回归：decodeFloatVector 必须拦截含 NaN 或 Infinity 的损坏二进制向量
+    func testDecodeFloatVectorRejectsNaNAndInfinity() {
+        let nanVector: [Float] = [0.5, .nan, 0.2]
+        let nanData = nanVector.withUnsafeBufferPointer { Data(buffer: $0) }
+        XCTAssertNil(EmbeddingManager.decodeFloatVector(from: nanData), "含 NaN 的损坏向量必须被拒绝")
+
+        let infVector: [Float] = [0.5, .infinity, -0.1]
+        let infData = infVector.withUnsafeBufferPointer { Data(buffer: $0) }
+        XCTAssertNil(EmbeddingManager.decodeFloatVector(from: infData), "含 Infinity 的损坏向量必须被拒绝")
+
+        let validVector: [Float] = [0.25, -0.5, 0.75]
+        let validData = validVector.withUnsafeBufferPointer { Data(buffer: $0) }
+        XCTAssertEqual(EmbeddingManager.decodeFloatVector(from: validData), validVector)
+    }
 }

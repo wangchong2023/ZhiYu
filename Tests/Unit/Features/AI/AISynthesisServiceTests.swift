@@ -135,6 +135,25 @@ final class AISynthesisServicePureLogicTests: XCTestCase {
         let result = try await AISynthesisService.shared.predictFollowUpQuestions(history: history, pages: [])
         XCTAssertTrue(result.isEmpty, "解析失败时应该优雅返回空数组")
     }
+
+    /// 缺陷 #272 回归：任务被取消时，合成管道必须向上传播 CancellationError，不得被 try? 吞错后降级返回伪成功结果
+    func testSynthesisPipelinesPropagateCancellationErrorInsteadOfFallback() async {
+        let service = AISynthesisService(llm: mockLLM)
+        let cancelledTask = Task<String, Error> {
+            try await Task.sleep(for: .milliseconds(20))
+            return try await service.generateReport(content: "待取消的报告内容")
+        }
+        cancelledTask.cancel()
+
+        do {
+            _ = try await cancelledTask.value
+            XCTFail("已取消的合成任务必须抛出 CancellationError，不得走本地降级返回伪成功")
+        } catch is CancellationError {
+            // 预期行为
+        } catch {
+            XCTFail("预期 CancellationError，实际错误: \(error)")
+        }
+    }
 }
 
 // MARK: - Mock: LLMServiceProtocol
