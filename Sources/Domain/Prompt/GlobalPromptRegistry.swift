@@ -13,10 +13,10 @@ import Dependencies
 
 /// Prompt 变量插值标记常量
 private enum PromptVariableSyntax {
-    /// 变量占位符左定界符 `{{`
-    static let openDelimiter = "{{"
-    /// 变量占位符右定界符 `}}`
-    static let closeDelimiter = "}}"
+    /// 单次扫描占位符正则：`{{key}}`（不包含嵌套花括号，彻底防御二次模板注入）
+    static let placeholderPattern = #"\{\{([^{}]+)\}\}"#
+    /// 正则第一个捕获组索引（占位符 key）
+    static let keyCaptureGroupIndex = 1
 }
 
 /// 业务 Prompt 模块领域划分
@@ -66,14 +66,37 @@ public final class GlobalPromptRegistry: Sendable {
         }
     }
 
-    /// 动态渲染安全的 Prompt 字符串，自动转义与套用安全沙箱
+    /// 动态渲染安全的 Prompt 字符串，单次扫描插值并自动转义，彻底防御二次模板注入与字典遍历非确定性
     public func buildPrompt(domain: PromptDomain, key: String = "default", variables: [String: String] = [:]) -> String {
-        var base = getPrompt(domain: domain, key: key)
-        for (varKey, varVal) in variables {
-            // 转义并安全插值
-            let safeVal = PromptSecurityGuard.shared.sanitize(varVal)
-            base = base.replacingOccurrences(of: PromptVariableSyntax.openDelimiter + varKey + PromptVariableSyntax.closeDelimiter, with: safeVal)
+        let base = getPrompt(domain: domain, key: key)
+        guard !variables.isEmpty,
+              let regex = try? NSRegularExpression(pattern: PromptVariableSyntax.placeholderPattern, options: []) else {
+            return base
         }
-        return base
+
+        let fullNSRange = NSRange(base.startIndex..<base.endIndex, in: base)
+        let matches = regex.matches(in: base, options: [], range: fullNSRange)
+        guard !matches.isEmpty else { return base }
+
+        var result = ""
+        result.reserveCapacity(base.count)
+        var cursor = base.startIndex
+
+        for match in matches {
+            guard let fullRange = Range(match.range, in: base),
+                  let keyRange = Range(match.range(at: PromptVariableSyntax.keyCaptureGroupIndex), in: base) else {
+                continue
+            }
+            result.append(contentsOf: base[cursor..<fullRange.lowerBound])
+            let varKey = String(base[keyRange])
+            if let varVal = variables[varKey] {
+                result.append(PromptSecurityGuard.shared.sanitize(varVal))
+            } else {
+                result.append(contentsOf: base[fullRange])
+            }
+            cursor = fullRange.upperBound
+        }
+        result.append(contentsOf: base[cursor..<base.endIndex])
+        return result
     }
 }

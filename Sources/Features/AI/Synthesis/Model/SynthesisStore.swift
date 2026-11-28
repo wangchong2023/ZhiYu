@@ -346,12 +346,33 @@ public final class SynthesisStore {
         persistResults(for: type)
     }
 
+    private enum ExportSanitizeConstants {
+        static let unsafeTokens = ["..", "/", "\\", ":"]
+        static let replacement = "-"
+    }
+
+    /// 清洗合成文档导出文件名：剥离控制字符/换行、替换路径穿越与分隔符并移除前导隐藏点号
+    internal static func sanitizedExportFileName(from rawName: String, fallback: String) -> String {
+        let disallowed = CharacterSet.controlCharacters.union(.newlines)
+        let withoutControl = String(String.UnicodeScalarView(rawName.unicodeScalars.filter { !disallowed.contains($0) }))
+        var trimmed = withoutControl.trimmingCharacters(in: .whitespacesAndNewlines)
+        while trimmed.hasPrefix(SystemConstants.Character.dot) {
+            trimmed.removeFirst()
+        }
+        var cleaned = ExportSanitizeConstants.unsafeTokens.reduce(trimmed) { partial, token in
+            partial.replacingOccurrences(of: token, with: ExportSanitizeConstants.replacement)
+        }
+        while cleaned.hasPrefix(SystemConstants.Character.dot) {
+            cleaned.removeFirst()
+        }
+        return cleaned.isEmpty ? fallback : cleaned
+    }
+
     /// 导出SynthesisDocument
     /// - Parameter doc: doc
     /// - Returns: 链接
     public func exportSynthesisDocument(_ doc: SynthesisDocument) async throws -> URL {
-        let fileName = doc.name.replacingOccurrences(of: "/", with: "-")
-                               .replacingOccurrences(of: ":", with: "-")
+        let fileName = Self.sanitizedExportFileName(from: doc.name, fallback: doc.type.rawValue)
         let url: URL
         switch doc.type {
         case .mindmap:
@@ -372,8 +393,9 @@ public final class SynthesisStore {
         return url
     }
 
-    /// 清除All
+    /// 清除All（同步递增 vaultGeneration，防止进行中异步合成任务完成后幽灵回写）
     public func clearAll() {
+        vaultGeneration &+= 1
         withMutation(keyPath: \.synthesisResults) {
             _synthesisResults.removeAll()
         }

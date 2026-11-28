@@ -275,21 +275,24 @@
 | **264** | `StreamingDownloadManager`（`UFPStorage`）存在三重安全与并发缺陷：`resumeDataURL(for:)` 直接拼接未清洗的 `taskID`，含 `../`/`/`/`\0` 时触发断点文件目录穿越；`startDownload` 未拦截 `.pending` 状态，首包前双击下载会覆写 `activeTasks` 产生孤儿后台任务；`updateProgress` 速率采样使用墙上时钟 `Date()`，时钟回拨会导致实时速度采样长期卡死 | 传入畸形 `taskID`、首包到达前重复触发下载、或下载中设备发生时钟回拨 | 断点文件目录越界读写/删除、双倍带宽消耗与孤儿任务泄漏、下载速度显示假死 | **High** | 架构设计与安全/网络健壮性 | 新增 `sanitizedTaskFileNameStem` 剥离控制字符/穿越串/前导 `.` 用于断点文件落盘；`startDownload` 将 `.pending` 纳入防重入拦截；`SpeedTrackerState` 改用单调时钟 `systemUptime` 并防御负时间差 | **✅ 已解决** | 是 (通用下载器 taskID 清洗、pending 防重入与单调时钟速率采样) | 是 (`StreamingDownloadTests`) | ✅ 已闭环 |
 | **265** | `PluginMarketService` 存在三重安全与状态机缺陷：`isSafePluginID` 放行前导点号（`.hidden`）与冒号 `:`；`readmeCandidateURLs` 未清洗 `preferredLanguage` 导致恶意语言标识（`../../etc`）注入 URL 路径穿越；`fetchPlugins()` 缺少 `guard !isLoading` 防并发重入守卫 | 恶意插件 ID 以 `.` 开头、异常 Locale 传入路径穿越片段、或连续下拉刷新插件市场 | 创建隐藏插件目录、构造越界 README 请求 URL、并发拉取互相覆写列表状态 | **High** | 架构设计与安全/网络健壮性 | `isSafePluginID` 拦截前导 `.` 与 `:`；`readmeCandidateURLs` 对语言码仅保留 ASCII 字母数字；`fetchPlugins()` 入口增加 `guard !isLoading` 防重入 | **✅ 已解决** | 是 (插件市场 ID 防隐藏、语言码清洗与拉取防重入) | 是 (`PluginMarketServiceTests`) | ✅ 已闭环 |
 | **266** | `ChatCoordinator` 存在空流污染与导出重入缺陷：`runStreamTask` 收到纯空白流式响应仍落盘并追加空助手气泡污染对话历史；`exportChat()` 缺少 `guard !isExporting` 防并发重入守卫 | 模型返回空流/纯空白帧，或用户在导出 PDF 期间连续双击导出按钮 | 聊天界面出现空白 AI 气泡并污染后续上下文、重复并发触发 WebView PDF 导出状态踩踏 | **Medium** | 状态机并发与数据生命周期 | `runStreamTask` 仅在流式正文 trim 非空时才落盘追加助手消息与触发追问预测；`exportChat()` 增加 `guard !isExporting` 防重入与 `defer` 状态复位 | **✅ 已解决** | 是 (流式空气泡过滤与导出动作防重入) | 是 (`ChatCoordinatorTests`) | ✅ 已闭环 |
+| **267** | `TaskCenter` 存在三重生命周期缺陷：`updateTask` 仅在 `.completed` 裁剪历史任务，批量 `.failed` 终态不触发 `trimExcessTasks()` 导致任务堆积；`addIngestSubLog` 未校验任务活跃态，迟到日志污染已完结历史任务；`removeTask`/`reset` 未结束活跃任务的 LiveActivity 导致灵动岛僵尸残留 | 后台任务批量失败、迟到摄取日志到达、或任务运行中被删除/切库重置 | 失败任务长期超限堆积、历史记录日志串扰、锁屏/灵动岛实时活动残留卡死 | **Medium** | 状态机并发与数据生命周期 | `updateTask` 在 `.completed`/`.failed` 双终态触发 `trimExcessTasks()`；`addIngestSubLog` 仅匹配活跃态（`.pending`/`.running`）Ingeest 任务；`removeTask`/`reset` 同步结束活跃 LiveActivity | **✅ 已解决** | 是 (任务中心双终态容量裁剪、活跃日志过滤与灵动岛清理) | 是 (`TaskCenterTests`) | ✅ 已闭环 |
+| **268** | `GlobalPromptRegistry.buildPrompt` 采用 `for (k, v) in variables` 多轮循环 `replacingOccurrences`，存在二次模板注入漏洞与 Swift 字典随机遍历非确定性：当用户输入变量值包含 `{{otherKey}}` 时会被后续迭代二次展开，造成内部变量泄露或跨槽位注入 | 变量字典包含多个键且某个用户输入值含 `{{...}}` 占位符 | 内部上下文/敏感变量被用户输入意外二次展开泄露，且结果随哈希盐随机漂移 | **High** | 架构设计与安全/网络健壮性 | 重构 `buildPrompt` 为基于正则 `\{\{([^{}]+)\}\}` 的单次扫描插值（Single-Pass），替换后的文本不再被二次扫描，彻底根除二次模板注入并保证 100% 确定性 | **✅ 已解决** | 是 (Prompt 模板单次扫描防二次注入范式) | 是 (`GlobalPromptRegistrySupplementTests`) | ✅ 已闭环 |
+| **269** | `SynthesisStore` 存在导出文件名清洗遗漏与清库代次竞态：`exportSynthesisDocument` 仅替换 `/` 与 `:`，未过滤 `..`/`\`/控制字符与前导 `.`；`clearAll()` 未递增 `vaultGeneration`，清空数据期间进行中的异步合成任务完成后会幽灵回写污染空库 | 合成文档重命名为 `../../evil`/`.secret` 后导出，或在生成期间执行全局清空数据 | 导出路径穿越/生成隐藏文件、清空数据后残留幽灵合成文档 | **High** | 状态机并发与数据生命周期 | 新增 `sanitizedExportFileName` 剥离控制字符/换行/穿越串与前导 `.`；`clearAll()` 同步递增 `vaultGeneration` 阻断过期异步任务落盘 | **✅ 已解决** | 是 (合成导出文件名安全清洗与清库代次隔离) | 是 (`SynthesisStoreTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**266 项**
+- **收录问题总数**：**269 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：77 项 (28.9%)
-  - 状态机并发与数据生命周期：60 项 (22.6%)
-  - 架构设计与安全/网络健壮性：88 项 (33.1%)
-  - UI/交互与防御性缺陷：17 项 (6.4%)
-  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (9.0%)
+  - 功能缺陷与核心算法/解析器/数据完整性：77 项 (28.6%)
+  - 状态机并发与数据生命周期：62 项 (23.0%)
+  - 架构设计与安全/网络健壮性：89 项 (33.1%)
+  - UI/交互与防御性缺陷：17 项 (6.3%)
+  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (8.9%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：166 项 (62.4%)
-  - **Medium（功能异常/算法边界/性能损耗）**：73 项 (27.4%)
-  - **Low（样式异味/边界校验/门禁规范）**：27 项 (10.2%)
-- **修复闭环率**：**100% (266/266 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：168 项 (62.5%)
+  - **Medium（功能异常/算法边界/性能损耗）**：74 项 (27.5%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (10.0%)
+- **修复闭环率**：**100% (269/269 项已修复闭环)**
 

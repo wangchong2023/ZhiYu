@@ -166,8 +166,11 @@ public final class TaskCenter {
                 break
             }
 
-            if case .completed = status {
+            switch status {
+            case .completed, .failed:
                 trimExcessTasks()
+            case .pending, .running:
+                break
             }
         }
     }
@@ -231,10 +234,18 @@ public final class TaskCenter {
         }
     }
 
-    /// 向当前活跃的 Ingest 任务中快捷追加子状态日志
+    /// 判断任务是否仍处于活跃态（未终结）
+    private func isActiveStatus(_ status: TaskStatus) -> Bool {
+        switch status {
+        case .pending, .running: return true
+        case .completed, .failed: return false
+        }
+    }
+
+    /// 向当前活跃的 Ingest 任务中快捷追加子状态日志（跳过已完结的历史任务防日志污染）
     /// - Parameter log: 状态描述文本
     public func addIngestSubLog(_ log: String) {
-        if let task = self.tasks.first(where: { $0.type == .ingest }) {
+        if let task = self.tasks.first(where: { $0.type == .ingest && isActiveStatus($0.status) }) {
             self.addSubLog(id: task.id, log: log)
         }
     }
@@ -254,16 +265,29 @@ public final class TaskCenter {
         }
     }
 
-    /// 移除Task
+    /// 移除Task（若被移除任务仍处于活跃态，同步结束对应 LiveActivity 防止灵动岛僵尸残留）
     /// - Parameter id: id
     public func removeTask(_ id: UUID) {
+        if let task = self.tasks.first(where: { $0.id == id }), isActiveStatus(task.status) {
+            Task {
+                await activityService?.endActivity(id: id)
+            }
+        }
         self.tasks.removeAll(where: { $0.id == id })
     }
 
-    /// 重置
+    /// 重置（同步结束所有活跃 LiveActivity 防止切库/清数据后灵动岛残留）
     public func reset() {
+        let activeIDs = self.tasks.filter { isActiveStatus($0.status) }.map(\.id)
         self.tasks.removeAll()
         self.latestStatus = ""
+        if !activeIDs.isEmpty {
+            Task {
+                for id in activeIDs {
+                    await activityService?.endActivity(id: id)
+                }
+            }
+        }
     }
 }
 

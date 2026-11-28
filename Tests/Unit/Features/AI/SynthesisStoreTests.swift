@@ -194,4 +194,18 @@ final class SynthesisStoreTests: XCTestCase {
         XCTAssertEqual(renamed?.name, "架构演进周报")
         XCTAssertEqual(renamed?.sourcePageIDs, [sourceA, sourceB], "重命名后必须完整保留 sourcePageIDs 溯源引用")
     }
+
+    // MARK: - 缺陷 #269 回归：导出文件名路径穿越/隐藏点号/控制字符清洗
+
+    func testSanitizedExportFileName_BlocksTraversalHiddenPrefixAndControlChars() {
+        let traversed = SynthesisStore.sanitizedExportFileName(from: "../../etc/passwd", fallback: "report")
+        XCTAssertFalse(traversed.contains(".."))
+        XCTAssertFalse(traversed.contains("/"))
+
+        let hidden = SynthesisStore.sanitizedExportFileName(from: ".secret\r\n\u{0000}", fallback: "report")
+        XCTAssertFalse(hidden.hasPrefix("."), "导出文件名不得以点号开头")
+        XCTAssertEqual(hidden, "secret")
+
+        XCTAssertEqual(SynthesisStore.sanitizedExportFileName(from: "  ...  ", fallback: "report"), "report")
+    }
 }

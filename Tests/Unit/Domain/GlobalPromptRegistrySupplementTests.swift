@@ -113,6 +113,29 @@ final class GlobalPromptRegistrySupplementTests: XCTestCase {
         XCTAssertFalse(built.contains("{{name}}"), "占位符 {{name}} 不应残留")
     }
 
+    /// 验证单次扫描插值彻底防御二次模板注入：变量值中包含其他变量占位符时绝不二次展开（缺陷 #268）
+    func testBuildPromptPreventsSecondOrderTemplateInjection() {
+        let promptService = PromptService(defaults: testDefaults)
+        promptService.expansionSystemPrompt = "标题：{{title}} | 上下文：{{context}}"
+        let registry = GlobalPromptRegistry(promptService: promptService)
+
+        // 反复执行 10 次验证不受 Swift Dictionary 哈希盐随机顺序影响
+        for _ in 0..<10 {
+            let built = registry.buildPrompt(
+                domain: .chat,
+                key: "default",
+                variables: [
+                    "title": "用户输入 {{secret}} 与 {{context}}",
+                    "context": "正常知识正文",
+                    "secret": "SENSITIVE_INTERNAL_TOKEN"
+                ]
+            )
+            XCTAssertFalse(built.contains("SENSITIVE_INTERNAL_TOKEN"), "变量值中的 {{secret}} 不得被二次模板展开泄露")
+            XCTAssertTrue(built.contains("用户输入 {{secret}} 与 {{context}}"), "用户字面量占位符应保持原样不被二次展开")
+            XCTAssertTrue(built.contains("上下文：正常知识正文"))
+        }
+    }
+
     // MARK: - GlobalPromptRegistry: buildPrompt 多变量同时插值
 
     /// 验证 buildPrompt 多变量同时插值（通过 chat 领域含占位符模板验证）

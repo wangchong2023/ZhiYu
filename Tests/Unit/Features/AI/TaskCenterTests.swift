@@ -385,4 +385,34 @@ final class TaskCenterTests: XCTestCase {
             }
         }
     }
+
+    // MARK: - 缺陷 #267 回归：addIngestSubLog 跳过已完结任务与 failed 终态容量裁剪
+
+    func testAddIngestSubLogIgnoresCompletedOrFailedHistoryTasks() {
+        let completedID = center.addTask(type: .ingest, name: "历史导入", target: "old.md")
+        center.completeTask(id: completedID)
+
+        center.addIngestSubLog("迟到的异步日志")
+
+        let historyTask = center.tasks.first(where: { $0.id == completedID })
+        XCTAssertTrue(historyTask?.subLogs.isEmpty ?? false, "已完结的历史 Ingest 任务不得被迟到日志污染")
+    }
+
+    func testFailedTerminalStatusTriggersExcessTaskTrimming() {
+        let limit = FeatureConstants.TaskCenter.maxRetainedTasks
+        var ids: [UUID] = []
+        for idx in 0..<(limit + 5) {
+            let task = GlobalTask(type: .ai, name: "运行任务\(idx)", target: "t", status: .running(progress: 0.5, stage: .extraction))
+            center.tasks.append(task)
+            ids.append(task.id)
+        }
+        // 运行中任务受保护，超过上限
+        XCTAssertGreaterThan(center.tasks.count, limit)
+
+        // 批量转为 .failed 终态后，必须触发裁剪回到上限以内
+        for taskID in ids {
+            center.failTask(id: taskID, error: "timeout")
+        }
+        XCTAssertLessThanOrEqual(center.tasks.count, limit, "批量失败终态必须触发 trimExcessTasks 防止任务列表无限堆积")
+    }
 }
