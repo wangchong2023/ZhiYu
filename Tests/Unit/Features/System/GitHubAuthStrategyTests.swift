@@ -67,4 +67,18 @@ final class GitHubAuthStrategyTests: XCTestCase {
         // 确认配置项存在且可读取（即使为空也是从配置读取而非硬编码）
         XCTAssertEqual(clientId, AppConfig.gitHubOAuthClientId, "clientId 应从 AppConfig 读取")
     }
+
+    /// 缺陷 #284 回归：纯空白 clientId 必须被拦截并抛出未配置认证错误
+    func testGitHubAuthWhitespaceOnlyClientIdThrowsError() async {
+        let strategy = GitHubAuthStrategy(clientIdForTesting: "   \n\t ")
+        do {
+            _ = try await strategy.acquireCredentials()
+            XCTFail("纯空白 clientId 应该被拦截并抛出错误")
+        } catch let error as NSError {
+            XCTAssertEqual(error.domain, "GitHubAuthStrategy")
+            XCTAssertEqual(error.code, -99)
+        } catch {
+            XCTFail("抛出的不是预期的 NSError: \(error)")
+        }
+    }
 }

@@ -290,21 +290,24 @@
 | **279** | `StreamingDownloadDelegateHelper`（`UFPStorage`）违反自身弱引用注释强持有 `StreamingDownloadManager`（`private let manager`），与 `StreamingDownloadManager.session`（`URLSession` 强持 delegate）形成三元强引用环，且缺少 session 显式失效清理方法导致下载管理器与后台会话永久内存泄漏 | 创建并销毁绑定 `StreamingDownloadDelegateHelper` 的 `StreamingDownloadManager` 实例 | 已完成或取消的下载器与底层 `URLSession` 实例永久驻留内存无法释放，长期运行引发内存泄漏 | **High** | 状态机并发与数据生命周期 | 将 `StreamingDownloadDelegateHelper.manager` 改为 `private weak var manager: StreamingDownloadManager?` 并在回调中安全解包；在 `StreamingDownloadManager` 新增 `invalidateSession()` 显式释放会话 | **✅ 已解决** | 是 (URLSession Delegate 弱引用破环范式) | 是 (`StreamingDownloadTests`) | ✅ 已闭环 |
 | **280** | `TransactionGatekeeper.drain()`（`UFPStorage`）使用单一布尔 `draining` 标识排空状态，并发重入时先超时或先退出的 `drain()` 会提前把 `draining` 清零，导致仍在等待排空的另一次 `drain()` 期间新事务通过 `acquire()` 逃逸进入；且循环未检测 `Task.isCancelled` | 多路热切换或维护任务并发调用 `drain()` 且其中一路超时时间较短，或排空 Task 被取消 | 事务门禁在活跃事务未排空前提前失效，破坏数据库热切换隔离并引发并发写入冲突 | **High** | 状态机并发与数据生命周期 | 引入 `activeDrainCount` 计数器与 `defer` 退出递减，仅当所有并发 `drain()` 全部退出后才解除 `draining`；循环内增加 `Task.isCancelled` 早退 | **✅ 已解决** | 是 (并发重入排空门禁引用计数保护) | 是 (`StorageGuardTests`) | ✅ 已闭环 |
 | **281** | `KeychainService.store(key:value:)` 先无条件执行 `try? delete(key:)` 再执行 `SecItemAdd`，非原子更新导致写入失败（如锁屏 `errSecInteractionNotAllowed`）时原凭据已被永久销毁，且并发覆盖读时存在 `nil` 空窗期 | 更新已有 Token/密钥时发生并发读取或底层 Keychain 写入失败 | 登录态凭据意外永久丢失或并发校验读取到 `nil` 触发误登出 | **High** | 架构设计与安全/网络健壮性 | 移除前置破坏性 `try? delete(key:)`，直接走 `SecItemAdd` + `errSecDuplicateItem` 降级 `SecItemUpdate` 原子覆盖路径 | **✅ 已解决** | 是 (Keychain 凭据原子覆写保护) | 是 (`KeychainServiceTests`) | ✅ 已闭环 |
+| **282** | `PromptSecuritySanitizer`（`ZhiYuAICore`）存在 XML 沙箱逃逸与 Unicode 混淆绕过漏洞：`sanitizeAndWrap` 仅匹配精确字面 `<tag>` / `</tag>`，攻击者输入 `</tag >`、`</tag\t>` 或 `<tag role="system">` 可直接闭合外部隔离标签；`scanJailbreakAttempt` 未做全角兼容归一化与多空白/换行折叠，易被 `ｉｇｎｏｒｅ\n  ｐｒｅｖｉｏｕｓ` 绕过 | 用户输入包含带空格/属性 XML 标签或全角/换行混淆的越狱 Prompt | 恶意输入直接逃逸 XML 提示词沙箱并劫持系统指令，或绕过越狱检测拦截 | **High** | 架构设计与安全/网络健壮性 | `sanitizeAndWrap` 改用大小写不敏感正则转义所有同名开闭、带属性及带空白闭合标签；`scanJailbreakAttempt` 增加 `.precomposedStringWithCompatibilityMapping` 兼容归一化与 `\s+` 空白折叠 | **✅ 已解决** | 是 (XML 沙箱标签变体转义与兼容归一化防护) | 是 (`PromptSecuritySanitizerEscapeTests`/`PromptSecuritySanitizerJailbreakTests`) | ✅ 已闭环 |
+| **283** | `ContextReranker.rerank()`（`ZhiYuAICore`）仅使用 `split(separator: " ")` 进行分词，导致中文/日文等 CJK 无空格文本整句被当作单个 token、`crossScore` 恒为 `0.0`，且英文标点与换行黏连导致关键词无法命中 | 对中文知识库或含标点/换行的中英文混合文档执行 RAG 二阶段重排序 | 中文场景二阶段交叉重排彻底失效，仅退化为依赖初始粗排分数 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 抽取 `tokenize(_:)` 辅助方法，引入 Apple `NaturalLanguage` `NLTokenizer(unit: .word)` 实现中英文混排自动分词并剥离标点空白 | **✅ 已解决** | 是 (CJK 与多语言混排 RAG 分词重排) | 是 (`ContextRerankerEdgeCaseTests`) | ✅ 已闭环 |
+| **284** | `GitHubAuthStrategy.acquireCredentials()` 仅检查 `clientId.isEmpty` 未拦截纯空白 `clientId` 且未对 URL 参数编码；同时未绑定 `withTaskCancellationHandler` 且并发重入时会直接覆盖前序 `activeSession` | 配置纯空白 `clientId`、连续双击 GitHub 登录或授权期间外部取消认证 `Task` | 发出非法空白 `client_id` 授权请求、并发会话泄漏或取消任务后系统授权弹窗与 continuation 持续挂起 | **Medium** | 状态机并发与数据生命周期 | 对 `clientId` 执行 trim 判空与 `urlQueryAllowed` 编码；接入 `withTaskCancellationHandler` 与前置 `cancelActiveSession()` 清理重入会话 | **✅ 已解决** | 是 (Web 认证会话并发清理与 Task 取消联动) | 是 (`GitHubAuthStrategyTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**281 项**
+- **收录问题总数**：**284 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：79 项 (28.1%)
-  - 状态机并发与数据生命周期：69 项 (24.6%)
-  - 架构设计与安全/网络健壮性：92 项 (32.7%)
+  - 功能缺陷与核心算法/解析器/数据完整性：80 项 (28.2%)
+  - 状态机并发与数据生命周期：70 项 (24.6%)
+  - 架构设计与安全/网络健壮性：93 项 (32.7%)
   - UI/交互与防御性缺陷：17 项 (6.0%)
   - 代码坏味道与去魔鬼化/DRY 治理：24 项 (8.5%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：178 项 (63.3%)
-  - **Medium（功能异常/算法边界/性能损耗）**：76 项 (27.0%)
-  - **Low（样式异味/边界校验/门禁规范）**：27 项 (9.6%)
-- **修复闭环率**：**100% (281/281 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：180 项 (63.4%)
+  - **Medium（功能异常/算法边界/性能损耗）**：77 项 (27.1%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (9.5%)
+- **修复闭环率**：**100% (284/284 项已修复闭环)**
 

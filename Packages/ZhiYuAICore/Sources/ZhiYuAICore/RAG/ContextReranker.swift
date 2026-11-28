@@ -10,6 +10,7 @@
 //
 
 import Foundation
+import NaturalLanguage
 import UFPCore
 import ZhiYuDomain
 
@@ -53,11 +54,11 @@ public struct ContextReranker: Sendable {
         minScore: Float = Defaults.minScore
     ) -> [RerankedResult] {
         guard topK > 0, minScore.isFinite else { return [] }
-        let queryTokens = Set(query.lowercased().split(separator: " ").map(String.init))
+        let queryTokens = Self.tokenize(query)
 
         let reranked = candidates.compactMap { candidate -> RerankedResult? in
             guard candidate.initialScore.isFinite else { return nil }
-            let chunkTokens = Set(candidate.chunk.content.lowercased().split(separator: " ").map(String.init))
+            let chunkTokens = Self.tokenize(candidate.chunk.content)
             let overlap = Float(queryTokens.intersection(chunkTokens).count)
             let crossScore = queryTokens.isEmpty ? 0.0 : (overlap / Float(queryTokens.count))
 
@@ -68,5 +69,22 @@ public struct ContextReranker: Sendable {
         }
 
         return Array(reranked.sorted(by: { $0.score > $1.score }).prefix(topK))
+    }
+
+    /// 基于 NaturalLanguage 分词器提取中英文混合词元并剥离标点空白，解决 CJK 无空格文本及标点黏连分词失效问题
+    internal static func tokenize(_ text: String) -> Set<String> {
+        let normalized = text.lowercased()
+        let tokenizer = NLTokenizer(unit: .word)
+        tokenizer.string = normalized
+
+        var tokens = Set<String>()
+        tokenizer.enumerateTokens(in: normalized.startIndex..<normalized.endIndex) { range, _ in
+            let token = String(normalized[range]).trimmingCharacters(in: .whitespacesAndNewlines)
+            if !token.isEmpty {
+                tokens.insert(token)
+            }
+            return true
+        }
+        return tokens
     }
 }

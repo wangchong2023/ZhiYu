@@ -48,66 +48,80 @@ public final class GitHubAuthStrategy: NSObject, AuthStrategy {
     /// acquireCredentials
     /// - Returns: 返回值
     public func acquireCredentials() async throws -> AuthCredential {
-        return try await withCheckedThrowingContinuation { continuation in
-            let state = UUID().uuidString
-            
-            // 1. 防御性检查：验证 clientId 是否被正确配置
-            if clientId.isEmpty {
-                resumeAuthError(continuation, code: GitHubAuthConfig.authFailedCode, description: L10n.Auth.authFailed)
-                return
-            }
-            
-            let encodedScope = GitHubAuthConfig.oauthScope.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? GitHubAuthConfig.oauthScope
-            let urlString = "\(APIPaths.gitHubOAuthAuthorize)?client_id=\(clientId)&state=\(state)&scope=\(encodedScope)"
-            guard let url = URL(string: urlString) else {
-                resumeAuthError(continuation, code: GitHubAuthConfig.urlInvalidCode, description: FeatureConstants.ErrorDescription.githubURLError)
-                return
-            }
-            
-            let session = ASWebAuthenticationSession(url: url, callbackURLScheme: callbackScheme) { [weak self] callbackURL, error in
-                guard let self else {
-                    continuation.resume(throwing: CancellationError())
-                    return
-                }
-                self.activeSession = nil
-                if let error = error {
-                    continuation.resume(throwing: error)
+        let trimmedClientId = clientId.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedClientId.isEmpty else {
+            throw AppError.auth(domain: GitHubAuthConfig.domain, code: GitHubAuthConfig.authFailedCode, description: L10n.Auth.authFailed)
+        }
+
+        // 防止并发双击覆盖前序活跃授权会话
+        cancelActiveSession()
+
+        return try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { continuation in
+                let state = UUID().uuidString
+                let encodedClientId = trimmedClientId.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? trimmedClientId
+                let encodedScope = GitHubAuthConfig.oauthScope.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? GitHubAuthConfig.oauthScope
+                let urlString = "\(APIPaths.gitHubOAuthAuthorize)?client_id=\(encodedClientId)&state=\(state)&scope=\(encodedScope)"
+                guard let url = URL(string: urlString) else {
+                    resumeAuthError(continuation, code: GitHubAuthConfig.urlInvalidCode, description: FeatureConstants.ErrorDescription.githubURLError)
                     return
                 }
 
-                guard let callbackURL = callbackURL,
-                      let components = URLComponents(url: callbackURL, resolvingAgainstBaseURL: true),
-                      let queryItems = components.queryItems,
-                      let code = queryItems.first(where: { $0.name == FeatureConstants.OAuthField.code })?.value else {
-                    self.resumeAuthError(continuation, code: GitHubAuthConfig.callbackInvalidCode, description: FeatureConstants.ErrorDescription.githubCallbackError)
-                    return
+                let session = ASWebAuthenticationSession(url: url, callbackURLScheme: callbackScheme) { [weak self] callbackURL, error in
+                    guard let self else {
+                        continuation.resume(throwing: CancellationError())
+                        return
+                    }
+                    self.activeSession = nil
+                    if let error = error {
+                        continuation.resume(throwing: error)
+                        return
+                    }
+
+                    guard let callbackURL = callbackURL,
+                          let components = URLComponents(url: callbackURL, resolvingAgainstBaseURL: true),
+                          let queryItems = components.queryItems,
+                          let code = queryItems.first(where: { $0.name == FeatureConstants.OAuthField.code })?.value else {
+                        self.resumeAuthError(continuation, code: GitHubAuthConfig.callbackInvalidCode, description: FeatureConstants.ErrorDescription.githubCallbackError)
+                        return
+                    }
+
+                    // CSRF 防护：校验回调 URL 中的 state 与生成时 state 一致
+                    let returnedState = queryItems.first(where: { $0.name == FeatureConstants.OAuthField.state })?.value
+                    guard returnedState == state else {
+                        self.resumeAuthError(continuation, code: GitHubAuthConfig.callbackInvalidCode, description: FeatureConstants.ErrorDescription.githubStateMismatch)
+                        return
+                    }
+
+                    let cred = AuthCredential(
+                        identityType: FeatureConstants.DefaultValue.github,
+                        identifier: "",
+                        credential: code,
+                        extraInfo: [FeatureConstants.OAuthField.state: state]
+                    )
+                    continuation.resume(returning: cred)
                 }
 
-                // CSRF 防护：校验回调 URL 中的 state 与生成时 state 一致
-                let returnedState = queryItems.first(where: { $0.name == FeatureConstants.OAuthField.state })?.value
-                guard returnedState == state else {
-                    self.resumeAuthError(continuation, code: GitHubAuthConfig.callbackInvalidCode, description: FeatureConstants.ErrorDescription.githubStateMismatch)
+                session.presentationContextProvider = self
+                session.prefersEphemeralWebBrowserSession = false
+                self.activeSession = session
+                guard session.start() else {
+                    self.activeSession = nil
+                    resumeAuthError(continuation, code: GitHubAuthConfig.authFailedCode, description: L10n.Auth.authFailed)
                     return
                 }
-
-                let cred = AuthCredential(
-                    identityType: FeatureConstants.DefaultValue.github,
-                    identifier: "",
-                    credential: code,
-                    extraInfo: [FeatureConstants.OAuthField.state: state]
-                )
-                continuation.resume(returning: cred)
             }
-            
-            session.presentationContextProvider = self
-            session.prefersEphemeralWebBrowserSession = false
-            self.activeSession = session
-            guard session.start() else {
-                self.activeSession = nil
-                resumeAuthError(continuation, code: GitHubAuthConfig.authFailedCode, description: L10n.Auth.authFailed)
-                return
+        } onCancel: {
+            Task { @MainActor [weak self] in
+                self?.cancelActiveSession()
             }
         }
+    }
+
+    /// 取消并释放当前正在进行的 Web 认证会话
+    internal func cancelActiveSession() {
+        activeSession?.cancel()
+        activeSession = nil
     }
 
     /// 统一抛出 GitHub 认证错误，消除 4 处重复的 continuation.resume(throwing: AppError.auth(...)) 调用

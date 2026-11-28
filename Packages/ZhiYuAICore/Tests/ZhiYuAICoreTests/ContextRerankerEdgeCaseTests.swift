@@ -95,4 +95,21 @@ final class ContextRerankerEdgeCaseTests: XCTestCase {
         let filtered = reranker.rerank(query: "swift", candidates: candidates, topK: 5, minScore: 0.0)
         XCTAssertEqual(filtered.map(\.chunk.id), ["valid"], "仅有限分数的候选应保留，NaN/Inf 不得污染排序")
     }
+
+    /// 缺陷 #283 回归：CJK 无空格中文及带标点英文查询必须正确分词并提升重排分数
+    func testChineseAndPunctuationTokenizationImprovesRerankScore() {
+        let reranker = ContextReranker()
+        let relevant = ContextRerankChunk(id: "cn-hit", content: "使用 Swift, Concurrency! 构建人工智能与知识图谱系统。", index: 0)
+        let irrelevant = ContextRerankChunk(id: "cn-miss", content: "今天天气晴朗，适合户外散步。", index: 1)
+
+        let results = reranker.rerank(
+            query: "人工智能知识图谱 Swift",
+            candidates: [(chunk: irrelevant, initialScore: 0.5), (chunk: relevant, initialScore: 0.5)],
+            topK: 2,
+            minScore: 0.0
+        )
+
+        XCTAssertEqual(results.first?.chunk.id, "cn-hit", "中文无空格与带标点文本必须命中并排在首位")
+        XCTAssertGreaterThan(results[0].score, results[1].score, "命中中文与英文关键词的候选应获得更高的交叉重排分数")
+    }
 }
