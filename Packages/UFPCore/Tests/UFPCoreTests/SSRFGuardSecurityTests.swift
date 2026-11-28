@@ -181,4 +181,28 @@ final class SSRFGuardSecurityTests: XCTestCase {
         XCTAssertTrue(SSRFGuard.isSafeURL(URL(string: "https://[::ffff:1.1.1.1]/")!))
         XCTAssertTrue(SSRFGuard.isSafeURL(URL(string: "https://example.com./")!))
     }
+
+    // MARK: - 缺陷 #276 回归：Zone ID 绕过、IPv4 兼容/NAT64 IPv6、组播/广播与缩写溢出阻断
+
+    func testIsSafeURL_zoneIDCompatibleNAT64MulticastAndOverflow_rejects() throws {
+        let bypassURLs = [
+            "http://[::1%25lo0]/admin",
+            "http://[fe80::1%25en0]/secret",
+            "http://[::127.0.0.1]/admin",
+            "http://[::169.254.169.254]/latest/meta-data/",
+            "http://[64:ff9b::127.0.0.1]/admin",
+            "http://[64:ff9b::10.0.0.1]/internal",
+            "http://224.0.0.1/multicast",
+            "http://255.255.255.255/broadcast"
+        ]
+        for urlStr in bypassURLs {
+            let url = try XCTUnwrap(URL(string: urlStr))
+            XCTAssertFalse(SSRFGuard.isSafeURL(url), "新型 SSRF 绕过向量必须被拦截: \(urlStr)")
+        }
+
+        // 合法公网 NAT64（64:ff9b::1.1.1.1）仍应允许；缩写段位宽溢出走私必须返回 nil
+        XCTAssertTrue(SSRFGuard.isSafeURL(try XCTUnwrap(URL(string: "https://[64:ff9b::1.1.1.1]/"))))
+        XCTAssertNil(IPAddressUtility.normalizeIP("127.16777217"), "2 段缩写尾段超过 24 位上限必须拒绝")
+        XCTAssertNil(IPAddressUtility.normalizeIP("10.1.70000"), "3 段缩写尾段超过 16 位上限必须拒绝")
+    }
 }

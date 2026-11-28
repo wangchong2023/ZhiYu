@@ -102,5 +102,42 @@ final class LocalAnalyticsServiceTests: XCTestCase {
         // trackError 不写文件，仅打印日志
     }
 
-    // MARK: - 单例一致性
+    // MARK: - 缺陷 #277 回归：非 JSON 原生类型防崩与并发串行落盘完整性
+
+    /// 验证：properties 含 Date/UUID/URL/NaN 等非 JSONSerialization 原生类型时不得触发 NSInvalidArgumentException 崩溃
+    func testTrackEventWithNonJSONPropertyTypesDoesNotCrashAndPersistsSafely() async throws {
+        let uuid = UUID()
+        let sampleURL = try XCTUnwrap(URL(string: "https://zhiyu.app/test"))
+        service.trackEvent(
+            "complex_props",
+            properties: [
+                "date": Date(timeIntervalSince1970: 1_700_000_000),
+                "url": sampleURL,
+                "uuid": uuid,
+                "nanValue": Double.nan,
+                "nested": ["inf": Double.infinity, "flag": true]
+            ]
+        )
+        try await Task.sleep(nanoseconds: 300_000_000)
+
+        let data = try Data(contentsOf: tempLogURL)
+        let logs = try JSONSerialization.jsonObject(with: data) as? [[String: Any]]
+        XCTAssertEqual(logs?.count, 1)
+        let props = logs?[0]["properties"] as? [String: Any]
+        XCTAssertEqual(props?["url"] as? String, "https://zhiyu.app/test")
+        XCTAssertEqual(props?["uuid"] as? String, uuid.uuidString)
+    }
+
+    /// 验证：连续高频调用 trackEvent 不因并发读写 RMW 竞争丢失事件或损坏 JSON
+    func testTrackEventRapidBurstPreservesAllEventsViaSerialQueue() async throws {
+        let burstCount = 15
+        for idx in 0..<burstCount {
+            service.trackEvent("burst_\(idx)", properties: ["index": idx])
+        }
+        try await Task.sleep(nanoseconds: 600_000_000)
+
+        let data = try Data(contentsOf: tempLogURL)
+        let logs = try JSONSerialization.jsonObject(with: data) as? [[String: Any]]
+        XCTAssertEqual(logs?.count, burstCount, "串行原子写入下连续 \(burstCount) 条埋点不得因竞争丢失")
+    }
 }

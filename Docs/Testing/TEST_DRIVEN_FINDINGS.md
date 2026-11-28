@@ -284,21 +284,24 @@
 | **273** | `IngestService` 存在四重边界与并发缺陷：`ingestFolder` 目录枚举未过滤子目录导致把文件夹当作文件摄入并污染进度分母，且取消时仍把任务标记为 `.completed`、空目录仍创建幽灵任务；`ingestDocument` 放行纯空白文档；`extractConcepts`/`linkConceptsSafely` 未拦截纯空白标题（`[[   ]]` 污染） | 批量导入嵌套子目录、取消导入任务、导入纯空白文件或含空白标题页面 | 目录被误当文件、任务状态虚标完成、空文档与 `[[   ]]` 垃圾双链污染知识库 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 抽取 `regularFileURLs(in:)` 严格过滤常规文件并早退空目录；`withTaskGroup` 校验 `Task.isCancelled` 改调 `failTask`；`ingestDocument` 与概念链接过滤纯空白文本与概念 | **✅ 已解决** | 是 (文件夹枚举正则过滤、取消状态保真与空白概念拦截) | 是 (`IngestServiceConceptLinkingTests`) | ✅ 已闭环 |
 | **274** | `LintService` 存在四重图谱巡检边界缺陷：`checkBrokenLinks` 未对同页等价缺失目标去重且对纯空白链接误报断链；`checkCircularReferences` 未识别通过页面别名（`aliases`）构成的循环引用；`titleMap`/`checkDuplicateTitles` 未归一化标题与链接首尾空白并会将空白未命名草稿误判为重名页面 | 同一页多次引用大小写差异缺失链接、存在 `[[别名]]` 双向循环、或存在多篇未命名草稿 | 重复报错刷屏、漏报别名循环引用、`[[ 标题 ]]` 误报断链与空白草稿误报重名 | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | 抽取 `normalizedKey` 统一 trim+lowercase 归一化；`checkBrokenLinks` 按页内集合去重并跳过空白；`checkCircularReferences` 通过 `titleMap` 匹配含别名的回链；`checkDuplicateTitles` 跳过空白标题 | **✅ 已解决** | 是 (知识库巡检归一化键、同页断链去重与别名成环识别) | 是 (`LintServiceTests`) | ✅ 已闭环 |
 | **275** | `LabAudioRecorder` 存在异步准备期并发竞态与墙上时钟倒退缺陷：`startRecording` 在 `requestAndActivateRecordSession` 与 `setupAudioRecorderAsync` 两次 `await` 挂起期间 `isRecording` 仍为 `false`，连击触发双录音器并存，且中途 `stopRecording` 无法阻断异步回调后台偷跑；计量使用 `Date()` 在时钟回拨时产生负时长与负号错位格式 | 权限弹窗等待或录音初始化期间双击录音/点停止，或录音中发生系统时钟回拨 | 幽灵后台录音器泄漏、连击覆盖文件崩溃、界面显示 `-01:-05.-3` 异常时长 | **High** | 状态机并发与数据生命周期 | 增加 `isPreparingRecording` 防重入锁与 `recordingGeneration` 代际令牌，过时回调自动销毁孤儿录音器；计时改用单调递增 `systemUptime` 并新增 `formatDuration` 钳位负数与 NaN/Infinity | **✅ 已解决** | 是 (异步硬件初始化代际守卫与单调时钟录音计时) | 是 (`ModelLabMultimodalTests`) | ✅ 已闭环 |
+| **276** | `SSRFGuard` 与 `IPAddressUtility`（`UFPCore`）存在 IPv6 SSRF 绕过与缩写溢出走私漏洞：`http://[::1%25lo0]` / `[fe80::1%25en0]` 等带 Zone ID 的 URL 导致 `inet_pton` 返回 `0` 直接放行；未拦截 IPv4 兼容 `::a.b.c.d` 与 NAT64 `64:ff9b::/96` 内嵌私有 IP；`isPrivateIPv4` 漏检 `224.0.0.0/4` 组播/广播段；`combineOctets` 对 2/3 段缩写未校验尾段位宽上限 | 构造带 `%zone` 后缀的 IPv6 地址、NAT64 隧道 `64:ff9b::127.0.0.1`、`::169.254.169.254` 或 `224.0.0.1`/`255.255.255.255` | 攻击者利用 Zone ID 或 NAT64/IPv4-compatible 绕过 SSRF 防火墙探测本机与内网 | **High** | 架构设计与安全/网络健壮性 | 新增 `stripIPv6BracketsAndZone` 剥离 `%zone`；统一 `isDangerousIPv6Bytes` 拦截 IPv4 兼容与 NAT64 内嵌私有地址；补充 `multicastOrReservedStartOctet` (224) 与 `combineOctets` 位宽上限校验 | **✅ 已解决** | 是 (IPv6 Zone ID 剥离、NAT64 穿透防护与 IPv4 位宽校验) | 是 (`SSRFGuardSecurityTests`) | ✅ 已闭环 |
+| **277** | `LocalAnalyticsService` 存在未捕获 ObjC 崩溃与并发 JSON 撕裂风险：`trackEvent` 直接把任意 `[String: Any]` 传入 `JSONSerialization.data`，若含 `Date`/`URL`/`UUID`/`Double.nan` 会抛出未捕获 ObjC `NSInvalidArgumentException` 直接闪退；`saveEventToFile` 使用并发 `DispatchQueue.global` + 非原子写导致丢事件与 JSON 损坏且文件无上限膨胀 | 埋点属性附带 `Date`/`URL`/`Double.nan` 或高频并发埋点 | 应用直接触发底层 `NSException` 闪退、埋点日志文件损坏与磁盘无限膨胀 | **High** | 稳定性与并发安全 | 新增 `sanitizeJSONObject` 递归转换日期/链接/UUID/非有限浮点并加 `JSONSerialization.isValidJSONObject` 守卫；迁移至专用串行 `ioQueue` + `.atomicWrite` 并限制最大保留 1000 条记录 | **✅ 已解决** | 是 (JSON 属性安全清洗与串行原子埋点落盘范式) | 是 (`LocalAnalyticsServiceTests`) | ✅ 已闭环 |
+| **278** | `Router` 与 `AuthSession` 存在状态残留漏洞：`AuthSession.update(user:)` 在直接切换不同账号或置空 `nil`（非经过 `logout`）时未清空 `PaymentRetryQueue`，存在跨账号错绑收据风险；`Router.dismissSheet()` 遗漏 Profile/Plan/Plugins/About/CommandPalette 6 个面板状态；`syncTab(for:)` 遗漏 `.sources` 与 `.healthCheck` 映射 | 直接替换登录态用户、触发全局 `dismissSheet()`、或切换至 `.sources`/`.healthCheck` | 跨账号支付收据串号绑定、关闭弹窗指令失效、主 Tab 选中态不同步 | **Medium** | 状态机并发与数据生命周期 | `AuthSession.update` 检测账号清空或变更时同步取消待重试支付队列；`Router.dismissSheet` 完整复位所有弹出面板与命令面板；补全 `syncTab` 对 `.sources`/`.healthCheck` 映射 | **✅ 已解决** | 是 (跨账号切换支付队列隔离与路由状态完整复位) | 是 (`RouterNavigationPathStressTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**275 项**
+- **收录问题总数**：**278 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：79 项 (28.7%)
-  - 状态机并发与数据生命周期：65 项 (23.6%)
-  - 架构设计与安全/网络健壮性：90 项 (32.7%)
-  - UI/交互与防御性缺陷：17 项 (6.2%)
-  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (8.7%)
+  - 功能缺陷与核心算法/解析器/数据完整性：79 项 (28.4%)
+  - 状态机并发与数据生命周期：67 项 (24.1%)
+  - 架构设计与安全/网络健壮性：91 项 (32.7%)
+  - UI/交互与防御性缺陷：17 项 (6.1%)
+  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (8.6%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：173 项 (62.9%)
-  - **Medium（功能异常/算法边界/性能损耗）**：75 项 (27.3%)
-  - **Low（样式异味/边界校验/门禁规范）**：27 项 (9.8%)
-- **修复闭环率**：**100% (275/275 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：175 项 (62.9%)
+  - **Medium（功能异常/算法边界/性能损耗）**：76 项 (27.3%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (9.7%)
+- **修复闭环率**：**100% (278/278 项已修复闭环)**
 

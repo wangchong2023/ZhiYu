@@ -61,4 +61,49 @@ final class RouterNavigationPathStressTests: XCTestCase {
         XCTAssertFalse(router.isShowingSettingsSheet)
         XCTAssertFalse(router.isShowingAISettingsSheet)
     }
+
+    // MARK: - 4. 缺陷 #278 回归：全弹窗重置、SidebarTab 完整性与跨账号切换清理重试队列
+
+    func testDismissSheetAndSourcesHealthCheckSyncTab_WorkCompletely() async {
+        let router = Router()
+        router.isShowingSettingsSheet = true
+        router.isShowingAISettingsSheet = true
+        router.isShowingProfileMenu = true
+        router.isShowingProfileSheet = true
+        router.isShowingPlanSheet = true
+        router.isShowingPluginsSheet = true
+        router.isShowingAboutSheet = true
+        router.showCommandPalette = true
+
+        router.dismissSheet()
+
+        XCTAssertFalse(router.isShowingProfileMenu)
+        XCTAssertFalse(router.isShowingProfileSheet)
+        XCTAssertFalse(router.isShowingPlanSheet)
+        XCTAssertFalse(router.isShowingPluginsSheet)
+        XCTAssertFalse(router.isShowingAboutSheet)
+        XCTAssertFalse(router.showCommandPalette)
+
+        router.selectedTab = .chat
+        router.sidebarSelection = .tool(.sources)
+        XCTAssertEqual(router.selectedTab, .knowledge, "切换至信源工具应同步主 Tab 至 .knowledge")
+
+        router.selectedTab = .synthesis
+        router.sidebarSelection = .tool(.healthCheck)
+        XCTAssertEqual(router.selectedTab, .knowledge, "切换至健康检查应同步主 Tab 至 .knowledge")
+
+        // AuthSession 切换不同用户账号时同步清空遗留待重试支付队列
+        let queue = PaymentRetryQueue.shared
+        await queue.cancelAllPending()
+        AuthSession.shared.update(user: User(id: UUID(), name: "User A", email: "a@example.com"))
+        await queue.enqueue(productId: "pro.monthly", receiptData: "receipt_a", transactionId: "tx_switch_user")
+        let countAfterEnqueue = await queue.pendingCount
+        XCTAssertEqual(countAfterEnqueue, 1)
+
+        AuthSession.shared.update(user: User(id: UUID(), name: "User B", email: "b@example.com"))
+        try? await Task.sleep(for: .milliseconds(80))
+        let countAfterSwitch = await queue.pendingCount
+        XCTAssertEqual(countAfterSwitch, 0, "直接切换另一登录账号时必须清空前序账号遗留支付队列")
+        AuthSession.shared.logout()
+    }
 }

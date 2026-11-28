@@ -200,9 +200,8 @@ final class Router: TestStateResettable {
             case .search:
                 // 搜索现在被合并到知识库 Tab
                 selectedTab = .knowledge
-            case .pageList, .dashboard, .lint, .tagCloud, .taskCenter, .weeklyReport, .log, .collab, .pluginMarket:
+            case .pageList, .dashboard, .lint, .healthCheck, .tagCloud, .taskCenter, .weeklyReport, .log, .collab, .pluginMarket, .sources:
                 selectedTab = .knowledge
-            default: break
             }
         case .filteredIndex:
             selectedTab = .knowledge
@@ -268,10 +267,16 @@ final class Router: TestStateResettable {
         languageForceUpdate.toggle()
     }
     
-    /// 关闭当前显示的 sheet (通过单例路由协调)
+    /// 关闭当前显示的全部弹窗与命令面板 (通过单例路由协调)
     func dismissSheet() {
         isShowingSettingsSheet = false
         isShowingAISettingsSheet = false
+        isShowingProfileMenu = false
+        isShowingProfileSheet = false
+        isShowingPlanSheet = false
+        isShowingPluginsSheet = false
+        isShowingAboutSheet = false
+        showCommandPalette = false
     }
 
     /// 仅用于预览和测试的公开初始化器

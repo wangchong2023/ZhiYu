@@ -92,12 +92,9 @@ public struct SSRFGuard: Sendable {
         return colonCount >= 2
     }
 
-    /// 判断 host 是否为 IPv6 环回地址（::1 的任何等价形式）
-    /// 使用 POSIX inet_pton 归一化为 16 字节后做字节级检测，
-    /// 覆盖 ::1、0:0:0:0:0:0:0:1、[::1]、[0:0:0:0:0:0:0:1] 等所有形式
+    /// 判断 host 是否为 IPv6 环回地址（::1 的任何等价形式，自动剥离 Zone ID）
     static func isIPv6Loopback(_ host: String) -> Bool {
-        let cleaned = host.replacingOccurrences(of: "[", with: "")
-            .replacingOccurrences(of: "]", with: "")
+        let cleaned = IPAddressUtility.stripIPv6BracketsAndZone(host)
         var address = in6_addr()
         let result = cleaned.withCString { ptr in
             inet_pton(AF_INET6, ptr, &address)
@@ -117,39 +114,16 @@ public struct SSRFGuard: Sendable {
         }
     }
 
-    /// 字节级检测危险 IPv6 地址：未指定地址 (::)、IPv4-mapped 私有/环回/链路本地地址 (::ffff:a.b.c.d)、
-    /// Unique Local (fc00::/7) 与 Link-Local (fe80::/10)
+    /// 字节级检测危险 IPv6 地址（含 Zone ID 剥离、未指定地址 ::、IPv4 映射/兼容/NAT64 与私有/链路本地段）
     static func isUnsafeIPv6(_ host: String) -> Bool {
-        let cleaned = host.replacingOccurrences(of: "[", with: "")
-            .replacingOccurrences(of: "]", with: "")
+        let cleaned = IPAddressUtility.stripIPv6BracketsAndZone(host)
         var address = in6_addr()
         let result = cleaned.withCString { ptr in
             inet_pton(AF_INET6, ptr, &address)
         }
         guard result == 1 else { return false }
         return withUnsafeBytes(of: address) { bytes in
-            guard bytes.count == NetworkConstants.IPv6PrivateRange.totalBytes else { return false }
-            // 1. 全零未指定地址 (::)
-            if bytes.allSatisfy({ $0 == 0 }) {
-                return true
-            }
-            // 2. IPv4-mapped IPv6 (::ffff:0:0/96) → 提取末 4 字节委托 IPAddressUtility.isPrivateIPv4
-            let isZeroPrefix = (0..<NetworkConstants.IPv6PrivateRange.v4MappedZeroPrefixCount).allSatisfy { bytes[$0] == 0 }
-            if isZeroPrefix,
-               bytes[NetworkConstants.IPv6PrivateRange.v4MappedIndex1] == NetworkConstants.IPv6PrivateRange.v4MappedMarker,
-               bytes[NetworkConstants.IPv6PrivateRange.v4MappedIndex2] == NetworkConstants.IPv6PrivateRange.v4MappedMarker {
-                let mappedIPv4 = "\(bytes[NetworkConstants.IPv6PrivateRange.v4MappedOctetIndex0]).\(bytes[NetworkConstants.IPv6PrivateRange.v4MappedOctetIndex1]).\(bytes[NetworkConstants.IPv6PrivateRange.v4MappedOctetIndex2]).\(bytes[NetworkConstants.IPv6PrivateRange.v4MappedOctetIndex3])"
-                return IPAddressUtility.isPrivateIPv4(mappedIPv4)
-            }
-            // 3. Unique Local (fc00::/7) 与 Link-Local (fe80::/10) 字节级精确判断
-            if (bytes[0] & NetworkConstants.IPv6PrivateRange.uniqueLocalMask) == NetworkConstants.IPv6PrivateRange.uniqueLocalExpected {
-                return true
-            }
-            if bytes[0] == NetworkConstants.IPv6PrivateRange.linkLocalFirstByte,
-               (bytes[1] & NetworkConstants.IPv6PrivateRange.linkLocalSecondByteMask) == NetworkConstants.IPv6PrivateRange.linkLocalSecondByteExpected {
-                return true
-            }
-            return false
+            IPAddressUtility.isDangerousIPv6Bytes(bytes)
         }
     }
 
@@ -158,13 +132,10 @@ public struct SSRFGuard: Sendable {
     // 消除 SSRFGuard 与 IPAddressUtility 之间的 5 处代码重复（~243 tokens）。
     // 调用方直接使用 IPAddressUtility.normalizeIP / IPAddressUtility.isPrivateIPv4。
 
-    /// 校验 IPv6 地址是否属于私有地址段（fc00::/7, fe80::/10）
+    /// 校验 IPv6 地址是否属于私有地址段（fc00::/7, fe80::/10，自动剥离方括号与 Zone ID）
     /// - Note: 调用前应先通过 isIPv6Format 确认 host 为 IPv6 格式
     static func isPrivateIPv6(_ host: String) -> Bool {
-        // 去除方括号
-        let cleaned = host.replacingOccurrences(of: "[", with: "")
-            .replacingOccurrences(of: "]", with: "")
-            .lowercased()
+        let cleaned = IPAddressUtility.stripIPv6BracketsAndZone(host).lowercased()
 
         // fc00::/7 私有地址（fc, fd 开头）
         if cleaned.hasPrefix(NetworkConstants.IPv6PrivateRange.uniqueLocalPrefixFC) || cleaned.hasPrefix(NetworkConstants.IPv6PrivateRange.uniqueLocalPrefixFD) {

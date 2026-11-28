@@ -39,11 +39,17 @@ public final class AuthSession {
     
     // MARK: - 核心操作
     
-    /// 更新当前用户
+    /// 更新当前用户（清空账号或切换至另一账号时同步清理待重试支付队列，防止跨账号错绑收据）
     /// - Parameter user: 新的用户对象
     public func update(user: User?) {
+        let previousUserID = self.currentUser?.id
         self.currentUser = user
         self.isGuest = false
+        if user == nil || (previousUserID != nil && previousUserID != user?.id) {
+            Task {
+                await PaymentRetryQueue.shared.cancelAllPending()
+            }
+        }
     }
     
     /// 退出登录（同步清空待重试支付队列，防止切换新账号后将旧账号收据错绑到新账号）

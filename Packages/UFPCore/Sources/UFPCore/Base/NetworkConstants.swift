@@ -57,6 +57,11 @@ public enum NetworkConstants {
         public static let linkLocalFirstOctet: UInt32 = 169
         /// 169.254.0.0/16 — RFC 3927 链路本地段第二 octet
         public static let linkLocalSecondOctet: UInt32 = 254
+
+        // MARK: RFC 5771 / RFC 1112 组播与保留地址段
+
+        /// 224.0.0.0/4 ~ 255.255.255.255 — Class D 组播 / Class E 保留与有限广播起始 octet
+        public static let multicastOrReservedStartOctet: UInt32 = 224
     }
 
     // MARK: - IPv4 Octet 校验 (Octet Validation)
@@ -65,6 +70,10 @@ public enum NetworkConstants {
     public enum IPv4Octet {
         /// octet 最大值（255）
         public static let maxValue: UInt32 = 255
+        /// 2 段省略格式第二段最大值（24 位：16,777,215）
+        public static let twoPartTailMaxValue: UInt32 = 0x00FF_FFFF
+        /// 3 段省略格式第三段最大值（16 位：65,535）
+        public static let threePartTailMaxValue: UInt32 = 0xFFFF
         /// 完整 IPv4 地址的 octet 数量
         public static let fullCount: Int = 4
         /// 省略格式最小 octet 数量
@@ -135,6 +144,16 @@ public enum NetworkConstants {
         public static let linkLocalSecondByteMask: UInt8 = 0xC0
         /// 链路本地地址次字节期望值
         public static let linkLocalSecondByteExpected: UInt8 = 0x80
+        /// IPv4 兼容 IPv6 地址（::a.b.c.d）前导全零字节数
+        public static let v4CompatibleZeroPrefixCount: Int = 12
+        /// NAT64 知名转换前缀（64:ff9b::/96）前 4 字节序列 [0x00, 0x64, 0xFF, 0x9B]
+        public static let nat64PrefixBytes: [UInt8] = [0x00, 0x64, 0xFF, 0x9B]
+        /// IPv6 Zone ID 分隔字符
+        public static let zoneSeparator: Character = "%"
+        /// IPv6 左方括号字符
+        public static let openBracket: String = "["
+        /// IPv6 右方括号字符
+        public static let closeBracket: String = "]"
     }
 
     // MARK: - IP 编码前缀 (IP Encoding Prefix)

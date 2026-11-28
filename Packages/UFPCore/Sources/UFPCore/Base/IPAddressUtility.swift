@@ -18,16 +18,27 @@ public enum IPAddressUtility {
 
     // MARK: - IP 格式与协议判定
 
+    /// 剥离 IPv6 主机名首尾方括号及 Zone ID 后缀（如 `[fe80::1%en0]` → `fe80::1`），防止 `%zone` 干扰 `inet_pton` 触发 SSRF 绕过
+    public static func stripIPv6BracketsAndZone(_ host: String) -> String {
+        let unbracketed = host
+            .replacingOccurrences(of: NetworkConstants.IPv6PrivateRange.openBracket, with: "")
+            .replacingOccurrences(of: NetworkConstants.IPv6PrivateRange.closeBracket, with: "")
+        if let zoneIndex = unbracketed.firstIndex(of: NetworkConstants.IPv6PrivateRange.zoneSeparator) {
+            return String(unbracketed[..<zoneIndex])
+        }
+        return unbracketed
+    }
+
     /// 判断 host 是否为 IPv6 格式（含冒号或被方括号包裹）
     /// - Parameter host: 待校验的主机名或 IP 文本
     /// - Returns: 是否为 IPv6 格式
     public static func isIPv6Format(_ host: String) -> Bool {
         // 方括号包裹的 IPv6，如 [::1]
-        if host.hasPrefix("[") || host.hasSuffix("]") {
+        if host.hasPrefix(NetworkConstants.IPv6PrivateRange.openBracket) || host.hasSuffix(NetworkConstants.IPv6PrivateRange.closeBracket) {
             return true
         }
         // 含冒号且非端口分隔（IPv6 地址至少含 2 个冒号）
-        let colonCount = host.filter { $0 == ":" }.count
+        let colonCount = host.filter { $0 == Character(SystemConstants.Character.colon) }.count
         return colonCount >= 2
     }
 
@@ -75,7 +86,7 @@ public enum IPAddressUtility {
         }
     }
 
-    /// 将 octets 数组组合为点分十进制 IPv4 字符串（处理省略格式）
+    /// 将 octets 数组组合为点分十进制 IPv4 字符串（严格校验省略格式各段位宽防 32 位移位溢出走私）
     /// - Parameter octets: 各段数值数组
     /// - Returns: 点分十进制字符串；段数不符合规范或越界时返回 nil
     public static func combineOctets(_ octets: [UInt32]) -> String? {
@@ -83,9 +94,14 @@ public enum IPAddressUtility {
         case NetworkConstants.IPv4Octet.minCount:
             return ipv4FromUInt32(octets[0])
         case 2:
+            guard octets[0] <= NetworkConstants.IPv4Octet.maxValue,
+                  octets[1] <= NetworkConstants.IPv4Octet.twoPartTailMaxValue else { return nil }
             let combined = (octets[0] << NetworkConstants.IPv4BitShift.octet1) | octets[1]
             return ipv4FromUInt32(combined)
         case 3:
+            guard octets[0] <= NetworkConstants.IPv4Octet.maxValue,
+                  octets[1] <= NetworkConstants.IPv4Octet.maxValue,
+                  octets[2] <= NetworkConstants.IPv4Octet.threePartTailMaxValue else { return nil }
             let combined = (octets[0] << NetworkConstants.IPv4BitShift.octet1) | (octets[1] << NetworkConstants.IPv4BitShift.octet2) | octets[2]
             return ipv4FromUInt32(combined)
         case NetworkConstants.IPv4Octet.fullCount:
@@ -142,24 +158,23 @@ public enum IPAddressUtility {
         // 169.254.0.0/16 — RFC 3927 链路本地段
         if parts[0] == NetworkConstants.IPv4PrivateRange.linkLocalFirstOctet,
            parts[1] == NetworkConstants.IPv4PrivateRange.linkLocalSecondOctet { return true }
+        // 224.0.0.0 ~ 255.255.255.255 — Class D 组播 / Class E 保留与有限广播
+        if parts[0] >= NetworkConstants.IPv4PrivateRange.multicastOrReservedStartOctet { return true }
 
         return false
     }
 
-    /// 校验 IPv6 地址是否属于私有地址段（fc00::/7, fe80::/10, 环回, 映射）
-    /// - Parameter host: 待校验的 IPv6 主机名（支持方括号包裹与压缩形式）
+    /// 校验 IPv6 地址是否属于私有地址段（fc00::/7, fe80::/10, 环回, IPv4 映射/兼容/NAT64）
+    /// - Parameter host: 待校验的 IPv6 主机名（支持方括号包裹、Zone ID 与压缩形式）
     /// - Returns: 是否为私有/环回/链路本地地址
     /// - Note: 调用前应先通过 isIPv6Format 确认 host 为 IPv6 格式
     public static func isPrivateIPv6(_ host: String) -> Bool {
-        // 去除方括号
-        let cleaned = host.replacingOccurrences(of: "[", with: "")
-            .replacingOccurrences(of: "]", with: "")
-            .lowercased()
+        let cleaned = stripIPv6BracketsAndZone(host).lowercased()
 
-        // 优先通过 POSIX inet_pton 解析 128 位二进制 IPv6 地址，免疫各类字符串压缩/全零表示绕过
+        // 优先通过 POSIX inet_pton 解析 128 位二进制 IPv6 地址，免疫各类字符串压缩/全零/Zone 表示绕过
         var sin6 = in6_addr()
         if inet_pton(AF_INET6, cleaned, &sin6) == 1 {
-            if isSpecialOrV4MappedIPv6(&sin6) {
+            if isSpecialOrEmbeddedIPv4IPv6(&sin6) {
                 return true
             }
             let firstByte = withUnsafeBytes(of: &sin6) { $0[0] }
@@ -185,39 +200,48 @@ public enum IPAddressUtility {
         return false
     }
 
-    /// 校验 128 位二进制 IPv6 地址是否为环回（::1）、未指定（::）或私有 IPv4 映射地址（::ffff:a.b.c.d）
-    private static func isSpecialOrV4MappedIPv6(_ sin6: inout in6_addr) -> Bool {
-        let isLoopback = withUnsafeBytes(of: &sin6) { raw in
-            for idx in 0..<NetworkConstants.IPv6PrivateRange.lastByteIndex where raw[idx] != 0 {
-                return false
-            }
-            return raw[NetworkConstants.IPv6PrivateRange.lastByteIndex] == NetworkConstants.IPv6PrivateRange.loopbackMarker
-        }
-        if isLoopback { return true }
-
-        let isUnspecified = withUnsafeBytes(of: &sin6) { raw in
-            for idx in 0..<NetworkConstants.IPv6PrivateRange.totalBytes where raw[idx] != 0 {
-                return false
-            }
+    /// 校验 128 位二进制 IPv6 地址是否内嵌敏感/私有 IPv4（支持 ::ffff:0:0/96、::a.b.c.d 与 NAT64 64:ff9b::/96），
+    /// 以及是否为环回（::1）或未指定地址（::）。
+    public static func isDangerousIPv6Bytes(_ raw: UnsafeRawBufferPointer) -> Bool {
+        guard raw.count == NetworkConstants.IPv6PrivateRange.totalBytes else { return false }
+        // 1. 全零未指定地址 (::)
+        if raw.allSatisfy({ $0 == 0 }) {
             return true
         }
-        if isUnspecified { return true }
-
-        let isV4Mapped = withUnsafeBytes(of: &sin6) { raw in
-            for idx in 0..<NetworkConstants.IPv6PrivateRange.v4MappedZeroPrefixCount where raw[idx] != 0 {
-                return false
-            }
-            return raw[NetworkConstants.IPv6PrivateRange.v4MappedIndex1] == NetworkConstants.IPv6PrivateRange.v4MappedMarker &&
-                   raw[NetworkConstants.IPv6PrivateRange.v4MappedIndex2] == NetworkConstants.IPv6PrivateRange.v4MappedMarker
+        // 2. IPv6 环回地址 (::1)
+        let isLoopbackPrefix = (0..<NetworkConstants.IPv6PrivateRange.lastByteIndex).allSatisfy { raw[$0] == 0 }
+        if isLoopbackPrefix && raw[NetworkConstants.IPv6PrivateRange.lastByteIndex] == NetworkConstants.IPv6PrivateRange.loopbackMarker {
+            return true
         }
-        guard isV4Mapped else { return false }
-
-        let v4Octets = withUnsafeBytes(of: &sin6) { raw in
-            "\(raw[NetworkConstants.IPv6PrivateRange.v4MappedOctetIndex0])." +
-            "\(raw[NetworkConstants.IPv6PrivateRange.v4MappedOctetIndex1])." +
-            "\(raw[NetworkConstants.IPv6PrivateRange.v4MappedOctetIndex2])." +
-            "\(raw[NetworkConstants.IPv6PrivateRange.v4MappedOctetIndex3])"
+        // 3. Unique Local (fc00::/7) 与 Link-Local (fe80::/10)
+        if (raw[0] & NetworkConstants.IPv6PrivateRange.uniqueLocalMask) == NetworkConstants.IPv6PrivateRange.uniqueLocalExpected {
+            return true
         }
+        if raw[0] == NetworkConstants.IPv6PrivateRange.linkLocalFirstByte,
+           (raw[1] & NetworkConstants.IPv6PrivateRange.linkLocalSecondByteMask) == NetworkConstants.IPv6PrivateRange.linkLocalSecondByteExpected {
+            return true
+        }
+        // 4. IPv4 映射 (::ffff:a.b.c.d)、IPv4 兼容 (::a.b.c.d) 与 NAT64 (64:ff9b::a.b.c.d)
+        let isZero10 = (0..<NetworkConstants.IPv6PrivateRange.v4MappedZeroPrefixCount).allSatisfy { raw[$0] == 0 }
+        let isV4Mapped = isZero10
+            && raw[NetworkConstants.IPv6PrivateRange.v4MappedIndex1] == NetworkConstants.IPv6PrivateRange.v4MappedMarker
+            && raw[NetworkConstants.IPv6PrivateRange.v4MappedIndex2] == NetworkConstants.IPv6PrivateRange.v4MappedMarker
+        let isV4Compatible = (0..<NetworkConstants.IPv6PrivateRange.v4CompatibleZeroPrefixCount).allSatisfy { raw[$0] == 0 }
+        let nat64 = NetworkConstants.IPv6PrivateRange.nat64PrefixBytes
+        let isNAT64 = nat64.enumerated().allSatisfy { raw[$0.offset] == $0.element }
+            && (nat64.count..<NetworkConstants.IPv6PrivateRange.v4CompatibleZeroPrefixCount).allSatisfy { raw[$0] == 0 }
+        guard isV4Mapped || isV4Compatible || isNAT64 else { return false }
+
+        let v4Octets = "\(raw[NetworkConstants.IPv6PrivateRange.v4MappedOctetIndex0])."
+            + "\(raw[NetworkConstants.IPv6PrivateRange.v4MappedOctetIndex1])."
+            + "\(raw[NetworkConstants.IPv6PrivateRange.v4MappedOctetIndex2])."
+            + "\(raw[NetworkConstants.IPv6PrivateRange.v4MappedOctetIndex3])"
         return isPrivateIPv4(v4Octets)
+    }
+
+    private static func isSpecialOrEmbeddedIPv4IPv6(_ sin6: inout in6_addr) -> Bool {
+        withUnsafeBytes(of: &sin6) { raw in
+            isDangerousIPv6Bytes(raw)
+        }
     }
 }
