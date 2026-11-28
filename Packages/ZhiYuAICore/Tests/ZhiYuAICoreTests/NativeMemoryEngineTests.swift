@@ -67,15 +67,16 @@ final class NativeMemoryEngineTests: XCTestCase {
         XCTAssertEqual(recent.map(\.id), ["6", "7", "8", "9"])
     }
 
-    /// recentCount=0 时 recent 必须为空，summary 仍生成
+    /// recentCount=0 时钳位到 1，recent 保留最近一条（缺陷 #285 修复后行为）
     func testZeroRecentCountEmptyRecent() async {
         let engine = NativeMemoryEngine()
         let history = (0..<5).map { i in
             ChatMessageDomainDTO(role: "user", content: "\(i)")
         }
         let (summary, recent) = await engine.processMemory(history: history, recentCount: 0)
-        XCTAssertTrue(recent.isEmpty)
-        XCTAssertNotNil(summary, "recentCount=0 但有 history 时仍应生成 summary")
+        // 修复后：recentCount=0 钳位到 1，至少保留最近一条上下文
+        XCTAssertEqual(recent.count, 1, "recentCount=0 应钳位到 1 保留最近一条对话上下文")
+        XCTAssertNotNil(summary, "recentCount=0 钳位后有 older 消息时仍应生成 summary")
     }
 
     /// recordSessionSummary 不应抛出异常

@@ -65,6 +65,9 @@ public actor MediaSearchIndexer {
     }
 
     /// 导入单张图片并建立多模态特征索引
+    ///
+    /// - Important: 对零向量嵌入（退化图片或嵌入引擎故障）自动跳过入库，
+    ///   防止零向量项与任何查询余弦相似度恒为 0 而污染 topK 检索排名。
     @discardableResult
     public func indexImage(
         _ image: CGImage,
@@ -72,11 +75,21 @@ public actor MediaSearchIndexer {
         title: String
     ) async throws -> MediaItem {
         let vector = try await embeddingEngine.embedImage(image)
+        // 零向量防护：全零嵌入无语义信息，混入索引会以恒定 0.0 分干扰排名
+        guard vector.contains(where: { $0 != 0.0 }) else {
+            throw MediaIndexError.zeroVectorEmbedding
+        }
         let thumbData = Self.extractThumbnailData(from: image)
         let item = MediaItem(id: id, title: title, timestamp: Date(), vector: vector, thumbnailData: thumbData)
         items.removeAll { $0.id == id }
         items.append(item)
         return item
+    }
+
+    /// 媒体索引错误
+    public enum MediaIndexError: Error, Equatable {
+        /// 嵌入引擎返回零向量，该图片不具备有效语义特征
+        case zeroVectorEmbedding
     }
 
     /// 执行以文搜图跨模态检索

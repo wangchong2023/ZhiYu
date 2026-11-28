@@ -23,7 +23,10 @@ public final class NativeMemoryEngine: MemoryEngineProtocol, Sendable {
             return (nil, [])
         }
 
-        let recentMessages = Array(history.suffix(recentCount))
+        // 防御性钳位：recentCount ≤ 0 时回退到 1 保证至少保留最近一条上下文，
+        // 避免调用方传入零/负值导致 recentMessages 为空、丢失全部近期对话
+        let clampedCount = max(recentCount, MemoryEngineDefaults.minimumRecentCount)
+        let recentMessages = Array(history.suffix(clampedCount))
         let olderMessages = history.dropLast(recentMessages.count)
 
         if olderMessages.isEmpty {

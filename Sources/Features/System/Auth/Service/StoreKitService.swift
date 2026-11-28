@@ -208,6 +208,9 @@ public final class StoreKitService {
     // MARK: - 权益降级
     
     /// 将当前用户降级为 Free 配额（订阅过期 / 退款时调用）
+    ///
+    /// - Important: 降级后必须持久化认证状态到 KeyStore，否则 App 重启自动登录
+    ///   仍恢复 Pro 权益——造成"本地认为 Pro、服务端已降级"的权益残留不一致。
     func downgradeToFree() {
         guard let user = AuthSession.shared.currentUser,
               user.isPro else { return }
@@ -219,7 +222,9 @@ public final class StoreKitService {
             maxPlugins: User.DefaultQuotas.freeMaxPlugins
         )
         AuthSession.shared.update(user: free)
-        Logger.shared.info("[StoreKitService] 用户权益已降级为 Free")
+        // 持久化降级后的认证状态，防止 App 重启自动登录时恢复 Pro 权益残留
+        AuthService.shared.saveState()
+        Logger.shared.info("[StoreKitService] 用户权益已降级为 Free 且状态已持久化")
     }
 }
 

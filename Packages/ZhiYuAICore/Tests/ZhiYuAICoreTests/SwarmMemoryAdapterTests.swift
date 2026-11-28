@@ -58,12 +58,13 @@ final class SwarmMemoryAdapterTests: XCTestCase {
         XCTAssertTrue(summary?.contains("10") == true, "Swarm summary 必须包含 older 数量（10），非 history 总数（15）")
     }
 
-    /// recentCount=0 时 recent 必须为空
-    func testZeroRecentCountEmptyRecent() async {
+    /// recentCount=0 时钳位到 1，recent 保留最近一条（缺陷 #285 修复后行为）
+    func testZeroRecentCountClampsToOne() async {
         let engine = SwarmMemoryAdapter()
         let history = [ChatMessageDomainDTO(role: "user", content: "a")]
         let (_, recent) = await engine.processMemory(history: history, recentCount: 0)
-        XCTAssertTrue(recent.isEmpty)
+        // 修复后：recentCount=0 钳位到 1，至少保留最近一条上下文
+        XCTAssertEqual(recent.count, 1, "recentCount=0 应钳位到 1 保留最近一条对话上下文")
     }
 
     /// recordSessionSummary 不应抛出异常

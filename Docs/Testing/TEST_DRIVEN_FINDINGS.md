@@ -293,21 +293,24 @@
 | **282** | `PromptSecuritySanitizer`（`ZhiYuAICore`）存在 XML 沙箱逃逸与 Unicode 混淆绕过漏洞：`sanitizeAndWrap` 仅匹配精确字面 `<tag>` / `</tag>`，攻击者输入 `</tag >`、`</tag\t>` 或 `<tag role="system">` 可直接闭合外部隔离标签；`scanJailbreakAttempt` 未做全角兼容归一化与多空白/换行折叠，易被 `ｉｇｎｏｒｅ\n  ｐｒｅｖｉｏｕｓ` 绕过 | 用户输入包含带空格/属性 XML 标签或全角/换行混淆的越狱 Prompt | 恶意输入直接逃逸 XML 提示词沙箱并劫持系统指令，或绕过越狱检测拦截 | **High** | 架构设计与安全/网络健壮性 | `sanitizeAndWrap` 改用大小写不敏感正则转义所有同名开闭、带属性及带空白闭合标签；`scanJailbreakAttempt` 增加 `.precomposedStringWithCompatibilityMapping` 兼容归一化与 `\s+` 空白折叠 | **✅ 已解决** | 是 (XML 沙箱标签变体转义与兼容归一化防护) | 是 (`PromptSecuritySanitizerEscapeTests`/`PromptSecuritySanitizerJailbreakTests`) | ✅ 已闭环 |
 | **283** | `ContextReranker.rerank()`（`ZhiYuAICore`）仅使用 `split(separator: " ")` 进行分词，导致中文/日文等 CJK 无空格文本整句被当作单个 token、`crossScore` 恒为 `0.0`，且英文标点与换行黏连导致关键词无法命中 | 对中文知识库或含标点/换行的中英文混合文档执行 RAG 二阶段重排序 | 中文场景二阶段交叉重排彻底失效，仅退化为依赖初始粗排分数 | **High** | 功能缺陷与核心算法/解析器/数据完整性 | 抽取 `tokenize(_:)` 辅助方法，引入 Apple `NaturalLanguage` `NLTokenizer(unit: .word)` 实现中英文混排自动分词并剥离标点空白 | **✅ 已解决** | 是 (CJK 与多语言混排 RAG 分词重排) | 是 (`ContextRerankerEdgeCaseTests`) | ✅ 已闭环 |
 | **284** | `GitHubAuthStrategy.acquireCredentials()` 仅检查 `clientId.isEmpty` 未拦截纯空白 `clientId` 且未对 URL 参数编码；同时未绑定 `withTaskCancellationHandler` 且并发重入时会直接覆盖前序 `activeSession` | 配置纯空白 `clientId`、连续双击 GitHub 登录或授权期间外部取消认证 `Task` | 发出非法空白 `client_id` 授权请求、并发会话泄漏或取消任务后系统授权弹窗与 continuation 持续挂起 | **Medium** | 状态机并发与数据生命周期 | 对 `clientId` 执行 trim 判空与 `urlQueryAllowed` 编码；接入 `withTaskCancellationHandler` 与前置 `cancelActiveSession()` 清理重入会话 | **✅ 已解决** | 是 (Web 认证会话并发清理与 Task 取消联动) | 是 (`GitHubAuthStrategyTests`) | ✅ 已闭环 |
+| **285** | `NativeMemoryEngine.processMemory()` 与 `SwarmMemoryAdapter.processMemory()`（`ZhiYuAICore`）未校验 `recentCount ≤ 0`，传入 0 或负数时 `history.suffix(recentCount)` 返回空数组，导致近期对话上下文全量丢失 | 调用方传入 `recentCount <= 0`（如配置异常或动态窗口缩减到 0） | 模型推理丢失全部近期对话上下文，且同时生成摘要造成记忆断层 | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | 抽取 `MemoryEngineDefaults.minimumRecentCount` 常量，在 `NativeMemoryEngine` 与 `SwarmMemoryAdapter` 中对 `recentCount` 执行 `max(recentCount, minimumRecentCount)` 防御性钳位 | **✅ 已解决** | 是 (记忆窗口下限防御性钳位与双引擎契约对齐) | 是 (`MemoryEngineClampingTests`) | ✅ 已闭环 |
+| **286** | `MediaSearchIndexer.indexImage()`（`ZhiYuAICore`）在 `embeddingEngine.embedImage` 返回全零向量（如退化图像或嵌入异常）时仍直接入库，零向量项与任何查询的余弦相似度恒为 `0.0` ≥ `minScore(-1.0)` | 索引损坏/全零特征图像后执行以文搜图或以图搜图 | 无语义特征的零向量图像以恒定 `0.0` 分混入正常检索结果，污染 topK 排名 | **Medium** | 功能缺陷与核心算法/解析器/数据完整性 | 在 `indexImage` 入库前校验向量至少包含一个非零分量，全零向量直接抛出 `MediaIndexError.zeroVectorEmbedding` 拒绝入库 | **✅ 已解决** | 是 (多模态索引零向量特征门禁拦截) | 是 (`MediaIndexerZeroVectorTests`) | ✅ 已闭环 |
+| **287** | `StoreKitService.downgradeToFree()` 在订阅过期或吊销后仅更新内存中的 `AuthSession.shared.currentUser` 为 Free，未调用 `AuthService.shared.saveState()` 持久化认证状态到 KeyStore | 已登录 Pro 用户触发订阅过期或退款吊销后重启 App | 本地状态未持久化落盘，App 重启静默登录恢复时出现 Pro 权益残留不一致 | **High** | 状态机并发与数据生命周期 | 在 `StoreKitService.downgradeToFree()` 更新 `AuthSession` 后立即调用 `AuthService.shared.saveState()` 同步持久化至 KeyStore | **✅ 已解决** | 是 (订阅降级状态原子持久化) | 是 (`StoreKitDowngradePersistenceTests`) | ✅ 已闭环 |
 
 ---
 
 ### 📈 台账指标统计
 
-- **收录问题总数**：**284 项**
+- **收录问题总数**：**287 项**
 - **问题分类分布**：
-  - 功能缺陷与核心算法/解析器/数据完整性：80 项 (28.2%)
-  - 状态机并发与数据生命周期：70 项 (24.6%)
-  - 架构设计与安全/网络健壮性：93 项 (32.7%)
-  - UI/交互与防御性缺陷：17 项 (6.0%)
-  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (8.5%)
+  - 功能缺陷与核心算法/解析器/数据完整性：82 项 (28.6%)
+  - 状态机并发与数据生命周期：71 项 (24.7%)
+  - 架构设计与安全/网络健壮性：93 项 (32.4%)
+  - UI/交互与防御性缺陷：17 项 (5.9%)
+  - 代码坏味道与去魔鬼化/DRY 治理：24 项 (8.4%)
 - **严重程度分布**：
-  - **High（严重阻断/闪退/数据丢失风险）**：180 项 (63.4%)
-  - **Medium（功能异常/算法边界/性能损耗）**：77 项 (27.1%)
-  - **Low（样式异味/边界校验/门禁规范）**：27 项 (9.5%)
-- **修复闭环率**：**100% (284/284 项已修复闭环)**
+  - **High（严重阻断/闪退/数据丢失风险）**：181 项 (63.1%)
+  - **Medium（功能异常/算法边界/性能损耗）**：79 项 (27.5%)
+  - **Low（样式异味/边界校验/门禁规范）**：27 项 (9.4%)
+- **修复闭环率**：**100% (287/287 项已修复闭环)**
 
